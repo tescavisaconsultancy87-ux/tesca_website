@@ -1,0 +1,1037 @@
+---
+import "../styles/global.css";
+import CounsellorForm from "../components/CounsellorForm";
+import {
+	ArrowRight,
+	ChevronDown,
+	Phone,
+	User,
+	GraduationCap,
+	FileText,
+	Award,
+	BookOpen,
+	Briefcase,
+	Heart,
+	Shield,
+	Landmark,
+	Home,
+	Plane,
+} from "lucide-react";
+
+interface Props {
+	title?: string;
+	description?: string;
+}
+
+const {
+	title = "TESCA | Premium Study Abroad & Visa Consultancy",
+	description = "Premium admissions evaluation, financial analysis tools, and visa compliance checking by TESCA Visa Consultancy.",
+} = Astro.props;
+---
+
+<!doctype html>
+<html lang="en">
+	<head>
+		<meta charset="UTF-8" />
+		<meta name="viewport" content="width=device-width" />
+		<link rel="icon" type="image/svg+xml" href="/images/Tesca_logo.svg" />
+		<link rel="shortcut icon" href="/images/Tesca_logo.svg" />
+		<meta name="generator" content={Astro.generator} />
+		<meta name="description" content={description} />
+
+		<!-- SEO Meta Tags -->
+		<title>{title}</title>
+		<style is:global>
+			/* Custom Premium Toast Styles */
+			#custom-toast-container {
+				position: fixed;
+				bottom: 24px;
+				right: 24px;
+				z-index: 99999;
+				display: flex;
+				flex-direction: column;
+				gap: 12px;
+				pointer-events: none;
+			}
+			.custom-toast-popup {
+				pointer-events: auto;
+				background: rgba(31, 41, 55, 0.95);
+				color: #ffffff;
+				border: 1px solid rgba(255, 255, 255, 0.1);
+				backdrop-filter: blur(16px);
+				-webkit-backdrop-filter: blur(16px);
+				padding: 14px 20px;
+				border-radius: 16px;
+				box-shadow: 0 10px 30px -5px rgba(0, 0, 0, 0.2), 0 0 1px 1px rgba(255, 255, 255, 0.05);
+				font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+				font-size: 13px;
+				font-weight: 600;
+				max-width: 350px;
+				min-width: 280px;
+				display: flex;
+				align-items: center;
+				justify-content: space-between;
+			}
+			.toast-icon-bg {
+				display: flex;
+				align-items: center;
+				justify-content: center;
+				width: 28px;
+				height: 28px;
+				border-radius: 50%;
+				background: rgba(10, 120, 128, 0.2);
+				color: #F08A00;
+				flex-shrink: 0;
+			}
+			.toast-message {
+				line-height: 1.4;
+				letter-spacing: 0.01em;
+			}
+
+			/* Animations for Toasts */
+			@keyframes toastIn {
+				from {
+					opacity: 0;
+					transform: translateY(20px) scale(0.95);
+				}
+				to {
+					opacity: 1;
+					transform: translateY(0) scale(1);
+				}
+			}
+			@keyframes toastOut {
+				from {
+					opacity: 1;
+					transform: translateY(0) scale(1);
+				}
+				to {
+					opacity: 0;
+					transform: translateY(10px) scale(0.95);
+				}
+			}
+			.animate-toast-in {
+				animation: toastIn 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+			}
+			.animate-toast-out {
+				animation: toastOut 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+			}
+
+			/* Global Page Skeleton Loader Overlay */
+			#global-page-skeleton {
+				position: fixed;
+				inset: 0;
+				z-index: 999999;
+				background-color: #FFFFFF;
+				display: flex;
+				flex-direction: column;
+				padding: 24px;
+				pointer-events: none;
+				transition: opacity 0.5s ease-out;
+			}
+			@media (min-width: 768px) {
+				#global-page-skeleton {
+					padding: 48px;
+				}
+			}
+			.shimmer {
+				background: linear-gradient(90deg, #f1f5f9 25%, #e2e8f0 50%, #f1f5f9 75%);
+				background-size: 200% 100%;
+				animation: shimmerRun 1.5s infinite linear;
+			}
+			@keyframes shimmerRun {
+				0% { background-position: 200% 0; }
+				100% { background-position: -200% 0; }
+			}
+		</style>
+	</head>
+	<body
+		class="bg-white text-support-slate min-h-screen flex flex-col antialiased selection:bg-accent-cyan/10 selection:text-accent-blue font-sans"
+	>
+		<!-- Global Page Skeleton Loader Overlay -->
+		<div id="global-page-skeleton">
+			<div class="max-w-7xl mx-auto w-full flex items-center justify-between animate-pulse mb-12">
+				<div class="w-32 h-8 bg-slate-100 rounded-lg shimmer"></div>
+				<div class="hidden md:flex gap-6">
+					<div class="w-20 h-4 bg-slate-100 rounded-md shimmer"></div>
+					<div class="w-20 h-4 bg-slate-100 rounded-md shimmer"></div>
+					<div class="w-20 h-4 bg-slate-100 rounded-md shimmer"></div>
+				</div>
+				<div class="w-32 h-10 bg-slate-100 rounded-full shimmer"></div>
+			</div>
+			<div class="max-w-7xl mx-auto w-full flex-grow space-y-12 animate-pulse">
+				<div class="h-64 bg-slate-50 border border-slate-100 rounded-3xl w-full flex flex-col justify-center p-8 space-y-4">
+					<div class="h-8 bg-slate-100 rounded-md w-1/3 shimmer"></div>
+					<div class="h-4 bg-slate-100 rounded-md w-1/2 shimmer"></div>
+					<div class="h-4 bg-slate-100 rounded-md w-1/4 shimmer"></div>
+				</div>
+				<div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+					<div class="h-48 bg-slate-50 border border-slate-100 rounded-2xl p-6 space-y-4">
+						<div class="w-12 h-12 bg-slate-100 rounded-xl shimmer"></div>
+						<div class="h-4 bg-slate-100 rounded-md w-3/4 shimmer"></div>
+						<div class="h-3 bg-slate-100 rounded-md w-1/2 shimmer"></div>
+					</div>
+					<div class="h-48 bg-slate-50 border border-slate-100 rounded-2xl p-6 space-y-4">
+						<div class="w-12 h-12 bg-slate-100 rounded-xl shimmer"></div>
+						<div class="h-4 bg-slate-100 rounded-md w-3/4 shimmer"></div>
+						<div class="h-3 bg-slate-100 rounded-md w-1/2 shimmer"></div>
+					</div>
+					<div class="h-48 bg-slate-50 border border-slate-100 rounded-2xl p-6 space-y-4">
+						<div class="w-12 h-12 bg-slate-100 rounded-xl shimmer"></div>
+						<div class="h-4 bg-slate-100 rounded-md w-3/4 shimmer"></div>
+						<div class="h-3 bg-slate-100 rounded-md w-1/2 shimmer"></div>
+					</div>
+				</div>
+			</div>
+		</div>
+		<!-- Skip to Content Accessibility -->
+		<a
+			href="#main-content"
+			class="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 focus:z-50 focus:px-4 focus:py-2.5 focus:bg-accent-blue focus:text-white focus:font-semibold focus:rounded-lg focus:outline-none focus:ring-2 focus:ring-accent-cyan"
+		>
+			Skip to content
+		</a>
+
+		<!-- Floating Navigation Header -->
+		<header
+			id="main-header"
+			class="fixed top-0 left-0 right-0 z-40 transition-all duration-500 bg-white/80 backdrop-blur-md border-b border-slate-200/60 shadow-sm"
+		>
+			<nav
+				class="max-w-7xl mx-auto px-6 py-3.5 flex items-center justify-between transition-all duration-500"
+				id="main-nav"
+				aria-label="Global navigation"
+			>
+				<!-- Logo (General Sans 700) -->
+				<a
+					href="/"
+					class="flex items-center gap-2.5 group outline-none focus-visible:ring-2 focus-visible:ring-accent-blue rounded-md px-2 py-1"
+					id="nav-logo"
+				>
+					<img
+						src="/images/Tesca_logo.svg"
+						alt="TESCA"
+						class="h-9 w-auto"
+						id="nav-logo-icon"
+					/>
+				</a>
+
+				<!-- Menu Links (Plus Jakarta Sans 500) -->
+				<ul
+					class="hidden md:flex items-center gap-1 text-sm font-medium font-sans tracking-wide"
+					id="nav-links"
+				>
+					<li>
+						<a
+							href="/"
+							class="nav-link px-3.5 py-2 rounded-lg text-support-slate hover:bg-accent-blue hover:text-white transition-all duration-200 font-sans text-sm font-medium"
+							>Home</a
+						>
+					</li>
+
+					{/* Study Destinations Dropdown */}
+					<li class="relative group">
+						<a
+							href="/countries"
+							class="nav-link px-3.5 py-2 rounded-lg text-support-slate hover:bg-accent-blue hover:text-white transition-all duration-200 flex items-center gap-1.5 cursor-pointer font-sans text-sm font-medium outline-none no-underline"
+						>
+							Study Destinations</a
+						>
+
+						{/* Mega Menu Dropdown */}
+						<div
+							class="absolute left-1/2 top-full pt-3 hidden group-hover:block w-[780px] z-50 animate-dropdown"
+						>
+							<div
+								class="shadow-2xl rounded-2xl p-6 bg-white border border-slate-100 grid grid-cols-12 gap-6 text-slate-800"
+							>
+								{/* Countries Grid (9 cols) */}
+								<div class="col-span-9 grid grid-cols-3 gap-3">
+									{
+										[
+											{
+												name: "Australia",
+												code: "au",
+												id: "au",
+											},
+											{
+												name: "New Zealand",
+												code: "nz",
+												id: "nz",
+											},
+											{
+												name: "United Kingdom",
+												code: "gb",
+												id: "uk",
+											},
+											{
+												name: "Ireland",
+												code: "ie",
+												id: "ie",
+											},
+											{
+												name: "Germany",
+												code: "de",
+												id: "de",
+											},
+											{
+												name: "Europe",
+												code: "eu",
+												id: "eu",
+											},
+											{
+												name: "USA",
+												code: "us",
+												id: "us",
+											},
+											{
+												name: "Canada",
+												code: "ca",
+												id: "ca",
+											},
+											{
+												name: "Singapore",
+												code: "sg",
+												id: "sg",
+											},
+											{
+												name: "Dubai",
+												code: "ae",
+												id: "ae",
+											},
+											{
+												name: "Malaysia",
+												code: "my",
+												id: "my",
+											},
+											{
+												name: "Switzerland",
+												code: "ch",
+												id: "ch",
+											},
+										].map((c) => (
+											<a
+												href={`/countries#${c.id}`}
+												class="flex items-center gap-3 p-2.5 rounded-xl border border-slate-100 bg-slate-50/50 hover:bg-accent-blue/5 hover:border-accent-blue/20 hover:text-accent-indigo transition-all duration-200 group/cell"
+											>
+												<img
+													src={`https://flagcdn.com/w40/${c.code}.png`}
+													alt={`${c.name} flag`}
+													class="w-7 h-5 rounded-sm object-cover shadow-sm"
+													loading="lazy"
+												/>
+												<span class="text-xs font-semibold font-sans tracking-wide">
+													Study in {c.name}
+												</span>
+											</a>
+										))
+									}
+								</div>
+
+								{/* Action Buttons Sidebar (3 cols) */}
+								<div
+									class="col-span-3 border-l border-slate-100 pl-6 flex flex-col justify-center gap-4"
+								>
+									<a
+										href="/countries"
+										class="flex items-center justify-between p-3 rounded-xl border border-slate-100 bg-slate-50/60 hover:bg-accent-blue hover:text-white transition-all duration-200 group/action text-xs font-bold font-sans tracking-wide text-left"
+									>
+										<span>Explore Destinations</span>
+										<ArrowRight
+											class="w-4 h-4 group-hover/action:translate-x-0.5 transition-transform"
+										/>
+									</a>
+
+									<a
+										href="/universities"
+										class="flex items-center justify-between p-3 rounded-xl border border-slate-100 bg-slate-50/60 hover:bg-accent-blue hover:text-white transition-all duration-200 group/action text-xs font-bold font-sans tracking-wide text-left"
+									>
+										<span>Explore Universities</span>
+										<ArrowRight
+											class="w-4 h-4 group-hover/action:translate-x-0.5 transition-transform"
+										/>
+									</a>
+								</div>
+							</div>
+						</div>
+					</li>
+
+					{/* Services Dropdown */}
+					<li class="relative group">
+						<a
+							href="/services"
+							class="nav-link px-3.5 py-2 rounded-lg text-support-slate hover:bg-accent-blue hover:text-white transition-all duration-200 flex items-center gap-1.5 cursor-pointer font-sans text-sm font-medium outline-none no-underline"
+						>
+							Services</a
+						>
+
+						{/* Mega Menu Dropdown */}
+						<div
+							class="absolute left-1/2 top-full pt-3 hidden group-hover:block w-[780px] z-50 animate-dropdown"
+						>
+							<div
+								class="shadow-2xl rounded-2xl p-6 bg-white border border-slate-100 flex flex-col gap-6 text-slate-800"
+							>
+								{/* Services Grid (3 columns) */}
+								<div class="grid grid-cols-3 gap-3">
+									{
+										[
+											{
+												name: "Expert Counselling",
+												icon: User,
+												id: "counselling",
+												color: "bg-blue-100 text-blue-600",
+											},
+											{
+												name: "University Admission Process",
+												icon: GraduationCap,
+												id: "admission",
+												color: "bg-emerald-100 text-emerald-600",
+											},
+											{
+												name: "SOP & Documentation",
+												icon: FileText,
+												id: "sop",
+												color: "bg-amber-100 text-amber-600",
+											},
+											{
+												name: "Scholarship Guidance",
+												icon: Award,
+												id: "scholarships",
+												color: "bg-purple-100 text-purple-600",
+											},
+											{
+												name: "Test Prep & Coaching",
+												icon: BookOpen,
+												id: "testprep",
+												color: "bg-rose-100 text-rose-600",
+											},
+											{
+												name: "Expert Visa Assistance",
+												icon: Briefcase,
+												id: "visa",
+												color: "bg-teal-100 text-teal-600",
+											},
+											{
+												name: "Health Insurance",
+												icon: Heart,
+												id: "insurance",
+												color: "bg-pink-100 text-pink-600",
+											},
+											{
+												name: "Financial & Loan Guidance",
+												icon: Landmark,
+												id: "financial",
+												color: "bg-orange-100 text-orange-600",
+											},
+											{
+												name: "Accommodation Assistance",
+												icon: Home,
+												id: "accommodation",
+												color: "bg-indigo-100 text-indigo-600",
+											},
+											{
+												name: "Pre & Post Departure Services",
+												icon: Plane,
+												id: "departure",
+												color: "bg-cyan-100 text-cyan-600",
+											},
+										].map((srv) => {
+											const IconComponent = srv.icon;
+											return (
+												<a
+													href={`/services#${srv.id}`}
+													class="flex items-center gap-3.5 p-3 rounded-xl border border-slate-100 bg-slate-50/50 hover:bg-accent-blue/5 hover:border-accent-blue/20 hover:text-accent-indigo transition-all duration-200"
+												>
+													<div
+														class={
+															"p-2 rounded-lg shrink-0 " +
+															srv.color
+														}
+													>
+														<IconComponent class="w-4 h-4" />
+													</div>
+													<span class="text-xs font-semibold font-sans tracking-wide leading-tight">
+														{srv.name}
+													</span>
+												</a>
+											);
+										})
+									}
+								</div>
+
+								{/* Bottom Button "View All ->" (Centered) */}
+								<div
+									class="border-t border-slate-100 pt-4 flex justify-center"
+								>
+									<a
+										href="/services"
+										class="flex items-center gap-1.5 px-6 py-2 rounded-full border border-slate-200 bg-slate-50 hover:bg-accent-blue hover:text-white transition-all duration-200 text-xs font-bold font-sans tracking-wide cursor-pointer"
+									>
+										<span>View All Services</span>
+										<ArrowRight class="w-3.5 h-3.5" />
+									</a>
+								</div>
+							</div>
+						</div>
+					</li>
+
+					{/* Test Prep Dropdown */}
+					<li class="relative group">
+						<a
+							href="/TestPrep"
+							class="nav-link px-3.5 py-2 rounded-lg text-support-slate hover:bg-accent-blue hover:text-white transition-all duration-200 flex items-center gap-1.5 cursor-pointer font-sans text-sm font-medium outline-none no-underline"
+						>
+							Test Prep</a
+						>
+
+						{/* Test Prep Mega Menu Dropdown */}
+						<div
+							class="absolute left-1/2 top-full pt-3 hidden group-hover:block w-[240px] z-50 animate-dropdown"
+						>
+							<div
+								class="shadow-2xl rounded-2xl p-3 bg-white border border-slate-100 flex flex-col gap-1 text-slate-800"
+							>
+								{
+									[
+										{
+											name: "IELTS",
+											icon: BookOpen,
+											id: "ielts",
+											color: "bg-accent-blue/10 text-accent-blue",
+										},
+										{
+											name: "PTE",
+											icon: BookOpen,
+											id: "pte",
+											color: "bg-blue-100 text-blue-600",
+										},
+										{
+											name: "German",
+											icon: BookOpen,
+											id: "german",
+											color: "bg-amber-100 text-amber-600",
+										},
+										{
+											name: "Spoken English",
+											icon: BookOpen,
+											id: "spoken-english",
+											color: "bg-purple-100 text-purple-600",
+										},
+										{
+											name: "French",
+											icon: BookOpen,
+											id: "french",
+											color: "bg-indigo-100 text-indigo-600",
+										},
+									].map((t) => {
+										const IconComponent = t.icon;
+										return (
+											<a
+												href={`/services#${t.id}`}
+												class="flex items-center gap-3 p-2.5 rounded-xl hover:bg-accent-blue/5 hover:text-accent-indigo transition-all duration-200 text-sm font-sans font-medium"
+											>
+												<div
+													class={
+														"p-1.5 rounded-lg shrink-0 " +
+														t.color
+													}
+												>
+													<IconComponent class="w-4 h-4" />
+												</div>
+												<span>{t.name}</span>
+											</a>
+										);
+									})
+								}
+							</div>
+						</div>
+					</li>
+
+					<li>
+						<a
+							href="/gallery"
+							class="nav-link px-3.5 py-2 rounded-lg text-support-slate hover:bg-accent-blue hover:text-white transition-all duration-200 font-sans text-sm font-medium"
+							>Gallery</a
+						>
+					</li>
+
+					<li>
+						<a
+							href="/calculators"
+							class="nav-link px-3.5 py-2 rounded-lg text-support-slate hover:bg-accent-blue hover:text-white transition-all duration-200 font-sans text-sm font-medium"
+							>Study Calculator</a
+						>
+					</li>
+				</ul>
+
+				<!-- CTA Button: Speak to Our Counsellor & Hamburger Toggle -->
+				<div class="flex items-center gap-2 sm:gap-3">
+					<button
+						id="nav-cta"
+						onclick="window.openCounsellorForm?.()"
+						class="hidden sm:flex text-xs font-semibold font-sans tracking-wide bg-[#F08A00] hover:bg-[#C06E00] rounded-full px-4 py-1.5 text-white items-center gap-1.5 transition-all duration-300 outline-none focus-visible:ring-2 focus-visible:ring-[#F08A00] cursor-pointer shadow-sm hover:shadow-md hover:scale-[1.02]"
+					>
+						<Phone class="w-3.5 h-3.5" />
+						Speak to Our Counsellor
+					</button>
+					<a
+						href="tel:9824152731"
+						class="hidden md:flex text-[11px] font-semibold text-support-slate hover:text-accent-blue transition-colors items-center gap-1 no-underline"
+						id="nav-phone-link"
+					>
+						<span class="opacity-70 text-[10px] font-medium font-sans">Or Call:</span>
+						<span class="font-sans font-bold text-[11px] sm:text-xs">9824152731</span>
+					</a>
+					
+					<!-- Hamburger button for mobile -->
+					<button 
+						id="mobile-menu-btn" 
+						class="md:hidden p-2 rounded-xl border border-slate-200/80 hover:bg-slate-50 text-support-slate hover:text-slate-800 transition-all cursor-pointer flex items-center justify-center" 
+						aria-label="Toggle mobile menu"
+					>
+						<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="w-5 h-5"><line x1="4" x2="20" y1="12" y2="12"/><line x1="4" x2="20" y1="6" y2="6"/><line x1="4" x2="20" y1="18" y2="18"/></svg>
+					</button>
+				</div>
+			</nav>
+		</header>
+
+		<!-- Mobile Menu Drawer Overlay -->
+		<div id="mobile-menu-drawer" class="fixed inset-0 z-50 bg-slate-900/50 backdrop-blur-sm hidden opacity-0 transition-opacity duration-300">
+			<div id="mobile-menu-panel" class="absolute right-0 top-0 bottom-0 w-[280px] bg-white shadow-2xl p-6 flex flex-col justify-between translate-x-full transition-transform duration-300 border-l border-slate-100">
+				<div class="space-y-6">
+					<div class="flex items-center justify-between pb-5 border-b border-slate-100">
+						<img src="/images/Tesca_logo.svg" alt="TESCA" class="h-8 w-auto object-contain" />
+						<button id="mobile-menu-close" class="p-1.5 rounded-lg hover:bg-slate-100 text-slate-400 hover:text-slate-600 transition-colors cursor-pointer" aria-label="Close menu">
+							<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="w-5 h-5"><line x1="18" x2="6" y1="6" y2="18"/><line x1="6" x2="18" y1="6" y2="18"/></svg>
+						</button>
+					</div>
+					<ul class="space-y-3.5 text-sm font-semibold text-slate-800 text-left font-sans">
+						<li><a href="/" class="block py-2.5 px-3.5 rounded-xl hover:bg-accent-blue/5 hover:text-accent-blue transition-all no-underline">Home</a></li>
+						<li><a href="/countries" class="block py-2.5 px-3.5 rounded-xl hover:bg-accent-blue/5 hover:text-accent-blue transition-all no-underline">Study Destinations</a></li>
+						<li><a href="/services" class="block py-2.5 px-3.5 rounded-xl hover:bg-accent-blue/5 hover:text-accent-blue transition-all no-underline">Our Services</a></li>
+						<li><a href="/TestPrep" class="block py-2.5 px-3.5 rounded-xl hover:bg-accent-blue/5 hover:text-accent-blue transition-all no-underline">Test Prep</a></li>
+						<li><a href="/gallery" class="block py-2.5 px-3.5 rounded-xl hover:bg-accent-blue/5 hover:text-accent-blue transition-all no-underline">Gallery</a></li>
+						<li><a href="/calculators" class="block py-2.5 px-3.5 rounded-xl hover:bg-accent-blue/5 hover:text-accent-blue transition-all no-underline">Study Calculator</a></li>
+					</ul>
+				</div>
+				<div class="pt-6 border-t border-slate-100 space-y-4">
+					<button onclick="window.openCounsellorForm?.(); document.getElementById('mobile-menu-close').click();" class="w-full text-center text-xs font-bold bg-[#F08A00] hover:bg-[#C06E00] rounded-full py-3 text-white flex items-center justify-center gap-1.5 transition-all cursor-pointer shadow-sm">
+						<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="w-3.5 h-3.5"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+						Speak to Our Counsellor
+					</button>
+					<a href="tel:9824152731" class="flex items-center justify-center gap-1.5 text-xs font-bold text-slate-800 hover:text-accent-blue transition-colors no-underline">
+						<span class="opacity-60 font-semibold font-sans">Call Us:</span> 9824152731
+					</a>
+				</div>
+			</div>
+		</div>
+
+		<!-- Main Page Content -->
+		<main id="main-content" class="flex-grow pt-20">
+			<slot />
+		</main>
+
+		<!-- Premium Footer -->
+		<footer
+			class="relative mt-20 border-t border-slate-200 bg-accent-indigo pt-20 pb-10 overflow-hidden text-white/90 font-sans"
+		>
+			<!-- Soft glow -->
+			<div
+				class="aurora-bg w-[400px] h-[400px] bg-accent-cyan/5 -bottom-48 -right-24"
+			>
+			</div>
+
+			<div class="max-w-7xl mx-auto px-6 md:px-8 relative z-10">
+				<div
+					class="grid grid-cols-1 md:grid-cols-5 gap-12 md:gap-8 pb-16 border-b border-white/10"
+				>
+					<!-- Brand and Newsletter -->
+					<!-- Brand, Socials and Contact info -->
+					<div class="md:col-span-2 space-y-6 text-left">
+						<a
+							href="/"
+							class="inline-block bg-white p-3 rounded-2xl border border-slate-100 hover:scale-[1.02] transition-transform max-w-[200px]"
+						>
+							<img
+								src="/images/Tesca_logo.svg"
+								alt="TESCA Logo"
+								class="h-10 w-auto object-contain"
+							/>
+						</a>
+						
+						<!-- Social Media Icons -->
+						<div class="flex gap-3 mt-4">
+							<a href="https://linkedin.com" target="_blank" rel="noopener noreferrer" class="w-9 h-9 rounded-full bg-white/10 hover:bg-accent-cyan hover:text-white transition-all flex items-center justify-center text-white/80" aria-label="LinkedIn">
+								<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-linkedin"><path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"/><rect width="4" height="12" x="2" y="9"/><circle cx="4" cy="4" r="2"/></svg>
+							</a>
+							<a href="https://www.facebook.com/tescavisaconsultancy" target="_blank" rel="noopener noreferrer" class="w-9 h-9 rounded-full bg-white/10 hover:bg-accent-cyan hover:text-white transition-all flex items-center justify-center text-white/80" aria-label="Facebook">
+								<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-facebook"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"/></svg>
+							</a>
+							<a href="https://www.instagram.com/tesca_visa_consultancy/" target="_blank" rel="noopener noreferrer" class="w-9 h-9 rounded-full bg-white/10 hover:bg-accent-cyan hover:text-white transition-all flex items-center justify-center text-white/80" aria-label="Instagram">
+								<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-instagram"><rect width="20" height="20" x="2" y="2" rx="5" ry="5"/><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/><line x1="17.5" x2="17.51" y1="6.5" y2="6.5"/></svg>
+							</a>
+							<a href="https://youtube.com/@tescavisaconsultancy" target="_blank" rel="noopener noreferrer" class="w-9 h-9 rounded-full bg-white/10 hover:bg-accent-cyan hover:text-white transition-all flex items-center justify-center text-white/80" aria-label="YouTube">
+								<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-youtube"><path d="M2.5 17a24.12 24.12 0 0 1 0-10 2 2 0 0 1 1.4-1.4 49.56 49.56 0 0 1 16.2 0A2 2 0 0 1 21.5 7a24.12 24.12 0 0 1 0 10 2 2 0 0 1-1.4 1.4 49.55 49.55 0 0 1-16.2 0A2 2 0 0 1 2.5 17z"/><polygon points="10 15 15 12 10 9"/></svg>
+							</a>
+						</div>
+
+						<!-- Contact Details & Branch Addresses -->
+						<div class="space-y-4 pt-2 text-sm text-white/80">
+							<a href="mailto:dhameliyaavadh592@gmail.com" class="flex items-center gap-2.5 hover:text-accent-cyan transition-colors text-white/80">
+								<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-mail text-accent-cyan shrink-0"><rect width="20" height="16" x="2" y="4" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg>
+								<span class="truncate">dhameliyaavadh592@gmail.com</span>
+							</a>
+							<a href="tel:9824152731" class="flex items-center gap-2.5 hover:text-accent-cyan transition-colors text-white/80">
+								<Phone class="w-4 h-4 text-accent-cyan shrink-0" />
+								<span>9824152731</span>
+							</a>
+							<div class="space-y-3 pt-4 border-t border-white/10">
+								<span class="block text-xs font-semibold uppercase tracking-wider text-white/40">Our Branches</span>
+								<a 
+									href="https://www.google.com/maps/search/?api=1&query=10%2C+111%2C+112%2C+Royal+Arcade%2C+Simada+Naka%2C+Surat%2C+Gujarat+395013%2C+Surat%2C+Gujarat+394101"
+									target="_blank"
+									rel="noopener noreferrer"
+									class="flex items-start gap-2.5 hover:text-accent-cyan transition-colors text-white/80 group text-[13px] leading-relaxed"
+								>
+									<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-map-pin text-accent-cyan mt-1 shrink-0 group-hover:scale-110 transition-transform"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>
+									<span>10, 111, 112, Royal Arcade, Simada Naka, Surat, Gujarat 395013, Surat, Gujarat 394101</span>
+								</a>
+								<a 
+									href="https://www.google.com/maps/search/?api=1&query=Ambika+Pinnacle%2C+106-107%2C+Lajamni+Chowk%2C+Maruti+Dham+Society%2C+Mota+Varachha%2C+Surat%2C+Gujarat+394101"
+									target="_blank"
+									rel="noopener noreferrer"
+									class="flex items-start gap-2.5 hover:text-accent-cyan transition-colors text-white/80 group text-[13px] leading-relaxed"
+								>
+									<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-map-pin text-accent-cyan mt-1 shrink-0 group-hover:scale-110 transition-transform"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>
+									<span>Ambika Pinnacle, 106-107, Lajamni Chowk, Maruti Dham Society, Mota Varachha, Surat, Gujarat 394101</span>
+								</a>
+							</div>
+						</div>
+					</div>
+
+					<!-- Navigation lists (Plus Jakarta Sans 500) -->
+					<div class="space-y-4 text-left">
+						<h2
+							class="text-sm font-semibold text-white tracking-wider uppercase font-sans"
+						>
+							Platform
+						</h2>
+						<ul
+							class="space-y-2.5 text-sm text-primary-blue font-sans font-medium"
+						>
+							<li>
+								<a
+									href="/countries"
+									class="hover:text-accent-cyan transition-colors"
+									>Destination Map</a
+								>
+							</li>
+							<li>
+								<a
+									href="/calculators"
+									class="hover:text-accent-cyan transition-colors"
+									>Study Cost Calculator</a
+								>
+							</li>
+							<li>
+								<a
+									href="/services"
+									class="hover:text-accent-cyan transition-colors"
+									>Our Services</a
+								>
+							</li>
+						</ul>
+					</div>
+
+					<div class="space-y-4 text-left">
+						<h2
+							class="text-sm font-semibold text-white tracking-wider uppercase font-sans"
+						>
+							Destinations
+						</h2>
+						<ul
+							class="space-y-2.5 text-sm text-primary-blue font-sans font-medium"
+						>
+							<li>
+								<a
+									href="/countries"
+									class="hover:text-accent-cyan transition-colors"
+									>United States</a
+								>
+							</li>
+							<li>
+								<a
+									href="/countries"
+									class="hover:text-accent-cyan transition-colors"
+									>United Kingdom</a
+								>
+							</li>
+							<li>
+								<a
+									href="/countries"
+									class="hover:text-accent-cyan transition-colors"
+									>Canada</a
+								>
+							</li>
+							<li>
+								<a
+									href="/countries"
+									class="hover:text-accent-cyan transition-colors"
+									>Australia</a
+								>
+							</li>
+						</ul>
+					</div>
+
+					<div class="space-y-4 text-left">
+						<h2
+							class="text-sm font-semibold text-white tracking-wider uppercase font-sans"
+						>
+							Trust & Legal
+						</h2>
+						<ul
+							class="space-y-2.5 text-sm text-primary-blue font-sans font-medium"
+						>
+							<li>
+								<a
+									href="/visa-success-sla"
+									class="hover:text-accent-cyan transition-colors"
+									>Visa Success SLA</a
+								>
+							</li>
+							<li>
+								<a
+									href="/security-audit"
+									class="hover:text-accent-cyan transition-colors"
+									>Security Audit</a
+								>
+							</li>
+							<li>
+								<a
+									href="/privacy-policy"
+									class="hover:text-accent-cyan transition-colors"
+									>Privacy Policy</a
+								>
+							</li>
+							<li>
+								<a
+									href="/terms-of-service"
+									class="hover:text-accent-cyan transition-colors"
+									>Terms of Service</a
+								>
+							</li>
+						</ul>
+					</div>
+				</div>
+
+				<div
+					class="pt-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-white/50 font-sans"
+				>
+					<p>
+						© {new Date().getFullYear()} TESCA Visa Consultancy. All rights
+						reserved.
+					</p>
+					<div class="flex items-center gap-6">
+						<span class="flex items-center gap-1.5"
+							><span
+								class="w-1.5 h-1.5 bg-emerald-400 rounded-full animate-pulse"
+							></span> ISO 9001 Certified</span
+						>
+						<span>•</span>
+						<span
+							class="flex items-center gap-1.5 font-semibold text-accent-cyan"
+							>TESCA Verified SLA</span
+						>
+					</div>
+				</div>
+			</div>
+		</footer>
+
+		<!-- Scroll-Triggered Navbar Color Shift & Optimized Lenis script -->
+		<script>
+			import Lenis from "lenis";
+			import emailjs from "@emailjs/browser";
+
+			// Mobile Menu Drawer Handlers
+			const mobileMenuBtn = document.getElementById("mobile-menu-btn");
+			const mobileMenuDrawer = document.getElementById("mobile-menu-drawer");
+			const mobileMenuPanel = document.getElementById("mobile-menu-panel");
+			const mobileMenuClose = document.getElementById("mobile-menu-close");
+
+			const openMobileMenu = () => {
+				mobileMenuDrawer?.classList.remove("hidden");
+				setTimeout(() => {
+					mobileMenuDrawer?.classList.add("opacity-100");
+					mobileMenuPanel?.classList.remove("translate-x-full");
+				}, 10);
+				(window as any).lenis?.stop();
+			};
+
+			const closeMobileMenu = () => {
+				mobileMenuDrawer?.classList.remove("opacity-100");
+				mobileMenuPanel?.classList.add("translate-x-full");
+				setTimeout(() => {
+					mobileMenuDrawer?.classList.add("hidden");
+				}, 300);
+				(window as any).lenis?.start();
+			};
+
+			mobileMenuBtn?.addEventListener("click", openMobileMenu);
+			mobileMenuDrawer?.addEventListener("click", closeMobileMenu);
+			mobileMenuPanel?.addEventListener("click", (e) => e.stopPropagation());
+			mobileMenuClose?.addEventListener("click", closeMobileMenu);
+
+			// 1. Interactive Navbar Morphing Script — White→Red on scroll
+			const header = document.getElementById("main-header");
+			const nav = document.getElementById("main-nav");
+			const navLinks = document.querySelectorAll(".nav-link");
+			const navCta = document.getElementById("nav-cta");
+			const navLogoIcon = document.getElementById("nav-logo-icon");
+			const navPhoneLink = document.getElementById("nav-phone-link");
+
+			window.addEventListener("scroll", () => {
+				if (window.scrollY > 20) {
+					// Scrolled: Teal background, white text, glassmorphism
+					header?.classList.add("scrolled-header");
+					header?.classList.remove(
+						"bg-white/80",
+						"backdrop-blur-md",
+						"border-b",
+						"border-slate-200/60",
+						"shadow-sm",
+					);
+					nav?.classList.remove("py-3.5");
+					nav?.classList.add("py-2.5");
+
+					// Switch link colors to white
+					navLinks.forEach((link) => {
+						link.classList.remove(
+							"text-support-slate",
+							"hover:bg-accent-blue",
+							"hover:text-white",
+						);
+						link.classList.add(
+							"text-white/90",
+							"hover:bg-white/20",
+							"hover:text-white",
+						);
+					});
+
+					// Turn logo white on scroll
+					navLogoIcon?.classList.add("brightness-0", "invert");
+
+					// Turn phone link white on scroll
+					navPhoneLink?.classList.remove("text-support-slate");
+					navPhoneLink?.classList.add("text-white/90");
+
+				} else {
+					// Top: White background, dark text
+					header?.classList.remove("scrolled-header");
+					header?.classList.add(
+						"bg-white/80",
+						"backdrop-blur-md",
+						"border-b",
+						"border-slate-200/60",
+						"shadow-sm",
+					);
+					nav?.classList.remove("py-2.5");
+					nav?.classList.add("py-3.5");
+
+					// Switch link colors back to dark
+					navLinks.forEach((link) => {
+						link.classList.remove(
+							"text-white/90",
+							"hover:bg-white/20",
+							"hover:text-white",
+						);
+						link.classList.add(
+							"text-support-slate",
+							"hover:bg-accent-blue",
+							"hover:text-white",
+						);
+					});
+
+					// Restore original logo colors at top
+					navLogoIcon?.classList.remove("brightness-0", "invert");
+
+					// Restore phone link color at top
+					navPhoneLink?.classList.remove("text-white/90");
+					navPhoneLink?.classList.add("text-support-slate");
+
+				}
+
+			});
+
+			// 2. Fast & Responsive Lenis Scroll Configuration
+			const lenis = new Lenis({
+				duration: 0.9,
+				easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
+				gestureOrientation: "vertical",
+				normalizeWheel: true,
+				smoothWheel: true,
+				wheelMultiplier: 1.15,
+			});
+			(window as any).lenis = lenis;
+
+			function raf(time: number) {
+				lenis.raf(time);
+				requestAnimationFrame(raf);
+			}
+
+			requestAnimationFrame(raf);
+
+			// 3. Global Page Skeleton Fade Out
+			document.addEventListener("DOMContentLoaded", () => {
+				const skeleton = document.getElementById("global-page-skeleton");
+				if (skeleton) {
+					setTimeout(() => {
+						skeleton.style.opacity = "0";
+						setTimeout(() => {
+							skeleton.remove();
+						}, 500);
+					}, 450);
+				}
+			});
+
+			// 4. Custom Alert Toast Override
+			if (typeof window !== "undefined") {
+				const toastContainer = document.createElement("div");
+				toastContainer.id = "custom-toast-container";
+				document.body.appendChild(toastContainer);
+
+				window.alert = function (message) {
+					const toast = document.createElement("div");
+					toast.className = "custom-toast-popup animate-toast-in";
+					toast.innerHTML = `
+						<div style="display: flex; align-items: center; gap: 10px;">
+							<div class="toast-icon-bg">
+								<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" class="toast-icon"><circle cx="12" cy="12" r="10"/><path d="m9 12 2 2 4-4"/></svg>
+							</div>
+							<span class="toast-message">${message}</span>
+						</div>
+					`;
+					toastContainer.appendChild(toast);
+
+					setTimeout(() => {
+						toast.classList.remove("animate-toast-in");
+						toast.classList.add("animate-toast-out");
+						setTimeout(() => {
+							toast.remove();
+						}, 300);
+					}, 2000);
+				};
+			}
+
+
+			</script>
+
+		<CounsellorForm
+			client:load
+			serviceId={import.meta.env.PUBLIC_EMAILJS_SERVICE_ID}
+			templateId={import.meta.env.PUBLIC_EMAILJS_TEMPLATE_ID}
+			publicKey={import.meta.env.PUBLIC_EMAILJS_PUBLIC_KEY}
+		/>
+
+
+	</body>
+</html>

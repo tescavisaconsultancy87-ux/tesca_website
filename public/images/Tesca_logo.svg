@@ -1,0 +1,71 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 850 300" width="100%" height="100%">
+  <defs>
+    <style>
+      .text-red { 
+        fill: #E31818; 
+      }
+      .text-teal { 
+        fill: #007A7C; 
+      }
+      .text-since { 
+        font-family: 'Arial', sans-serif; 
+        font-size: 46px; 
+        font-weight: 900; 
+        letter-spacing: 5.5px; 
+      }
+      .text-tesca { 
+        font-family: 'Georgia', 'Times New Roman', serif; 
+        font-size: 165px; 
+        font-weight: 900; 
+      }
+      .text-subtitle { 
+        font-family: 'Arial', sans-serif; 
+        font-size: 33px; 
+        font-weight: bold; 
+      }
+    </style>
+  </defs>
+
+  <text x="138" y="88" class="text-red text-since">SINCE 2005</text>
+
+  <g transform="scale(1, 0.95)">
+    <text x="22" y="235" class="text-teal text-tesca" stroke="#007A7C" stroke-width="4" letter-spacing="-1">TESCA</text>
+  </g>
+
+  <text x="62" y="274" class="text-red text-subtitle" transform="scale(0.96, 1)">SPOKEN ENGLISH &amp; VISA CONSULTANCY</text>
+
+  <g transform="translate(10, 0)">
+    
+    <polygon points="590,20 615,45 580,60 558,35" fill="#FF7B00" />
+    <polygon points="555,40 575,63 540,73 520,50" fill="#FF7B00" />
+
+    <path d="M 640,75 
+             Q 670,105 700,125 
+             Q 715,135 720,160 
+             L 725,260 
+             L 735,260 
+             L 740,160 
+             Q 745,135 765,115 
+             Q 780,100 815,85 
+             L 790,80 
+             Q 755,95 735,125 
+             L 730,135 
+             Q 715,115 650,65 Z" 
+          fill="#FF7B00" />
+
+    <circle cx="725" cy="62" r="28" fill="#007A7C" />
+
+    <path d="M 690,75 A 38,38 0 0,1 760,75" fill="none" stroke="#FF7B00" stroke-width="4" stroke-linecap="round" />
+    
+    <rect x="686" y="66" width="8" height="16" rx="4" fill="#FF7B00" />
+    <rect x="756" y="66" width="8" height="16" rx="4" fill="#FF7B00" />
+
+    <path d="M 768,48 A 16,16 0 0,1 768,76" fill="none" stroke="#007A7C" stroke-width="2.5" stroke-linecap="round" />
+    <path d="M 776,40 A 26,26 0 0,1 776,84" fill="none" stroke="#007A7C" stroke-width="2.5" stroke-linecap="round" />
+    <path d="M 784,32 A 36,36 0 0,1 784,92" fill="none" stroke="#007A7C" stroke-width="2.5" stroke-linecap="round" />
+    
+  </g>
+
+  <text x="812" y="52" font-family="Arial, sans-serif" font-size="16" fill="#333333">®</text>
+
+</svg>

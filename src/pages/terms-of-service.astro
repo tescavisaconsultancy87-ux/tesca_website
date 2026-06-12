@@ -1,0 +1,77 @@
+---
+import Layout from "../layouts/Layout.astro";
+import AICounsellor from "../components/AICounsellor";
+import { Scale, CheckCircle2, AlertTriangle, ArrowLeft } from "lucide-react";
+---
+
+<Layout 
+  title="Terms of Service | TESCA Premium Visa Consultants"
+  description="Review our Terms of Service including consultancy agreements, client responsibilities, timelines, payments, and refund structures."
+>
+  <section class="max-w-7xl mx-auto px-6 md:px-8 pt-8 pb-12 text-left">
+    
+    <!-- Go Back Link -->
+    <a href="/" class="inline-flex items-center gap-1.5 text-sm font-semibold text-accent-blue hover:underline mb-8 font-sans">
+      <ArrowLeft class="w-4 h-4" /> Back to Home
+    </a>
+
+    <!-- Premium Header Banner -->
+    <div class="glass-card rounded-[2rem] overflow-hidden bg-slate-50/80 border border-slate-200/60 shadow-lg p-8 md:p-12 relative mb-12">
+      <div class="aurora-bg w-[300px] h-[300px] bg-accent-blue/5 -top-12 -left-12 rounded-full blur-[80px]"></div>
+      
+      <div class="max-w-3xl space-y-6 relative z-10">
+        <span class="inline-block text-xs font-semibold tracking-wider text-slate-800 bg-accent-blue/10 px-4 py-1.5 rounded-full border border-accent-blue/20 font-sans uppercase">
+          Client Agreement
+        </span>
+        <h1 class="text-[36px] sm:text-[48px] lg:text-[56px] font-extrabold font-display text-support-white tracking-tight leading-none">
+          Terms of Service
+        </h1>
+        <p class="text-base md:text-[18px] text-support-gray font-sans font-normal leading-relaxed">
+          Please review the terms and agreements governing your application processing, consulting timelines, and service limits with TESCA.
+        </p>
+      </div>
+    </div>
+
+    <!-- Terms and Agreements Breakdown -->
+    <div class="space-y-10 max-w-4xl font-sans text-slate-700 leading-relaxed text-sm md:text-base">
+      
+      <div class="space-y-3">
+        <h2 class="text-xl md:text-2xl font-bold font-display text-slate-800 flex items-center gap-2">
+          <Scale class="w-5 h-5 text-accent-blue" /> 1. Scope of Consultation Services
+        </h2>
+        <p>
+          TESCA provides elite educational profiling, document auditing, and visa compliance evaluation services. Our calculations and dynamic scores represent predictive models based on recent statistics. They do not constitute a direct, absolute guarantee of university admission or visa issuance. Final decisions rest solely with university registrars and immigration consulates.
+        </p>
+      </div>
+
+      <div class="space-y-3">
+        <h2 class="text-xl md:text-2xl font-bold font-display text-slate-800 flex items-center gap-2">
+          <CheckCircle2 class="w-5 h-5 text-accent-blue" /> 2. Client Accuracy Obligations
+        </h2>
+        <p>
+          Clients are fully responsible for the accuracy of transcripts, finance records, and personal statements submitted to our portal. Any filing refusal resulting from falsified documentation or unreported visa rejections in other countries invalidates our Visa Success SLA and refund terms.
+        </p>
+      </div>
+
+      <div class="space-y-3">
+        <h2 class="text-xl md:text-2xl font-bold font-display text-slate-800 flex items-center gap-2">
+          <AlertTriangle class="w-5 h-5 text-accent-blue" /> 3. Payment Schedules & Retainers
+        </h2>
+        <p>
+          Advisory fees are structured into standard retainers due at specific application phases. Refund frameworks under the Visa Success SLA are processed within 14 business days from receipt of a formal embassy rejection letter, provided the refusal is based purely on document structural reasons cleared in our baseline audit.
+        </p>
+      </div>
+
+      <div class="space-y-3 border-t border-slate-100 pt-8">
+        <h2 class="text-xl md:text-2xl font-bold font-display text-slate-800">4. Dispute Resolutions</h2>
+        <p>
+          Any disputes arising from counseling contracts or system assessments are governed by regional corporate laws. We encourage contacting our client advisory desk at <strong>support@tesca.com</strong> first to structure an amicable resolution before pursuing arbitration.
+        </p>
+      </div>
+
+    </div>
+
+  </section>
+
+  <AICounsellor client:load />
+</Layout>

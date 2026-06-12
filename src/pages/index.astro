@@ -1,0 +1,470 @@
+---
+import Layout from "../layouts/Layout.astro";
+import HeroVisuals from "../components/HeroVisuals";
+import CountrySelector from "../components/CountrySelector";
+import SuccessStories from "../components/SuccessStories";
+import FintechCalculators from "../components/FintechCalculators";
+import AICounsellor from "../components/AICounsellor";
+import { 
+  Landmark, Calendar, ShieldCheck, Compass, Briefcase, GraduationCap, 
+  CheckCircle, ArrowUpRight, ArrowRight, ChevronDown 
+} from "lucide-react";
+---
+
+<Layout 
+  title="TESCA Visa Consultancy | Study Abroad & Student Visa Expert"
+  description="Premium university admissions counseling, IELTS/PTE coaching, financial loan assistance, and visa file audits by TESCA Visa Consultancy since 2005. 99% visa success rate."
+>
+  
+  {/* ==================== HERO SECTION ==================== */}
+  <section class="relative min-h-[60vh] lg:min-h-[70vh] flex flex-col items-center justify-center px-6 md:px-8 py-4 md:py-8 bg-white overflow-hidden text-left font-sans">
+    
+    <!-- Subtle Background Auroras -->
+    <div class="aurora-bg w-[500px] h-[500px] bg-accent-cyan/5 -top-48 left-1/4 animate-aurora"></div>
+
+    <div class="max-w-7xl mx-auto w-full relative z-10">
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-center">
+        
+        {/* Left Side: Brand Text & Actions (6 cols) */}
+        <div class="lg:col-span-6 space-y-6">
+          
+          <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-slate-50 border border-slate-200 shadow-sm animate-float">
+            <span class="w-1.5 h-1.5 rounded-full bg-accent-blue"></span>
+            <span class="text-[14px] font-semibold text-support-gray uppercase tracking-wider font-sans">Educate. Innovate. Lead.</span>
+          </div>
+
+          <div class="space-y-3">
+            <h1 class="text-[36px] sm:text-[44px] lg:text-[50px] xl:text-[56px] font-extrabold font-display leading-[1.15] tracking-tight text-support-white">
+              Turn Your Ambition <br />
+              into <span class="font-serif italic font-medium text-accent-blue text-glow-accent">Achievement</span>
+            </h1>
+            <p class="text-[16px] lg:text-[17px] text-support-gray leading-relaxed max-w-lg font-sans font-normal">
+              Empowering students with world-class education pathways, automated visa file audits, and global career opportunities.
+            </p>
+          </div>
+
+          {/* Buttons: Plus Jakarta Sans 600, Text 16px, slight letter spacing */}
+          <div class="flex items-center gap-4 font-sans font-semibold text-[16px] tracking-wide">
+            <button onclick="window.openCounsellorForm?.()" class="px-7 py-3 rounded-full text-white bg-accent-blue shadow-md hover:scale-[1.02] transition-transform duration-300 cursor-pointer">
+              Apply Now →
+            </button>
+            <a href="/gallery" class="text-support-slate hover:text-accent-blue flex items-center gap-1 transition-colors">
+              Virtual Institute Tour
+            </a>
+          </div>
+
+          {/* Metrics block below CTA: General Sans 800 for stats */}
+          <div class="flex items-center gap-8 pt-4 border-t border-slate-100 max-w-sm">
+            <div class="text-left">
+              <span class="block text-[40px] lg:text-[54px] font-extrabold font-display text-slate-800 leading-none">97%</span>
+              <span class="text-[14px] text-support-gray font-sans uppercase tracking-wider">Our Success Rate</span>
+            </div>
+            <div class="flex items-center gap-3">
+              {/* Overlapping student avatar indicators */}
+              <div class="flex -space-x-2.5 overflow-hidden">
+                <div class="inline-flex h-8 w-8 items-center justify-center rounded-full ring-2 ring-white bg-blue-100 text-[16px]">👩‍🎓</div>
+                <div class="inline-flex h-8 w-8 items-center justify-center rounded-full ring-2 ring-white bg-emerald-100 text-[16px]">👨‍🎓</div>
+                <div class="inline-flex h-8 w-8 items-center justify-center rounded-full ring-2 ring-white bg-indigo-100 text-[16px]">👩‍💻</div>
+              </div>
+              <div class="text-left font-sans flex flex-col justify-center">
+                <span class="block text-[24px] font-extrabold font-display text-slate-800 leading-none">30K+</span>
+                <span class="text-[12px] text-support-gray/60 uppercase tracking-wider font-semibold">Total Students</span>
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+        {/* Right Side: Hero Visuals containing Student, World Map & 3D Plane */}
+        <div class="lg:col-span-6 flex items-center justify-center">
+          <HeroVisuals client:load />
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  {/* ==================== SECTION 2: ABOUT / SPLIT GRID (GREEN BACKGROUND) ==================== */}
+  <section class="py-24 bg-accent-blue text-white relative overflow-hidden text-left font-sans">
+    
+    <div class="max-w-7xl mx-auto px-6 md:px-8 relative z-10">
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-12 items-stretch">
+        
+        {/* Left Side: Card & Stats */}
+        <div class="lg:col-span-5 flex flex-col justify-between space-y-8">
+          <div class="rounded-2xl border border-accent-indigo overflow-hidden bg-accent-indigo shadow-md">
+            <img 
+              src="/images/graduating_students.png" 
+              alt="Classmates celebrating in gowns" 
+              class="w-full h-[320px] object-cover" 
+            />
+          </div>
+          
+          {/* Major Statistics: General Sans 800 */}
+          <div class="grid grid-cols-2 gap-6 pt-6 border-t border-accent-indigo font-display">
+            <div class="space-y-1">
+              <span class="block text-[48px] lg:text-[72px] font-extrabold text-accent-cyan leading-none">30%</span>
+              <p class="text-[14px] text-white/70 font-sans font-normal leading-normal">
+                Daily Growing Students are still grinding
+              </p>
+            </div>
+            <div class="space-y-1">
+              <span class="block text-[48px] lg:text-[72px] font-extrabold text-accent-cyan leading-none">95%</span>
+              <p class="text-[14px] text-white/70 font-sans font-normal leading-normal">
+                They are in a job related to their field of study
+              </p>
+            </div>
+          </div>
+        </div>
+
+        {/* Right Side: Copy & Bottom Card (Section Headlines: 48-64px, General Sans) */}
+        <div class="lg:col-span-7 flex flex-col justify-between space-y-8 lg:pl-6">
+          <div class="space-y-4">
+            <span class="text-[14px] font-medium font-sans tracking-widest text-accent-cyan bg-white/10 px-3 py-1 rounded-full border border-white/5 inline-block">
+              SINCE 2005
+            </span>
+            <h2 class="text-[28px] sm:text-[34px] lg:text-[38px] xl:text-[44px] font-extrabold font-display leading-tight tracking-tight">
+              The right opportunity can turn dreams into limitless potential.
+            </h2>
+            <p class="text-[16px] lg:text-[18px] text-white/70 font-sans font-normal leading-relaxed max-w-xl">
+              Founded in 2011, TESCA Visa Consultancy is a community-driven institution renowned for its unique contributions to international student admissions and visa filings.
+            </p>
+          </div>
+
+          <div class="rounded-2xl border border-accent-indigo overflow-hidden bg-accent-indigo shadow-md max-w-lg">
+            <img 
+              src="/images/caps_in_air.png" 
+              alt="Graduates throwing caps in air" 
+              class="w-full h-[320px] object-cover" 
+            />
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  {/* ==================== SECTION 3: WHY CHOOSE US (LIGHT BACKGROUND) ==================== */}
+  <section class="py-24 bg-slate-50/40 relative text-center font-sans">
+    <div class="max-w-7xl mx-auto px-6 md:px-8">
+      
+      {/* Section Heading: General Sans 700/800, 48-64px */}
+      <div class="max-w-3xl mx-auto mb-16 space-y-4">
+        <span class="text-[14px] font-medium font-sans tracking-widest text-slate-800 uppercase bg-accent-blue/10 px-3 py-1 rounded-full border border-accent-blue/20">
+          Why Choose Us
+        </span>
+        <h2 class="text-[28px] sm:text-[34px] lg:text-[38px] xl:text-[44px] font-extrabold font-display text-support-white leading-tight">
+          One of the largest, most trusted <br /> visa consultancies in the India
+        </h2>
+        <p class="text-[16px] lg:text-[18px] text-support-gray max-w-xl mx-auto leading-relaxed font-sans font-normal">
+          Home to students from every corner of the globe, fostering diversity, inclusion, and world-class academic excellence.
+        </p>
+      </div>
+
+      {/* 3 Cards Grid: Card Heading 24-32px General Sans 700 */}
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+        {[
+          {
+            title: "Inspiring Student Life",
+            desc: "We have focused on matching students to best-fit global universities and vibrant campus cultures.",
+            icon: Compass
+          },
+          {
+            title: "Education Affordability",
+            desc: "Helping with blocked accounts, pre-approved loan letters, and matching with tuition waiver packages.",
+            icon: Landmark
+          },
+          {
+            title: "Core-level Academics",
+            desc: "Rigorous checklist auditing that guarantees a 98.4% success rate, backed by our SLA agreements.",
+            icon: ShieldCheck
+          }
+        ].map((item, idx) => {
+          const colors = [
+            "bg-gradient-to-br from-blue-50 to-indigo-50/50 border-blue-100",
+            "bg-gradient-to-br from-emerald-50 to-teal-50/50 border-emerald-100",
+            "bg-gradient-to-br from-amber-50 to-orange-50/50 border-amber-100"
+          ];
+          return (
+          <div key={idx} class={`rounded-3xl p-8 space-y-6 text-left border shadow-sm flex flex-col justify-between items-start hover:-translate-y-1 transition-all duration-300 ${colors[idx]}`}>
+            <div class="space-y-4">
+              <div class="p-3.5 rounded-xl bg-white/60 text-accent-blue inline-block">
+                <item.icon class="w-6 h-6" />
+              </div>
+              <h3 class="text-[20px] lg:text-[24px] font-bold text-slate-800 font-display leading-snug">{item.title}</h3>
+              <p class="text-[16px] text-slate-600 leading-relaxed font-sans font-normal">{item.desc}</p>
+            </div>
+            
+            {/* Button: Plus Jakarta Sans 600 */}
+            <a href="/countries" class="text-[16px] font-semibold font-sans tracking-wide text-accent-blue hover:underline inline-flex items-center gap-1 pt-4 group">
+              Read More <ArrowUpRight class="w-3.5 h-3.5 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
+            </a>
+          </div>
+          );
+        })}
+      </div>
+
+    </div>
+  </section>
+
+  {/* ==================== SECTION 4: TESTIMONIALS (VOICES FROM COMMUNITY) ==================== */}
+  <section class="py-24 bg-white relative text-left font-sans">
+    <div class="max-w-7xl mx-auto px-6 md:px-8">
+      
+      {/* Video Banner: Section Heading General Sans */}
+      <div class="relative rounded-3xl overflow-hidden shadow-lg border border-slate-200 mb-16 group">
+        <img 
+          src="/images/consultation.png" 
+          alt="voices from community advisory panel" 
+          class="w-full h-[300px] md:h-[380px] object-cover" 
+        />
+        <div class="absolute inset-0 bg-black/40 flex flex-col justify-end p-8 text-white">
+          <span class="text-[14px] font-medium font-sans tracking-widest text-accent-cyan uppercase">Testimonials</span>
+          <h3 class="text-[28px] sm:text-[34px] lg:text-[38px] xl:text-[44px] font-extrabold font-display mt-1">
+            Voices From Our Global Community
+          </h3>
+        </div>
+      </div>
+
+      {/* Grid Testimonial Quotes: Student name General Sans 700 */}
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-8 items-stretch mb-10">
+        {[
+          {
+            title: "A Truly Global Learning Experience",
+            quote: "Studying here allowed me to connect with students from different cultures while gaining a strong academic foundation. The global exposure has truly shaped my career.",
+            user: "Leslie Alexander"
+          },
+          {
+            title: "Education That Builds Confidence",
+            quote: "The faculty support and hands-on learning approach helped me grow both academically and personally. I graduated with confidence and real-world skills.",
+            user: "Leslie Alexander"
+          }
+        ].map((t, idx) => {
+          const tints = [
+            "bg-gradient-to-br from-purple-50 to-pink-50/60 border-purple-100",
+            "bg-gradient-to-br from-cyan-50 to-blue-50/60 border-cyan-100"
+          ];
+          return (
+          <div key={idx} class={`p-6 rounded-2xl border ${tints[idx]} flex flex-col justify-between space-y-4 shadow-sm`}>
+            <div class="space-y-3">
+              <span class="text-2xl text-accent-blue font-bold font-display">“</span>
+              <h4 class="text-[20px] lg:text-[24px] font-bold text-slate-800 font-display leading-tight">{t.title}</h4>
+              <p class="text-[16px] text-slate-600 leading-relaxed font-sans font-normal">"{t.quote}"</p>
+            </div>
+            
+            <div class="flex items-center gap-2 border-t border-slate-200/80 pt-4 mt-2 font-sans">
+              <div class="w-8 h-8 rounded-full bg-slate-200 flex items-center justify-center text-xs font-bold text-slate-700">LA</div>
+              <div>
+                <span class="block text-sm font-bold font-display text-slate-800">{t.user}</span>
+                <span class="block text-[10px] text-support-gray/50 font-sans">⭐⭐⭐⭐⭐</span>
+              </div>
+            </div>
+          </div>
+          );
+        })}
+      </div>
+
+      {/* Smaller cards: Card headings General Sans 700 */}
+      <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
+        {[
+          { title: "A Class That Feels Like Home", quote: "I feel confident knowing my child is learning in a safe and quality-driven institution.", author: "Jacob Jones" },
+          { title: "Preparing Students for Real Careers", quote: "The learning environment here is inspiring, diverse, and career-focused.", author: "Jacob Jones" },
+          { title: "Support Beyond the Classroom", quote: "A truly global university that prepares you for real-world challenges.", author: "Jacob Jones" },
+          { title: "A Future-Focused Institution", quote: "I feel confident knowing my child is learning in a safe and quality-driven environment.", author: "Ralph Edwards" }
+        ].map((item, idx) => {
+          const tints = [
+            "bg-gradient-to-br from-blue-50 to-sky-50/60 border-blue-100",
+            "bg-gradient-to-br from-emerald-50 to-green-50/60 border-emerald-100",
+            "bg-gradient-to-br from-amber-50 to-yellow-50/60 border-amber-100",
+            "bg-gradient-to-br from-indigo-50 to-violet-50/60 border-indigo-100"
+          ];
+          return (
+          <div key={idx} class={`p-4 rounded-xl border ${tints[idx]} space-y-2 shadow-xs text-left`}>
+            <h4 class="text-[16px] lg:text-[18px] font-bold text-slate-800 font-display truncate leading-snug">{item.title}</h4>
+            <p class="text-[14px] text-slate-600 font-sans font-normal line-clamp-3 leading-normal">"{item.quote}"</p>
+            <span class="block text-[14px] font-bold text-slate-800 mt-2 font-display">— {item.author}</span>
+          </div>
+          );
+        })}
+      </div>
+
+    </div>
+  </section>
+
+  {/* ==================== SECTION 5: BULLETINS / ARTICLES (GREEN BACKGROUND) ==================== */}
+  <section class="py-24 bg-accent-blue text-white relative text-left font-sans">
+    <div class="max-w-7xl mx-auto px-6 md:px-8">
+      
+      {/* Blog Title: General Sans 700, Headings 48-64px */}
+      <div class="flex flex-col sm:flex-row sm:items-end justify-between gap-6 mb-12">
+        <div class="space-y-3">
+          <span class="text-[14px] font-medium font-sans tracking-widest text-accent-cyan bg-white/10 px-3 py-1 rounded-full border border-white/5 inline-block">
+            Blogs & Insights
+          </span>
+          <h2 class="text-[28px] sm:text-[34px] lg:text-[38px] xl:text-[44px] font-extrabold font-display leading-tight">
+            Latest Study Abroad & Visa Updates
+          </h2>
+        </div>
+        <a href="/services" class="text-[16px] font-semibold font-sans tracking-wide px-4 py-2 border border-white/20 rounded-full hover:bg-white/10 transition-colors">
+          View All Updates →
+        </a>
+      </div>
+
+      {/* Row list of bulletins: Blog Title: General Sans 700 */}
+      <div class="border-t border-white/10 font-sans">
+        {[
+          {
+            date: "Jan 12, 2026",
+            tag: "Visa Update",
+            tagBg: "bg-amber-400/20 text-amber-300 border-amber-400/30",
+            title: "UK Student Visa Updates 2026: Working Hour Changes & Graduate Route Eligibility",
+            link: "/services#visa"
+          },
+          {
+            date: "Jan 08, 2026",
+            tag: "Admissions",
+            tagBg: "bg-emerald-400/20 text-emerald-300 border-emerald-400/30",
+            title: "Canada's Cap on International Permits: Key Steps for Spring 2026 Applicants",
+            link: "/services#admission"
+          },
+          {
+            date: "Jan 05, 2026",
+            tag: "SOP Guide",
+            tagBg: "bg-purple-400/20 text-purple-300 border-purple-400/30",
+            title: "Mastering the SOP: 5 Elements Ivy League Admission Committees Look For",
+            link: "/services#sop"
+          },
+          {
+            date: "Jan 02, 2026",
+            tag: "Financials",
+            tagBg: "bg-cyan-400/20 text-cyan-300 border-cyan-400/30",
+            title: "Australia Subclass 500 Visa: Approved Financial Proofs & Blocked Funds Guidelines",
+            link: "/calculators"
+          },
+          {
+            date: "Dec 28, 2025",
+            tag: "German Visa",
+            tagBg: "bg-rose-400/20 text-rose-300 border-rose-400/30",
+            title: "German Blocked Account (Sperrkonto) Required Amounts for Winter 2026 Intake",
+            link: "/services#testprep"
+          }
+        ].map((item, idx) => (
+          <div class="py-5 border-b border-white/10 flex flex-col sm:flex-row sm:items-center justify-between gap-4 hover:bg-white/5 transition-colors px-4 rounded-lg">
+            <div class="flex flex-col sm:flex-row sm:items-center gap-4 sm:gap-6">
+              <div class="flex items-center gap-4 shrink-0">
+                <span class="text-[14px] font-sans font-medium text-white/50">{item.date}</span>
+                <span class={`text-[11px] font-bold font-sans uppercase tracking-wider px-2 py-0.5 rounded border ${item.tagBg}`}>
+                  {item.tag}
+                </span>
+              </div>
+              <a href={item.link} class="text-[16px] lg:text-[18px] font-bold font-display hover:text-accent-cyan transition-colors text-left no-underline text-white">
+                {item.title}
+              </a>
+            </div>
+            <a href={item.link} class="p-1.5 rounded-full bg-white/10 hover:bg-white/20 text-white shrink-0 self-end sm:self-auto">
+              <ArrowRight class="w-4 h-4" />
+            </a>
+          </div>
+        ))}
+      </div>
+
+    </div>
+  </section>
+
+  {/* ==================== SECTION 6: FAQS (LIGHT BACKGROUND) ==================== */}
+  <section class="py-24 bg-slate-50/40 relative text-left font-sans">
+    <div class="max-w-7xl mx-auto px-6 md:px-8">
+      
+      <div class="text-center mb-16 space-y-3">
+        <span class="text-[14px] font-medium font-sans tracking-widest text-slate-800 bg-accent-blue/10 px-3 py-1 rounded-full border border-accent-blue/20 inline-block">
+          FAQ
+        </span>
+        <h2 class="text-[28px] sm:text-[34px] lg:text-[38px] xl:text-[44px] font-extrabold font-display text-support-white leading-tight">
+          Frequently Asked Questions?
+        </h2>
+      </div>
+
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-12 items-stretch">
+        
+        {/* Left Column: Campus architecture photo */}
+        <div class="lg:col-span-5 rounded-2xl border border-slate-200 overflow-hidden bg-white shadow-sm p-3">
+          <img 
+            src="/images/red_brick.png" 
+            alt="Classic red brick university hall" 
+            class="w-full h-full min-h-[300px] object-cover rounded-xl" 
+          />
+        </div>
+
+        {/* Right Column: Accordions list (FAQ answers: Plus Jakarta Sans 400) */}
+        <div class="lg:col-span-7 flex flex-col justify-center space-y-4 font-sans">
+          {[
+            { q: "What services does TESCA Visa Consultancy provide?", a: "We provide comprehensive end-to-end guidance including profile evaluation, university admissions assistance, SOP editing, student visa filing, financial proof audits, and pre-departure briefings." },
+            { q: "Which global study destinations do you specialize in?", a: "We assist students in securing admissions and visas for major global destinations including the USA, UK, Canada, Australia, New Zealand, Ireland, Germany, Dubai, and key European countries." },
+            { q: "How does TESCA help with the student visa application?", a: "Our certified consultants audit all financial and academic documents to ensure compliance with immigration policies, compile the visa files, and help schedule appointments for biometric registration." },
+            { q: "Can you help me identify and apply for scholarships?", a: "Yes! During your initial profile evaluation, our team matches your academic records with eligible institutional waivers, grants, and regional study abroad scholarships to offset costs." },
+            { q: "Is the initial consultation free?", a: "Absolutely. Your first profile evaluation and career counseling session are completely free. We then offer premium packages for IELTS coaching, SOP editing, and visa file auditing." }
+          ].map((faq, idx) => {
+            const tints = [
+              "bg-gradient-to-br from-blue-50 to-sky-50/60 border-blue-100",
+              "bg-gradient-to-br from-emerald-50 to-green-50/60 border-emerald-100",
+              "bg-gradient-to-br from-amber-50 to-yellow-50/60 border-amber-100",
+              "bg-gradient-to-br from-purple-50 to-pink-50/60 border-purple-100",
+              "bg-gradient-to-br from-indigo-50 to-violet-50/60 border-indigo-100"
+            ];
+            return (
+            <div key={idx} class={`p-4 rounded-xl border ${tints[idx]} space-y-2 shadow-xs`}>
+              <button 
+                class="w-full flex justify-between items-center text-[16px] font-bold text-slate-800 text-left outline-none font-display leading-snug"
+                onclick={`
+                  const ans = document.getElementById('faq-ans-${idx}');
+                  const isHidden = ans.classList.contains('hidden');
+                  
+                  document.querySelectorAll('[id^="faq-ans-"]').forEach(el => el.classList.add('hidden'));
+                  document.querySelectorAll('[id^="faq-chevron-"]').forEach(el => el.classList.remove('rotate-180'));
+                  
+                  if (isHidden) {
+                    ans.classList.remove('hidden');
+                    document.getElementById('faq-chevron-${idx}')?.classList.add('rotate-180');
+                  }
+                `}
+              >
+                <span>{faq.q}</span>
+                <ChevronDown id={`faq-chevron-${idx}`} class="w-4 h-4 text-slate-400 shrink-0 transition-transform duration-200" />
+              </button>
+              <p id={`faq-ans-${idx}`} class="text-[16px] text-slate-600 leading-relaxed hidden pt-1 font-sans font-normal">
+                {faq.a}
+              </p>
+            </div>
+            );
+          })}
+        </div>
+
+      </div>
+
+    </div>
+  </section>
+
+  {/* ==================== SECTION 7: CTA BANNER ==================== */}
+  <section id="consultation" class="py-12 bg-white relative font-sans">
+    <div class="max-w-6xl mx-auto px-6 md:px-8">
+      <div class="rounded-3xl border border-slate-200 bg-gradient-to-br from-slate-50 to-blue-50/50 p-8 md:p-12 text-center space-y-6 shadow-sm">
+        <h2 class="text-[26px] sm:text-[30px] lg:text-[36px] font-extrabold font-display text-slate-800 leading-tight">
+          Start Your Journey Toward a Brighter Future.
+        </h2>
+        <p class="text-[16px] lg:text-[18px] text-slate-600 max-w-lg mx-auto leading-relaxed font-sans font-normal">
+          Join a diverse, forward-thinking academic community committed to excellence, innovation, and global opportunity.
+        </p>
+        <button 
+          onclick="window.openCounsellorForm?.()"
+          class="px-7 py-3 rounded-full text-[16px] font-semibold font-sans tracking-wide text-white bg-accent-blue shadow-md hover:scale-[1.02] transition-transform duration-300 cursor-pointer"
+        >
+          Apply Now
+        </button>
+      </div>
+    </div>
+  </section>
+
+  <!-- Client floating chatbot -->
+  <AICounsellor client:load />
+
+</Layout>

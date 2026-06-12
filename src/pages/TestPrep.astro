@@ -1,0 +1,353 @@
+---
+import Layout from "../layouts/Layout.astro";
+import AICounsellor from "../components/AICounsellor";
+import IELTSBandCalculator from "../components/IELTSBandCalculator";
+import {
+  Calculator,
+  Download,
+  BookOpen,
+  Mic,
+  Globe,
+  Languages,
+} from "lucide-react";
+---
+
+<Layout
+  title="IELTS & PTE Coaching Academy | Study Abroad Prep | TESCA"
+  description="Master IELTS, PTE, German language courses, and Spoken English. Practice with overall band calculators, simulated mock test papers, and audio speaking modules."
+>
+  <section class="max-w-7xl mx-auto px-6 md:px-8 py-12">
+    <!-- Premium Header Banner Card -->
+    <div
+      class="glass-card rounded-[2rem] overflow-hidden bg-slate-50/80 border border-slate-200/60 shadow-lg grid grid-cols-1 md:grid-cols-12 gap-8 items-center p-8 md:p-12 relative mb-16"
+    >
+      {/* Subtle Background Auroras */}
+      <div
+        class="aurora-bg w-[300px] h-[300px] bg-accent-blue/5 -top-12 -left-12 rounded-full blur-[80px]"
+      >
+      </div>
+
+      {/* Left Column: Text Content */}
+      <div class="md:col-span-7 space-y-6 text-left relative z-10">
+        <span
+          class="inline-block text-xs font-semibold tracking-wider text-slate-800 bg-accent-blue/10 px-4 py-1.5 rounded-full border border-accent-blue/20 font-sans uppercase"
+        >
+          Interactive Test Prep
+        </span>
+        <h1
+          class="text-[36px] sm:text-[48px] lg:text-[56px] font-extrabold font-display text-support-white tracking-tight leading-none"
+        >
+          TESCA Test Prep Academy
+        </h1>
+        <p
+          class="text-base md:text-[18px] text-support-gray font-sans font-normal leading-relaxed max-w-xl"
+        >
+          Train using predictive scoring engines. Average student scores
+          increase from 6.0 to 7.5 within 24 study cycles.
+        </p>
+      </div>
+
+      {/* Right Column: Hero Image cutout */}
+      <div
+        class="md:col-span-5 relative flex justify-center md:justify-end self-stretch items-center"
+      >
+        <div
+          class="relative w-full max-w-[320px] md:max-w-[400px] flex items-center aspect-[4/3] rounded-2xl overflow-hidden shadow-md border border-accent-blue/15"
+        >
+          <img
+            src="/images/testprep_hero.png"
+            alt="Study abroad test preparation"
+            class="object-cover w-full h-full select-none"
+          />
+        </div>
+      </div>
+    </div>
+
+    {/* Test Cards Grid */}
+    <div
+      class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-16"
+      id="ielts"
+    >
+      {
+        [
+          {
+            name: "IELTS",
+            id: "ielts",
+            desc: "International English Language Testing System — Academic & General Training.",
+            color: "from-accent-blue to-accent-indigo",
+            bg: "bg-accent-blue/5",
+            text: "text-accent-blue",
+            icon: BookOpen,
+          },
+          {
+            name: "PTE",
+            id: "pte",
+            desc: "Pearson Test of English — Fast, computer-based, accepted globally.",
+            color: "from-blue-500 to-blue-600",
+            bg: "bg-blue-50",
+            text: "text-blue-600",
+            icon: Mic,
+          },
+          {
+            name: "German",
+            id: "german",
+            desc: "Goethe-Zertifikat & TestDaF preparation for study in Germany.",
+            color: "from-amber-500 to-amber-600",
+            bg: "bg-amber-50",
+            text: "text-amber-600",
+            icon: Languages,
+          },
+          {
+            name: "Spoken English",
+            id: "spoken-english",
+            desc: "Fluency & pronunciation coaching for interviews and daily communication.",
+            color: "from-purple-500 to-purple-600",
+            bg: "bg-purple-50",
+            text: "text-purple-600",
+            icon: Globe,
+          },
+          {
+            name: "French",
+            id: "french",
+            desc: "DELF/DALF preparation — Open doors to French-speaking institutions.",
+            color: "from-indigo-500 to-indigo-600",
+            bg: "bg-indigo-50",
+            text: "text-indigo-600",
+            icon: Languages,
+          },
+        ].map((test) => {
+          const Icon = test.icon;
+          return (
+            <a
+              href={`#${test.id}-engine`}
+              class={`rounded-3xl p-8 space-y-5 text-left border border-slate-200/80 shadow-sm flex flex-col justify-between items-start hover:-translate-y-1 transition-all duration-300 ${test.bg}`}
+            >
+              <div class="space-y-4">
+                <div
+                  class={`p-3.5 rounded-xl ${test.bg} ${test.text} inline-block`}
+                >
+                  <Icon class="w-6 h-6" />
+                </div>
+                <h3 class="text-[20px] lg:text-[24px] font-bold text-slate-800 font-display leading-snug">
+                  {test.name}
+                </h3>
+                <p class="text-[15px] text-slate-600 leading-relaxed font-sans font-normal">
+                  {test.desc}
+                </p>
+              </div>
+              <span
+                class={`text-[15px] font-semibold font-sans tracking-wide ${test.text} hover:underline inline-flex items-center gap-1 pt-2`}
+              >
+                Start Prep <span class="text-lg">→</span>
+              </span>
+            </a>
+          );
+        })
+      }
+    </div>
+
+    {/* IELTS Band Calculator Section */}
+    <div id="ielts-engine" class="scroll-mt-28">
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-stretch mb-16">
+        {/* Band Calculator Widget */}
+        <div
+          class="lg:col-span-7 rounded-3xl p-6 md:p-8 flex flex-col justify-between space-y-6 text-left bg-gradient-to-br from-[#F5FAFA] to-white border border-[#E6F2F3]"
+        >
+          <div class="flex items-center gap-2.5">
+            <div class="p-2 rounded-lg bg-accent-blue/10 text-accent-blue">
+              <Calculator class="w-5 h-5" />
+            </div>
+            <div>
+              <h3
+                class="text-xl lg:text-[24px] font-bold text-slate-800 font-display tracking-tight"
+              >
+                IELTS Band Calculator
+              </h3>
+              <p class="text-xs text-slate-500 font-sans font-normal">
+                Evaluate overall band score indices
+              </p>
+            </div>
+          </div>
+
+          <IELTSBandCalculator client:load />
+        </div>
+
+        {/* Connect with Counsellor */}
+        <div
+          class="lg:col-span-5 rounded-3xl p-6 md:p-8 flex flex-col justify-between space-y-6 text-left bg-white border border-slate-200 shadow-sm"
+        >
+          <div class="flex items-center gap-3">
+            <div class="p-3 rounded-xl bg-accent-blue/10 text-accent-indigo">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="24"
+                height="24"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                class="w-6 h-6"
+                ><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"
+                ></path><circle cx="12" cy="7" r="4"></circle></svg
+              >
+            </div>
+            <div>
+              <h3
+                class="text-xl lg:text-[24px] font-bold text-slate-800 font-display tracking-tight"
+              >
+                Connect with Counsellor
+              </h3>
+              <p class="text-xs text-slate-500 font-sans font-normal">
+                Get personalised test prep guidance
+              </p>
+            </div>
+          </div>
+
+          <p
+            class="text-sm text-slate-600 font-sans font-normal leading-relaxed"
+          >
+            Talk to our expert counsellors to build a customised test
+            preparation plan tailored to your target score and university
+            requirements.
+          </p>
+
+          <div class="space-y-3 pt-2">
+            <div
+              class="flex items-center gap-3 p-3 rounded-xl bg-slate-50 border border-slate-100"
+            >
+              <div class="p-2 rounded-lg bg-accent-blue/10 text-accent-indigo">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="24"
+                  height="24"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  class="w-4 h-4"
+                  ><path
+                    d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"
+                  ></path></svg
+                >
+              </div>
+              <div>
+                <span
+                  class="block text-sm font-semibold text-slate-800 font-display"
+                  >9824152731</span
+                >
+                <span class="text-xs text-slate-500 font-sans font-normal"
+                  >Call us for free counselling</span
+                >
+              </div>
+            </div>
+            <button
+              onclick="window.openCounsellorForm?.()"
+              class="flex items-center justify-center gap-2 w-full py-3 bg-accent-blue text-white font-semibold text-sm rounded-xl shadow-sm hover:scale-[1.01] transition-transform duration-200 cursor-pointer"
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="24"
+                height="24"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                class="w-4 h-4"
+                ><path d="M5 12h14"></path><path d="m12 5 7 7-7 7"></path></svg
+              >
+              Book a Free Consultation
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    {/* Practice Resources Portal */}
+    <div
+      class="rounded-3xl p-8 md:p-12 space-y-8 relative overflow-hidden text-left bg-gradient-to-br from-slate-50 to-slate-100 border border-slate-200"
+    >
+      <div
+        class="flex flex-col md:flex-row items-start md:items-center justify-between gap-6 pb-6 border-b border-slate-200"
+      >
+        <div class="space-y-1">
+          <span
+            class="text-sm font-semibold text-accent-blue uppercase tracking-wider font-sans"
+            >Syllabus & Downloads</span
+          >
+          <h3
+            class="text-[24px] lg:text-[28px] font-bold font-display text-slate-800 tracking-tight"
+          >
+            Practice Resources Portal
+          </h3>
+        </div>
+        <p
+          class="text-sm text-slate-500 font-sans font-normal max-w-sm leading-relaxed"
+        >
+          High-end prep books, authentic mock materials, and sample audio
+          archives updated for 2026 guidelines.
+        </p>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+        {
+          [
+            {
+              title: "IELTS Diagnostic Prep Packet 2026",
+              desc: "Full academic diagnostic module including Listening scripts, Reading papers, and sample templates.",
+              size: "12.4 MB PDF",
+              downloads: "4.8K Downloads",
+            },
+            {
+              title: "AI Grade Task 2 Essay Templates",
+              desc: "High-scoring structures for opinion essays, comparative writing, and descriptive academic graphs.",
+              size: "8.1 MB PDF",
+              downloads: "3.2K Downloads",
+            },
+            {
+              title: "Speaking Module Audio Clips",
+              desc: "Authentic examiner audio questions with transcripts for Band 8.0 model replies.",
+              size: "45.0 MB ZIP",
+              downloads: "2.1K Downloads",
+            },
+          ].map((doc) => (
+            <div class="p-6 rounded-2xl border border-slate-200 bg-white flex flex-col justify-between space-y-4 hover:border-accent-blue/30 transition-all duration-300 shadow-sm">
+              <div class="space-y-2">
+                <h4 class="text-base lg:text-lg font-bold text-slate-800 font-display leading-snug">
+                  {doc.title}
+                </h4>
+                <p class="text-sm text-slate-600 leading-relaxed font-sans font-normal">
+                  {doc.desc}
+                </p>
+              </div>
+              <div class="flex items-center justify-between pt-4 border-t border-slate-100">
+                <div>
+                  <span class="block text-xs text-slate-500 font-sans font-medium">
+                    {doc.size}
+                  </span>
+                  <span class="block text-xs text-accent-blue font-sans font-semibold">
+                    {doc.downloads}
+                  </span>
+                </div>
+                <button
+                  onclick={`alert('Starting download for ${doc.title}...');`}
+                  class="p-2.5 rounded-lg bg-accent-blue/10 hover:bg-accent-blue hover:text-white text-accent-blue transition-colors cursor-pointer"
+                  aria-label={`Download ${doc.title}`}
+                >
+                  <Download class="w-4 h-4" />
+                </button>
+              </div>
+            </div>
+          ))
+        }
+      </div>
+    </div>
+  </section>
+
+  <AICounsellor client:load />
+</Layout>

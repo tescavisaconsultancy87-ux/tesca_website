@@ -1,0 +1,176 @@
+@import url('https://api.fontshare.com/v2/css?f[]=general-sans@400,500,600,700,800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap');
+
+@import "tailwindcss";
+
+@theme {
+  --color-primary-dark: #FFFFFF;
+  --color-primary-navy: #F5FAFA;
+  --color-primary-blue: #E6F2F3;
+  
+  --color-accent-blue: #0A7880;
+  --color-accent-indigo: #075E64;
+  --color-accent-cyan: #F08A00;
+  
+  --color-highlight-violet: #F5FAFA;
+  --color-highlight-purple: #FFE5CC;
+  
+  --color-support-white: #1F2937;
+  --color-support-slate: #1E293B;
+  --color-support-gray: #4B5563;
+
+  --font-sans: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+  --font-display: 'General Sans', system-ui, -apple-system, sans-serif;
+}
+
+/* Base resets & styles in light red/white theme */
+html,
+body {
+  margin: 0;
+  width: 100%;
+  min-height: 100%;
+  background-color: #FFFFFF;
+  color: #1E293B;
+  font-family: var(--font-sans);
+  overflow-x: hidden;
+  scroll-behavior: auto;
+}
+
+/* Global Link Overrides to disable underlines */
+a, a:hover, a:focus, a:active {
+  text-decoration: none !important;
+}
+
+/* Custom Scrollbar for Light Theme */
+::-webkit-scrollbar {
+  width: 8px;
+}
+::-webkit-scrollbar-track {
+  background: #F5FAFA;
+}
+::-webkit-scrollbar-thumb {
+  background: #E6F2F3;
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #0A7880;
+}
+
+/* Global Custom Utilities using @utility */
+@utility glass {
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(10, 120, 128, 0.08);
+  box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.04);
+}
+
+@utility glass-card {
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border: 1px solid rgba(10, 120, 128, 0.06);
+  box-shadow: 0 20px 40px -15px rgba(10, 120, 128, 0.04), 0 0 1px 1px rgba(0, 0, 0, 0.01);
+}
+
+@utility glass-card-hover {
+  transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+  &:hover {
+    transform: translateY(-5px);
+    border-color: rgba(10, 120, 128, 0.2);
+    box-shadow: 0 30px 60px -20px rgba(10, 120, 128, 0.06), 0 0 30px 2px rgba(10, 120, 128, 0.04);
+  }
+}
+
+@utility text-gradient-accent {
+  background-clip: text;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-image: linear-gradient(135deg, #1F2937 30%, #0A7880 100%);
+}
+
+@utility text-gradient-highlight {
+  background-clip: text;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-image: linear-gradient(135deg, #F08A00 0%, #0A7880 50%, #075E64 100%);
+}
+
+@utility aurora-bg {
+  position: absolute;
+  filter: blur(120px);
+  opacity: 0.45;
+  pointer-events: none;
+  z-index: 0;
+  border-radius: 50%;
+}
+
+/* Custom Keyframe Animations */
+@keyframes float {
+  0%, 100% { transform: translateY(0px) rotate(0deg); }
+  50% { transform: translateY(-8px) rotate(0.5deg); }
+}
+
+@keyframes pulse-slow {
+  0%, 100% { opacity: 0.45; transform: scale(1); }
+  50% { opacity: 0.75; transform: scale(1.04); }
+}
+
+@keyframes scroll {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+
+@keyframes aurora-shift {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  33% { transform: translate(25px, -35px) scale(1.08); }
+  66% { transform: translate(-15px, 15px) scale(0.97); }
+}
+
+/* Animation Utilities */
+@utility animate-float {
+  animation: float 6s ease-in-out infinite;
+}
+
+@utility animate-pulse-slow {
+  animation: pulse-slow 8s ease-in-out infinite;
+}
+
+@utility animate-scroll {
+  animation: scroll 30s linear infinite;
+}
+
+@utility animate-aurora {
+  animation: aurora-shift 15s ease-in-out infinite alternate;
+}
+
+/* Accessibility Focus States */
+.focusable {
+  outline: none;
+}
+.focusable:focus-visible {
+  outline: none;
+  ring: 2px;
+  ring-color: var(--color-accent-blue);
+  ring-offset: 2px;
+  ring-offset-color: var(--color-primary-dark);
+}
+
+@keyframes dropdownFade {
+  from { opacity: 0; transform: translate(-50%, 12px); }
+  to { opacity: 1; transform: translate(-50%, 0); }
+}
+
+@utility animate-dropdown {
+  animation: dropdownFade 0.4s cubic-bezier(0.16, 1, 0.3, 1) 0.1s both;
+}
+
+/* Scrolled Navbar State — Teal glassmorphism */
+.scrolled-header {
+  background: rgba(10, 120, 128, 0.95) !important;
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1) !important;
+  box-shadow: 0 4px 20px -2px rgba(10, 120, 128, 0.15), 0 0 0 1px rgba(0,0,0,0.02);
+}
+

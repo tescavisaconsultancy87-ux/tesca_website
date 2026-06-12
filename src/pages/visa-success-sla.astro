@@ -1,0 +1,104 @@
+---
+import Layout from "../layouts/Layout.astro";
+import AICounsellor from "../components/AICounsellor";
+import { ShieldCheck, Clock, TrendingUp, Coins, Award, CheckCircle, ArrowLeft } from "lucide-react";
+---
+
+<Layout 
+  title="Visa Success SLA & Refund Guarantee | TESCA Visa Consultancy"
+  description="Read about TESCA's 99% visa success rate guarantee, 45-day document processing timelines, compliance checks, and financial refund policy framework."
+>
+  <section class="max-w-7xl mx-auto px-6 md:px-8 pt-8 pb-12 text-left">
+    
+    <!-- Go Back Link -->
+    <a href="/" class="inline-flex items-center gap-1.5 text-sm font-semibold text-accent-blue hover:underline mb-8 font-sans">
+      <ArrowLeft class="w-4 h-4" /> Back to Home
+    </a>
+
+    <!-- Premium Header Banner -->
+    <div class="glass-card rounded-[2rem] overflow-hidden bg-slate-50/80 border border-slate-200/60 shadow-lg p-8 md:p-12 relative mb-12">
+      <div class="aurora-bg w-[300px] h-[300px] bg-accent-blue/5 -top-12 -left-12 rounded-full blur-[80px]"></div>
+      
+      <div class="max-w-3xl space-y-6 relative z-10">
+        <span class="inline-block text-xs font-semibold tracking-wider text-slate-800 bg-accent-blue/10 px-4 py-1.5 rounded-full border border-accent-blue/20 font-sans uppercase">
+          Service Level Agreement
+        </span>
+        <h1 class="text-[36px] sm:text-[48px] lg:text-[56px] font-extrabold font-display text-support-white tracking-tight leading-none">
+          Visa Success SLA & Refund Guarantee
+        </h1>
+        <p class="text-base md:text-[18px] text-support-gray font-sans font-normal leading-relaxed">
+          TESCA operates with automated audit checks and certified compliance workflows, allowing us to back our advisory services with a premium success guarantee.
+        </p>
+      </div>
+    </div>
+
+    <!-- Core Metrics Grid -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-8 mb-16">
+      <div class="p-8 rounded-3xl bg-gradient-to-br from-blue-50 to-indigo-50/70 border border-blue-100 space-y-4 shadow-sm">
+        <div class="p-3 rounded-2xl bg-white text-accent-blue inline-block shadow-sm">
+          <ShieldCheck class="w-6 h-6" />
+        </div>
+        <h3 class="text-xl font-bold text-slate-800 font-display">99% Success SLA</h3>
+        <p class="text-sm text-slate-600 font-sans leading-relaxed">
+          Our automated verification scripts cross-check local embassy rules to eliminate administrative refilings and errors.
+        </p>
+      </div>
+
+      <div class="p-8 rounded-3xl bg-gradient-to-br from-emerald-50 to-teal-50/70 border border-emerald-100 space-y-4 shadow-sm">
+        <div class="p-3 rounded-2xl bg-white text-emerald-600 inline-block shadow-sm">
+          <Clock class="w-6 h-6" />
+        </div>
+        <h3 class="text-xl font-bold text-slate-800 font-display">45-Day Processing</h3>
+        <p class="text-sm text-slate-600 font-sans leading-relaxed">
+          All documents are fully audited, cleared, and submitted to embassies within our strict 45-day cycle guarantee.
+        </p>
+      </div>
+
+      <div class="p-8 rounded-3xl bg-gradient-to-br from-amber-50 to-orange-50/70 border border-amber-100 space-y-4 shadow-sm">
+        <div class="p-3 rounded-2xl bg-white text-amber-600 inline-block shadow-sm">
+          <Coins class="w-6 h-6" />
+        </div>
+        <h3 class="text-xl font-bold text-slate-800 font-display">Refund Framework</h3>
+        <p class="text-sm text-slate-600 font-sans leading-relaxed">
+          In the rare event of a visa refusal based on document structural failure, we guarantee a structured partial refund.
+        </p>
+      </div>
+    </div>
+
+    <!-- Detailed Policy Sections -->
+    <div class="space-y-12 max-w-4xl">
+      <div class="space-y-4">
+        <h2 class="text-2xl lg:text-3xl font-bold text-slate-800 font-display tracking-tight flex items-center gap-2">
+          <Award class="w-6 h-6 text-accent-blue" /> 1. Eligibility Criteria for Success Guarantee
+        </h2>
+        <p class="text-sm md:text-base text-slate-600 font-sans leading-relaxed">
+          To qualify for the TESCA Visa Success SLA, applicants must complete our baseline verification audit. This includes submitting certified bank statements proving liquid funding thresholds, meeting regional language standards (IELTS Band 6.0+ or equivalent), and presenting valid, uncompromised academic credentials.
+        </p>
+      </div>
+
+      <div class="space-y-4">
+        <h2 class="text-2xl lg:text-3xl font-bold text-slate-800 font-display tracking-tight flex items-center gap-2">
+          <CheckCircle class="w-6 h-6 text-accent-blue" /> 2. Refund Guidelines & Structural Integrity
+        </h2>
+        <p class="text-sm md:text-base text-slate-600 font-sans leading-relaxed font-normal">
+          If an embassy refuses a visa due to formatting, documentation, or compliance failures in the filing compiled by TESCA, the candidate will be eligible for a refund of up to 50% of the advisory service fee. 
+        </p>
+        <p class="text-sm text-slate-500 font-sans leading-relaxed italic bg-slate-50 border border-slate-200/50 p-4 rounded-2xl">
+          Note: Refusals resulting from biometric failures, medical issues, criminal history, or failure to attend scheduled interviews are outside the scope of this SLA.
+        </p>
+      </div>
+
+      <div class="space-y-4">
+        <h2 class="text-2xl lg:text-3xl font-bold text-slate-800 font-display tracking-tight flex items-center gap-2">
+          <TrendingUp class="w-6 h-6 text-accent-blue" /> 3. Appeal & Re-filing Policy
+        </h2>
+        <p class="text-sm md:text-base text-slate-600 font-sans leading-relaxed">
+          In case of a refusal, our senior compliance team conducts a diagnostic audit within 7 business days. If we determine that a refiling has a high success rating, TESCA will bear all refiling coordination costs, providing a free second attempt.
+        </p>
+      </div>
+    </div>
+
+  </section>
+
+  <AICounsellor client:load />
+</Layout>
