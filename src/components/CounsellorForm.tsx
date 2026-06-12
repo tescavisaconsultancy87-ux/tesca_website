@@ -98,9 +98,33 @@ export default function CounsellorForm() {
       });
 
       const data = await response.json();
-
       if (!response.ok || !data.success) {
         throw new Error(data.message || `HTTP error! status: ${response.status}`);
+      }
+
+      // Submit to Google Sheets (if configured)
+      const googleSheetUrl = import.meta.env.PUBLIC_GOOGLE_SHEET_URL;
+      if (googleSheetUrl) {
+        try {
+          fetch(googleSheetUrl, {
+            method: "POST",
+            mode: "no-cors",
+            headers: {
+              "Content-Type": "text/plain",
+            },
+            body: JSON.stringify({
+              name: `${firstName} ${lastName}`,
+              email: email,
+              phone: phone,
+              counselling_mode: mode,
+              destination: destination || "Not specified",
+              message: `New enquiry from ${firstName} ${lastName}. Phone: ${phone}. Preferred Mode: ${mode}. Destination: ${destination || "Not specified"}.`,
+              source: "Main Enquiry Form",
+            }),
+          }).catch(err => console.error("Google Sheets post failed:", err));
+        } catch (sheetErr) {
+          console.error("Failed to post to Google Sheets:", sheetErr);
+        }
       }
 
       setStatus("success");
