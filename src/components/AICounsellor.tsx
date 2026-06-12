@@ -1,6 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
 import { MessageSquare, X, Send, Mic, Loader2 } from "lucide-react";
-import emailjs from "@emailjs/browser";
 const QA_DATABASE = [
   {
     question: "Which countries does TESCA help with?",
@@ -173,33 +172,35 @@ function FallbackForm({ originalQuery }: {
       return;
     }
     setStatus("sending");
-    try {
-      const sid = import.meta.env.PUBLIC_EMAILJS_SERVICE_ID;
-      const tid = import.meta.env.PUBLIC_EMAILJS_TEMPLATE_ID;
-      const pk = import.meta.env.PUBLIC_EMAILJS_PUBLIC_KEY;
 
-      if (!sid || !tid || !pk) {
-        throw new Error("EmailJS configuration is missing");
+    // Split name into first and last name for backend API
+    const nameParts = name.trim().split(/\s+/);
+    const firstName = nameParts[0] || "";
+    const lastName = nameParts.slice(1).join(" ") || "(AI Fallback)";
+
+    try {
+      const response = await fetch("/api/submit-enquiry", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          firstName,
+          lastName,
+          email,
+          phone,
+          mode,
+          destination: destination || "Not specified",
+          message: `[AI Assistant Fallback] The AI Chat assistant experienced connection errors or was down. The user tried to send this query: "${originalQuery}". Please contact the student immediately.`,
+          source: "AI Chat Fallback Form",
+        }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.error || `HTTP error! status: ${response.status}`);
       }
 
-      await emailjs.send(
-        sid,
-        tid,
-        {
-          to_email: "dhameliyaavadh592@gmail.com",
-          reply_to: email,
-          from_name: name,
-          first_name: name,
-          last_name: "(AI Fallback)",
-          user_email: email,
-          email: email,
-          phone: phone,
-          counselling_mode: mode,
-          destination: destination || "Not specified",
-          message: `[AI CONNECTION TROUBLE] The AI Chat assistant experienced connection errors or was down. The user tried to send this query: "${originalQuery}". Please contact the student immediately.`
-        },
-        pk
-      );
       setStatus("success");
     } catch (error) {
       console.error("Fallback mail failed:", error);

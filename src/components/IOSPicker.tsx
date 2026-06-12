@@ -17,6 +17,7 @@ interface Props {
   disabled?: boolean;
   className?: string;
   label?: string;
+  placement?: "top" | "bottom";
 }
 
 export default function IOSPicker({
@@ -29,6 +30,7 @@ export default function IOSPicker({
   disabled,
   className = "",
   label,
+  placement = "bottom",
 }: Props) {
   const [isOpen, setIsOpen] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -89,7 +91,9 @@ export default function IOSPicker({
       </button>
 
       {isOpen && (
-        <div className="absolute z-50 left-0 right-0 bottom-full mb-1.5 max-h-60 overflow-y-auto bg-white rounded-2xl shadow-xl border border-slate-200/80 py-1.5 animate-ios-fade-in scrollbar-thin scrollbar-thumb-slate-200">
+        <div className={`absolute z-50 left-0 right-0 ${
+          placement === "top" ? "bottom-full mb-1.5" : "top-full mt-1.5"
+        } max-h-60 overflow-y-auto bg-white rounded-2xl shadow-xl border border-slate-200/80 py-1.5 animate-ios-fade-in scrollbar-thin scrollbar-thumb-slate-200`}>
           {options.map(opt => (
             <button
               key={opt.value}
@@ -125,12 +129,12 @@ export default function IOSPicker({
 
       <style>{`
         @keyframes iosFadeIn {
-          from { opacity: 0; transform: translateY(4px) scale(0.97); }
+          from { opacity: 0; transform: translateY(${placement === "top" ? "4px" : "-4px"}) scale(0.97); }
           to { opacity: 1; transform: translateY(0) scale(1); }
         }
         .animate-ios-fade-in {
           animation: iosFadeIn 0.2s cubic-bezier(0.32, 0.72, 0, 1);
-          transform-origin: bottom center;
+          transform-origin: ${placement === "top" ? "bottom center" : "top center"};
         }
       `}</style>
     </div>

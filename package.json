@@ -6,13 +6,13 @@
     "node": ">=22.12.0"
   },
   "scripts": {
-    "dev": "astro dev",
-    "build": "astro build",
+    "dev": "node scripts/parse-pdf.js && astro dev",
+    "build": "node scripts/parse-pdf.js && astro build",
     "preview": "astro preview",
     "astro": "astro"
   },
   "dependencies": {
-    "@astrojs/node": "^10.1.4",
+    "@astrojs/cloudflare": "^13.7.0",
     "@astrojs/react": "^5.0.7",
     "@emailjs/browser": "^4.4.1",
     "@tailwindcss/vite": "^4.3.0",
@@ -24,6 +24,7 @@
     "pdf-parse": "^2.4.5",
     "react": "^19.2.7",
     "react-dom": "^19.2.7",
+    "resend": "^6.12.4",
     "tailwindcss": "^4.3.0"
   }
 }

@@ -1,6 +1,7 @@
 ---
 import "../styles/global.css";
 import CounsellorForm from "../components/CounsellorForm";
+import { ClientRouter } from "astro:transitions";
 import {
 	ArrowRight,
 	ChevronDown,
@@ -41,6 +42,7 @@ const {
 
 		<!-- SEO Meta Tags -->
 		<title>{title}</title>
+		<ClientRouter />
 		<style is:global>
 			/* Custom Premium Toast Styles */
 			#custom-toast-container {
@@ -677,9 +679,9 @@ const {
 
 						<!-- Contact Details & Branch Addresses -->
 						<div class="space-y-4 pt-2 text-sm text-white/80">
-							<a href="mailto:dhameliyaavadh592@gmail.com" class="flex items-center gap-2.5 hover:text-accent-cyan transition-colors text-white/80">
+							<a href="mailto:tescavisaconsultancy87@gmail.com" class="flex items-center gap-2.5 hover:text-accent-cyan transition-colors text-white/80">
 								<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-mail text-accent-cyan shrink-0"><rect width="20" height="16" x="2" y="4" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg>
-								<span class="truncate">dhameliyaavadh592@gmail.com</span>
+								<span class="truncate">tescavisaconsultancy87@gmail.com</span>
 							</a>
 							<a href="tel:9824152731" class="flex items-center gap-2.5 hover:text-accent-cyan transition-colors text-white/80">
 								<Phone class="w-4 h-4 text-accent-cyan shrink-0" />
@@ -850,138 +852,140 @@ const {
 		<!-- Scroll-Triggered Navbar Color Shift & Optimized Lenis script -->
 		<script>
 			import Lenis from "lenis";
-			import emailjs from "@emailjs/browser";
 
-			// Mobile Menu Drawer Handlers
-			const mobileMenuBtn = document.getElementById("mobile-menu-btn");
-			const mobileMenuDrawer = document.getElementById("mobile-menu-drawer");
-			const mobileMenuPanel = document.getElementById("mobile-menu-panel");
-			const mobileMenuClose = document.getElementById("mobile-menu-close");
+			function initPage() {
+				// Mobile Menu Drawer Handlers
+				const mobileMenuBtn = document.getElementById("mobile-menu-btn");
+				const mobileMenuDrawer = document.getElementById("mobile-menu-drawer");
+				const mobileMenuPanel = document.getElementById("mobile-menu-panel");
+				const mobileMenuClose = document.getElementById("mobile-menu-close");
 
-			const openMobileMenu = () => {
-				mobileMenuDrawer?.classList.remove("hidden");
-				setTimeout(() => {
-					mobileMenuDrawer?.classList.add("opacity-100");
-					mobileMenuPanel?.classList.remove("translate-x-full");
-				}, 10);
-				(window as any).lenis?.stop();
-			};
+				const openMobileMenu = () => {
+					mobileMenuDrawer?.classList.remove("hidden");
+					setTimeout(() => {
+						mobileMenuDrawer?.classList.add("opacity-100");
+						mobileMenuPanel?.classList.remove("translate-x-full");
+					}, 10);
+					(window as any).lenis?.stop();
+				};
 
-			const closeMobileMenu = () => {
-				mobileMenuDrawer?.classList.remove("opacity-100");
-				mobileMenuPanel?.classList.add("translate-x-full");
-				setTimeout(() => {
-					mobileMenuDrawer?.classList.add("hidden");
-				}, 300);
-				(window as any).lenis?.start();
-			};
+				const closeMobileMenu = () => {
+					mobileMenuDrawer?.classList.remove("opacity-100");
+					mobileMenuPanel?.classList.add("translate-x-full");
+					setTimeout(() => {
+						mobileMenuDrawer?.classList.add("hidden");
+					}, 300);
+					(window as any).lenis?.start();
+				};
 
-			mobileMenuBtn?.addEventListener("click", openMobileMenu);
-			mobileMenuDrawer?.addEventListener("click", closeMobileMenu);
-			mobileMenuPanel?.addEventListener("click", (e) => e.stopPropagation());
-			mobileMenuClose?.addEventListener("click", closeMobileMenu);
+				mobileMenuBtn?.addEventListener("click", openMobileMenu);
+				mobileMenuDrawer?.addEventListener("click", closeMobileMenu);
+				mobileMenuPanel?.addEventListener("click", (e) => e.stopPropagation());
+				mobileMenuClose?.addEventListener("click", closeMobileMenu);
 
-			// 1. Interactive Navbar Morphing Script — White→Red on scroll
-			const header = document.getElementById("main-header");
-			const nav = document.getElementById("main-nav");
-			const navLinks = document.querySelectorAll(".nav-link");
-			const navCta = document.getElementById("nav-cta");
-			const navLogoIcon = document.getElementById("nav-logo-icon");
-			const navPhoneLink = document.getElementById("nav-phone-link");
+				// 1. Interactive Navbar Morphing Script — White→Teal/Teal-glass on scroll
+				const header = document.getElementById("main-header");
+				const nav = document.getElementById("main-nav");
+				const navLinks = document.querySelectorAll(".nav-link");
+				const navLogoIcon = document.getElementById("nav-logo-icon");
+				const navPhoneLink = document.getElementById("nav-phone-link");
 
-			window.addEventListener("scroll", () => {
-				if (window.scrollY > 20) {
-					// Scrolled: Teal background, white text, glassmorphism
-					header?.classList.add("scrolled-header");
-					header?.classList.remove(
-						"bg-white/80",
-						"backdrop-blur-md",
-						"border-b",
-						"border-slate-200/60",
-						"shadow-sm",
-					);
-					nav?.classList.remove("py-3.5");
-					nav?.classList.add("py-2.5");
-
-					// Switch link colors to white
-					navLinks.forEach((link) => {
-						link.classList.remove(
-							"text-support-slate",
-							"hover:bg-accent-blue",
-							"hover:text-white",
+				const handleScroll = () => {
+					if (window.scrollY > 20) {
+						// Scrolled: Teal background, white text, glassmorphism
+						header?.classList.add("scrolled-header");
+						header?.classList.remove(
+							"bg-white/80",
+							"backdrop-blur-md",
+							"border-b",
+							"border-slate-200/60",
+							"shadow-sm",
 						);
-						link.classList.add(
-							"text-white/90",
-							"hover:bg-white/20",
-							"hover:text-white",
+						nav?.classList.remove("py-3.5");
+						nav?.classList.add("py-2.5");
+
+						// Switch link colors to white
+						navLinks.forEach((link) => {
+							link.classList.remove(
+								"text-support-slate",
+								"hover:bg-accent-blue",
+								"hover:text-white",
+							);
+							link.classList.add(
+								"text-white/90",
+								"hover:bg-white/20",
+								"hover:text-white",
+							);
+						});
+
+						// Turn logo white on scroll
+						navLogoIcon?.classList.add("brightness-0", "invert");
+
+						// Turn phone link white on scroll
+						navPhoneLink?.classList.remove("text-support-slate");
+						navPhoneLink?.classList.add("text-white/90");
+
+					} else {
+						// Top: White background, dark text
+						header?.classList.remove("scrolled-header");
+						header?.classList.add(
+							"bg-white/80",
+							"backdrop-blur-md",
+							"border-b",
+							"border-slate-200/60",
+							"shadow-sm",
 						);
-					});
+						nav?.classList.remove("py-2.5");
+						nav?.classList.add("py-3.5");
 
-					// Turn logo white on scroll
-					navLogoIcon?.classList.add("brightness-0", "invert");
+						// Switch link colors back to dark
+						navLinks.forEach((link) => {
+							link.classList.remove(
+								"text-white/90",
+								"hover:bg-white/20",
+								"hover:text-white",
+							);
+							link.classList.add(
+								"text-support-slate",
+								"hover:bg-accent-blue",
+								"hover:text-white",
+							);
+						});
 
-					// Turn phone link white on scroll
-					navPhoneLink?.classList.remove("text-support-slate");
-					navPhoneLink?.classList.add("text-white/90");
+						// Restore original logo colors at top
+						navLogoIcon?.classList.remove("brightness-0", "invert");
 
-				} else {
-					// Top: White background, dark text
-					header?.classList.remove("scrolled-header");
-					header?.classList.add(
-						"bg-white/80",
-						"backdrop-blur-md",
-						"border-b",
-						"border-slate-200/60",
-						"shadow-sm",
-					);
-					nav?.classList.remove("py-2.5");
-					nav?.classList.add("py-3.5");
+						// Restore phone link color at top
+						navPhoneLink?.classList.remove("text-white/90");
+						navPhoneLink?.classList.add("text-support-slate");
+					}
+				};
 
-					// Switch link colors back to dark
-					navLinks.forEach((link) => {
-						link.classList.remove(
-							"text-white/90",
-							"hover:bg-white/20",
-							"hover:text-white",
-						);
-						link.classList.add(
-							"text-support-slate",
-							"hover:bg-accent-blue",
-							"hover:text-white",
-						);
-					});
+				window.addEventListener("scroll", handleScroll);
+				handleScroll(); // Trigger immediately to sync layout
 
-					// Restore original logo colors at top
-					navLogoIcon?.classList.remove("brightness-0", "invert");
-
-					// Restore phone link color at top
-					navPhoneLink?.classList.remove("text-white/90");
-					navPhoneLink?.classList.add("text-support-slate");
-
+				// 2. Fast & Responsive Lenis Scroll Configuration
+				if ((window as any).lenis) {
+					(window as any).lenis.destroy();
 				}
+				const lenis = new Lenis({
+					duration: 0.9,
+					easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
+					gestureOrientation: "vertical",
+					normalizeWheel: true,
+					smoothWheel: true,
+					wheelMultiplier: 1.15,
+				});
+				(window as any).lenis = lenis;
 
-			});
+				let rafId: number;
+				function raf(time: number) {
+					lenis.raf(time);
+					rafId = requestAnimationFrame(raf);
+				}
+				rafId = requestAnimationFrame(raf);
 
-			// 2. Fast & Responsive Lenis Scroll Configuration
-			const lenis = new Lenis({
-				duration: 0.9,
-				easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
-				gestureOrientation: "vertical",
-				normalizeWheel: true,
-				smoothWheel: true,
-				wheelMultiplier: 1.15,
-			});
-			(window as any).lenis = lenis;
-
-			function raf(time: number) {
-				lenis.raf(time);
-				requestAnimationFrame(raf);
-			}
-
-			requestAnimationFrame(raf);
-
-			// 3. Global Page Skeleton Fade Out
-			document.addEventListener("DOMContentLoaded", () => {
+				// 3. Global Page Skeleton Fade Out
 				const skeleton = document.getElementById("global-page-skeleton");
 				if (skeleton) {
 					setTimeout(() => {
@@ -991,10 +995,21 @@ const {
 						}, 500);
 					}, 450);
 				}
-			});
 
-			// 4. Custom Alert Toast Override
-			if (typeof window !== "undefined") {
+				// Clean up resources on page hide
+				document.addEventListener("astro:before-swap", () => {
+					window.removeEventListener("scroll", handleScroll);
+					cancelAnimationFrame(rafId);
+					lenis.destroy();
+				}, { once: true });
+			}
+
+			// Bind page initialization to Astro page load event
+			document.addEventListener("astro:page-load", initPage);
+
+			// 4. Custom Alert Toast Override (Runs once globally)
+			if (typeof window !== "undefined" && !(window as any).hasToastOverride) {
+				(window as any).hasToastOverride = true;
 				const toastContainer = document.createElement("div");
 				toastContainer.id = "custom-toast-container";
 				document.body.appendChild(toastContainer);
@@ -1021,16 +1036,9 @@ const {
 					}, 2000);
 				};
 			}
+		</script>
 
-
-			</script>
-
-		<CounsellorForm
-			client:load
-			serviceId={import.meta.env.PUBLIC_EMAILJS_SERVICE_ID}
-			templateId={import.meta.env.PUBLIC_EMAILJS_TEMPLATE_ID}
-			publicKey={import.meta.env.PUBLIC_EMAILJS_PUBLIC_KEY}
-		/>
+		<CounsellorForm client:load />
 
 
 	</body>

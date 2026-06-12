@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { X, Phone, Mail, User, Globe, CheckCircle, AlertCircle, Loader2 } from "lucide-react";
 import IOSPicker from "./IOSPicker";
-import emailjs from "@emailjs/browser";
 
 const COUNTRIES = [
   { value: "Australia", label: "Australia", flag: "au" },
@@ -20,13 +19,7 @@ const COUNTRIES = [
 
 const MODES = ["Video Call", "Phone Call", "In-Person Meeting", "Email"];
 
-interface Props {
-  serviceId: string;
-  templateId: string;
-  publicKey: string;
-}
-
-export default function CounsellorForm({ serviceId, templateId, publicKey }: Props) {
+export default function CounsellorForm() {
   const [isOpen, setIsOpen] = useState(false);
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
@@ -85,24 +78,28 @@ export default function CounsellorForm({ serviceId, templateId, publicKey }: Pro
     setStatus("sending");
 
     try {
-      await emailjs.send(
-        serviceId,
-        templateId,
-        {
-          to_email: "dhameliyaavadh592@gmail.com",
-          reply_to: email,
-          from_name: `${firstName} ${lastName}`,
-          first_name: firstName,
-          last_name: lastName,
-          user_email: email,
-          email: email,
+      const response = await fetch("/api/submit-enquiry", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          firstName,
+          lastName,
+          email,
           phone,
-          counselling_mode: mode,
+          mode,
           destination: destination || "Not specified",
           message: `New enquiry from ${firstName} ${lastName}. Phone: ${phone}. Preferred Mode: ${mode}. Destination: ${destination || "Not specified"}.`,
-        },
-        publicKey,
-      );
+          source: "Main Enquiry Form",
+        }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.error || `HTTP error! status: ${response.status}`);
+      }
+
       setStatus("success");
       setTimeout(() => {
         setStatus("idle");
@@ -115,12 +112,8 @@ export default function CounsellorForm({ serviceId, templateId, publicKey }: Pro
         setErrors({});
         setIsOpen(false);
       }, 3000);
-    } catch (err) {
-      console.error("EmailJS send failed:", err);
-      const msg = err && typeof err === "object" && "text" in err
-        ? (err as any).text
-        : typeof err === "string" ? err : "Unknown error";
-      console.error("EmailJS error detail:", msg);
+    } catch (err: any) {
+      console.error("Enquiry submission failed:", err);
       setStatus("failed");
     }
   };
@@ -356,6 +349,7 @@ export default function CounsellorForm({ serviceId, templateId, publicKey }: Pro
                         placeholder="Select a country"
                         icon={<Globe className="w-4 h-4" />}
                         label="Study Destination"
+                        placement="top"
                       />
                     </div>
 

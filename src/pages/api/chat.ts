@@ -1,58 +1,10 @@
 import type { APIRoute } from 'astro';
-import fs from 'node:fs';
-import path from 'node:path';
+import { pdfContextText } from '../../data/pdfContext';
 
 export const prerender = false; // Ensure this endpoint is rendered on-demand (SSR)
 
-// Cache variables for PDF context to optimize performance
-let cachedPdfText = '';
-let cachedPdfMtime = 0;
-let lastCheckTime = 0;
-
 async function getPdfContext(): Promise<string> {
-  const now = Date.now();
-  // Check the file system at most once every 10 seconds to reduce disk I/O overhead
-  if (now - lastCheckTime < 10000 && cachedPdfText) {
-    return cachedPdfText;
-  }
-  lastCheckTime = now;
-
-  try {
-    const rootDir = process.cwd();
-    const files = fs.readdirSync(rootDir);
-    const pdfFile = files.find(f => f.toLowerCase().endsWith('.pdf'));
-
-    if (!pdfFile) {
-      // Clear cache if PDF is deleted
-      cachedPdfText = '';
-      cachedPdfMtime = 0;
-      return '';
-    }
-
-    const pdfPath = path.join(rootDir, pdfFile);
-    const stat = fs.statSync(pdfPath);
-    const mtime = stat.mtimeMs;
-
-    // Return cache if file has not been modified
-    if (mtime === cachedPdfMtime && cachedPdfText) {
-      return cachedPdfText;
-    }
-
-    console.log(`[AI Chat] Parsing PDF file: ${pdfFile}...`);
-    const buffer = fs.readFileSync(pdfPath);
-    const { PDFParse } = await import('pdf-parse');
-    const parser = new PDFParse({ data: buffer });
-    const result = await parser.getText();
-    await parser.destroy();
-
-    cachedPdfText = result.text || '';
-    cachedPdfMtime = mtime;
-    console.log(`[AI Chat] PDF parsed successfully. Character length: ${cachedPdfText.length}`);
-    return cachedPdfText;
-  } catch (error) {
-    console.error("[AI Chat] Error loading PDF context:", error);
-    return cachedPdfText; // Fall back to previous cache if error occurs
-  }
+  return pdfContextText;
 }
 
 export const POST: APIRoute = async ({ request }) => {

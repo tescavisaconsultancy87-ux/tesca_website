@@ -65,7 +65,7 @@ export default function IELTSBandCalculator() {
 
   return (
     <div className="space-y-4">
-      <div className="grid grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         {SECTIONS.map(section => {
           const val = scores[section.id];
           const color = bandColors[val] ?? "text-slate-700 bg-slate-100";
@@ -102,7 +102,7 @@ export default function IELTSBandCalculator() {
         </div>
       )}
 
-      <div className="col-span-2">
+      <div className="col-span-1 sm:col-span-2">
         <button
           onClick={calculated ? reset : calculate}
           className="w-full py-3.5 bg-accent-blue text-white font-semibold text-base rounded-xl shadow-md tracking-wide hover:scale-[1.01] transition-all duration-200 cursor-pointer flex items-center justify-center gap-2"

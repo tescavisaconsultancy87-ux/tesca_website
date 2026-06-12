@@ -44,11 +44,11 @@ import {
           </div>
 
           {/* Buttons: Plus Jakarta Sans 600, Text 16px, slight letter spacing */}
-          <div class="flex items-center gap-4 font-sans font-semibold text-[16px] tracking-wide">
-            <button onclick="window.openCounsellorForm?.()" class="px-7 py-3 rounded-full text-white bg-accent-blue shadow-md hover:scale-[1.02] transition-transform duration-300 cursor-pointer">
+          <div class="flex flex-wrap items-center gap-3 sm:gap-4 font-sans font-semibold text-[15px] sm:text-[16px] tracking-wide">
+            <button onclick="window.openCounsellorForm?.()" class="px-6 py-2.5 sm:px-7 sm:py-3 rounded-full text-white bg-accent-blue shadow-md hover:scale-[1.02] transition-transform duration-300 cursor-pointer w-full sm:w-auto text-center justify-center flex">
               Apply Now →
             </button>
-            <a href="/gallery" class="text-support-slate hover:text-accent-blue flex items-center gap-1 transition-colors">
+            <a href="/gallery" class="text-support-slate hover:text-accent-blue flex items-center gap-1 transition-colors w-full sm:w-auto justify-center py-2 sm:py-0">
               Virtual Institute Tour
             </a>
           </div>
@@ -414,16 +414,20 @@ import {
             return (
             <div key={idx} class={`p-4 rounded-xl border ${tints[idx]} space-y-2 shadow-xs`}>
               <button 
-                class="w-full flex justify-between items-center text-[16px] font-bold text-slate-800 text-left outline-none font-display leading-snug"
+                class="w-full flex justify-between items-center text-[16px] font-bold text-slate-800 text-left outline-none font-display leading-snug cursor-pointer"
                 onclick={`
                   const ans = document.getElementById('faq-ans-${idx}');
-                  const isHidden = ans.classList.contains('hidden');
+                  const isOpen = ans.classList.contains('grid-rows-[1fr]');
                   
-                  document.querySelectorAll('[id^="faq-ans-"]').forEach(el => el.classList.add('hidden'));
+                  document.querySelectorAll('[id^="faq-ans-"]').forEach(el => {
+                    el.classList.remove('grid-rows-[1fr]');
+                    el.classList.add('grid-rows-[0fr]');
+                  });
                   document.querySelectorAll('[id^="faq-chevron-"]').forEach(el => el.classList.remove('rotate-180'));
                   
-                  if (isHidden) {
-                    ans.classList.remove('hidden');
+                  if (!isOpen) {
+                    ans.classList.remove('grid-rows-[0fr]');
+                    ans.classList.add('grid-rows-[1fr]');
                     document.getElementById('faq-chevron-${idx}')?.classList.add('rotate-180');
                   }
                 `}
@@ -431,9 +435,11 @@ import {
                 <span>{faq.q}</span>
                 <ChevronDown id={`faq-chevron-${idx}`} class="w-4 h-4 text-slate-400 shrink-0 transition-transform duration-200" />
               </button>
-              <p id={`faq-ans-${idx}`} class="text-[16px] text-slate-600 leading-relaxed hidden pt-1 font-sans font-normal">
-                {faq.a}
-              </p>
+              <div id={`faq-ans-${idx}`} class="grid grid-rows-[0fr] transition-all duration-300 ease-in-out overflow-hidden">
+                <p class="min-h-0 text-[16px] text-slate-600 leading-relaxed pt-1 font-sans font-normal">
+                  {faq.a}
+                </p>
+              </div>
             </div>
             );
           })}
@@ -456,7 +462,7 @@ import {
         </p>
         <button 
           onclick="window.openCounsellorForm?.()"
-          class="px-7 py-3 rounded-full text-[16px] font-semibold font-sans tracking-wide text-white bg-accent-blue shadow-md hover:scale-[1.02] transition-transform duration-300 cursor-pointer"
+          class="px-6 py-2.5 sm:px-7 sm:py-3 rounded-full text-[15px] sm:text-[16px] font-semibold font-sans tracking-wide text-white bg-accent-blue shadow-md hover:scale-[1.02] transition-transform duration-300 cursor-pointer w-full sm:w-auto text-center justify-center flex mx-auto"
         >
           Apply Now
         </button>
