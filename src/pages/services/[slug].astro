@@ -1,0 +1,96 @@
+---
+import Layout from "../../layouts/Layout.astro";
+import AICounsellor from "../../components/AICounsellor";
+import { SERVICES, getServiceBySlug } from "../../data/services";
+import {
+  User, GraduationCap, FileText, Award, BookOpen, Briefcase,
+  Heart, Landmark, Home, Plane, ArrowLeft, ChevronRight
+} from "lucide-react";
+
+export function getStaticPaths() {
+  return SERVICES.map(s => ({
+    params: { slug: s.id },
+    props: { service: s }
+  }));
+}
+
+const { service } = Astro.props;
+
+if (!service) {
+  return Astro.redirect("/404");
+}
+
+const iconMap: Record<string, any> = {
+  User, GraduationCap, FileText, Award, BookOpen,
+  Briefcase, Heart, Landmark, Home, Plane
+};
+
+const ServiceIcon = iconMap[service.icon] || User;
+---
+
+<Layout
+  title={`${service.title} | TESCA Visa Consultancy`}
+  description={service.desc}
+>
+  <section class="max-w-7xl mx-auto px-6 md:px-8 pt-8 pb-12 text-left">
+    <!-- Back Link -->
+    <a href="/services" class="inline-flex items-center gap-1.5 text-sm font-semibold text-accent-blue hover:underline mb-8 font-sans">
+      <ArrowLeft class="w-4 h-4" /> Back to Services
+    </a>
+
+    <!-- Service Header -->
+    <div class="glass-card rounded-[2rem] overflow-hidden bg-slate-50/80 border border-slate-200/60 shadow-lg p-8 md:p-12 relative mb-12">
+      <div class="aurora-bg w-[300px] h-[300px] bg-accent-blue/5 -top-12 -left-12 rounded-full blur-[80px]"></div>
+
+      <div class="relative z-10 flex items-start gap-6 flex-col sm:flex-row">
+        <div class={`p-4 rounded-2xl ${service.color} shrink-0`}>
+          <ServiceIcon class="w-8 h-8" />
+        </div>
+        <div class="space-y-3">
+          <h1 class="text-[32px] sm:text-[42px] font-extrabold font-display text-support-white tracking-tight leading-none">
+            {service.title}
+          </h1>
+          <p class="text-base md:text-lg text-support-gray font-sans font-normal leading-relaxed max-w-2xl">
+            {service.desc}
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Detailed Content -->
+    <div class="rounded-3xl p-8 md:p-12 bg-white border border-slate-200/80 shadow-sm mb-12">
+      <h2 class="text-xl font-bold text-slate-800 font-display mb-6">What's Included</h2>
+      <div class="space-y-4">
+        {service.detailedContent.map((item) => (
+          <div class="flex items-start gap-3 p-4 rounded-xl bg-slate-50 border border-slate-100">
+            <ChevronRight class="w-5 h-5 text-accent-blue shrink-0 mt-0.5" />
+            <p class="text-sm md:text-base text-slate-700 font-sans font-normal leading-relaxed">{item}</p>
+          </div>
+        ))}
+      </div>
+    </div>
+
+    <!-- Need Assistance CTA -->
+    <div class="rounded-3xl p-8 md:p-12 bg-gradient-to-br from-accent-blue/5 to-accent-indigo/5 border border-accent-blue/20 shadow-sm text-center">
+      <div class="max-w-lg mx-auto space-y-4">
+        <h2 class="text-2xl md:text-3xl font-bold font-display text-support-white tracking-tight">Need Assistance?</h2>
+        <p class="text-sm md:text-base text-support-gray font-sans font-normal leading-relaxed">
+          Our expert counselors are here to guide you through every step of your study abroad journey.
+          Book a free consultation today.
+        </p>
+        <div class="pt-2">
+          <button
+            type="button"
+            onclick="window.openCounsellorForm?.()"
+            class="px-8 py-3.5 bg-accent-blue hover:bg-accent-indigo text-white font-bold text-sm rounded-full shadow-md hover:scale-[1.02] transition-all cursor-pointer font-sans inline-flex items-center gap-2"
+          >
+            Book a Consultation
+          </button>
+        </div>
+      </div>
+    </div>
+
+  </section>
+
+  <AICounsellor client:load />
+</Layout>

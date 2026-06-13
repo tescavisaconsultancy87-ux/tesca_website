@@ -1,10 +1,16 @@
 ---
 import Layout from "../layouts/Layout.astro";
 import AICounsellor from "../components/AICounsellor";
-import { 
-  User, GraduationCap, FileText, Award, BookOpen, Briefcase, 
-  Heart, Shield, Landmark, Home, Plane, Download
+import { SERVICES } from "../data/services";
+import {
+  User, GraduationCap, FileText, Award, BookOpen, Briefcase,
+  Heart, Shield, Landmark, Home, Plane, Download, ArrowRight
 } from "lucide-react";
+
+const iconMap: Record<string, any> = {
+  User, GraduationCap, FileText, Award, BookOpen,
+  Briefcase, Heart, Landmark, Home, Plane
+};
 ---
 
 <Layout 
@@ -46,138 +52,7 @@ import {
 
     {/* 10 Services Grid */}
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-20 text-left items-start">
-      {[
-        {
-          id: "counselling",
-          title: "Expert Counselling",
-          desc: "Personalized profiling session matching you with elite institutions based on GPA, GRE scores, and aspirations.",
-          icon: User,
-          color: "text-slate-800 bg-accent-blue/5",
-          detailedContent: [
-            "1-on-1 profiling session with senior study abroad consultants.",
-            "Detailed analysis of GPA, academic history, test scores, and research publications.",
-            "Personalized country, course, and university shortlisting targeting Reach, Match, and Safe options.",
-            "Career path mapping and guidance on post-graduation work opportunities."
-          ]
-        },
-        {
-          id: "admission",
-          title: "University Admission Process",
-          desc: "Algorithmic screening of DLI/SEVIS lists, managing direct application filings, and coordinating school offers.",
-          icon: GraduationCap,
-          color: "text-accent-indigo bg-accent-indigo/5",
-          detailedContent: [
-            "End-to-end management of university application portals and fee waivers.",
-            "Rigorous verification of application packets, including transcripts and credentials.",
-            "Direct liaison with university admission offices to expedite application processing.",
-            "Dedicated support for responding to and accepting offer letters (CAS/i-20 request processing)."
-          ]
-        },
-        {
-          id: "sop",
-          title: "SOP & Documentation",
-          desc: "Expert structural auditing of your Statement of Purpose (SOP), Letters of Recommendation (LORs), and CVs.",
-          icon: FileText,
-          color: "text-highlight-purple bg-highlight-purple/5",
-          detailedContent: [
-            "Comprehensive review and structural auditing of Statements of Purpose (SOPs).",
-            "Guidance and templates for drafting professional Letters of Recommendation (LORs).",
-            "Resume and CV optimization to highlight academic achievements, projects, and internships.",
-            "Strict alignment check with country-specific student visa statement requirements."
-          ]
-        },
-        {
-          id: "scholarships",
-          title: "Scholarship Guidance",
-          desc: "Automated analysis of merit grants, assistantships, and tuition waivers, yielding maximum funding support.",
-          icon: Award,
-          color: "text-accent-cyan bg-accent-cyan/5",
-          detailedContent: [
-            "Access to an updated database of institutional, governmental, and external scholarships.",
-            "Assistance with application documentation for merit-based and need-based financial aid.",
-            "Coaching on scholarship essay writing to maximize your chances of winning funding.",
-            "Strategies to secure Graduate Assistantships (TA/RA) and tuition fee waivers."
-          ]
-        },
-        {
-          id: "testprep",
-          title: "Test Prep & Coaching",
-          desc: "Coaching modules for IELTS, TOEFL, and GRE exams using diagnostic tools to score above standard thresholds.",
-          icon: BookOpen,
-          color: "text-slate-800 bg-accent-blue/5",
-          detailedContent: [
-            "Highly structured prep classes led by certified, experienced educators.",
-            "Diagnostic mock tests simulating actual exam conditions with detailed score analysis.",
-            "Customized drills for Listening, Reading, Writing, Speaking, and Quantitative sections.",
-            "Exclusive preparation material, grammar guides, and vocabulary building tools."
-          ]
-        },
-        {
-          id: "visa",
-          title: "Expert Visa Assistance",
-          desc: "Complete documentation audits, biometrics scheduling, and predictive checkup tools checking visa success SLA.",
-          icon: Briefcase,
-          color: "text-accent-indigo bg-accent-indigo/5",
-          detailedContent: [
-            "Step-by-step guidance on student visa filings (e.g., US F-1, UK Student Visa, Canada Study Permit).",
-            "Comprehensive review of financial documents, sponsor affidavits, and fund source declarations.",
-            "Interactive mock visa interview sessions to build confidence and refine responses.",
-            "Pre-checking documentation against the latest immigration and visa compliance laws."
-          ]
-        },
-        {
-          id: "insurance",
-          title: "Health Insurance",
-          desc: "Compliance checks for regional health coverages like OSHC (Australia) and provincial plans (Canada/Germany).",
-          icon: Heart,
-          color: "text-highlight-purple bg-highlight-purple/5",
-          detailedContent: [
-            "Sourcing and comparison of mandatory student health covers (e.g., OSHC, German statutory insurance).",
-            "Tailored plans balancing premium costs, deductible limits, and coverage scopes.",
-            "Fast-tracked policy registration and digital insurance card issuance.",
-            "Detailed briefings on claims filing, medical networks, and student health support."
-          ]
-        },
-        {
-          id: "financial",
-          title: "Financial Guidance & Loans",
-          desc: "Integration with banking partners to verify blocked accounts and structure pre-approved educational loans.",
-          icon: Landmark,
-          color: "text-accent-cyan bg-accent-cyan/5",
-          detailedContent: [
-            "Tie-ups with leading banks for collateral-free and collateral-based educational loans.",
-            "Streamlined processing of blocked accounts required for Germany and Canada.",
-            "Assistance in structuring financial declarations, sponsor letters, and liquid asset proofs.",
-            "Preferential forex exchange rates for tuition fee transfers and international drafts."
-          ]
-        },
-        {
-          id: "accommodation",
-          title: "Accommodation Assistance",
-          desc: "Coordination of on-campus residence bookings and regional housing partners close to target university campuses.",
-          icon: Home,
-          color: "text-slate-800 bg-accent-blue/5",
-          detailedContent: [
-            "Guidance on securing on-campus dormitories and university residences.",
-            "Access to verified off-campus student housing partners, studios, and shared apartments.",
-            "Support in reviewing tenancy agreements, rental terms, and deposit payment structures.",
-            "Connections with student community networks for roommate matching and local navigation."
-          ]
-        },
-        {
-          id: "departure",
-          title: "Pre & Post Departure Services",
-          desc: "Pre-departure briefings, biometrics support, flight options matching, and airport landing assistance.",
-          icon: Plane,
-          color: "text-accent-indigo bg-accent-indigo/5",
-          detailedContent: [
-            "Comprehensive pre-departure orientations detailing lifestyle, compliance, and academic norms.",
-            "Guidelines on currency, international SIM cards, packing essentials, and customs regulations.",
-            "Assistance with airport pick-up scheduling and booking temporary stays.",
-            "Post-arrival setup support including local bank accounts, transport passes, and student IDs."
-          ]
-        }
-      ].map((srv, idx) => {
+      {SERVICES.map((srv, idx) => {
         const gradients = [
           "bg-gradient-to-br from-blue-50 to-indigo-50/70 border-blue-100/60",
           "bg-gradient-to-br from-emerald-50 to-teal-50/70 border-emerald-100/60",
@@ -190,53 +65,90 @@ import {
           "bg-gradient-to-br from-indigo-50 to-purple-50/70 border-indigo-100/60",
           "bg-gradient-to-br from-teal-50 to-cyan-50/70 border-teal-100/60"
         ];
+        const ServiceIcon = iconMap[srv.icon] || User;
         return (
-        <div id={srv.id} class={`rounded-3xl p-8 hover:-translate-y-1 transition-all duration-300 flex flex-col justify-between border shadow-sm relative overflow-hidden group ${gradients[idx]}`}>
-          <div>
-            <div class="space-y-4">
-              <div class={`p-3.5 rounded-2xl ${srv.color} inline-block`}>
-                <srv.icon class="w-6 h-6" />
-              </div>
-              <h3 class="text-xl lg:text-2xl font-bold text-slate-800 font-display tracking-tight">{srv.title}</h3>
-              <p class="text-sm md:text-base text-slate-600 font-sans font-normal leading-relaxed">{srv.desc}</p>
+        <a
+          href={`/services/${srv.id}`}
+          class={`rounded-3xl p-8 hover:-translate-y-1 transition-all duration-300 flex flex-col justify-between border shadow-sm relative overflow-hidden group cursor-pointer ${gradients[idx]}`}
+        >
+          <div class="space-y-4">
+            <div class={`p-3.5 rounded-2xl ${srv.color} inline-block`}>
+              <ServiceIcon class="w-6 h-6" />
             </div>
-            
-            <div class="service-details max-h-0 overflow-hidden transition-all duration-500 ease-in-out">
-              <div class="pt-6 border-t border-slate-200/40 mt-4 space-y-4 text-left">
-                <h4 class="text-xs font-bold font-sans uppercase tracking-wider text-slate-800 mb-2">What's Included:</h4>
-                <ul class="space-y-2.5">
-                  {srv.detailedContent.map((item) => (
-                    <li class="flex items-start gap-2 text-sm text-slate-600 font-sans font-normal leading-relaxed">
-                      <span class="w-1.5 h-1.5 bg-accent-blue rounded-full shrink-0 mt-2"></span>
-                      <span>{item}</span>
-                    </li>
-                  ))}
-                </ul>
-                <div class="pt-4 flex items-center justify-between gap-4 border-t border-slate-100/50 mt-4">
-                  <span class="text-xs font-semibold text-slate-500 font-sans">Need assistance?</span>
-                  <button
-                    type="button"
-                    onclick="window.openCounsellorForm?.()"
-                    class="px-4 py-2 bg-accent-blue hover:bg-accent-indigo text-white font-semibold text-xs rounded-full shadow-sm hover:scale-[1.02] transition-all cursor-pointer font-sans"
-                  >
-                    Book Consultation
-                  </button>
-                </div>
-              </div>
-            </div>
+            <h3 class="text-xl lg:text-2xl font-bold text-slate-800 font-display tracking-tight">{srv.title}</h3>
+            <p class="text-sm md:text-base text-slate-600 font-sans font-normal leading-relaxed">{srv.desc}</p>
           </div>
-          
-          <button 
-            type="button"
-            data-target={srv.id}
-            class="service-toggle-btn text-sm font-semibold font-sans text-accent-blue hover:text-accent-indigo inline-flex items-center gap-1 mt-4 cursor-pointer focus:outline-none self-start"
-          >
-            <span class="btn-text">Learn More</span> <span class="arrow-icon transition-transform duration-300">→</span>
-          </button>
-        </div>
+          <span class="text-sm font-semibold font-sans text-accent-blue inline-flex items-center gap-1 mt-4">
+            Learn More <ArrowRight class="w-4 h-4 transition-transform duration-300 group-hover:translate-x-1" />
+          </span>
+        </a>
         );
       })}
     </div>
+
+    {/* Banking & Loan Partners Carousel */}
+    <div class="text-center mb-12">
+      <span class="text-sm font-semibold text-accent-blue uppercase tracking-wider font-sans">Our Partners</span>
+      <h3 class="text-[28px] lg:text-[36px] font-bold font-display text-support-white tracking-tight mt-1">Banking & Loan Partners</h3>
+    </div>
+
+    <div class="relative overflow-hidden w-full mb-16 py-6 border-t border-b border-slate-200/60">
+      <div class="flex gap-20 items-center animate-marquee min-w-max px-6">
+        {[
+          { src: "/bank/sbi.png", alt: "State Bank of India" },
+          { src: "/bank/hdfc.png", alt: "HDFC Bank" },
+          { src: "/bank/icici.jpg", alt: "ICICI Bank" },
+          { src: "/bank/axis.png", alt: "Axis Bank" },
+          { src: "/bank/kotak.jpg", alt: "Kotak Mahindra Bank" },
+          { src: "/bank/yes.png", alt: "Yes Bank" },
+          { src: "/bank/bob.png", alt: "Bank of Baroda" },
+          { src: "/bank/canara.jpg", alt: "Canara Bank" },
+          { src: "/bank/bajaj.jpg", alt: "Bajaj Finserv" },
+          { src: "/bank/avanse.png", alt: "Avanse" },
+          { src: "/bank/credila.png", alt: "HDFC Credila" },
+          { src: "/bank/auxilo.jpg", alt: "Auxilo" },
+          { src: "/bank/incred.png", alt: "InCred" },
+          { src: "/bank/propelld.png", alt: "Propelld" }
+        ].map((partner) => (
+          <div class="flex items-center shrink-0">
+            <img src={partner.src} alt={partner.alt} class="h-12 w-auto object-contain" loading="lazy" />
+          </div>
+        ))}
+        {[
+          { src: "/bank/sbi.png", alt: "State Bank of India" },
+          { src: "/bank/hdfc.png", alt: "HDFC Bank" },
+          { src: "/bank/icici.png", alt: "ICICI Bank" },
+          { src: "/bank/axis.png", alt: "Axis Bank" },
+          { src: "/bank/kotak.png", alt: "Kotak Mahindra Bank" },
+          { src: "/bank/yesbank.png", alt: "Yes Bank" },
+          { src: "/bank/bob.png", alt: "Bank of Baroda" },
+          { src: "/bank/canara.png", alt: "Canara Bank" },
+          { src: "/bank/bajaj.png", alt: "Bajaj Finserv" },
+          { src: "/bank/avanse.png", alt: "Avanse" },
+          { src: "/bank/credila.png", alt: "HDFC Credila" },
+          { src: "/bank/auxilo.png", alt: "Auxilo" },
+          { src: "/bank/incred.png", alt: "InCred" },
+          { src: "/bank/propelld.png", alt: "Propelld" }
+        ].map((partner) => (
+          <div class="flex items-center shrink-0">
+            <img src={partner.src} alt={partner.alt} class="h-12 w-auto object-contain" loading="lazy" />
+          </div>
+        ))}
+      </div>
+    </div>
+
+    <style>
+      @keyframes marquee {
+        0% { transform: translateX(0); }
+        100% { transform: translateX(-50%); }
+      }
+      .animate-marquee {
+        animation: marquee 50s linear infinite;
+      }
+      .animate-marquee:hover {
+        animation-play-state: paused;
+      }
+    </style>
 
     {/* Section: Diagnostic downloads and coaching track */}
     <div class="rounded-3xl p-8 md:p-12 space-y-8 relative overflow-hidden text-left bg-gradient-to-br from-slate-50 to-blue-50/50 border border-slate-200">
@@ -305,74 +217,3 @@ import {
   {/* Client floating chatbot */}
   <AICounsellor client:load />
 </Layout>
-
-<script>
-  function setupServiceToggles() {
-    const toggleButtons = document.querySelectorAll('.service-toggle-btn');
-    toggleButtons.forEach(btn => {
-      // Avoid duplicate event listeners by replacing with clone
-      const newBtn = btn.cloneNode(true);
-      btn.parentNode?.replaceChild(newBtn, btn);
-    });
-
-    const newToggleButtons = document.querySelectorAll('.service-toggle-btn');
-    newToggleButtons.forEach(btn => {
-      btn.addEventListener('click', (e) => {
-        e.preventDefault();
-        const cardId = btn.getAttribute('data-target');
-        if (!cardId) return;
-        const card = document.getElementById(cardId);
-        if (!card) return;
-
-        const details = card.querySelector('.service-details') as HTMLElement;
-        const btnText = btn.querySelector('.btn-text') as HTMLElement;
-        const arrow = btn.querySelector('.arrow-icon') as HTMLElement;
-
-        if (details && btnText && arrow) {
-          const isExpanded = details.style.maxHeight && details.style.maxHeight !== '0px';
-
-          if (!isExpanded) {
-            // Collapse all other expanded service cards
-            const allCards = document.querySelectorAll('.grid > div');
-            allCards.forEach(otherCard => {
-              if (otherCard.id !== cardId) {
-                const otherDetails = otherCard.querySelector('.service-details') as HTMLElement;
-                const otherBtn = otherCard.querySelector('.service-toggle-btn');
-                if (otherDetails && otherDetails.style.maxHeight && otherDetails.style.maxHeight !== '0px') {
-                  otherDetails.style.maxHeight = '0px';
-                  if (otherBtn) {
-                    const otherBtnText = otherBtn.querySelector('.btn-text');
-                    const otherArrow = otherBtn.querySelector('.arrow-icon') as HTMLElement;
-                    if (otherBtnText) otherBtnText.textContent = 'Learn More';
-                    if (otherArrow) otherArrow.style.transform = 'rotate(0deg)';
-                  }
-                  otherCard.classList.remove('border-accent-blue/30', 'shadow-md', 'scale-[1.01]', 'bg-white/95');
-                }
-              }
-            });
-          }
-
-          if (isExpanded) {
-            // Collapse
-            details.style.maxHeight = '0px';
-            btnText.textContent = 'Learn More';
-            arrow.style.transform = 'rotate(0deg)';
-            card.classList.remove('border-accent-blue/30', 'shadow-md', 'scale-[1.01]', 'bg-white/95');
-          } else {
-            // Expand
-            details.style.maxHeight = details.scrollHeight + 'px';
-            btnText.textContent = 'Show Less';
-            arrow.style.transform = 'rotate(90deg)';
-            card.classList.add('border-accent-blue/30', 'shadow-md', 'scale-[1.01]', 'bg-white/95');
-          }
-        }
-      });
-    });
-  }
-
-  // Initial setup
-  setupServiceToggles();
-  // Listen for view transitions if enabled
-  document.addEventListener('astro:page-load', setupServiceToggles);
-  document.addEventListener('astro:after-swap', setupServiceToggles);
-</script>

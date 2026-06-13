@@ -1,6 +1,7 @@
 ---
 import Layout from "../layouts/Layout.astro";
 import AICounsellor from "../components/AICounsellor";
+import StudentCarousel from "../components/StudentCarousel";
 import { Camera, Building2, Users, GraduationCap } from "lucide-react";
 ---
 
@@ -41,7 +42,12 @@ import { Camera, Building2, Users, GraduationCap } from "lucide-react";
       </div>
 
     </div>
+  </section>
 
+  {/* Success Results Board Carousel */}
+  <StudentCarousel client:load />
+
+  <section class="max-w-7xl mx-auto px-6 md:px-8 py-12">
     {/* Class Photos Section */}
     <div class="mb-20">
       <div class="flex items-center gap-3 mb-10">

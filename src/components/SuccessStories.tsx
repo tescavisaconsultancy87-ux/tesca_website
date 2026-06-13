@@ -101,7 +101,7 @@ export default function SuccessStories() {
           </div>
           <div className="text-center px-4">
             <span className="block text-[10px] font-semibold text-support-gray/60 uppercase tracking-wider font-sans">Success SLA</span>
-            <span className="text-xl md:text-2xl font-extrabold font-display text-highlight-purple">99.4%</span>
+            <span className="text-xl md:text-2xl font-extrabold font-display text-highlight-purple">97%</span>
           </div>
         </div>
       </div>

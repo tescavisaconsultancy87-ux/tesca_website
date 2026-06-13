@@ -473,18 +473,12 @@ Comments: ${formData.comments || "None"}`;
         <p className="text-base md:text-lg text-slate-600 font-sans font-normal leading-relaxed max-w-lg">
           Our senior counselor will review your academic and visa profile and contact you within 24 hours.
         </p>
-        <div className="pt-6 border-t border-slate-100 w-full max-w-md flex flex-col sm:flex-row gap-3 justify-center">
-          <a
-            href="/"
-            className="px-6 py-3 bg-[#0F4C81] hover:bg-[#0c3c66] text-white font-semibold text-sm rounded-full transition-all text-center shadow-md cursor-pointer"
-          >
-            Go to Home
-          </a>
+        <div className="pt-6 border-t border-slate-100 w-full max-w-md flex justify-center">
           <a
             href="https://wa.me/919824152731"
             target="_blank"
             rel="noopener noreferrer"
-            className="px-6 py-3 bg-[#25D366] hover:bg-[#1ea855] text-white font-semibold text-sm rounded-full transition-all text-center shadow-md flex items-center justify-center gap-2 cursor-pointer"
+            className="px-8 py-3 bg-[#25D366] hover:bg-[#1ea855] text-white font-semibold text-sm rounded-full transition-all text-center shadow-md flex items-center justify-center gap-2 cursor-pointer w-full max-w-xs"
           >
             WhatsApp Counselor
           </a>
@@ -1091,7 +1085,15 @@ Comments: ${formData.comments || "None"}`;
                             : "bg-white border-slate-200 text-slate-600 hover:border-slate-300 hover:bg-slate-50"
                         }`}
                       >
-                        <span className="text-lg leading-none select-none">{c.flag}</span>
+                        {c.code === "other" ? (
+                          <span className="text-lg leading-none select-none shrink-0">🌎</span>
+                        ) : (
+                          <img 
+                            src={`https://flagcdn.com/w40/${c.code}.png`} 
+                            alt={`${c.name} flag`} 
+                            className="w-6 h-4 rounded-sm object-cover shadow-sm shrink-0 border border-slate-100" 
+                          />
+                        )}
                         <span>{c.name}</span>
                       </button>
                     );

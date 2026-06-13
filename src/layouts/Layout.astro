@@ -196,8 +196,20 @@ const {
 		<!-- Floating Navigation Header -->
 		<header
 			id="main-header"
-			class="fixed top-0 left-0 right-0 z-40 transition-all duration-500 bg-white/80 backdrop-blur-md border-b border-slate-200/60 shadow-sm"
+			class="fixed top-0 left-0 right-0 z-40 transition-all duration-500 bg-white/80 backdrop-blur-md border-b border-slate-200/60 shadow-sm flex flex-col"
 		>
+			<!-- Rotating Announcement Bar -->
+			<div
+				id="announcement-bar"
+				class="w-full bg-[#075E64] text-white py-2 px-4 transition-all duration-500 overflow-hidden relative z-50 text-center text-[12px] sm:text-xs font-semibold font-sans tracking-wide shrink-0"
+				style="max-height: 40px; box-sizing: border-box;"
+			>
+				<div class="flex items-center justify-center gap-2 max-w-7xl mx-auto">
+					<span class="inline-flex h-2 w-2 rounded-full bg-[#F08A00] animate-pulse"></span>
+					<span id="announcement-text" class="transition-opacity duration-300">September 2025 UK intake — only 12 consultation slots left this week.</span>
+				</div>
+			</div>
+
 			<nav
 				class="max-w-7xl mx-auto px-6 py-3.5 flex items-center justify-between transition-all duration-500"
 				id="main-nav"
@@ -629,7 +641,7 @@ const {
 		</div>
 
 		<!-- Main Page Content -->
-		<main id="main-content" class="flex-grow pt-20">
+		<main id="main-content" class="flex-grow pt-24 md:pt-[104px]">
 			<slot />
 		</main>
 
@@ -889,9 +901,18 @@ const {
 				const navLinks = document.querySelectorAll(".nav-link");
 				const navLogoIcon = document.getElementById("nav-logo-icon");
 				const navPhoneLink = document.getElementById("nav-phone-link");
+				const announcementBar = document.getElementById("announcement-bar");
 
 				const handleScroll = () => {
 					if (window.scrollY > 20) {
+						// Collapse announcement bar
+						if (announcementBar) {
+							announcementBar.style.maxHeight = "0px";
+							announcementBar.style.paddingTop = "0px";
+							announcementBar.style.paddingBottom = "0px";
+							announcementBar.style.opacity = "0";
+						}
+						
 						// Scrolled: Teal background, white text, glassmorphism
 						header?.classList.add("scrolled-header");
 						header?.classList.remove(
@@ -926,6 +947,14 @@ const {
 						navPhoneLink?.classList.add("text-white/90");
 
 					} else {
+						// Expand announcement bar
+						if (announcementBar) {
+							announcementBar.style.maxHeight = "40px";
+							announcementBar.style.paddingTop = "8px";
+							announcementBar.style.paddingBottom = "8px";
+							announcementBar.style.opacity = "1";
+						}
+						
 						// Top: White background, dark text
 						header?.classList.remove("scrolled-header");
 						header?.classList.add(
@@ -964,6 +993,123 @@ const {
 				window.addEventListener("scroll", handleScroll);
 				handleScroll(); // Trigger immediately to sync layout
 
+				// Announcement Bar Text Rotation
+				const announcements = [
+					"September 2025 UK intake — only 12 consultation slots left this week.",
+					"Canada Sept 2025 Intake: Deadlines are approaching fast — book your free file audit today.",
+					"USA Fall 2025 priority admissions closing soon. Only 8 counseling slots remaining.",
+					"Germany Winter 2025 Intake: Get pre-approved loan letters within 48 hours."
+				];
+				let currentAnnIndex = 0;
+				const annTextEl = document.getElementById("announcement-text");
+				let rotationInterval: any;
+
+				if (annTextEl && announcements.length > 1) {
+					rotationInterval = setInterval(() => {
+						annTextEl.style.opacity = "0";
+						setTimeout(() => {
+							currentAnnIndex = (currentAnnIndex + 1) % announcements.length;
+							annTextEl.innerText = announcements[currentAnnIndex];
+							annTextEl.style.opacity = "1";
+						}, 300);
+					}, 4000);
+				}
+
+				// Soft Modal logic: show after 45s without click on CTA
+				let hasClickedCTA = false;
+				let softModalTimer: any;
+				const isModalShown = localStorage.getItem("softModalShown") === "true";
+
+				const showSoftModal = () => {
+					const modal = document.getElementById("soft-cta-modal");
+					const card = document.getElementById("soft-cta-card");
+					if (modal && card) {
+						modal.classList.remove("pointer-events-none", "opacity-0");
+						modal.classList.add("opacity-100");
+						card.classList.remove("scale-95", "opacity-0");
+						card.classList.add("scale-100", "opacity-100");
+						(window as any).lenis?.stop();
+					}
+				};
+
+				const closeSoftModal = () => {
+					const modal = document.getElementById("soft-cta-modal");
+					const card = document.getElementById("soft-cta-card");
+					if (modal && card) {
+						modal.classList.remove("opacity-100");
+						modal.classList.add("opacity-0", "pointer-events-none");
+						card.classList.remove("scale-100", "opacity-100");
+						card.classList.add("scale-95", "opacity-0");
+						(window as any).lenis?.start();
+						localStorage.setItem("softModalShown", "true");
+					}
+				};
+
+				const cancelSoftModal = () => {
+					if (softModalTimer) {
+						clearTimeout(softModalTimer);
+						softModalTimer = null;
+					}
+					hasClickedCTA = true;
+				};
+
+				if (!isModalShown) {
+					// Detect standard CTA click
+					const handleCtaClick = (e: MouseEvent) => {
+						const target = e.target as HTMLElement;
+						const isCta = target.closest('button, a, [onclick*="CounsellorForm"]');
+						if (isCta) {
+							const href = (isCta as HTMLAnchorElement).href || "";
+							const onclickAttr = isCta.getAttribute("onclick") || "";
+							if (
+								isCta.id === "nav-cta" ||
+								isCta.id === "soft-cta-btn" ||
+								href.includes("inquiry") ||
+								href.includes("tel:") ||
+								href.includes("wa.me") ||
+								href.includes("whatsapp") ||
+								onclickAttr.includes("openCounsellorForm")
+							) {
+								cancelSoftModal();
+							}
+						}
+					};
+
+					document.addEventListener("click", handleCtaClick);
+
+					// Hook into openCounsellorForm triggers
+					const originalOpenCounsellorForm = (window as any).openCounsellorForm;
+					(window as any).openCounsellorForm = function(...args: any[]) {
+						cancelSoftModal();
+						return originalOpenCounsellorForm?.apply(this, args);
+					};
+
+					// Trigger timer
+					softModalTimer = setTimeout(() => {
+						if (!hasClickedCTA) {
+							showSoftModal();
+						}
+					}, 45000);
+
+					// Close handles
+					const closeBtn = document.getElementById("soft-cta-close");
+					const secCloseBtn = document.getElementById("soft-cta-secondary-close");
+					const modalOverlay = document.getElementById("soft-cta-modal");
+					const softCtaBtn = document.getElementById("soft-cta-btn");
+
+					closeBtn?.addEventListener("click", closeSoftModal);
+					secCloseBtn?.addEventListener("click", closeSoftModal);
+					modalOverlay?.addEventListener("click", (e) => {
+						if (e.target === modalOverlay) {
+							closeSoftModal();
+						}
+					});
+					softCtaBtn?.addEventListener("click", () => {
+						closeSoftModal();
+						(window as any).openCounsellorForm?.();
+					});
+				}
+
 				// 2. Fast & Responsive Lenis Scroll Configuration
 				if ((window as any).lenis) {
 					(window as any).lenis.destroy();
@@ -1001,6 +1147,8 @@ const {
 					window.removeEventListener("scroll", handleScroll);
 					cancelAnimationFrame(rafId);
 					lenis.destroy();
+					if (rotationInterval) clearInterval(rotationInterval);
+					if (softModalTimer) clearTimeout(softModalTimer);
 				}, { once: true });
 			}
 
@@ -1037,6 +1185,75 @@ const {
 				};
 			}
 		</script>
+
+		<!-- Soft CTA Popup Modal -->
+		<div
+			id="soft-cta-modal"
+			class="fixed inset-0 z-[99999] flex items-center justify-center bg-slate-900/60 backdrop-blur-md opacity-0 pointer-events-none transition-all duration-500"
+		>
+			<div
+				id="soft-cta-card"
+				class="relative w-full max-w-lg bg-white border border-slate-200 shadow-2xl rounded-[2rem] p-8 md:p-10 transform scale-95 opacity-0 transition-all duration-500 text-left font-sans mx-4"
+			>
+				<!-- Close Button -->
+				<button
+					id="soft-cta-close"
+					class="absolute top-6 right-6 p-2 rounded-full border border-slate-100 hover:bg-slate-50 text-slate-400 hover:text-slate-600 transition-colors cursor-pointer"
+					aria-label="Close popup"
+				>
+					<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="w-5 h-5"><line x1="18" x2="6" y1="6" y2="18"/><line x1="6" x2="18" y1="6" y2="18"/></svg>
+				</button>
+
+				<!-- Content -->
+				<div class="space-y-6">
+					<span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#FFE5CC] border border-[#F08A00]/20 text-xs font-semibold text-[#F08A00] font-sans">
+						<span class="w-1.5 h-1.5 rounded-full bg-[#F08A00] animate-ping"></span>
+						Still exploring?
+					</span>
+					
+					<div class="space-y-3">
+						<h3 class="text-2xl sm:text-3xl font-extrabold font-display text-slate-800 tracking-tight leading-tight">
+							Book a free counseling call.
+						</h3>
+						<p class="text-sm text-slate-500 leading-relaxed font-sans font-normal">
+							Our senior admissions experts are here to help. Get a personalized profile evaluation and country comparison list — 100% free, no strings attached.
+						</p>
+					</div>
+
+					{/* Trust stats */}
+					<div class="grid grid-cols-3 gap-4 border-y border-slate-100 py-4 text-center font-sans">
+						<div>
+							<span class="block text-lg font-bold text-slate-800 font-display">30K+</span>
+							<span class="block text-[10px] text-slate-400 font-semibold uppercase tracking-wider">Students Placed</span>
+						</div>
+						<div>
+							<span class="block text-lg font-bold text-[#0A7880] font-display">97%</span>
+							<span class="block text-[10px] text-slate-400 font-semibold uppercase tracking-wider">Visa Success</span>
+						</div>
+						<div>
+							<span class="block text-lg font-bold text-[#F08A00] font-display">100%</span>
+							<span class="block text-[10px] text-slate-400 font-semibold uppercase tracking-wider">Free Advice</span>
+						</div>
+					</div>
+
+					<!-- Actions -->
+					<div class="flex flex-col sm:flex-row gap-3 pt-2 font-sans">
+						<button
+							id="soft-cta-btn"
+							class="flex-grow py-3 px-6 rounded-full bg-[#0A7880] hover:bg-[#075E64] text-white font-bold text-sm transition-all text-center justify-center flex items-center gap-2 cursor-pointer shadow-md shadow-[#0A7880]/10"
+						>
+							Book Free Call
+						</button>
+						<button
+							id="soft-cta-secondary-close"
+							class="py-3 px-6 rounded-full bg-slate-50 border border-slate-200 hover:bg-slate-100 text-slate-700 font-semibold text-sm transition-all cursor-pointer text-center"
+						>
+							Maybe Later
+						</button>
+					</div>
+				</div>
+			</div>
+		</div>
 
 		<CounsellorForm client:load />
 

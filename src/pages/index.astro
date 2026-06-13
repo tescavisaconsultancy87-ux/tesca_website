@@ -3,6 +3,7 @@ import Layout from "../layouts/Layout.astro";
 import HeroVisuals from "../components/HeroVisuals";
 import CountrySelector from "../components/CountrySelector";
 import SuccessStories from "../components/SuccessStories";
+import StudentCarousel from "../components/StudentCarousel";
 import FintechCalculators from "../components/FintechCalculators";
 import AICounsellor from "../components/AICounsellor";
 import { 
@@ -206,6 +207,9 @@ import {
 
     </div>
   </section>
+
+  {/* ==================== STUDENT SUCCESS CAROUSEL ==================== */}
+  <StudentCarousel client:load />
 
   {/* ==================== SECTION 4: TESTIMONIALS (VOICES FROM COMMUNITY) ==================== */}
   <section class="py-24 bg-white relative text-left font-sans">
