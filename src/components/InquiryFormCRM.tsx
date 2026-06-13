@@ -302,7 +302,7 @@ export default function InquiryFormCRM() {
       if (!formData.languageTestType) {
         errs.languageTestType = "Please select a language test";
       }
-      if (!formData.languageTestScore.trim()) {
+      if (formData.languageTestType && formData.languageTestType !== "None" && !formData.languageTestScore.trim()) {
         errs.languageTestScore = "Please enter your exam score";
       }
     }
@@ -336,42 +336,63 @@ export default function InquiryFormCRM() {
     if (!validateStep(9)) return;
     setIsSubmitting(true);
 
+    const addressStr = `${formData.address || ""}, ${formData.city || ""}, ${formData.state || ""}, ${formData.country || ""}`.replace(/^,\s*/, "");
+    const educationStr = `Highest: ${formData.highest} | 10th: ${formData.tenthYear} (${formData.tenthPercent}%, ${formData.tenthBoard}${formData.tenthStream ? `, ${formData.tenthStream}` : ""})` + (formData.completedTwelfth === "Yes" ? ` | 12th: ${formData.twelfthYear} (${formData.twelfthPercent}%, ${formData.twelfthBoard}, ${formData.twelfthStream})` : " | 12th: Not Completed") + (formData.collegeYear ? ` | College: ${formData.collegeYear} (${formData.collegeGpa} GPA, ${formData.collegeUni}, ${formData.collegeCourse})` : "");
+    const countriesStr = formData.preferredCountries.join(", ");
+    const universitiesStr = formData.preferredUniversities.join(", ");
+    const languageStr = formData.languageTestType ? `${formData.languageTestType}: ${formData.languageTestScore}` : "None";
+    const refusalStr = formData.visaRefusal === "Yes" ? `Yes (${formData.refusalCountry}, Date: ${formData.refusalDate}, Reason: ${formData.refusalReason})` : "No";
+
+    const detailedMessage = `🚨 CRM Lead Capture Form Submission
+---------------------------------------
+Lead ID: ${formData.leadId}
+Full Name: ${formData.fullName}
+Mobile/WhatsApp: ${formData.mobileNumber}
+Email: ${formData.email}
+Address: ${addressStr || "Not provided"}
+City: ${formData.city || "Not provided"}
+State: ${formData.state || "Not provided"}
+Country: ${formData.country || "Not provided"}
+Lead Source: ${formData.leadSource === "Reference" ? `Reference (${formData.refName} - ${formData.refMobile})` : formData.leadSource}
+Inquiry/Visa Type: ${formData.inquiryType.join(", ")}
+Education: ${educationStr}
+Preferred Countries: ${countriesStr || "None"}
+Preferred Universities: ${universitiesStr || "None"}
+Language Test: ${languageStr}
+Visa Refusal History: ${refusalStr}
+Comments: ${formData.comments || "None"}`;
+
+    // Keys match createHeaders() / doPost column order exactly — do not reorder
     const sheetPayload = {
-      "Timestamp": new Date().toLocaleString(),
-      "Lead ID": formData.leadId,
-      "Full Name": formData.fullName,
-      "Mobile Number": formData.mobileNumber,
-      "Email": formData.email,
-      "Address": `${formData.address || ""}, ${formData.city || ""}, ${formData.state || ""}, ${formData.country || ""}`.replace(/^,\s*/, ""),
-      "City": formData.city,
-      "State": formData.state,
-      "Country": formData.country,
-      "Lead Source": formData.leadSource === "Reference" ? `Reference (${formData.refName} - ${formData.refMobile})` : formData.leadSource,
-      "Inquiry Type": formData.inquiryType.join(", "),
-      "Education Details": `Highest: ${formData.highest} | 10th: ${formData.tenthYear} (${formData.tenthPercent}%, ${formData.tenthBoard}${formData.tenthStream ? `, ${formData.tenthStream}` : ""})` + (formData.completedTwelfth === "Yes" ? ` | 12th: ${formData.twelfthYear} (${formData.twelfthPercent}%, ${formData.twelfthBoard}, ${formData.twelfthStream})` : " | 12th: Not Completed") + (formData.collegeYear ? ` | College: ${formData.collegeYear} (${formData.collegeGpa} GPA, ${formData.collegeUni}, ${formData.collegeCourse})` : ""),
-      "Preferred Countries": formData.preferredCountries.join(", "),
-      "Preferred Universities": formData.preferredUniversities.join(", "),
-      "Language Test Details": `${formData.languageTestType}: ${formData.languageTestScore}`,
-      "Visa Refusal Details": formData.visaRefusal === "Yes" ? `Yes (${formData.refusalCountry}, Date: ${formData.refusalDate}, Reason: ${formData.refusalReason})` : "No",
-      "Comments": formData.comments || "None",
-      
-      // Standard backward compatibility keys for general Apps Script structures
-      name: formData.fullName,
-      email: formData.email,
-      phone: formData.mobileNumber,
-      source: "Inquiry CRM Page",
-      message: `CRM Inquiry Submission. Lead ID: ${formData.leadId}. Countries: ${formData.preferredCountries.join(", ")}. Universities: ${formData.preferredUniversities.join(", ")}. Refusal: ${formData.visaRefusal}. Comments: ${formData.comments || "None"}.`
+      "Timestamp":              new Date().toLocaleString("en-IN", { timeZone: "Asia/Kolkata" }),
+      "Lead ID":                formData.leadId,
+      "Full Name":              formData.fullName,
+      "Mobile Number":          formData.mobileNumber,
+      "Email":                  formData.email,
+      "Address":                addressStr,
+      "City":                   formData.city,
+      "State":                  formData.state,
+      "Country":                formData.country,
+      "Lead Source":            formData.leadSource === "Reference"
+                                  ? `Reference (${formData.refName} - ${formData.refMobile})`
+                                  : formData.leadSource,
+      "Inquiry Type":           formData.inquiryType.join(", "),
+      "Education Details":      educationStr,
+      "Preferred Countries":    countriesStr || "None",
+      "Preferred Universities": universitiesStr || "None",
+      "Language Test Details":  languageStr,
+      "Visa Refusal Details":   refusalStr,
+      "Comments":               formData.comments || "None",
     };
 
     try {
       const sheetUrl = import.meta.env.PUBLIC_GOOGLE_SHEET_URL;
       if (sheetUrl) {
+        // Must use text/plain to avoid CORS preflight on Apps Script
         await fetch(sheetUrl, {
           method: "POST",
           mode: "no-cors",
-          headers: {
-            "Content-Type": "text/plain",
-          },
+          headers: { "Content-Type": "text/plain" },
           body: JSON.stringify(sheetPayload),
         });
       }
@@ -380,21 +401,18 @@ export default function InquiryFormCRM() {
       const web3Key = import.meta.env.WEB3FORMS_ACCESS_KEY || "85242216-06e7-475c-ad35-beb2808b60d7";
       await fetch("https://api.web3forms.com/submit", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "Accept": "application/json"
-        },
+        headers: { "Content-Type": "application/json", "Accept": "application/json" },
         body: JSON.stringify({
           access_key: web3Key,
-          name: formData.fullName,
-          email: formData.email,
+          name:    formData.fullName,
+          email:   formData.email,
           subject: `🚨 CRM Assessment Lead: ${formData.fullName} [${formData.leadId}]`,
-          message: `A new assessment inquiry has been submitted.\n\nLead ID: ${formData.leadId}\nName: ${formData.fullName}\nPhone: ${formData.mobileNumber}\nEmail: ${formData.email}\nInquiry Type: ${sheetPayload["Inquiry Type"]}\nEducation: ${sheetPayload["Education Details"]}\nCountries: ${sheetPayload["Preferred Countries"]}\nUniversities: ${sheetPayload["Preferred Universities"]}\nLanguage Test: ${sheetPayload["Language Test Details"]}\nVisa Refusal: ${sheetPayload["Visa Refusal Details"]}\nComments: ${formData.comments || "None"}`,
-          source: "CRM Lead Capture Form"
-        })
+          message: detailedMessage,
+          source:  "CRM Lead Capture Form",
+        }),
       });
 
-      // Success triggers
+      // Success
       setIsSuccess(true);
       localStorage.removeItem("tesca_crm_inquiry");
     } catch (err) {
@@ -541,7 +559,7 @@ export default function InquiryFormCRM() {
                 <h1 className="text-xl font-bold font-display text-[#0F4C81]">TESCA Visa Consultancy</h1>
                 <span className="text-[9px] font-bold text-amber-600 bg-amber-50 px-2 py-0.5 border border-amber-200/50 rounded font-sans uppercase">Since 2005</span>
               </div>
-              <h2 className="text-sm font-bold text-slate-700 font-sans">"Study Abroad, Visa & Immigration Assessment Form"</h2>
+              <h2 className="text-sm font-bold text-slate-700 font-sans">"-Be Genius, Be with Genius"</h2>
               <p className="text-xs text-slate-400 font-sans font-normal mt-1 leading-normal">
                 Please complete the form below and our counselor will call you in some times.
               </p>
@@ -1089,14 +1107,22 @@ export default function InquiryFormCRM() {
                 <h3 className="text-lg font-bold text-slate-800 font-display border-b border-slate-100 pb-2">📝 Language Test Details</h3>
                 <p className="text-xs text-slate-500 font-sans">Select the language test you have appeared for.</p>
 
-                <div className="grid grid-cols-2 sm:grid-cols-5 gap-2.5">
-                  {["IELTS", "PTE", "TOEFL", "Duolingo", "German Language Test"].map((test) => {
-                    const isSelected = formData.languageTestType === test;
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5">
+                  {["IELTS", "PTE", "TOEFL", "Duolingo", "German Language Test", "None"].map((test) => {
+                    const isSelected = test === "None"
+                      ? formData.languageTestType === "None"
+                      : formData.languageTestType === test;
                     return (
                       <button
                         key={test}
                         type="button"
-                        onClick={() => updateField({ languageTestType: test })}
+                        onClick={() => {
+                          if (test === "None") {
+                            updateField({ languageTestType: "None", languageTestScore: "" });
+                          } else {
+                            updateField({ languageTestType: test });
+                          }
+                        }}
                         className={`px-3 py-3 border text-xs font-bold rounded-xl transition-all cursor-pointer font-sans text-center leading-tight ${
                           isSelected 
                             ? "bg-[#0F4C81]/5 border-[#0F4C81] text-[#0F4C81]" 
@@ -1110,7 +1136,7 @@ export default function InquiryFormCRM() {
                 </div>
                 {errors.languageTestType && <p className="text-[10px] text-red-500 font-sans font-medium mt-0.5">{errors.languageTestType}</p>}
 
-                {formData.languageTestType && (
+                {formData.languageTestType && formData.languageTestType !== "None" && (
                   <div className="max-w-xs space-y-1 animate-[fadeIn_0.3s_ease-out]">
                     <label className="text-xs font-bold uppercase tracking-wider text-slate-600 font-sans">Exam Score *</label>
                     <input 
