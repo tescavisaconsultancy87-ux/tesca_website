@@ -1238,17 +1238,6 @@ Comments: ${formData.comments || "None"}`;
               <div className="space-y-4 animate-[slideIn_0.35s_ease-out] text-left">
                 <h3 className="text-lg font-bold text-slate-800 font-display border-b border-slate-100 pb-2">💬 Additional Information</h3>
                 
-                <div className="space-y-1">
-                  <label className="text-xs font-bold uppercase tracking-wider text-slate-600 font-sans">Questions or Comments</label>
-                  <textarea 
-                    rows={3}
-                    value={formData.comments}
-                    onChange={e => updateField({ comments: e.target.value })}
-                    placeholder="Type any questions, timelines, or context for the counselor..."
-                    className="w-full px-4 py-2.5 bg-white border border-slate-200 focus:border-[#0F4C81] focus:ring-2 focus:ring-[#0F4C81]/15 rounded-xl text-sm placeholder-slate-400 focus:outline-none transition-all font-sans resize-none"
-                  ></textarea>
-                </div>
-
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <label className="text-xs font-bold uppercase tracking-wider text-slate-600 font-sans">Preferred Contact Method *</label>

@@ -1015,12 +1015,25 @@ const {
 					}, 4000);
 				}
 
+				// Establish stable openCounsellorForm function
+				if (typeof window !== "undefined") {
+					(window as any).openCounsellorForm = function() {
+						window.dispatchEvent(new CustomEvent("open-counsellor-form"));
+					};
+				}
+
 				// Soft Modal logic: show after 45s without click on CTA
 				let hasClickedCTA = false;
 				let softModalTimer: any;
-				const isModalShown = localStorage.getItem("softModalShown") === "true";
+				
+				const urlParams = new URLSearchParams(window.location.search);
+				const isTestMode = urlParams.get("test-modal") === "true";
+				const isModalShown = !isTestMode && localStorage.getItem("softModalShown") === "true";
+
+				console.log("[Soft Modal] isModalShown:", isModalShown, "isTestMode:", isTestMode);
 
 				const showSoftModal = () => {
+					console.log("[Soft Modal] Showing soft modal.");
 					const modal = document.getElementById("soft-cta-modal");
 					const card = document.getElementById("soft-cta-card");
 					if (modal && card) {
@@ -1033,6 +1046,7 @@ const {
 				};
 
 				const closeSoftModal = () => {
+					console.log("[Soft Modal] Closing soft modal.");
 					const modal = document.getElementById("soft-cta-modal");
 					const card = document.getElementById("soft-cta-card");
 					if (modal && card) {
@@ -1047,29 +1061,39 @@ const {
 
 				const cancelSoftModal = () => {
 					if (softModalTimer) {
+						console.log("[Soft Modal] Timer cancelled.");
 						clearTimeout(softModalTimer);
 						softModalTimer = null;
 					}
 					hasClickedCTA = true;
+					if (!isTestMode) {
+						localStorage.setItem("softModalShown", "true");
+					}
 				};
 
+				let handleCtaClick: any;
+
 				if (!isModalShown) {
+					console.log("[Soft Modal] Initializing 45s timer.");
 					// Detect standard CTA click
-					const handleCtaClick = (e: MouseEvent) => {
+					handleCtaClick = (e: MouseEvent) => {
 						const target = e.target as HTMLElement;
-						const isCta = target.closest('button, a, [onclick*="CounsellorForm"]');
+						const isCta = target.closest('button, a, [onclick*="CounsellorForm"], input[type="submit"]');
 						if (isCta) {
 							const href = (isCta as HTMLAnchorElement).href || "";
 							const onclickAttr = isCta.getAttribute("onclick") || "";
 							if (
 								isCta.id === "nav-cta" ||
 								isCta.id === "soft-cta-btn" ||
+								isCta.getAttribute("type") === "submit" ||
+								isCta.closest("form") ||
 								href.includes("inquiry") ||
 								href.includes("tel:") ||
 								href.includes("wa.me") ||
 								href.includes("whatsapp") ||
 								onclickAttr.includes("openCounsellorForm")
 							) {
+								console.log("[Soft Modal] CTA click detected:", isCta);
 								cancelSoftModal();
 							}
 						}
@@ -1077,12 +1101,8 @@ const {
 
 					document.addEventListener("click", handleCtaClick);
 
-					// Hook into openCounsellorForm triggers
-					const originalOpenCounsellorForm = (window as any).openCounsellorForm;
-					(window as any).openCounsellorForm = function(...args: any[]) {
-						cancelSoftModal();
-						return originalOpenCounsellorForm?.apply(this, args);
-					};
+					// Hook into open-counsellor-form event
+					window.addEventListener("open-counsellor-form", cancelSoftModal);
 
 					// Trigger timer
 					softModalTimer = setTimeout(() => {
@@ -1145,6 +1165,8 @@ const {
 				// Clean up resources on page hide
 				document.addEventListener("astro:before-swap", () => {
 					window.removeEventListener("scroll", handleScroll);
+					if (handleCtaClick) document.removeEventListener("click", handleCtaClick);
+					if (cancelSoftModal) window.removeEventListener("open-counsellor-form", cancelSoftModal);
 					cancelAnimationFrame(rafId);
 					lenis.destroy();
 					if (rotationInterval) clearInterval(rotationInterval);

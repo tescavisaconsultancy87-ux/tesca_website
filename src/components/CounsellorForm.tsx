@@ -31,11 +31,14 @@ export default function CounsellorForm() {
   const [errors, setErrors] = useState<Record<string, string>>({});
 
   useEffect(() => {
-    (window as any).openCounsellorForm = () => {
+    const handleOpen = () => {
       setStatus("idle");
       setIsOpen(true);
     };
-    return () => { delete (window as any).openCounsellorForm; };
+    window.addEventListener("open-counsellor-form", handleOpen);
+    return () => {
+      window.removeEventListener("open-counsellor-form", handleOpen);
+    };
   }, []);
 
   useEffect(() => {
@@ -113,13 +116,13 @@ export default function CounsellorForm() {
               "Content-Type": "text/plain",
             },
             body: JSON.stringify({
-              name: `${firstName} ${lastName}`,
-              email: email,
-              phone: phone,
-              counselling_mode: mode,
-              destination: destination || "Not specified",
-              message: `New enquiry from ${firstName} ${lastName}. Phone: ${phone}. Preferred Mode: ${mode}. Destination: ${destination || "Not specified"}.`,
-              source: "Main Enquiry Form",
+              "Full Name": `${firstName} ${lastName}`,
+              "Email": email,
+              "Mobile Number": phone,
+              "Counselling Mode": mode,
+              "Preferred Countries": destination || "Not specified",
+              "Comments": `Preferred Mode: ${mode}. Destination: ${destination || "Not specified"}.`,
+              "Lead Source": "Main Enquiry Form",
             }),
           }).catch(err => console.error("Google Sheets post failed:", err));
         } catch (sheetErr) {
