@@ -65,7 +65,7 @@ import {
 
     {/* Test Cards Grid */}
     <div
-      class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-16"
+      class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-16 items-start"
       id="ielts"
     >
       {
@@ -78,6 +78,12 @@ import {
             bg: "bg-accent-blue/5",
             text: "text-accent-blue",
             icon: BookOpen,
+            detailedContent: [
+              "Covers both IELTS Academic and IELTS General Training modules.",
+              "Comprehensive coverage of Listening, Reading, Writing, and Speaking sections.",
+              "Includes 20+ full-length computerized mock tests and detailed band scoring feedback.",
+              "Interactive speaking simulators with personalized assessment and pronunciation reviews."
+            ]
           },
           {
             name: "PTE",
@@ -87,6 +93,12 @@ import {
             bg: "bg-blue-50",
             text: "text-blue-600",
             icon: Mic,
+            detailedContent: [
+              "Fully computer-based with automated AI scoring mapping university standards.",
+              "Dedicated practice on Speaking & Writing, Reading, and Listening modules.",
+              "Real-time PTE AI scoring engine access to benchmark performance instantly.",
+              "Fast-track results preparation (average score release in less than 48 hours)."
+            ]
           },
           {
             name: "German",
@@ -96,6 +108,12 @@ import {
             bg: "bg-amber-50",
             text: "text-amber-600",
             icon: Languages,
+            detailedContent: [
+              "Covers Goethe-Zertifikat levels (A1-C2), TestDaF, and university entry exams.",
+              "Focused coaching on advanced grammar, complex text reading, and listening compression.",
+              "Interactive conversation groups for fluent speaking and pronunciation mastery.",
+              "Comprehensive resources for study visa language compliance checks."
+            ]
           },
           {
             name: "Spoken English",
@@ -105,6 +123,12 @@ import {
             bg: "bg-purple-50",
             text: "text-purple-600",
             icon: Globe,
+            detailedContent: [
+              "Fluency building exercises, vocabulary enrichment, and accent training.",
+              "Simulated corporate job interviews, group discussions, and public speaking coaching.",
+              "Personalized feedback on vocabulary usage, sentence structures, and body language.",
+              "Confidence booster drills to remove speaking hesitation and communication barriers."
+            ]
           },
           {
             name: "French",
@@ -114,33 +138,68 @@ import {
             bg: "bg-indigo-50",
             text: "text-indigo-600",
             icon: Languages,
+            detailedContent: [
+              "DELF/DALF certification preparation across levels A1 to C2.",
+              "Structured practice modules for writing, reading, listening, and conversational skills.",
+              "Native-level aligned curriculum and official practice resources.",
+              "Preparation for bilingual university admissions and PR immigration interviews."
+            ]
           },
         ].map((test) => {
           const Icon = test.icon;
           return (
-            <a
-              href={`#${test.id}-engine`}
-              class={`rounded-3xl p-8 space-y-5 text-left border border-slate-200/80 shadow-sm flex flex-col justify-between items-start hover:-translate-y-1 transition-all duration-300 ${test.bg}`}
+            <div
+              id={`test-${test.id}`}
+              class={`rounded-3xl p-8 transition-all duration-500 flex flex-col justify-between items-start border border-slate-200/80 shadow-sm relative overflow-hidden group ${test.bg}`}
             >
-              <div class="space-y-4">
-                <div
-                  class={`p-3.5 rounded-xl ${test.bg} ${test.text} inline-block`}
-                >
-                  <Icon class="w-6 h-6" />
+              <div class="w-full">
+                <div class="space-y-4">
+                  <div
+                    class={`p-3.5 rounded-xl ${test.bg} ${test.text} inline-block`}
+                  >
+                    <Icon class="w-6 h-6" />
+                  </div>
+                  <h3 class="text-[20px] lg:text-[24px] font-bold text-slate-800 font-display leading-snug">
+                    {test.name}
+                  </h3>
+                  <p class="text-[15px] text-slate-600 leading-relaxed font-sans font-normal">
+                    {test.desc}
+                  </p>
                 </div>
-                <h3 class="text-[20px] lg:text-[24px] font-bold text-slate-800 font-display leading-snug">
-                  {test.name}
-                </h3>
-                <p class="text-[15px] text-slate-600 leading-relaxed font-sans font-normal">
-                  {test.desc}
-                </p>
+                
+                <div class="test-details max-h-0 overflow-hidden transition-all duration-500 ease-in-out">
+                  <div class="pt-6 border-t border-slate-200/40 mt-4 space-y-4 text-left">
+                    <h4 class="text-xs font-bold font-sans uppercase tracking-wider text-slate-800 mb-2">Preparation Breakdown:</h4>
+                    <ul class="space-y-2.5">
+                      {test.detailedContent.map((item) => (
+                        <li class="flex items-start gap-2 text-sm text-slate-600 font-sans font-normal leading-relaxed">
+                          <span class={`w-1.5 h-1.5 rounded-full shrink-0 mt-2 bg-current ${test.text}`}></span>
+                          <span>{item}</span>
+                        </li>
+                      ))}
+                    </ul>
+                    <div class="pt-4 flex items-center justify-between gap-4 border-t border-slate-100/50 mt-4">
+                      <span class="text-xs font-semibold text-slate-500 font-sans">Ready to score?</span>
+                      <button
+                        type="button"
+                        onclick="window.openCounsellorForm?.()"
+                        class={`px-4 py-2 text-white font-semibold text-xs rounded-full shadow-sm hover:scale-[1.02] transition-all cursor-pointer font-sans ${test.id === 'ielts' ? 'bg-accent-blue hover:bg-accent-indigo' : test.id === 'pte' ? 'bg-blue-600 hover:bg-blue-700' : test.id === 'german' ? 'bg-amber-600 hover:bg-amber-700' : test.id === 'spoken-english' ? 'bg-purple-600 hover:bg-purple-700' : 'bg-indigo-600 hover:bg-indigo-700'}`}
+                      >
+                        Start Prep
+                      </button>
+                    </div>
+                  </div>
+                </div>
               </div>
-              <span
-                class={`text-[15px] font-semibold font-sans tracking-wide ${test.text} hover:underline inline-flex items-center gap-1 pt-2`}
+              
+              <button 
+                type="button"
+                data-target={`test-${test.id}`}
+                class={`test-toggle-btn text-[15px] font-semibold font-sans tracking-wide ${test.text} hover:text-slate-800 inline-flex items-center gap-1 pt-4 cursor-pointer focus:outline-none`}
               >
-                Start Prep <span class="text-lg">→</span>
-              </span>
-            </a>
+                <span class="btn-text">Learn More</span> <span class="arrow-icon transition-transform duration-300">→</span>
+              </button>
+            </div>
           );
         })
       }
@@ -355,3 +414,74 @@ import {
 
   <AICounsellor client:load />
 </Layout>
+
+<script>
+  function setupTestToggles() {
+    const toggleButtons = document.querySelectorAll('.test-toggle-btn');
+    toggleButtons.forEach(btn => {
+      // Avoid duplicate event listeners by replacing with clone
+      const newBtn = btn.cloneNode(true);
+      btn.parentNode?.replaceChild(newBtn, btn);
+    });
+
+    const newToggleButtons = document.querySelectorAll('.test-toggle-btn');
+    newToggleButtons.forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        e.preventDefault();
+        const cardId = btn.getAttribute('data-target');
+        if (!cardId) return;
+        const card = document.getElementById(cardId);
+        if (!card) return;
+
+        const details = card.querySelector('.test-details') as HTMLElement;
+        const btnText = btn.querySelector('.btn-text') as HTMLElement;
+        const arrow = btn.querySelector('.arrow-icon') as HTMLElement;
+
+        if (details && btnText && arrow) {
+          const isExpanded = details.style.maxHeight && details.style.maxHeight !== '0px';
+
+          if (!isExpanded) {
+            // Collapse all other expanded test cards
+            const allCards = document.querySelectorAll('[id^="test-"]');
+            allCards.forEach(otherCard => {
+              if (otherCard.id !== cardId) {
+                const otherDetails = otherCard.querySelector('.test-details') as HTMLElement;
+                const otherBtn = otherCard.querySelector('.test-toggle-btn');
+                if (otherDetails && otherDetails.style.maxHeight && otherDetails.style.maxHeight !== '0px') {
+                  otherDetails.style.maxHeight = '0px';
+                  if (otherBtn) {
+                    const otherBtnText = otherBtn.querySelector('.btn-text');
+                    const otherArrow = otherBtn.querySelector('.arrow-icon') as HTMLElement;
+                    if (otherBtnText) otherBtnText.textContent = 'Learn More';
+                    if (otherArrow) otherArrow.style.transform = 'rotate(0deg)';
+                  }
+                  otherCard.classList.remove('border-accent-blue/30', 'shadow-md', 'scale-[1.01]', 'bg-white/95');
+                }
+              }
+            });
+          }
+
+          if (isExpanded) {
+            // Collapse
+            details.style.maxHeight = '0px';
+            btnText.textContent = 'Learn More';
+            arrow.style.transform = 'rotate(0deg)';
+            card.classList.remove('border-accent-blue/30', 'shadow-md', 'scale-[1.01]', 'bg-white/95');
+          } else {
+            // Expand
+            details.style.maxHeight = details.scrollHeight + 'px';
+            btnText.textContent = 'Show Less';
+            arrow.style.transform = 'rotate(90deg)';
+            card.classList.add('border-accent-blue/30', 'shadow-md', 'scale-[1.01]', 'bg-white/95');
+          }
+        }
+      });
+    });
+  }
+
+  // Initial setup
+  setupTestToggles();
+  // Listen for view transitions if enabled
+  document.addEventListener('astro:page-load', setupTestToggles);
+  document.addEventListener('astro:after-swap', setupTestToggles);
+</script>
