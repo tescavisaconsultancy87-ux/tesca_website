@@ -236,13 +236,16 @@ export default function StudentCarousel() {
     if (selectedStudent) {
       document.body.style.overflow = "hidden";
       document.documentElement.style.overflow = "hidden";
+      document.body.style.touchAction = "none";
     } else {
       document.body.style.overflow = "";
       document.documentElement.style.overflow = "";
+      document.body.style.touchAction = "";
     }
     return () => {
       document.body.style.overflow = "";
       document.documentElement.style.overflow = "";
+      document.body.style.touchAction = "";
     };
   }, [selectedStudent]);
 
@@ -340,7 +343,7 @@ export default function StudentCarousel() {
           <div className="absolute inset-0 cursor-default" onClick={closeModal}></div>
 
           {/* Modal Card */}
-          <div className="relative w-full max-w-xl bg-white rounded-3xl border border-slate-200 shadow-2xl p-6 md:p-8 transform transition-all duration-300 overflow-y-auto max-h-[90vh] z-10 text-left animate-zoom-in" style={{ overscrollBehavior: "contain" }}>
+          <div className="relative w-full max-w-xl bg-white rounded-3xl border border-slate-200 shadow-2xl p-6 md:p-8 transform transition-all duration-300 overflow-y-auto max-h-[90vh] z-10 text-left animate-zoom-in" style={{ overscrollBehavior: "contain", touchAction: "auto" }}>
             {/* Close Button */}
             <button
               onClick={closeModal}
