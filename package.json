@@ -9,7 +9,8 @@
     "dev": "node scripts/parse-pdf.js && astro dev",
     "build": "node scripts/parse-pdf.js && astro build && node scripts/remove-kv.js",
     "preview": "astro preview",
-    "astro": "astro"
+    "astro": "astro",
+    "list-kv": "wrangler kv namespace list"
   },
   "dependencies": {
     "@astrojs/cloudflare": "^13.7.0",
