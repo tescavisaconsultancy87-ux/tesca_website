@@ -340,10 +340,20 @@ export default function StudentCarousel() {
       {selectedStudent && (
         <div className="fixed inset-0 z-[99999] flex items-center justify-center bg-slate-900/60 backdrop-blur-md px-4 py-6 animate-fade-in transition-all">
           {/* Modal Backdrop Close trigger */}
-          <div className="absolute inset-0 cursor-default" onClick={closeModal}></div>
+          <div
+            className="absolute inset-0 cursor-default"
+            onClick={closeModal}
+            onWheel={(e) => e.preventDefault()}
+            onTouchMove={(e) => e.preventDefault()}
+          ></div>
 
           {/* Modal Card */}
-          <div className="relative w-full max-w-xl bg-white rounded-3xl border border-slate-200 shadow-2xl p-6 md:p-8 transform transition-all duration-300 overflow-y-auto max-h-[90vh] z-10 text-left animate-zoom-in" style={{ overscrollBehavior: "contain", touchAction: "auto" }}>
+          <div
+            className="relative w-full max-w-xl bg-white rounded-3xl border border-slate-200 shadow-2xl p-6 md:p-8 transform transition-all duration-300 overflow-y-auto max-h-[90vh] z-10 text-left animate-zoom-in"
+            style={{ overscrollBehavior: "contain", touchAction: "pan-y" }}
+            onWheel={(e) => e.stopPropagation()}
+            onTouchMove={(e) => e.stopPropagation()}
+          >
             {/* Close Button */}
             <button
               onClick={closeModal}
