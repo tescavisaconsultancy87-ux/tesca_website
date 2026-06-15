@@ -49,9 +49,9 @@ const cards = [
     title: "Student Leads",
     desc: "View and manage submissions from assessment forms & counselor requests.",
     count: totalLeads,
-    color: "from-blue-600/10 to-indigo-600/5 hover:border-indigo-500/40",
+    color: "from-blue-50 to-indigo-50 hover:border-indigo-300",
     icon: Users,
-    iconColor: "text-indigo-400 bg-indigo-500/10",
+    iconColor: "text-indigo-600 bg-indigo-50",
     href: "/admin/leads"
   },
   {
@@ -59,9 +59,9 @@ const cards = [
     title: "Universities Database",
     desc: "Add new universities and adjust scores/tuition criteria for matching.",
     count: totalUniversities,
-    color: "from-emerald-600/10 to-teal-600/5 hover:border-teal-500/40",
+    color: "from-emerald-50 to-teal-50 hover:border-teal-300",
     icon: GraduationCap,
-    iconColor: "text-teal-400 bg-teal-500/10",
+    iconColor: "text-teal-600 bg-teal-50",
     href: "/admin/universities"
   },
   {
@@ -69,9 +69,9 @@ const cards = [
     title: "Success Stories",
     desc: "Manage testimonials, student admissions, and flags shown on main page.",
     count: totalStories,
-    color: "from-amber-600/10 to-orange-600/5 hover:border-orange-500/40",
+    color: "from-amber-50 to-orange-50 hover:border-orange-300",
     icon: MessageSquare,
-    iconColor: "text-orange-400 bg-orange-500/10",
+    iconColor: "text-orange-600 bg-orange-50",
     href: "/admin/success-stories"
   },
   {
@@ -79,9 +79,9 @@ const cards = [
     title: "Alert Banner",
     desc: "Add or delete global alert text rotating at the very top of your site.",
     count: totalAnnouncements,
-    color: "from-purple-600/10 to-fuchsia-600/5 hover:border-fuchsia-500/40",
+    color: "from-purple-50 to-fuchsia-50 hover:border-fuchsia-300",
     icon: AlertCircle,
-    iconColor: "text-fuchsia-400 bg-fuchsia-500/10",
+    iconColor: "text-fuchsia-600 bg-fuchsia-50",
     href: "/admin/announcements"
   },
   {
@@ -89,9 +89,9 @@ const cards = [
     title: "Visa Bulletins",
     desc: "Publish study abroad news and link them directly to blogs.",
     count: totalUpdates,
-    color: "from-rose-600/10 to-red-600/5 hover:border-red-500/40",
+    color: "from-rose-50 to-red-50 hover:border-red-300",
     icon: FileText,
-    iconColor: "text-red-400 bg-red-500/10",
+    iconColor: "text-red-600 bg-red-50",
     href: "/admin/visa-updates"
   }
 ];
@@ -102,16 +102,16 @@ const cards = [
   description="Secure access configuration for TESCA web portals."
   showNavFooter={false}
 >
-  <div class="min-h-screen bg-slate-950 text-white font-sans flex flex-col">
+  <div class="min-h-screen bg-slate-50 text-slate-800 font-sans flex flex-col">
     <AdminHeader activeTab="dashboard" />
 
     <main class="max-w-7xl mx-auto w-full px-4 md:px-8 py-10 flex-grow text-left">
       {/* Title block */}
       <div class="mb-10">
-        <h1 class="text-3xl font-extrabold font-display tracking-tight text-white">
+        <h1 class="text-3xl font-extrabold font-display tracking-tight text-slate-800">
           Overview Control Panel
         </h1>
-        <p class="text-slate-400 text-xs mt-1">Quick summary statistics and page management portals.</p>
+        <p class="text-slate-500 text-xs mt-1">Quick summary statistics and page management portals.</p>
       </div>
 
       {/* Grid of Control Cards */}
@@ -121,25 +121,25 @@ const cards = [
           return (
             <a 
               href={card.href}
-              class={`group block p-6 rounded-3xl border border-slate-800 bg-gradient-to-br ${card.color} shadow-lg transition-all duration-300 hover:scale-[1.01]`}
+              class={`group block p-6 rounded-3xl border border-slate-200 bg-gradient-to-br ${card.color} shadow-sm transition-all duration-300 hover:scale-[1.01]`}
             >
               <div class="flex items-start justify-between mb-4">
                 <div class={`w-10 h-10 rounded-xl flex items-center justify-center ${card.iconColor}`}>
                   <Icon class="w-5 h-5" />
                 </div>
-                <div class="text-2xl font-extrabold font-mono text-slate-300 group-hover:text-white transition-colors">
+                <div class="text-2xl font-extrabold font-mono text-slate-700 group-hover:text-indigo-600 transition-colors">
                   {card.count}
                 </div>
               </div>
               
-              <h2 class="text-lg font-bold font-display text-white group-hover:text-indigo-400 transition-colors">
+              <h2 class="text-lg font-bold font-display text-slate-800 group-hover:text-indigo-600 transition-colors">
                 {card.title}
               </h2>
-              <p class="text-xs text-slate-400 mt-1.5 leading-relaxed">
+              <p class="text-xs text-slate-500 mt-1.5 leading-relaxed">
                 {card.desc}
               </p>
 
-              <div class="mt-6 flex items-center gap-1.5 text-xs font-bold text-slate-400 group-hover:text-white transition-colors">
+              <div class="mt-6 flex items-center gap-1.5 text-xs font-bold text-slate-500 group-hover:text-indigo-600 transition-colors">
                 Open Portal <ArrowRight class="w-3.5 h-3.5 transition-transform group-hover:translate-x-1" />
               </div>
             </a>

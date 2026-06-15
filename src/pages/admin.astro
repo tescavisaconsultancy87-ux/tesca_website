@@ -53,31 +53,31 @@ if (Astro.request.method === "POST") {
   description="Secure access configuration for TESCA web portals."
   showNavFooter={false}
 >
-  <div class="min-h-screen bg-slate-900 flex items-center justify-center p-6 text-left font-sans">
+  <div class="min-h-screen bg-white flex items-center justify-center p-6 text-left font-sans">
     
     <div class="max-w-md w-full">
       {/* Brand logo or header */}
       <div class="text-center mb-8">
-        <span class="inline-block text-xs font-bold bg-white/10 text-white/90 px-4 py-1.5 rounded-full border border-white/10 uppercase tracking-widest font-sans">
+        <span class="inline-block text-xs font-bold bg-slate-100 text-slate-700 px-4 py-1.5 rounded-full border border-slate-200 uppercase tracking-widest font-sans">
           TESCA Control Center
         </span>
-        <h1 class="text-3xl font-extrabold font-display tracking-tight text-white mt-4">
+        <h1 class="text-3xl font-extrabold font-display tracking-tight text-slate-800 mt-4">
           Administrative Sign In
         </h1>
-        <p class="text-xs text-slate-400 font-sans mt-1">Enter your secure credentials to continue.</p>
+        <p class="text-xs text-slate-500 font-sans mt-1">Enter your secure credentials to continue.</p>
       </div>
 
       {/* Errors */}
       {errorMessage && (
-        <div class="flex items-center gap-3 p-4 bg-rose-500/10 border border-rose-500/20 rounded-2xl text-rose-300 text-sm mb-6 font-medium animate-pulse">
-          <AlertCircle class="w-5 h-5 text-rose-400 shrink-0" />
+        <div class="flex items-center gap-3 p-4 bg-rose-50 border border-rose-200 rounded-2xl text-rose-600 text-sm mb-6 font-medium animate-pulse">
+          <AlertCircle class="w-5 h-5 text-rose-500 shrink-0" />
           <span>{errorMessage}</span>
         </div>
       )}
 
       {/* Card */}
-      <div class="bg-slate-800 border border-slate-700/60 rounded-3xl p-8 shadow-xl">
-        <div class="w-12 h-12 rounded-2xl bg-indigo-500/10 text-indigo-400 flex items-center justify-center mx-auto mb-6 border border-indigo-500/15">
+      <div class="bg-white border border-slate-200 rounded-3xl p-8 shadow-lg">
+        <div class="w-12 h-12 rounded-2xl bg-indigo-50 text-indigo-600 flex items-center justify-center mx-auto mb-6 border border-indigo-100">
           <ShieldAlert class="w-6 h-6" />
         </div>
         
@@ -85,25 +85,25 @@ if (Astro.request.method === "POST") {
           <input type="hidden" name="action" value="login" />
           
           <div class="space-y-1.5">
-            <label for="email" class="text-xs font-bold text-slate-400 uppercase tracking-wider">Email Address</label>
+            <label for="email" class="text-xs font-bold text-slate-600 uppercase tracking-wider">Email Address</label>
             <input 
               type="email" 
               id="email" 
               name="email" 
               required 
-              class="w-full px-4 py-3 rounded-xl border border-slate-700 bg-slate-900/60 text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500 font-sans text-sm transition-all"
+              class="w-full px-4 py-3 rounded-xl border border-slate-200 bg-slate-50 text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/30 focus:border-indigo-500 font-sans text-sm transition-all"
               placeholder="admin@example.com"
             />
           </div>
           
           <div class="space-y-1.5">
-            <label for="password" class="text-xs font-bold text-slate-400 uppercase tracking-wider">Security Password</label>
+            <label for="password" class="text-xs font-bold text-slate-600 uppercase tracking-wider">Security Password</label>
             <input 
               type="password" 
               id="password" 
               name="password" 
               required 
-              class="w-full px-4 py-3 rounded-xl border border-slate-700 bg-slate-900/60 text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500 font-sans text-sm transition-all"
+              class="w-full px-4 py-3 rounded-xl border border-slate-200 bg-slate-50 text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/30 focus:border-indigo-500 font-sans text-sm transition-all"
               placeholder="••••••••"
             />
           </div>

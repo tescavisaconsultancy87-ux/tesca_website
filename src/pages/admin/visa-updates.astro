@@ -35,11 +35,12 @@ if (Astro.request.method === "POST" && db) {
       const link = formData.get("link")?.toString().trim();
 
       if (date && tag && tagColor && title && link) {
-        let tagBg = "bg-amber-400/20 text-amber-300 border-amber-400/30";
-        if (tagColor === "emerald") tagBg = "bg-emerald-400/20 text-emerald-300 border-emerald-400/30";
-        if (tagColor === "purple") tagBg = "bg-purple-400/20 text-purple-300 border-purple-400/30";
-        if (tagColor === "cyan") tagBg = "bg-cyan-400/20 text-cyan-300 border-cyan-400/30";
-        if (tagColor === "rose") tagBg = "bg-rose-400/20 text-rose-300 border-rose-400/30";
+        let tagBg = "bg-amber-100 text-amber-700 border-amber-200";
+        let tagText = "text-amber-700";
+        if (tagColor === "emerald") { tagBg = "bg-emerald-100 text-emerald-700 border-emerald-200"; tagText = "text-emerald-700"; }
+        if (tagColor === "purple") { tagBg = "bg-purple-100 text-purple-700 border-purple-200"; tagText = "text-purple-700"; }
+        if (tagColor === "cyan") { tagBg = "bg-cyan-100 text-cyan-700 border-cyan-200"; tagText = "text-cyan-700"; }
+        if (tagColor === "rose") { tagBg = "bg-rose-100 text-rose-700 border-rose-200"; tagText = "text-rose-700"; }
 
         await db.prepare("INSERT INTO visa_updates (date, tag, tag_bg, title, link) VALUES (?, ?, ?, ?, ?)")
           .bind(date, tag, tagBg, title, link)
@@ -72,28 +73,28 @@ if (db) {
   description="Administrative portal to post global admission news and visa guidelines."
   showNavFooter={false}
 >
-  <div class="min-h-screen bg-slate-950 text-white font-sans flex flex-col">
+  <div class="min-h-screen bg-slate-50 text-slate-800 font-sans flex flex-col">
     <AdminHeader activeTab="updates" />
 
     <main class="max-w-7xl mx-auto w-full px-4 md:px-8 py-10 flex-grow text-left">
       
       {/* Title block */}
       <div class="mb-10">
-        <h1 class="text-3xl font-extrabold font-display tracking-tight text-white">
+        <h1 class="text-3xl font-extrabold font-display tracking-tight text-slate-800">
           Visa & Admission Bulletins
         </h1>
-        <p class="text-slate-400 text-xs mt-1">Post updates, guides, or country regulations that are featured on your homepage.</p>
+        <p class="text-slate-500 text-xs mt-1">Post updates, guides, or country regulations that are featured on your homepage.</p>
       </div>
 
       {/* Messages */}
       {errorMessage && (
-        <div class="p-4 bg-rose-500/10 border border-rose-500/20 rounded-2xl text-rose-300 text-xs font-semibold mb-6 flex items-center gap-2">
+        <div class="p-4 bg-rose-50 border border-rose-200 rounded-2xl text-rose-600 text-xs font-semibold mb-6 flex items-center gap-2">
           <ShieldAlert class="w-4 h-4 shrink-0" />
           <span>{errorMessage}</span>
         </div>
       )}
       {successMessage && (
-        <div class="p-4 bg-emerald-500/10 border border-emerald-500/20 rounded-2xl text-emerald-300 text-xs font-semibold mb-6">
+        <div class="p-4 bg-emerald-50 border border-emerald-200 rounded-2xl text-emerald-600 text-xs font-semibold mb-6">
           {successMessage}
         </div>
       )}
@@ -101,28 +102,28 @@ if (db) {
       <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
         
         {/* Form panel (5 cols) */}
-        <div class="lg:col-span-5 bg-slate-900 border border-slate-800 rounded-3xl p-6 shadow-xl">
-          <h2 class="text-base font-bold text-white mb-4 flex items-center gap-2">
-            <Plus class="w-4 h-4 text-indigo-400" /> Post New Bulletin
+        <div class="lg:col-span-5 bg-white border border-slate-200 rounded-3xl p-6 shadow-sm">
+          <h2 class="text-base font-bold text-slate-800 mb-4 flex items-center gap-2">
+            <Plus class="w-4 h-4 text-indigo-600" /> Post New Bulletin
           </h2>
           
-          <form method="POST" class="space-y-4 text-xs font-semibold text-slate-300">
+          <form method="POST" class="space-y-4 text-xs font-semibold text-slate-600">
             <input type="hidden" name="action" value="add-update" />
             
             <div class="space-y-1.5">
-              <label for="bulletin-date" class="text-[10px] text-slate-400 uppercase tracking-wide">Publish Date *</label>
-              <input type="text" id="bulletin-date" name="date" required class="w-full px-3 py-2.5 rounded-lg border border-slate-800 bg-slate-950 text-white focus:outline-none focus:ring-1 focus:ring-indigo-500" placeholder="e.g. Jan 15, 2026" />
+              <label for="bulletin-date" class="text-[10px] text-slate-500 uppercase tracking-wide">Publish Date *</label>
+              <input type="text" id="bulletin-date" name="date" required class="w-full px-3 py-2.5 rounded-lg border border-slate-200 bg-slate-50 text-slate-800 focus:outline-none focus:ring-1 focus:ring-indigo-500" placeholder="e.g. Jan 15, 2026" />
             </div>
 
             <div class="grid grid-cols-2 gap-3">
               <div class="space-y-1.5">
-                <label for="bulletin-tag" class="text-[10px] text-slate-400 uppercase tracking-wide">Bulletin Tag *</label>
-                <input type="text" id="bulletin-tag" name="tag" required class="w-full px-3 py-2.5 rounded-lg border border-slate-800 bg-slate-950 text-white focus:outline-none focus:ring-1 focus:ring-indigo-500" placeholder="e.g. Visa Update, Admissions" />
+                <label for="bulletin-tag" class="text-[10px] text-slate-500 uppercase tracking-wide">Bulletin Tag *</label>
+                <input type="text" id="bulletin-tag" name="tag" required class="w-full px-3 py-2.5 rounded-lg border border-slate-200 bg-slate-50 text-slate-800 focus:outline-none focus:ring-1 focus:ring-indigo-500" placeholder="e.g. Visa Update, Admissions" />
               </div>
               
               <div class="space-y-1.5">
-                <label for="bulletin-color" class="text-[10px] text-slate-400 uppercase tracking-wide">Tag Theme *</label>
-                <select id="bulletin-color" name="tag_color" class="w-full px-3 py-2.5 rounded-lg border border-slate-800 bg-slate-950 text-white focus:outline-none focus:ring-1 focus:ring-indigo-500">
+                <label for="bulletin-color" class="text-[10px] text-slate-500 uppercase tracking-wide">Tag Theme *</label>
+                <select id="bulletin-color" name="tag_color" class="w-full px-3 py-2.5 rounded-lg border border-slate-200 bg-slate-50 text-slate-800 focus:outline-none focus:ring-1 focus:ring-indigo-500">
                   <option value="amber">Amber (Updates)</option>
                   <option value="emerald">Emerald (Success)</option>
                   <option value="purple">Purple (Guides)</option>
@@ -133,13 +134,13 @@ if (db) {
             </div>
 
             <div class="space-y-1.5">
-              <label for="bulletin-link" class="text-[10px] text-slate-400 uppercase tracking-wide">Blog Link / URL Destination *</label>
-              <input type="text" id="bulletin-link" name="link" required class="w-full px-3 py-2.5 rounded-lg border border-slate-800 bg-slate-950 text-white focus:outline-none focus:ring-1 focus:ring-indigo-500" placeholder="e.g. /services#visa or https://example.com/blog" />
+              <label for="bulletin-link" class="text-[10px] text-slate-500 uppercase tracking-wide">Blog Link / URL Destination *</label>
+              <input type="text" id="bulletin-link" name="link" required class="w-full px-3 py-2.5 rounded-lg border border-slate-200 bg-slate-50 text-slate-800 focus:outline-none focus:ring-1 focus:ring-indigo-500" placeholder="e.g. /services#visa or https://example.com/blog" />
             </div>
 
             <div class="space-y-1.5">
-              <label for="bulletin-title" class="text-[10px] text-slate-400 uppercase tracking-wide">Title / Description *</label>
-              <textarea id="bulletin-title" name="title" required rows="3" class="w-full px-3 py-2.5 rounded-lg border border-slate-800 bg-slate-950 text-white placeholder-slate-600 focus:outline-none focus:ring-1 focus:ring-indigo-500" placeholder="e.g. UK Student Visa Updates 2026: Working Hour Changes & Graduate Route Eligibility"></textarea>
+              <label for="bulletin-title" class="text-[10px] text-slate-500 uppercase tracking-wide">Title / Description *</label>
+              <textarea id="bulletin-title" name="title" required rows="3" class="w-full px-3 py-2.5 rounded-lg border border-slate-200 bg-slate-50 text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-1 focus:ring-indigo-500" placeholder="e.g. UK Student Visa Updates 2026: Working Hour Changes & Graduate Route Eligibility"></textarea>
             </div>
 
             <button type="submit" class="w-full py-3 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-xl transition-all cursor-pointer shadow-md hover:scale-[1.01] mt-2">
@@ -150,42 +151,42 @@ if (db) {
 
         {/* List panel (7 cols) */}
         <div class="lg:col-span-7 space-y-4">
-          <h2 class="text-base font-bold text-white">
+          <h2 class="text-base font-bold text-slate-800">
             Active Bulletins ({visaUpdates.length})
           </h2>
 
           {visaUpdates.length === 0 ? (
-            <div class="bg-slate-900 border border-slate-800 rounded-3xl p-10 text-center">
+            <div class="bg-white border border-slate-200 rounded-3xl p-10 text-center">
               <p class="text-xs text-slate-500">No visa bulletins found in database. The website will display fallback defaults.</p>
             </div>
           ) : (
-            <div class="bg-slate-900 border border-slate-800 rounded-3xl overflow-hidden shadow-xl max-h-[70vh] overflow-y-auto">
+            <div class="bg-white border border-slate-200 rounded-3xl overflow-hidden shadow-sm max-h-[70vh] overflow-y-auto">
               <table class="w-full text-left border-collapse text-xs">
                 <thead>
-                  <tr class="bg-slate-950 text-slate-400 border-b border-slate-800 font-bold uppercase tracking-wider">
+                  <tr class="bg-slate-50 text-slate-500 border-b border-slate-200 font-bold uppercase tracking-wider">
                     <th class="px-6 py-4">Date</th>
                     <th class="px-6 py-4">Tag</th>
                     <th class="px-6 py-4">Title</th>
                     <th class="px-6 py-4 text-right">Actions</th>
                   </tr>
                 </thead>
-                <tbody class="divide-y divide-slate-800/60 font-sans text-xs">
+                <tbody class="divide-y divide-slate-100 font-sans text-xs">
                   {visaUpdates.map((u) => (
-                    <tr class="hover:bg-slate-800/30 transition-colors">
-                      <td class="px-6 py-4 text-slate-400 whitespace-nowrap">{u.date}</td>
+                    <tr class="hover:bg-slate-50 transition-colors">
+                      <td class="px-6 py-4 text-slate-600 whitespace-nowrap">{u.date}</td>
                       <td class="px-6 py-4 whitespace-nowrap">
                         <span class={`text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded border ${u.tag_bg}`}>
                           {u.tag}
                         </span>
                       </td>
-                      <td class="px-6 py-4 font-semibold text-slate-200 leading-relaxed max-w-xs">{u.title}</td>
+                      <td class="px-6 py-4 font-semibold text-slate-700 leading-relaxed max-w-xs">{u.title}</td>
                       <td class="px-6 py-4 text-right whitespace-nowrap">
                         <form method="POST" onsubmit="return confirm('Are you sure you want to delete this bulletin?');" class="inline">
                           <input type="hidden" name="action" value="delete-update" />
                           <input type="hidden" name="id" value={u.id} />
                           <button
                             type="submit"
-                            class="p-2 text-rose-400 hover:bg-rose-500/10 rounded-lg hover:scale-105 transition-all cursor-pointer border border-transparent hover:border-rose-500/20"
+                            class="p-2 text-rose-500 hover:bg-rose-50 rounded-lg hover:scale-105 transition-all cursor-pointer border border-transparent hover:border-rose-200"
                             aria-label="Delete bulletin"
                           >
                             <Trash2 class="w-3.5 h-3.5" />

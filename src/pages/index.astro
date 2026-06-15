@@ -4,7 +4,6 @@ import Layout from "../layouts/Layout.astro";
 import HeroVisuals from "../components/HeroVisuals";
 import CountrySelector from "../components/CountrySelector";
 import SuccessStories from "../components/SuccessStories";
-import StudentCarousel from "../components/StudentCarousel";
 import FintechCalculators from "../components/FintechCalculators";
 import AICounsellor from "../components/AICounsellor";
 import { 
@@ -40,46 +39,7 @@ try {
   console.error("Failed to fetch visa updates from D1:", err);
 }
 
-// Fallback to default visa updates if database table is empty/errors out
-if (!visaUpdates || visaUpdates.length === 0) {
-  visaUpdates = [
-    {
-      date: "Jan 12, 2026",
-      tag: "Visa Update",
-      tagBg: "bg-amber-400/20 text-amber-300 border-amber-400/30",
-      title: "UK Student Visa Updates 2026: Working Hour Changes & Graduate Route Eligibility",
-      link: "/services#visa"
-    },
-    {
-      date: "Jan 08, 2026",
-      tag: "Admissions",
-      tagBg: "bg-emerald-400/20 text-emerald-300 border-emerald-400/30",
-      title: "Canada's Cap on International Permits: Key Steps for Spring 2026 Applicants",
-      link: "/services#admission"
-    },
-    {
-      date: "Jan 05, 2026",
-      tag: "SOP Guide",
-      tagBg: "bg-purple-400/20 text-purple-300 border-purple-400/30",
-      title: "Mastering the SOP: 5 Elements Ivy League Admission Committees Look For",
-      link: "/services#sop"
-    },
-    {
-      date: "Jan 02, 2026",
-      tag: "Financials",
-      tagBg: "bg-cyan-400/20 text-cyan-300 border-cyan-400/30",
-      title: "Australia Subclass 500 Visa: Approved Financial Proofs & Blocked Funds Guidelines",
-      link: "/calculators"
-    },
-    {
-      date: "Dec 28, 2025",
-      tag: "German Visa",
-      tagBg: "bg-rose-400/20 text-rose-300 border-rose-400/30",
-      title: "German Blocked Account (Sperrkonto) Required Amounts for Winter 2026 Intake",
-      link: "/services#testprep"
-    }
-  ];
-}
+
 ---
 
 <Layout 
@@ -277,8 +237,14 @@ if (!visaUpdates || visaUpdates.length === 0) {
     </div>
   </section>
 
-  {/* ==================== STUDENT SUCCESS CAROUSEL ==================== */}
-  <StudentCarousel client:load />
+  {/* ==================== STUDENT SUCCESS STORIES ==================== */}
+  {stories.length > 0 && (
+    <section class="py-24 bg-white">
+      <div class="max-w-7xl mx-auto px-6 md:px-8">
+        <SuccessStories stories={stories} client:load />
+      </div>
+    </section>
+  )}
 
   {/* ==================== SECTION 4: TESTIMONIALS (VOICES FROM COMMUNITY) ==================== */}
   <section class="py-24 bg-white relative text-left font-sans">
@@ -365,6 +331,7 @@ if (!visaUpdates || visaUpdates.length === 0) {
   </section>
 
   {/* ==================== SECTION 5: BULLETINS / ARTICLES (GREEN BACKGROUND) ==================== */}
+  {visaUpdates.length > 0 && (
   <section class="py-24 bg-accent-blue text-white relative text-left font-sans">
     <div class="max-w-7xl mx-auto px-6 md:px-8">
       
@@ -407,6 +374,7 @@ if (!visaUpdates || visaUpdates.length === 0) {
 
     </div>
   </section>
+  )}
 
   {/* ==================== SECTION 6: FAQS (LIGHT BACKGROUND) ==================== */}
   <section class="py-24 bg-slate-50/40 relative text-left font-sans">

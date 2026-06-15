@@ -32,12 +32,7 @@ const {
 	showNavFooter = true,
 } = Astro.props;
 
-let announcements = [
-	"September 2025 UK intake — only 12 consultation slots left this week.",
-	"Canada Sept 2025 Intake: Deadlines are approaching fast — book your free file audit today.",
-	"USA Fall 2025 priority admissions closing soon. Only 8 counseling slots remaining.",
-	"Germany Winter 2025 Intake: Get pre-approved loan letters within 48 hours."
-];
+let announcements = [];
 
 try {
 	const db = env?.tesca_db || env?.DB;
@@ -223,6 +218,7 @@ try {
 			class="fixed top-0 left-0 right-0 z-40 transition-all duration-500 bg-white/80 backdrop-blur-md border-b border-slate-200/60 shadow-sm flex flex-col"
 		>
 			<!-- Rotating Announcement Bar -->
+			{announcements.length > 0 && (
 			<div
 				id="announcement-bar"
 				class="w-full bg-[#075E64] text-white py-2 px-4 transition-all duration-500 overflow-hidden relative z-50 text-center text-[11px] sm:text-xs font-semibold font-sans tracking-wide shrink-0"
@@ -231,9 +227,10 @@ try {
 			>
 				<div class="flex items-center justify-center gap-2 max-w-7xl mx-auto">
 					<span class="inline-flex h-2 w-2 rounded-full bg-[#F08A00] animate-pulse"></span>
-					<span id="announcement-text" class="transition-opacity duration-300">September 2025 UK intake — only 12 consultation slots left this week.</span>
+					<span id="announcement-text" class="transition-opacity duration-300">{announcements[0]}</span>
 				</div>
 			</div>
+			)}
 
 			<nav
 				class="w-full max-w-7xl mx-auto px-4 lg:px-6 py-3.5 flex items-center justify-between transition-all duration-500"
