@@ -30,10 +30,26 @@ interface StudentProfile {
   timeline: string[];
 }
 
-export default function StudentCarousel() {
+interface D1Story {
+  id: number;
+  name: string;
+  avatar: string;
+  destination: string;
+  dest_flag: string;
+  before_loc: string;
+  before_status: string;
+  before_ielts: string;
+  after_uni: string;
+  after_status: string;
+  after_salary: string;
+  quote: string;
+  timeline: string;
+}
+
+export default function StudentCarousel({ stories: d1Stories }: { stories?: D1Story[] }) {
   const [selectedStudent, setSelectedStudent] = useState<StudentProfile | null>(null);
 
-  const students: StudentProfile[] = [
+  const hardcoded: StudentProfile[] = [
     {
       id: 1,
       name: "Aarav Patel",
@@ -227,6 +243,27 @@ export default function StudentCarousel() {
       timeline: ["Joint Financial Auditing", "MBA Admission Offer", "Spouse Dependency Filing", "Biometrics Appointment", "Dual Visas Approved"]
     }
   ];
+
+  const students: StudentProfile[] = d1Stories && d1Stories.length > 0
+    ? d1Stories.map(s => ({
+        id: s.id,
+        name: s.name,
+        avatar: s.avatar,
+        photo: `https://ui-avatars.com/api/?name=${encodeURIComponent(s.name)}&background=0A7880&color=fff&size=200`,
+        destination: s.destination,
+        destFlag: s.dest_flag,
+        countryCode: s.destination.slice(0, 2).toLowerCase(),
+        resultType: "Visa Success" as const,
+        resultBadgeColor: "bg-emerald-100 text-emerald-800 border-emerald-200",
+        resultDetail: s.after_status,
+        admittedTo: s.after_uni,
+        beforeLoc: s.before_loc,
+        beforeStatus: s.before_status,
+        quote: s.quote,
+        scores: { overall: "Approved", sub1Label: "IELTS", sub1Val: s.before_ielts, sub2Label: "Status", sub2Val: s.after_status, sub3Label: "Salary", sub3Val: s.after_salary },
+        timeline: JSON.parse(s.timeline || "[]")
+      }))
+    : hardcoded;
 
   const handleCardClick = (student: StudentProfile) => {
     setSelectedStudent(student);
