@@ -324,7 +324,7 @@ export default function AICounsellor() {
 
   const whatsappNumber = "919824152731";
   const whatsappMsg = encodeURIComponent(
-    "Hello TESCA Visa Consultancy,\n\nI hope this message finds you well. I would like to consult about studying abroad and would appreciate your expert guidance on visa requirements, university admissions, and the application process.\n\nKindly let me know the best time to connect.\n\nThank you."
+    "Hello TESCA Visa Consultancy,\n\nI hope this message finds you well. I would like to consult about studying abroad and your expert guidance on visa requirements, university admissions, and the application process.\n\nThank you."
   );
   const whatsappUrl = `https://wa.me/${whatsappNumber}?text=${whatsappMsg}`;
 

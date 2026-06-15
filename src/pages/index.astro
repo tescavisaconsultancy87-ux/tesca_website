@@ -345,7 +345,7 @@ try {
             Latest Study Abroad & Visa Updates
           </h2>
         </div>
-        <a href="/services" class="text-[16px] font-semibold font-sans tracking-wide px-4 py-2 border border-white/20 rounded-full hover:bg-white/10 transition-colors">
+        <a href="/updates" class="text-[16px] font-semibold font-sans tracking-wide px-4 py-2 border border-white/20 rounded-full hover:bg-white/10 transition-colors">
           View All Updates →
         </a>
       </div>
@@ -354,14 +354,14 @@ try {
       <div class="border-t border-white/10 font-sans">
         {visaUpdates.map((item, idx) => (
           <div class="py-5 border-b border-white/10 flex flex-col sm:flex-row sm:items-center justify-between gap-4 hover:bg-white/5 transition-colors px-4 rounded-lg">
-            <div class="flex flex-col sm:flex-row sm:items-center gap-4 sm:gap-6">
+            <div class="flex flex-col sm:flex-row sm:items-center gap-4 sm:gap-6 min-w-0">
               <div class="flex items-center gap-4 shrink-0">
-                <span class="text-[14px] font-sans font-medium text-white/50">{item.date}</span>
-                <span class={`text-[11px] font-bold font-sans uppercase tracking-wider px-2 py-0.5 rounded border ${item.tagBg}`}>
+                <span class="text-[14px] font-sans font-medium text-white/50 whitespace-nowrap">{item.date}</span>
+                <span class={`text-[11px] font-bold font-sans uppercase tracking-wider px-2 py-0.5 rounded border whitespace-nowrap ${item.tagBg}`}>
                   {item.tag}
                 </span>
               </div>
-              <a href={item.link} class="text-[16px] lg:text-[18px] font-bold font-display hover:text-accent-cyan transition-colors text-left no-underline text-white">
+              <a href={item.link} class="text-[16px] lg:text-[18px] font-bold font-display hover:text-accent-cyan transition-colors text-left no-underline text-white truncate min-w-0">
                 {item.title}
               </a>
             </div>
