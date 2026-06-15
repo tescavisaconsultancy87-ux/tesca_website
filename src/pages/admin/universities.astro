@@ -111,7 +111,7 @@ if (db) {
   <div class="min-h-screen bg-slate-50 text-slate-800 font-sans flex">
     <AdminHeader activeTab="universities" />
 
-    <main class="flex-1 px-4 md:px-8 py-10 text-left">
+    <main class="flex-1 px-4 md:px-8 py-10 overflow-y-auto text-left lg:ml-64">
       
       {/* Title block */}
       <div class="mb-10">
@@ -241,6 +241,7 @@ if (db) {
                     <th class="px-6 py-4">Location</th>
                     <th class="px-6 py-4">Requirements</th>
                     <th class="px-6 py-4 text-right">Actions</th>
+                    <th class="px-6 py-4 text-right w-20"></th>
                   </tr>
                 </thead>
                 <tbody class="divide-y divide-slate-100">
@@ -272,6 +273,30 @@ if (db) {
                             <Trash2 class="w-3.5 h-3.5" />
                           </button>
                         </form>
+                      </td>
+                      <td class="px-6 py-4 text-right whitespace-nowrap">
+                        <button
+                          type="button"
+                          class="edit-uni-btn p-2 text-indigo-500 hover:bg-indigo-50 rounded-lg hover:scale-105 transition-all cursor-pointer border border-transparent hover:border-indigo-200"
+                          data-id={u.id}
+                          data-name={u.name}
+                          data-country={u.country}
+                          data-code={u.code}
+                          data-rank={u.rank}
+                          data-domain={u.domain || ""}
+                          data-city={u.city}
+                          data-established={u.established}
+                          data-students={u.students}
+                          data-tuition-min={u.tuition_fee_min}
+                          data-tuition-max={u.tuition_fee_max}
+                          data-min-gpa={u.min_gpa_percent}
+                          data-min-ielts={u.min_ielts}
+                          data-min-toefl={u.min_toefl}
+                          data-highlights={u.highlights}
+                          aria-label={`Edit ${u.name}`}
+                        >
+                          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/><path d="m15 5 4 4"/></svg>
+                        </button>
                       </td>
                     </tr>
                   ))}
