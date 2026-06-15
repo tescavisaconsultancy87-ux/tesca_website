@@ -3,7 +3,7 @@ import { env } from "cloudflare:workers";
 import Layout from "../layouts/Layout.astro";
 import HeroVisuals from "../components/HeroVisuals";
 import CountrySelector from "../components/CountrySelector";
-import SuccessStories from "../components/SuccessStories";
+import StudentCarousel from "../components/StudentCarousel";
 import FintechCalculators from "../components/FintechCalculators";
 import AICounsellor from "../components/AICounsellor";
 import { 
@@ -11,21 +11,8 @@ import {
   CheckCircle, ArrowUpRight, ArrowRight, ChevronDown 
 } from "lucide-react";
 
-let stories = [];
 let visaUpdates = [];
 const db = env?.tesca_db || env?.DB;
-
-try {
-  if (db) {
-    const { results } = await db.prepare("SELECT * FROM success_stories ORDER BY id ASC").all();
-    stories = results.map(s => ({
-      ...s,
-      timeline: JSON.parse(s.timeline)
-    })) || [];
-  }
-} catch (err) {
-  console.error("Failed to fetch success stories from D1:", err);
-}
 
 try {
   if (db) {
@@ -238,13 +225,7 @@ try {
   </section>
 
   {/* ==================== STUDENT SUCCESS STORIES ==================== */}
-  {stories.length > 0 && (
-    <section class="py-24 bg-white">
-      <div class="max-w-7xl mx-auto px-6 md:px-8">
-        <SuccessStories stories={stories} client:load />
-      </div>
-    </section>
-  )}
+  <StudentCarousel client:load />
 
   {/* ==================== SECTION 4: TESTIMONIALS (VOICES FROM COMMUNITY) ==================== */}
   <section class="py-24 bg-white relative text-left font-sans">

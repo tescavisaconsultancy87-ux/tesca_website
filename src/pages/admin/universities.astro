@@ -56,6 +56,34 @@ if (Astro.request.method === "POST" && db) {
       } else {
         errorMessage = "Please fill in all required fields (Name, Country, Code, City, Highlights).";
       }
+    } else if (action === "update-university") {
+      const id = parseInt(formData.get("id")?.toString() || "0");
+      const name = formData.get("name")?.toString().trim();
+      const country = formData.get("country")?.toString().trim();
+      const code = formData.get("code")?.toString().trim();
+      const rank = parseInt(formData.get("rank")?.toString() || "999");
+      const domain = formData.get("domain")?.toString().trim() || "General";
+      const city = formData.get("city")?.toString().trim();
+      const established = parseInt(formData.get("established")?.toString() || "2000");
+      const students = formData.get("students")?.toString().trim() || "10,000+";
+      const tuitionMin = parseFloat(formData.get("tuition_min")?.toString() || "0");
+      const tuitionMax = parseFloat(formData.get("tuition_max")?.toString() || "0");
+      const minGpa = parseFloat(formData.get("min_gpa")?.toString() || "0");
+      const minIelts = parseFloat(formData.get("min_ielts")?.toString() || "0");
+      const minToefl = parseInt(formData.get("min_toefl")?.toString() || "0");
+      const highlights = formData.get("highlights")?.toString().trim();
+
+      if (id && name && country && code && city && highlights) {
+        await db.prepare(
+          `UPDATE universities SET name=?, country=?, code=?, rank=?, domain=?, city=?, established=?, students=?, tuition_fee_min=?, tuition_fee_max=?, min_gpa_percent=?, min_ielts=?, min_toefl=?, highlights=? WHERE id=?`
+        ).bind(
+          name, country, code, rank, domain, city, established, students, tuitionMin, tuitionMax, minGpa, minIelts, minToefl, highlights, id
+        ).run();
+
+        successMessage = `Successfully updated ${name}.`;
+      } else {
+        errorMessage = "Please fill in all required fields.";
+      }
     }
   } catch (err: any) {
     console.error("Action error on universities page:", err);
@@ -83,7 +111,7 @@ if (db) {
   <div class="min-h-screen bg-slate-50 text-slate-800 font-sans flex">
     <AdminHeader activeTab="universities" />
 
-    <main class="flex-1 px-4 md:px-8 py-10 overflow-y-auto text-left">
+    <main class="flex-1 px-4 md:px-8 py-10 text-left">
       
       {/* Title block */}
       <div class="mb-10">
@@ -205,7 +233,7 @@ if (db) {
           {universities.length === 0 ? (
             <p class="text-xs text-slate-500 py-6 text-center">No universities found in database.</p>
           ) : (
-            <div class="bg-white border border-slate-200 rounded-3xl shadow-sm max-h-[70vh] overflow-y-auto">
+            <div class="bg-white border border-slate-200 rounded-3xl shadow-sm max-h-[70vh] overflow-y-scroll overscroll-contain">
               <table class="w-full text-left border-collapse text-xs">
                 <thead>
                   <tr class="bg-slate-50 text-slate-500 border-b border-slate-200 font-bold uppercase tracking-wider">
@@ -258,3 +286,51 @@ if (db) {
     </main>
   </div>
 </Layout>
+
+<script>
+  function setupUniEdit() {
+    const editBtns = document.querySelectorAll(".edit-uni-btn");
+    editBtns.forEach(btn => {
+      btn.addEventListener("click", () => {
+        const form = document.querySelector("form");
+        document.getElementById("edit-id").value = btn.dataset.id;
+        document.getElementById("form-action").value = "update-university";
+        document.getElementById("form-heading").innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4 text-indigo-600"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/><path d="m15 5 4 4"/></svg> Edit University';
+        document.getElementById("submit-btn").textContent = "Update University";
+        document.getElementById("cancel-edit-btn").classList.remove("hidden");
+
+        document.querySelector('[name="name"]').value = btn.dataset.name || "";
+        document.querySelector('[name="country"]').value = btn.dataset.country || "";
+        document.querySelector('[name="code"]').value = btn.dataset.code || "";
+        document.querySelector('[name="rank"]').value = btn.dataset.rank || "";
+        document.querySelector('[name="domain"]').value = btn.dataset.domain || "";
+        document.querySelector('[name="city"]').value = btn.dataset.city || "";
+        document.querySelector('[name="established"]').value = btn.dataset.established || "";
+        document.querySelector('[name="students"]').value = btn.dataset.students || "";
+        document.querySelector('[name="tuition_min"]').value = btn.dataset.tuitionMin || "";
+        document.querySelector('[name="tuition_max"]').value = btn.dataset.tuitionMax || "";
+        document.querySelector('[name="min_gpa"]').value = btn.dataset.minGpa || "";
+        document.querySelector('[name="min_ielts"]').value = btn.dataset.minIelts || "";
+        document.querySelector('[name="min_toefl"]').value = btn.dataset.minToefl || "";
+        document.querySelector('[name="highlights"]').value = btn.dataset.highlights || "";
+
+        document.querySelector("form").scrollIntoView({ behavior: "smooth", block: "start" });
+      });
+    });
+  }
+
+  function cancelEdit() {
+    document.getElementById("edit-id").value = "";
+    document.getElementById("form-action").value = "add-university";
+    document.getElementById("form-heading").innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4 text-indigo-600"><path d="M12 5v14"/><path d="M5 12h14"/></svg> Add New University';
+    document.getElementById("submit-btn").textContent = "Save University";
+    document.getElementById("cancel-edit-btn").classList.add("hidden");
+
+    document.querySelector("form").querySelectorAll("input, textarea").forEach(el => {
+      if (el.type !== "hidden") el.value = "";
+    });
+  }
+
+  setupUniEdit();
+  document.addEventListener("astro:page-load", setupUniEdit);
+</script>

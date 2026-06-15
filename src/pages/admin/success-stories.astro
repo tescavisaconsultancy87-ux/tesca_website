@@ -3,7 +3,7 @@ import Layout from "../../layouts/Layout.astro";
 import AdminHeader from "../../components/AdminHeader.astro";
 import { checkAdminAuth } from "../../utils/adminAuth";
 import { env } from "cloudflare:workers";
-import { Trash2, MessageSquare, ShieldAlert } from "lucide-react";
+import { Trash2, MessageSquare, ShieldAlert, Plus } from "lucide-react";
 
 // Check session
 const isAuthenticated = await checkAdminAuth(Astro.cookies);
@@ -17,7 +17,7 @@ let stories = [];
 let successMessage = "";
 let errorMessage = "";
 
-// Handle server actions (Delete)
+// Handle server actions (Delete/Update)
 if (Astro.request.method === "POST" && db) {
   try {
     const formData = await Astro.request.formData();
@@ -27,6 +27,32 @@ if (Astro.request.method === "POST" && db) {
       const id = formData.get("id");
       await db.prepare("DELETE FROM success_stories WHERE id = ?").bind(id).run();
       successMessage = "Success story profile deleted successfully.";
+    } else if (action === "update-story") {
+      const id = parseInt(formData.get("id")?.toString() || "0");
+      const name = formData.get("name")?.toString().trim();
+      const avatar = formData.get("avatar")?.toString().trim();
+      const destination = formData.get("destination")?.toString().trim();
+      const destFlag = formData.get("dest_flag")?.toString().trim();
+      const beforeLoc = formData.get("before_loc")?.toString().trim();
+      const beforeStatus = formData.get("before_status")?.toString().trim();
+      const beforeIelts = formData.get("before_ielts")?.toString().trim();
+      const afterUni = formData.get("after_uni")?.toString().trim();
+      const afterStatus = formData.get("after_status")?.toString().trim();
+      const afterSalary = formData.get("after_salary")?.toString().trim();
+      const quote = formData.get("quote")?.toString().trim();
+      const timeline = formData.get("timeline")?.toString().trim();
+
+      if (id && name) {
+        await db.prepare(
+          `UPDATE success_stories SET name=?, avatar=?, destination=?, dest_flag=?, before_loc=?, before_status=?, before_ielts=?, after_uni=?, after_status=?, after_salary=?, quote=?, timeline=? WHERE id=?`
+        ).bind(
+          name, avatar || "", destination || "", destFlag || "", beforeLoc || "", beforeStatus || "", beforeIelts || "",
+          afterUni || "", afterStatus || "", afterSalary || "", quote || "", timeline || "[]", id
+        ).run();
+        successMessage = `Successfully updated ${name}.`;
+      } else {
+        errorMessage = "Student name is required.";
+      }
     }
   } catch (err: any) {
     console.error("Action error on success-stories page:", err);
@@ -77,6 +103,73 @@ if (db) {
         </div>
       )}
 
+      {/* Edit Form Panel */}
+      <div id="story-form-panel" class="bg-white border border-slate-200 rounded-3xl p-6 shadow-sm mb-8 hidden">
+        <h2 class="text-base font-bold text-slate-800 mb-4 flex items-center gap-2" id="story-form-heading">
+          <Plus class="w-4 h-4 text-indigo-600" /> Edit Success Story
+        </h2>
+        <form method="POST" class="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs font-semibold text-slate-600">
+          <input type="hidden" name="action" value="update-story" />
+          <input type="hidden" name="id" id="story-edit-id" value="" />
+          <div class="space-y-1.5">
+            <label class="text-[10px] text-slate-500 uppercase tracking-wide">Name *</label>
+            <input type="text" name="name" id="s-name" required class="w-full px-3 py-2.5 rounded-lg border border-slate-200 bg-slate-50 text-slate-800 focus:outline-none" />
+          </div>
+          <div class="space-y-1.5">
+            <label class="text-[10px] text-slate-500 uppercase tracking-wide">Avatar</label>
+            <input type="text" name="avatar" id="s-avatar" class="w-full px-3 py-2.5 rounded-lg border border-slate-200 bg-slate-50 text-slate-800 focus:outline-none" />
+          </div>
+          <div class="space-y-1.5">
+            <label class="text-[10px] text-slate-500 uppercase tracking-wide">Destination</label>
+            <input type="text" name="destination" id="s-destination" class="w-full px-3 py-2.5 rounded-lg border border-slate-200 bg-slate-50 text-slate-800 focus:outline-none" />
+          </div>
+          <div class="space-y-1.5">
+            <label class="text-[10px] text-slate-500 uppercase tracking-wide">Dest Flag</label>
+            <input type="text" name="dest_flag" id="s-dest-flag" class="w-full px-3 py-2.5 rounded-lg border border-slate-200 bg-slate-50 text-slate-800 focus:outline-none" />
+          </div>
+          <div class="space-y-1.5">
+            <label class="text-[10px] text-slate-500 uppercase tracking-wide">Before Location</label>
+            <input type="text" name="before_loc" id="s-before-loc" class="w-full px-3 py-2.5 rounded-lg border border-slate-200 bg-slate-50 text-slate-800 focus:outline-none" />
+          </div>
+          <div class="space-y-1.5">
+            <label class="text-[10px] text-slate-500 uppercase tracking-wide">Before Status</label>
+            <input type="text" name="before_status" id="s-before-status" class="w-full px-3 py-2.5 rounded-lg border border-slate-200 bg-slate-50 text-slate-800 focus:outline-none" />
+          </div>
+          <div class="space-y-1.5">
+            <label class="text-[10px] text-slate-500 uppercase tracking-wide">Before IELTS</label>
+            <input type="text" name="before_ielts" id="s-before-ielts" class="w-full px-3 py-2.5 rounded-lg border border-slate-200 bg-slate-50 text-slate-800 focus:outline-none" />
+          </div>
+          <div class="space-y-1.5">
+            <label class="text-[10px] text-slate-500 uppercase tracking-wide">After University</label>
+            <input type="text" name="after_uni" id="s-after-uni" class="w-full px-3 py-2.5 rounded-lg border border-slate-200 bg-slate-50 text-slate-800 focus:outline-none" />
+          </div>
+          <div class="space-y-1.5">
+            <label class="text-[10px] text-slate-500 uppercase tracking-wide">After Status</label>
+            <input type="text" name="after_status" id="s-after-status" class="w-full px-3 py-2.5 rounded-lg border border-slate-200 bg-slate-50 text-slate-800 focus:outline-none" />
+          </div>
+          <div class="space-y-1.5">
+            <label class="text-[10px] text-slate-500 uppercase tracking-wide">After Salary</label>
+            <input type="text" name="after_salary" id="s-after-salary" class="w-full px-3 py-2.5 rounded-lg border border-slate-200 bg-slate-50 text-slate-800 focus:outline-none" />
+          </div>
+          <div class="md:col-span-2 space-y-1.5">
+            <label class="text-[10px] text-slate-500 uppercase tracking-wide">Quote</label>
+            <textarea name="quote" id="s-quote" rows="2" class="w-full px-3 py-2.5 rounded-lg border border-slate-200 bg-slate-50 text-slate-800 focus:outline-none"></textarea>
+          </div>
+          <div class="md:col-span-2 space-y-1.5">
+            <label class="text-[10px] text-slate-500 uppercase tracking-wide">Timeline (JSON array)</label>
+            <input type="text" name="timeline" id="s-timeline" class="w-full px-3 py-2.5 rounded-lg border border-slate-200 bg-slate-50 text-slate-800 focus:outline-none" placeholder='e.g. ["Step 1", "Step 2"]' />
+          </div>
+          <div class="md:col-span-2 flex gap-3">
+            <button type="submit" class="flex-1 py-3 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-xl transition-all cursor-pointer shadow-md hover:scale-[1.01]">
+              Update Story
+            </button>
+            <button type="button" id="cancel-story-edit" onclick="cancelStoryEdit()" class="px-6 py-3 bg-slate-100 hover:bg-slate-200 text-slate-600 font-bold rounded-xl transition-all cursor-pointer border border-slate-200">
+              Cancel
+            </button>
+          </div>
+        </form>
+      </div>
+
       {/* List Stories */}
       {stories.length === 0 ? (
         <div class="bg-white border border-slate-200 rounded-3xl p-12 text-center">
@@ -93,6 +186,7 @@ if (db) {
                   <th class="px-6 py-4">Destination</th>
                   <th class="px-6 py-4">Admitted Uni</th>
                   <th class="px-6 py-4 text-right">Actions</th>
+                  <th class="px-6 py-4 text-right w-20"></th>
                 </tr>
               </thead>
               <tbody class="divide-y divide-slate-100 font-sans text-xs">
@@ -115,6 +209,28 @@ if (db) {
                         </button>
                       </form>
                     </td>
+                    <td class="px-6 py-4 text-right whitespace-nowrap">
+                      <button
+                        type="button"
+                        class="edit-story-btn p-2 text-indigo-500 hover:bg-indigo-50 rounded-lg hover:scale-105 transition-all cursor-pointer border border-transparent hover:border-indigo-200"
+                        data-id={s.id}
+                        data-name={s.name}
+                        data-avatar={s.avatar}
+                        data-destination={s.destination}
+                        data-dest-flag={s.dest_flag}
+                        data-before-loc={s.before_loc}
+                        data-before-status={s.before_status}
+                        data-before-ielts={s.before_ielts}
+                        data-after-uni={s.after_uni}
+                        data-after-status={s.after_status}
+                        data-after-salary={s.after_salary}
+                        data-quote={s.quote}
+                        data-timeline={s.timeline}
+                        aria-label={`Edit ${s.name}`}
+                      >
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/><path d="m15 5 4 4"/></svg>
+                      </button>
+                    </td>
                   </tr>
                 ))}
               </tbody>
@@ -126,3 +242,42 @@ if (db) {
     </main>
   </div>
 </Layout>
+
+<script>
+  function setupStoryEdit() {
+    const editBtns = document.querySelectorAll(".edit-story-btn");
+    editBtns.forEach(btn => {
+      btn.addEventListener("click", () => {
+        const panel = document.getElementById("story-form-panel");
+        panel.classList.remove("hidden");
+
+        document.getElementById("story-edit-id").value = btn.dataset.id;
+        document.getElementById("s-name").value = btn.dataset.name || "";
+        document.getElementById("s-avatar").value = btn.dataset.avatar || "";
+        document.getElementById("s-destination").value = btn.dataset.destination || "";
+        document.getElementById("s-dest-flag").value = btn.dataset.destFlag || "";
+        document.getElementById("s-before-loc").value = btn.dataset.beforeLoc || "";
+        document.getElementById("s-before-status").value = btn.dataset.beforeStatus || "";
+        document.getElementById("s-before-ielts").value = btn.dataset.beforeIelts || "";
+        document.getElementById("s-after-uni").value = btn.dataset.afterUni || "";
+        document.getElementById("s-after-status").value = btn.dataset.afterStatus || "";
+        document.getElementById("s-after-salary").value = btn.dataset.afterSalary || "";
+        document.getElementById("s-quote").value = btn.dataset.quote || "";
+        document.getElementById("s-timeline").value = btn.dataset.timeline || "";
+
+        panel.scrollIntoView({ behavior: "smooth", block: "start" });
+      });
+    });
+  }
+
+  function cancelStoryEdit() {
+    document.getElementById("story-form-panel").classList.add("hidden");
+    document.getElementById("story-edit-id").value = "";
+    document.querySelectorAll("#story-form-panel input, #story-form-panel textarea").forEach(el => {
+      if (el.type !== "hidden") el.value = "";
+    });
+  }
+
+  setupStoryEdit();
+  document.addEventListener("astro:page-load", setupStoryEdit);
+</script>
