@@ -1,6 +1,7 @@
 ---
 import "../styles/global.css";
 import CounsellorForm from "../components/CounsellorForm";
+import { env } from "cloudflare:workers";
 import { ClientRouter } from "astro:transitions";
 import {
 	ArrowRight,
@@ -37,7 +38,7 @@ let announcements = [
 ];
 
 try {
-	const db = Astro.locals.runtime?.env?.tesca_db || Astro.locals.runtime?.env?.DB;
+	const db = env?.tesca_db || env?.DB;
 	if (db) {
 		const { results } = await db.prepare("SELECT text FROM announcements ORDER BY id ASC").all();
 		if (results && results.length > 0) {

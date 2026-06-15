@@ -1,4 +1,5 @@
 ---
+import { env } from "cloudflare:workers";
 import Layout from "../layouts/Layout.astro";
 import HeroVisuals from "../components/HeroVisuals";
 import CountrySelector from "../components/CountrySelector";
@@ -13,7 +14,7 @@ import {
 
 let stories = [];
 let visaUpdates = [];
-const db = Astro.locals.runtime?.env?.tesca_db || Astro.locals.runtime?.env?.DB;
+const db = env?.tesca_db || env?.DB;
 
 try {
   if (db) {

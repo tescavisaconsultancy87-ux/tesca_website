@@ -1,8 +1,9 @@
 import type { APIRoute } from 'astro';
+import { env } from "cloudflare:workers";
 
 export const POST: APIRoute = async ({ request, locals }) => {
   try {
-    const db = locals.runtime?.env?.tesca_db || locals.runtime?.env?.DB;
+    const db = env?.tesca_db || env?.DB;
     if (!db) {
       return new Response(JSON.stringify({ error: "Database connection not available." }), {
         status: 500,
@@ -38,8 +39,8 @@ export const POST: APIRoute = async ({ request, locals }) => {
     }
 
     // Submit lead to Google Sheets & Web3Forms
-    const googleSheetUrl = locals.runtime?.env?.PUBLIC_GOOGLE_SHEET_URL;
-    const web3formsAccessKey = locals.runtime?.env?.WEB3FORMS_ACCESS_KEY || "85242216-06e7-475c-ad35-beb2808b60d7";
+    const googleSheetUrl = env?.PUBLIC_GOOGLE_SHEET_URL;
+    const web3formsAccessKey = env?.WEB3FORMS_ACCESS_KEY || "85242216-06e7-475c-ad35-beb2808b60d7";
 
     // 1. Submit to Web3Forms
     try {
