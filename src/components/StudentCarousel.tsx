@@ -31,15 +31,64 @@ const countryToCode = (country: string) => {
   return map[country.toLowerCase().trim()] || country.slice(0, 2).toLowerCase();
 };
 
-export default function StudentCarousel({ stories = [] }: { stories?: D1Story[] }) {
-  if (!stories || stories.length === 0) {
-    return null;
+const fallbackStories: D1Story[] = [
+  {
+    id: 1,
+    name: "Aarav Patel",
+    photo: "https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?q=80&w=400&auto=format&fit=crop",
+    type: "IELTS",
+    score: "8.0",
+    country: null
+  },
+  {
+    id: 2,
+    name: "Sneha Reddy",
+    photo: "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?q=80&w=400&auto=format&fit=crop",
+    type: "PTE",
+    score: "84",
+    country: null
+  },
+  {
+    id: 3,
+    name: "Vikram Malhotra",
+    photo: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?q=80&w=400&auto=format&fit=crop",
+    type: "Visa Success",
+    score: null,
+    country: "United Kingdom"
+  },
+  {
+    id: 4,
+    name: "Meera Krishnan",
+    photo: "https://images.unsplash.com/photo-1580489944761-15a19d654956?q=80&w=400&auto=format&fit=crop",
+    type: "IELTS",
+    score: "7.5",
+    country: null
+  },
+  {
+    id: 5,
+    name: "Kabir Mehra",
+    photo: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?q=80&w=400&auto=format&fit=crop",
+    type: "PTE",
+    score: "79",
+    country: null
+  },
+  {
+    id: 6,
+    name: "Jaspreet Kaur",
+    photo: "https://images.unsplash.com/photo-1607746882042-944635dfe10e?q=80&w=400&auto=format&fit=crop",
+    type: "Visa Success",
+    score: null,
+    country: "Canada"
   }
+];
+
+export default function StudentCarousel({ stories = [] }: { stories?: D1Story[] }) {
+  const activeStories = stories && stories.length > 0 ? stories : fallbackStories;
 
   // Ensure there are enough cards to make infinite scroll smooth
-  let displayStories = [...stories];
-  while (displayStories.length < 12 && stories.length > 0) {
-    displayStories = [...displayStories, ...stories];
+  let displayStories = [...activeStories];
+  while (displayStories.length < 12 && activeStories.length > 0) {
+    displayStories = [...displayStories, ...activeStories];
   }
 
   return (
