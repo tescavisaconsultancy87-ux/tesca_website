@@ -17,6 +17,17 @@ let stories = [];
 let successMessage = "";
 let errorMessage = "";
 
+// Helper to convert ArrayBuffer to Base64 (compatible with all JS runtimes)
+const arrayBufferToBase64 = (buffer: ArrayBuffer): string => {
+  let binary = "";
+  const bytes = new Uint8Array(buffer);
+  const len = bytes.byteLength;
+  for (let i = 0; i < len; i++) {
+    binary += String.fromCharCode(bytes[i]);
+  }
+  return btoa(binary);
+};
+
 // Handle server actions (Add / Update / Delete)
 if (Astro.request.method === "POST" && db) {
   try {
@@ -29,37 +40,66 @@ if (Astro.request.method === "POST" && db) {
       successMessage = "Success story profile deleted successfully.";
     } else if (action === "add-story") {
       const name = formData.get("name")?.toString().trim();
-      const photo = formData.get("photo")?.toString().trim();
+      const photoFile = formData.get("photo_file") as File;
       const type = formData.get("type")?.toString().trim();
       const score = formData.get("score")?.toString().trim() || null;
       const country = formData.get("country")?.toString().trim() || null;
 
-      if (name && photo && type) {
+      let photo = "";
+      if (photoFile && photoFile.size > 0) {
+        if (photoFile.size > 1024 * 1024) {
+          errorMessage = "Image size must be less than 1MB.";
+        } else if (!["image/jpeg", "image/png", "image/jpg"].includes(photoFile.type)) {
+          errorMessage = "Only JPEG, JPG, and PNG images are allowed.";
+        } else {
+          const buffer = await photoFile.arrayBuffer();
+          const base64 = arrayBufferToBase64(buffer);
+          photo = `data:${photoFile.type};base64,${base64}`;
+        }
+      } else {
+        errorMessage = "Student photo is required.";
+      }
+
+      if (!errorMessage && name && photo && type) {
         await db.prepare(
           `INSERT INTO success_stories (name, photo, type, score, country) VALUES (?, ?, ?, ?, ?)`
         ).bind(
           name, photo, type, score, country
         ).run();
         successMessage = `Successfully added success story for ${name}.`;
-      } else {
+      } else if (!errorMessage) {
         errorMessage = "Please fill in all required fields (Name, Photo, and Type).";
       }
     } else if (action === "update-story") {
       const id = parseInt(formData.get("id")?.toString() || "0");
       const name = formData.get("name")?.toString().trim();
-      const photo = formData.get("photo")?.toString().trim();
+      const photoFile = formData.get("photo_file") as File;
+      const photoExisting = formData.get("photo_existing")?.toString().trim() || "";
       const type = formData.get("type")?.toString().trim();
       const score = formData.get("score")?.toString().trim() || null;
       const country = formData.get("country")?.toString().trim() || null;
 
-      if (id && name && photo && type) {
+      let photo = photoExisting;
+      if (photoFile && photoFile.size > 0) {
+        if (photoFile.size > 1024 * 1024) {
+          errorMessage = "Image size must be less than 1MB.";
+        } else if (!["image/jpeg", "image/png", "image/jpg"].includes(photoFile.type)) {
+          errorMessage = "Only JPEG, JPG, and PNG images are allowed.";
+        } else {
+          const buffer = await photoFile.arrayBuffer();
+          const base64 = arrayBufferToBase64(buffer);
+          photo = `data:${photoFile.type};base64,${base64}`;
+        }
+      }
+
+      if (!errorMessage && id && name && photo && type) {
         await db.prepare(
           `UPDATE success_stories SET name=?, photo=?, type=?, score=?, country=? WHERE id=?`
         ).bind(
           name, photo, type, score, country, id
         ).run();
         successMessage = `Successfully updated ${name}.`;
-      } else {
+      } else if (!errorMessage) {
         errorMessage = "Please fill in all required fields.";
       }
     }
@@ -122,7 +162,7 @@ if (db) {
         <h2 class="text-base font-bold text-slate-800 mb-4 flex items-center gap-2" id="story-form-heading">
           <Plus class="w-4 h-4 text-indigo-600" /> Add Success Story
         </h2>
-        <form method="POST" class="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs font-semibold text-slate-600">
+        <form method="POST" enctype="multipart/form-data" class="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs font-semibold text-slate-600">
           <input type="hidden" name="action" id="story-form-action" value="add-story" />
           <input type="hidden" name="id" id="story-edit-id" value="" />
           
@@ -132,8 +172,14 @@ if (db) {
           </div>
           
           <div class="space-y-1.5">
-            <label class="text-[10px] text-slate-500 uppercase tracking-wide">Photo URL *</label>
-            <input type="text" name="photo" id="s-photo" required class="w-full px-3 py-2.5 rounded-lg border border-slate-200 bg-slate-50 text-slate-800 focus:outline-none focus:ring-1 focus:ring-indigo-500" placeholder="e.g. /images/students/aarav.jpg or unsplash URL" />
+            <label class="text-[10px] text-slate-500 uppercase tracking-wide" id="photo-label">Upload Photo *</label>
+            <input type="file" name="photo_file" id="s-photo-file" accept=".jpg,.jpeg,.png" class="w-full px-3 py-2 rounded-lg border border-slate-200 bg-slate-50 text-slate-800 focus:outline-none focus:ring-1 focus:ring-indigo-500 font-sans text-xs" />
+            <input type="hidden" name="photo_existing" id="s-photo-existing" />
+            <div id="photo-preview-container" class="mt-2 hidden">
+              <span class="text-[9px] text-slate-400 block mb-1">Current / Selected Image:</span>
+              <img id="photo-preview" src="" class="w-12 h-12 rounded-full object-cover border border-slate-200" />
+            </div>
+            <span class="text-[9px] text-slate-400 block mt-1 font-normal">Max size: 1MB. Allowed types: JPG, JPEG, PNG.</span>
           </div>
 
           <div class="space-y-1.5">
@@ -265,7 +311,13 @@ if (db) {
       
       const submitBtn = document.getElementById("story-submit-btn");
       if (submitBtn) submitBtn.textContent = "Add Story";
+
+      const photoLabel = document.getElementById("photo-label");
+      if (photoLabel) photoLabel.textContent = "Upload Photo *";
       
+      const fileInput = document.getElementById("s-photo-file") as HTMLInputElement;
+      if (fileInput) fileInput.setAttribute("required", "required");
+
       panel.scrollIntoView({ behavior: "smooth", block: "start" });
     }
   }
@@ -292,6 +344,38 @@ if (db) {
       newTypeSelect.addEventListener("change", toggleFields);
     }
 
+    // Client-side file size/type validation
+    const fileInput = document.getElementById("s-photo-file") as HTMLInputElement;
+    if (fileInput) {
+      fileInput.addEventListener("change", () => {
+        const file = fileInput.files?.[0];
+        if (file) {
+          if (file.size > 1024 * 1024) {
+            alert("Warning: Image size must be less than 1MB. Please compress or select another photo.");
+            fileInput.value = "";
+            return;
+          }
+          if (!["image/jpeg", "image/png", "image/jpg"].includes(file.type)) {
+            alert("Warning: Only JPEG, JPG, and PNG images are allowed.");
+            fileInput.value = "";
+            return;
+          }
+          
+          // Show preview of selected file
+          const reader = new FileReader();
+          reader.onload = (e) => {
+            const previewContainer = document.getElementById("photo-preview-container");
+            const previewImg = document.getElementById("photo-preview") as HTMLImageElement;
+            if (previewContainer && previewImg && e.target?.result) {
+              previewContainer.classList.remove("hidden");
+              previewImg.src = e.target.result as string;
+            }
+          };
+          reader.readAsDataURL(file);
+        }
+      });
+    }
+
     const editBtns = document.querySelectorAll(".edit-story-btn");
     editBtns.forEach(btn => {
       btn.addEventListener("click", () => {
@@ -309,6 +393,12 @@ if (db) {
           const submitBtn = document.getElementById("story-submit-btn");
           if (submitBtn) submitBtn.textContent = "Update Story";
 
+          const photoLabel = document.getElementById("photo-label");
+          if (photoLabel) photoLabel.textContent = "Upload New Photo (Optional)";
+
+          const fileInput = document.getElementById("s-photo-file") as HTMLInputElement;
+          if (fileInput) fileInput.removeAttribute("required");
+
           const ds = (btn as HTMLElement).dataset;
           const editIdInput = document.getElementById("story-edit-id") as HTMLInputElement;
           if (editIdInput) editIdInput.value = ds.id || "";
@@ -316,8 +406,15 @@ if (db) {
           const nameInput = document.getElementById("s-name") as HTMLInputElement;
           if (nameInput) nameInput.value = ds.name || "";
           
-          const photoInput = document.getElementById("s-photo") as HTMLInputElement;
-          if (photoInput) photoInput.value = ds.photo || "";
+          const photoExistingInput = document.getElementById("s-photo-existing") as HTMLInputElement;
+          if (photoExistingInput) photoExistingInput.value = ds.photo || "";
+
+          const previewContainer = document.getElementById("photo-preview-container");
+          const previewImg = document.getElementById("photo-preview") as HTMLImageElement;
+          if (previewContainer && previewImg && ds.photo) {
+            previewContainer.classList.remove("hidden");
+            previewImg.src = ds.photo;
+          }
           
           const currentTypeSelect = document.getElementById("s-type") as HTMLSelectElement;
           if (currentTypeSelect) currentTypeSelect.value = ds.type || "Visa Success";
@@ -369,6 +466,14 @@ if (db) {
     
     const actionInput = document.getElementById("story-form-action") as HTMLInputElement;
     if (actionInput) actionInput.value = "add-story";
+
+    const previewContainer = document.getElementById("photo-preview-container");
+    if (previewContainer) previewContainer.classList.add("hidden");
+    const previewImg = document.getElementById("photo-preview") as HTMLImageElement;
+    if (previewImg) previewImg.src = "";
+
+    const photoExistingInput = document.getElementById("s-photo-existing") as HTMLInputElement;
+    if (photoExistingInput) photoExistingInput.value = "";
 
     const form = document.querySelector("#story-form-panel form");
     if (form) {
