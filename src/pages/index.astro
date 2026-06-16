@@ -16,11 +16,8 @@ const db = env?.tesca_db || env?.DB;
 
 try {
   if (db) {
-    const { results } = await db.prepare("SELECT * FROM success_stories ORDER BY id ASC").all();
-    stories = results.map(s => ({
-      ...s,
-      timeline: JSON.parse(s.timeline)
-    })) || [];
+    const { results } = await db.prepare("SELECT * FROM success_stories ORDER BY id DESC").all();
+    stories = results || [];
   }
 } catch (err) {
   console.error("Failed to fetch success stories from D1:", err);

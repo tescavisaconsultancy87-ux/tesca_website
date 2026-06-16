@@ -3,7 +3,7 @@ import Layout from "../../layouts/Layout.astro";
 import AdminHeader from "../../components/AdminHeader.astro";
 import { checkAdminAuth } from "../../utils/adminAuth";
 import { env } from "cloudflare:workers";
-import { Trash2, Plus, Landmark, Award, ShieldAlert } from "lucide-react";
+import { Trash2, Plus, Landmark, ShieldAlert } from "lucide-react";
 
 // Check session
 const isAuthenticated = await checkAdminAuth(Astro.cookies);
@@ -17,7 +17,7 @@ let universities = [];
 let successMessage = "";
 let errorMessage = "";
 
-// Handle server actions (Add / Delete)
+// Handle server actions (Add / Update / Delete)
 if (Astro.request.method === "POST" && db) {
   try {
     const formData = await Astro.request.formData();
@@ -31,53 +31,43 @@ if (Astro.request.method === "POST" && db) {
       const name = formData.get("name")?.toString().trim();
       const country = formData.get("country")?.toString().trim();
       const code = formData.get("code")?.toString().trim();
-      const rank = parseInt(formData.get("rank")?.toString() || "999");
-      const domain = formData.get("domain")?.toString().trim() || "General";
-      const city = formData.get("city")?.toString().trim();
-      const established = parseInt(formData.get("established")?.toString() || "2000");
-      const students = formData.get("students")?.toString().trim() || "10,000+";
-      const tuitionMin = parseFloat(formData.get("tuition_min")?.toString() || "0");
-      const tuitionMax = parseFloat(formData.get("tuition_max")?.toString() || "0");
-      const minGpa = parseFloat(formData.get("min_gpa")?.toString() || "0");
-      const minIelts = parseFloat(formData.get("min_ielts")?.toString() || "0");
-      const minToefl = parseInt(formData.get("min_toefl")?.toString() || "0");
-      const highlights = formData.get("highlights")?.toString().trim();
+      const tuitionFees = formData.get("tuition_fees")?.toString().trim();
+      const intake = formData.get("intake")?.toString().trim();
+      const ieltsPteReq = formData.get("ielts_pte_req")?.toString().trim() || null;
+      const moiAccepted = formData.get("moi_accepted")?.toString().trim();
+      const minCgpaPercent = formData.get("min_cgpa_percent")?.toString().trim();
+      const courses = formData.get("courses")?.toString().trim();
 
-      if (name && country && code && city && highlights) {
+      if (name && country && code && tuitionFees && intake && moiAccepted && minCgpaPercent && courses) {
         await db.prepare(
           `INSERT INTO universities 
-          (name, country, code, rank, domain, city, established, students, tuition_fee_min, tuition_fee_max, min_gpa_percent, min_ielts, min_toefl, highlights) 
-          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
+          (name, country, code, tuition_fees, intake, ielts_pte_req, moi_accepted, min_cgpa_percent, courses) 
+          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`
         ).bind(
-          name, country, code, rank, domain, city, established, students, tuitionMin, tuitionMax, minGpa, minIelts, minToefl, highlights
+          name, country, code, tuitionFees, intake, ieltsPteReq, moiAccepted, minCgpaPercent, courses
         ).run();
 
         successMessage = `Successfully added ${name} to database.`;
       } else {
-        errorMessage = "Please fill in all required fields (Name, Country, Code, City, Highlights).";
+        errorMessage = "Please fill in all required fields (Name, Country, Tuition Fees, Intake, MOI Accepted, Min CGPA/Percentage, Courses).";
       }
     } else if (action === "update-university") {
       const id = parseInt(formData.get("id")?.toString() || "0");
       const name = formData.get("name")?.toString().trim();
       const country = formData.get("country")?.toString().trim();
       const code = formData.get("code")?.toString().trim();
-      const rank = parseInt(formData.get("rank")?.toString() || "999");
-      const domain = formData.get("domain")?.toString().trim() || "General";
-      const city = formData.get("city")?.toString().trim();
-      const established = parseInt(formData.get("established")?.toString() || "2000");
-      const students = formData.get("students")?.toString().trim() || "10,000+";
-      const tuitionMin = parseFloat(formData.get("tuition_min")?.toString() || "0");
-      const tuitionMax = parseFloat(formData.get("tuition_max")?.toString() || "0");
-      const minGpa = parseFloat(formData.get("min_gpa")?.toString() || "0");
-      const minIelts = parseFloat(formData.get("min_ielts")?.toString() || "0");
-      const minToefl = parseInt(formData.get("min_toefl")?.toString() || "0");
-      const highlights = formData.get("highlights")?.toString().trim();
+      const tuitionFees = formData.get("tuition_fees")?.toString().trim();
+      const intake = formData.get("intake")?.toString().trim();
+      const ieltsPteReq = formData.get("ielts_pte_req")?.toString().trim() || null;
+      const moiAccepted = formData.get("moi_accepted")?.toString().trim();
+      const minCgpaPercent = formData.get("min_cgpa_percent")?.toString().trim();
+      const courses = formData.get("courses")?.toString().trim();
 
-      if (id && name && country && code && city && highlights) {
+      if (id && name && country && code && tuitionFees && intake && moiAccepted && minCgpaPercent && courses) {
         await db.prepare(
-          `UPDATE universities SET name=?, country=?, code=?, rank=?, domain=?, city=?, established=?, students=?, tuition_fee_min=?, tuition_fee_max=?, min_gpa_percent=?, min_ielts=?, min_toefl=?, highlights=? WHERE id=?`
+          `UPDATE universities SET name=?, country=?, code=?, tuition_fees=?, intake=?, ielts_pte_req=?, moi_accepted=?, min_cgpa_percent=?, courses=? WHERE id=?`
         ).bind(
-          name, country, code, rank, domain, city, established, students, tuitionMin, tuitionMax, minGpa, minIelts, minToefl, highlights, id
+          name, country, code, tuitionFees, intake, ieltsPteReq, moiAccepted, minCgpaPercent, courses, id
         ).run();
 
         successMessage = `Successfully updated ${name}.`;
@@ -94,7 +84,7 @@ if (Astro.request.method === "POST" && db) {
 // Fetch universities
 if (db) {
   try {
-    const res = await db.prepare("SELECT * FROM universities ORDER BY rank ASC").all();
+    const res = await db.prepare("SELECT * FROM universities ORDER BY name ASC").all();
     universities = res.results || [];
   } catch (err) {
     console.error("Failed to load universities:", err);
@@ -118,7 +108,7 @@ if (db) {
         <h1 class="text-3xl font-extrabold font-display tracking-tight text-slate-800">
           Universities Settings
         </h1>
-        <p class="text-slate-500 text-xs mt-1">Configure admission matching guidelines, IELTS cutoff values, and tuition constraints.</p>
+        <p class="text-slate-500 text-xs mt-1">Configure intake options, fees, and requirements for target universities.</p>
       </div>
 
       {/* Messages */}
@@ -148,75 +138,68 @@ if (db) {
             
             <div class="space-y-1.5">
               <label for="uni-name" class="text-[10px] text-slate-500 uppercase tracking-wide">University Name *</label>
-              <input type="text" id="uni-name" name="name" required class="w-full px-3 py-2.5 rounded-lg border border-slate-200 bg-slate-50 text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-1 focus:ring-indigo-500" placeholder="e.g. Harvard University" />
+              <input type="text" id="uni-name" name="name" required class="w-full px-3 py-2.5 rounded-lg border border-slate-200 bg-slate-50 text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-1 focus:ring-indigo-500" placeholder="e.g. Coventry University" />
             </div>
 
             <div class="grid grid-cols-2 gap-3">
               <div class="space-y-1.5">
                 <label for="uni-country" class="text-[10px] text-slate-500 uppercase tracking-wide">Country *</label>
-                <input type="text" id="uni-country" name="country" required class="w-full px-3 py-2.5 rounded-lg border border-slate-200 bg-slate-50 text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-1 focus:ring-indigo-500" placeholder="e.g. United States" />
+                <select id="uni-country" name="country" required class="w-full px-3 py-2.5 rounded-lg border border-slate-200 bg-slate-50 text-slate-800 focus:outline-none focus:ring-1 focus:ring-indigo-500">
+                  <option value="">Select Country</option>
+                  <option value="USA">USA</option>
+                  <option value="United Kingdom">United Kingdom</option>
+                  <option value="Canada">Canada</option>
+                  <option value="Australia">Australia</option>
+                  <option value="Germany">Germany</option>
+                  <option value="New Zealand">New Zealand</option>
+                  <option value="Ireland">Ireland</option>
+                  <option value="Singapore">Singapore</option>
+                  <option value="Switzerland">Switzerland</option>
+                  <option value="Malaysia">Malaysia</option>
+                  <option value="Dubai">Dubai</option>
+                  <option value="Europe">Europe</option>
+                </select>
               </div>
               <div class="space-y-1.5">
-                <label for="uni-code" class="text-[10px] text-slate-500 uppercase tracking-wide">Code (lowercase) *</label>
-                <input type="text" id="uni-code" name="code" required class="w-full px-3 py-2.5 rounded-lg border border-slate-200 bg-slate-50 text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-1 focus:ring-indigo-500" placeholder="e.g. us, gb, ca, de" />
-              </div>
-            </div>
-
-            <div class="grid grid-cols-3 gap-3">
-              <div class="space-y-1.5">
-                <label for="uni-rank" class="text-[10px] text-slate-500 uppercase tracking-wide">World Rank</label>
-                <input type="number" id="uni-rank" name="rank" required class="w-full px-3 py-2.5 rounded-lg border border-slate-200 bg-slate-50 text-slate-800 focus:outline-none" placeholder="e.g. 15" />
-              </div>
-              <div class="space-y-1.5">
-                <label for="uni-city" class="text-[10px] text-slate-500 uppercase tracking-wide">City *</label>
-                <input type="text" id="uni-city" name="city" required class="w-full px-3 py-2.5 rounded-lg border border-slate-200 bg-slate-50 text-slate-800 focus:outline-none" placeholder="e.g. Boston" />
-              </div>
-              <div class="space-y-1.5">
-                <label for="uni-est" class="text-[10px] text-slate-500 uppercase tracking-wide">Est. Year</label>
-                <input type="number" id="uni-est" name="established" required class="w-full px-3 py-2.5 rounded-lg border border-slate-200 bg-slate-50 text-slate-800 focus:outline-none" placeholder="e.g. 1636" />
-              </div>
-            </div>
-
-            <div class="grid grid-cols-2 gap-3">
-              <div class="space-y-1.5">
-                <label for="uni-domain" class="text-[10px] text-slate-500 uppercase tracking-wide">Domain Course</label>
-                <input type="text" id="uni-domain" name="domain" class="w-full px-3 py-2.5 rounded-lg border border-slate-200 bg-slate-50 text-slate-800 focus:outline-none" placeholder="e.g. CS, MBA (optional)" />
-              </div>
-              <div class="space-y-1.5">
-                <label for="uni-students" class="text-[10px] text-slate-500 uppercase tracking-wide">Total Students</label>
-                <input type="text" id="uni-students" name="students" class="w-full px-3 py-2.5 rounded-lg border border-slate-200 bg-slate-50 text-slate-800 focus:outline-none" placeholder="e.g. 21,000+" />
+                <label for="uni-code-display" class="text-[10px] text-slate-500 uppercase tracking-wide">Auto-assigned Code</label>
+                <input type="text" id="uni-code-display" disabled class="w-full px-3 py-2.5 rounded-lg border border-slate-200 bg-slate-100 text-slate-500 focus:outline-none cursor-not-allowed" placeholder="e.g. uk, ca" />
+                <input type="hidden" id="uni-code" name="code" required />
               </div>
             </div>
 
             <div class="grid grid-cols-2 gap-3">
               <div class="space-y-1.5">
-                <label for="uni-fee-min" class="text-[10px] text-slate-500 uppercase tracking-wide">Tuition Min (USD/yr)</label>
-                <input type="number" step="any" id="uni-fee-min" name="tuition_min" class="w-full px-3 py-2.5 rounded-lg border border-slate-200 bg-slate-50 text-slate-800 focus:outline-none" placeholder="e.g. 25000" />
+                <label for="uni-tuition" class="text-[10px] text-slate-500 uppercase tracking-wide">Tuition Fees *</label>
+                <input type="text" id="uni-tuition" name="tuition_fees" required class="w-full px-3 py-2.5 rounded-lg border border-slate-200 bg-slate-50 text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-1 focus:ring-indigo-500" placeholder="e.g. £15,000 - £20,000 / year" />
               </div>
               <div class="space-y-1.5">
-                <label for="uni-fee-max" class="text-[10px] text-slate-500 uppercase tracking-wide">Tuition Max (USD/yr)</label>
-                <input type="number" step="any" id="uni-fee-max" name="tuition_max" class="w-full px-3 py-2.5 rounded-lg border border-slate-200 bg-slate-50 text-slate-800 focus:outline-none" placeholder="e.g. 45000" />
+                <label for="uni-intake" class="text-[10px] text-slate-500 uppercase tracking-wide">Intakes *</label>
+                <input type="text" id="uni-intake" name="intake" required class="w-full px-3 py-2.5 rounded-lg border border-slate-200 bg-slate-50 text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-1 focus:ring-indigo-500" placeholder="e.g. Sept, Jan, May" />
               </div>
             </div>
 
-            <div class="grid grid-cols-3 gap-3">
+            <div class="grid grid-cols-2 gap-3">
               <div class="space-y-1.5">
-                <label for="uni-gpa" class="text-[10px] text-slate-500 uppercase tracking-wide">Min GPA (%)</label>
-                <input type="number" step="any" id="uni-gpa" name="min_gpa" class="w-full px-3 py-2.5 rounded-lg border border-slate-200 bg-slate-50 text-slate-800 focus:outline-none" placeholder="e.g. 65" />
+                <label for="uni-ielts-pte" class="text-[10px] text-slate-500 uppercase tracking-wide">IELTS/PTE Requirement (Optional)</label>
+                <input type="text" id="uni-ielts-pte" name="ielts_pte_req" class="w-full px-3 py-2.5 rounded-lg border border-slate-200 bg-slate-50 text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-1 focus:ring-indigo-500" placeholder="e.g. 6.0 overall / PTE 50" />
               </div>
               <div class="space-y-1.5">
-                <label for="uni-ielts" class="text-[10px] text-slate-500 uppercase tracking-wide">Min IELTS</label>
-                <input type="number" step="any" id="uni-ielts" name="min_ielts" class="w-full px-3 py-2.5 rounded-lg border border-slate-200 bg-slate-50 text-slate-800 focus:outline-none" placeholder="e.g. 6.5" />
-              </div>
-              <div class="space-y-1.5">
-                <label for="uni-toefl" class="text-[10px] text-slate-500 uppercase tracking-wide">Min TOEFL</label>
-                <input type="number" id="uni-toefl" name="min_toefl" class="w-full px-3 py-2.5 rounded-lg border border-slate-200 bg-slate-50 text-slate-800 focus:outline-none" placeholder="e.g. 90" />
+                <label for="uni-moi" class="text-[10px] text-slate-500 uppercase tracking-wide">MOI Accepted *</label>
+                <select id="uni-moi" name="moi_accepted" required class="w-full px-3 py-2.5 rounded-lg border border-slate-200 bg-slate-50 text-slate-800 focus:outline-none focus:ring-1 focus:ring-indigo-500">
+                  <option value="Yes">Yes</option>
+                  <option value="No">No</option>
+                </select>
               </div>
             </div>
 
             <div class="space-y-1.5">
-              <label for="uni-highlights" class="text-[10px] text-slate-500 uppercase tracking-wide">Highlights / Intakes *</label>
-              <textarea id="uni-highlights" name="highlights" required rows="3" class="w-full px-3 py-2.5 rounded-lg border border-slate-200 bg-slate-50 text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-1 focus:ring-indigo-500" placeholder="e.g. Intakes: Sept, Jan. Leading courses in AI & Data Science. Offers $10k scholarship."></textarea>
+              <label for="uni-cgpa" class="text-[10px] text-slate-500 uppercase tracking-wide">Min CGPA / Percentage *</label>
+              <input type="text" id="uni-cgpa" name="min_cgpa_percent" required class="w-full px-3 py-2.5 rounded-lg border border-slate-200 bg-slate-50 text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-1 focus:ring-indigo-500" placeholder="e.g. 55% or 6.0 CGPA" />
+            </div>
+
+            <div class="space-y-1.5">
+              <label for="uni-courses" class="text-[10px] text-slate-500 uppercase tracking-wide">Courses Offered *</label>
+              <textarea id="uni-courses" name="courses" required rows="3" class="w-full px-3 py-2.5 rounded-lg border border-slate-200 bg-slate-50 text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-1 focus:ring-indigo-500" placeholder="e.g. MBA, MSc Data Science, CS, BBA (comma separated)"></textarea>
             </div>
 
             <button type="submit" id="submit-btn" class="w-full py-3 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-xl transition-all cursor-pointer shadow-md hover:scale-[1.01] mt-2">
@@ -241,66 +224,57 @@ if (db) {
               <table class="w-full text-left border-collapse text-xs">
                 <thead>
                   <tr class="bg-slate-50 text-slate-500 border-b border-slate-200 font-bold uppercase tracking-wider">
-                    <th class="px-6 py-4">Rank / Name</th>
-                    <th class="px-6 py-4">Location</th>
-                    <th class="px-6 py-4">Requirements</th>
+                    <th class="px-6 py-4">University</th>
+                    <th class="px-6 py-4">Details</th>
                     <th class="px-6 py-4 text-right">Actions</th>
-                    <th class="px-6 py-4 text-right w-20"></th>
                   </tr>
                 </thead>
                 <tbody class="divide-y divide-slate-100">
                   {universities.map((u) => (
                     <tr class="hover:bg-slate-50 transition-colors">
                       <td class="px-6 py-4">
-                        <div class="font-bold text-indigo-600">#{u.rank}</div>
-                        <div class="font-bold text-slate-800 text-xs mt-0.5">{u.name}</div>
-                        <div class="text-[10px] text-slate-500 mt-0.5 font-mono">Est: {u.established} | {u.students} students</div>
-                      </td>
-                      <td class="px-6 py-4">
-                        <div class="font-semibold text-slate-700">{u.city}</div>
-                        <div class="text-slate-500 mt-0.5">{u.country} ({u.code.toUpperCase()})</div>
+                        <div class="font-bold text-slate-800 text-xs">{u.name}</div>
+                        <div class="text-[10px] text-slate-500 mt-1 font-mono">Courses: {u.courses}</div>
                       </td>
                       <td class="px-6 py-4 space-y-1">
-                        <div>GPA: <span class="font-bold text-slate-700">{u.min_gpa_percent}%</span></div>
-                        <div>IELTS: <span class="font-bold text-slate-700">{u.min_ielts || "N/A"}</span></div>
-                        <div>Fee: <span class="font-bold text-slate-700">${u.tuition_fee_min?.toLocaleString()} - ${u.tuition_fee_max?.toLocaleString()}</span></div>
+                        <div>Country: <span class="font-bold text-slate-700">{u.country} ({u.code.toUpperCase()})</span></div>
+                        <div>Fees: <span class="font-bold text-slate-700">{u.tuition_fees}</span></div>
+                        <div>Intake: <span class="font-bold text-slate-700">{u.intake}</span></div>
+                        <div>IELTS/PTE: <span class="font-bold text-slate-700">{u.ielts_pte_req || "N/A"}</span></div>
+                        <div>MOI Accepted: <span class="font-bold text-slate-700">{u.moi_accepted}</span></div>
+                        <div>Min CGPA/Score: <span class="font-bold text-slate-700">{u.min_cgpa_percent}</span></div>
                       </td>
                       <td class="px-6 py-4 text-right whitespace-nowrap">
-                        <form method="POST" onsubmit="return confirm('Are you sure you want to remove this university?');" class="inline">
-                          <input type="hidden" name="action" value="delete-university" />
-                          <input type="hidden" name="id" value={u.id} />
+                        <div class="flex items-center justify-end gap-1">
                           <button
-                            type="submit"
-                            class="p-2 text-rose-500 hover:bg-rose-50 rounded-lg hover:scale-105 transition-all cursor-pointer border border-transparent hover:border-rose-200"
-                            aria-label={`Delete ${u.name}`}
+                            type="button"
+                            class="edit-uni-btn p-2 text-indigo-500 hover:bg-indigo-50 rounded-lg hover:scale-105 transition-all cursor-pointer border border-transparent hover:border-indigo-200"
+                            data-id={u.id}
+                            data-name={u.name}
+                            data-country={u.country}
+                            data-code={u.code}
+                            data-tuition-fees={u.tuition_fees}
+                            data-intake={u.intake}
+                            data-ielts-pte-req={u.ielts_pte_req || ""}
+                            data-moi-accepted={u.moi_accepted}
+                            data-min-cgpa-percent={u.min_cgpa_percent}
+                            data-courses={u.courses}
+                            aria-label={`Edit ${u.name}`}
                           >
-                            <Trash2 class="w-3.5 h-3.5" />
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/><path d="m15 5 4 4"/></svg>
                           </button>
-                        </form>
-                      </td>
-                      <td class="px-6 py-4 text-right whitespace-nowrap">
-                        <button
-                          type="button"
-                          class="edit-uni-btn p-2 text-indigo-500 hover:bg-indigo-50 rounded-lg hover:scale-105 transition-all cursor-pointer border border-transparent hover:border-indigo-200"
-                          data-id={u.id}
-                          data-name={u.name}
-                          data-country={u.country}
-                          data-code={u.code}
-                          data-rank={u.rank}
-                          data-domain={u.domain || ""}
-                          data-city={u.city}
-                          data-established={u.established}
-                          data-students={u.students}
-                          data-tuition-min={u.tuition_fee_min}
-                          data-tuition-max={u.tuition_fee_max}
-                          data-min-gpa={u.min_gpa_percent}
-                          data-min-ielts={u.min_ielts}
-                          data-min-toefl={u.min_toefl}
-                          data-highlights={u.highlights}
-                          aria-label={`Edit ${u.name}`}
-                        >
-                          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/><path d="m15 5 4 4"/></svg>
-                        </button>
+                          <form method="POST" onsubmit="return confirm('Are you sure you want to remove this university?');" class="inline">
+                            <input type="hidden" name="action" value="delete-university" />
+                            <input type="hidden" name="id" value={u.id} />
+                            <button
+                              type="submit"
+                              class="p-2 text-rose-500 hover:bg-rose-50 rounded-lg hover:scale-105 transition-all cursor-pointer border border-transparent hover:border-rose-200"
+                              aria-label={`Delete ${u.name}`}
+                            >
+                              <Trash2 class="w-3.5 h-3.5" />
+                            </button>
+                          </form>
+                        </div>
                       </td>
                     </tr>
                   ))}
@@ -317,6 +291,21 @@ if (db) {
 </Layout>
 
 <script>
+  const countryToCode: Record<string, string> = {
+    "USA": "us",
+    "United Kingdom": "uk",
+    "Canada": "ca",
+    "Australia": "au",
+    "Germany": "de",
+    "New Zealand": "nz",
+    "Ireland": "ie",
+    "Singapore": "sg",
+    "Switzerland": "ch",
+    "Malaysia": "my",
+    "Dubai": "ae",
+    "Europe": "eu"
+  };
+
   function setupUniEdit() {
     const editBtns = document.querySelectorAll(".edit-uni-btn");
     editBtns.forEach(btn => {
@@ -336,35 +325,27 @@ if (db) {
         const getValue = (val: string | undefined) => val || "";
 
         const nameInput = document.querySelector('[name="name"]') as HTMLInputElement;
-        const countryInput = document.querySelector('[name="country"]') as HTMLInputElement;
-        const codeInput = document.querySelector('[name="code"]') as HTMLInputElement;
-        const rankInput = document.querySelector('[name="rank"]') as HTMLInputElement;
-        const domainInput = document.querySelector('[name="domain"]') as HTMLInputElement;
-        const cityInput = document.querySelector('[name="city"]') as HTMLInputElement;
-        const establishedInput = document.querySelector('[name="established"]') as HTMLInputElement;
-        const studentsInput = document.querySelector('[name="students"]') as HTMLInputElement;
-        const tuitionMinInput = document.querySelector('[name="tuition_min"]') as HTMLInputElement;
-        const tuitionMaxInput = document.querySelector('[name="tuition_max"]') as HTMLInputElement;
-        const minGpaInput = document.querySelector('[name="min_gpa"]') as HTMLInputElement;
-        const minIeltsInput = document.querySelector('[name="min_ielts"]') as HTMLInputElement;
-        const minToeflInput = document.querySelector('[name="min_toefl"]') as HTMLInputElement;
-        const highlightsInput = document.querySelector('[name="highlights"]') as HTMLTextAreaElement;
+        const countrySelect = document.querySelector('[name="country"]') as HTMLSelectElement;
+        const codeInput = document.getElementById("uni-code") as HTMLInputElement;
+        const codeDisplay = document.getElementById("uni-code-display") as HTMLInputElement;
+        const tuitionFeesInput = document.querySelector('[name="tuition_fees"]') as HTMLInputElement;
+        const intakeInput = document.querySelector('[name="intake"]') as HTMLInputElement;
+        const ieltsPteReqInput = document.querySelector('[name="ielts_pte_req"]') as HTMLInputElement;
+        const moiAcceptedSelect = document.querySelector('[name="moi_accepted"]') as HTMLSelectElement;
+        const minCgpaPercentInput = document.querySelector('[name="min_cgpa_percent"]') as HTMLInputElement;
+        const coursesInput = document.querySelector('[name="courses"]') as HTMLTextAreaElement;
 
         const ds = (btn as HTMLElement).dataset;
         if (nameInput) nameInput.value = getValue(ds.name);
-        if (countryInput) countryInput.value = getValue(ds.country);
+        if (countrySelect) countrySelect.value = getValue(ds.country);
         if (codeInput) codeInput.value = getValue(ds.code);
-        if (rankInput) rankInput.value = getValue(ds.rank);
-        if (domainInput) domainInput.value = getValue(ds.domain);
-        if (cityInput) cityInput.value = getValue(ds.city);
-        if (establishedInput) establishedInput.value = getValue(ds.established);
-        if (studentsInput) studentsInput.value = getValue(ds.students);
-        if (tuitionMinInput) tuitionMinInput.value = getValue(ds.tuitionMin);
-        if (tuitionMaxInput) tuitionMaxInput.value = getValue(ds.tuitionMax);
-        if (minGpaInput) minGpaInput.value = getValue(ds.minGpa);
-        if (minIeltsInput) minIeltsInput.value = getValue(ds.minIelts);
-        if (minToeflInput) minToeflInput.value = getValue(ds.minToefl);
-        if (highlightsInput) highlightsInput.value = getValue(ds.highlights);
+        if (codeDisplay) codeDisplay.value = getValue(ds.code).toUpperCase();
+        if (tuitionFeesInput) tuitionFeesInput.value = getValue(ds.tuitionFees);
+        if (intakeInput) intakeInput.value = getValue(ds.intake);
+        if (ieltsPteReqInput) ieltsPteReqInput.value = getValue(ds.ieltsPteReq);
+        if (moiAcceptedSelect) moiAcceptedSelect.value = getValue(ds.moiAccepted);
+        if (minCgpaPercentInput) minCgpaPercentInput.value = getValue(ds.minCgpaPercent);
+        if (coursesInput) coursesInput.value = getValue(ds.courses);
 
         document.querySelector("form")?.scrollIntoView({ behavior: "smooth", block: "start" });
       });
@@ -372,10 +353,25 @@ if (db) {
 
     const cancelBtn = document.getElementById("cancel-edit-btn");
     if (cancelBtn) {
-      // Remove any existing listeners first to avoid duplication
       cancelBtn.replaceWith(cancelBtn.cloneNode(true));
       const newCancelBtn = document.getElementById("cancel-edit-btn");
       newCancelBtn?.addEventListener("click", cancelEdit);
+    }
+
+    // Country select change listener to sync code input
+    const countrySelect = document.getElementById("uni-country") as HTMLSelectElement;
+    const codeInput = document.getElementById("uni-code") as HTMLInputElement;
+    const codeDisplay = document.getElementById("uni-code-display") as HTMLInputElement;
+
+    if (countrySelect && codeInput && codeDisplay) {
+      // Clear listener if already added by replacing element
+      countrySelect.replaceWith(countrySelect.cloneNode(true));
+      const newCountrySelect = document.getElementById("uni-country") as HTMLSelectElement;
+      newCountrySelect.addEventListener("change", () => {
+        const code = countryToCode[newCountrySelect.value] || "";
+        codeInput.value = code;
+        codeDisplay.value = code.toUpperCase();
+      });
     }
   }
 
@@ -394,10 +390,14 @@ if (db) {
 
     const form = document.querySelector("form");
     if (form) {
-      form.querySelectorAll("input, textarea").forEach(el => {
+      form.querySelectorAll("input, textarea, select").forEach(el => {
         const input = el as HTMLInputElement;
-        if (input.type !== "hidden") input.value = "";
+        if (input.type !== "hidden" && input.name !== "moi_accepted") {
+          input.value = "";
+        }
       });
+      const codeDisplay = document.getElementById("uni-code-display") as HTMLInputElement;
+      if (codeDisplay) codeDisplay.value = "";
     }
   }
 

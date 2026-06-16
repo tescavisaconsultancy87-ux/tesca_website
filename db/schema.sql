@@ -7,17 +7,12 @@ CREATE TABLE universities (
     name TEXT NOT NULL,
     country TEXT NOT NULL,
     code TEXT NOT NULL,
-    rank INTEGER NOT NULL,
-    domain TEXT NOT NULL,
-    city TEXT NOT NULL,
-    established INTEGER NOT NULL,
-    students TEXT NOT NULL,
-    tuition_fee_min REAL,
-    tuition_fee_max REAL,
-    min_gpa_percent REAL,
-    min_ielts REAL,
-    min_toefl INTEGER,
-    highlights TEXT -- Additional details such as intakes, top courses, etc.
+    tuition_fees TEXT NOT NULL,
+    intake TEXT NOT NULL,
+    ielts_pte_req TEXT, -- optional
+    moi_accepted TEXT NOT NULL, -- "Yes" or "No"
+    min_cgpa_percent TEXT NOT NULL,
+    courses TEXT NOT NULL
 );
 
 -- 2. Success Stories Table
@@ -25,17 +20,10 @@ DROP TABLE IF EXISTS success_stories;
 CREATE TABLE success_stories (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     name TEXT NOT NULL,
-    avatar TEXT NOT NULL,
-    destination TEXT NOT NULL,
-    dest_flag TEXT NOT NULL,
-    before_loc TEXT NOT NULL,
-    before_status TEXT NOT NULL,
-    before_ielts TEXT NOT NULL,
-    after_uni TEXT NOT NULL,
-    after_status TEXT NOT NULL,
-    after_salary TEXT NOT NULL,
-    quote TEXT NOT NULL,
-    timeline TEXT NOT NULL -- JSON array string of milestones, e.g. '["Step 1", "Step 2"]'
+    photo TEXT NOT NULL,
+    type TEXT NOT NULL, -- "Visa Success", "IELTS", "PTE"
+    score TEXT,         -- optional score
+    country TEXT        -- optional country
 );
 
 -- 3. Leads Table

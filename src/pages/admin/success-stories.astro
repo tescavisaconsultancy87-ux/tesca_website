@@ -3,7 +3,7 @@ import Layout from "../../layouts/Layout.astro";
 import AdminHeader from "../../components/AdminHeader.astro";
 import { checkAdminAuth } from "../../utils/adminAuth";
 import { env } from "cloudflare:workers";
-import { Trash2, MessageSquare, ShieldAlert, Plus } from "lucide-react";
+import { Trash2, ShieldAlert, Plus } from "lucide-react";
 
 // Check session
 const isAuthenticated = await checkAdminAuth(Astro.cookies);
@@ -17,7 +17,7 @@ let stories = [];
 let successMessage = "";
 let errorMessage = "";
 
-// Handle server actions (Delete/Update)
+// Handle server actions (Add / Update / Delete)
 if (Astro.request.method === "POST" && db) {
   try {
     const formData = await Astro.request.formData();
@@ -29,53 +29,38 @@ if (Astro.request.method === "POST" && db) {
       successMessage = "Success story profile deleted successfully.";
     } else if (action === "add-story") {
       const name = formData.get("name")?.toString().trim();
-      const avatar = formData.get("avatar")?.toString().trim() || "🎓";
-      const destination = formData.get("destination")?.toString().trim() || "";
-      const destFlag = formData.get("dest_flag")?.toString().trim() || "";
-      const beforeLoc = formData.get("before_loc")?.toString().trim() || "";
-      const beforeStatus = formData.get("before_status")?.toString().trim() || "";
-      const beforeIelts = formData.get("before_ielts")?.toString().trim() || "";
-      const afterUni = formData.get("after_uni")?.toString().trim() || "";
-      const afterStatus = formData.get("after_status")?.toString().trim() || "";
-      const afterSalary = formData.get("after_salary")?.toString().trim() || "";
-      const quote = formData.get("quote")?.toString().trim() || "";
-      const timeline = formData.get("timeline")?.toString().trim() || "[]";
+      const photo = formData.get("photo")?.toString().trim();
+      const type = formData.get("type")?.toString().trim();
+      const score = formData.get("score")?.toString().trim() || null;
+      const country = formData.get("country")?.toString().trim() || null;
 
-      if (name) {
+      if (name && photo && type) {
         await db.prepare(
-          `INSERT INTO success_stories (name, avatar, destination, dest_flag, before_loc, before_status, before_ielts, after_uni, after_status, after_salary, quote, timeline) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
+          `INSERT INTO success_stories (name, photo, type, score, country) VALUES (?, ?, ?, ?, ?)`
         ).bind(
-          name, avatar, destination, destFlag, beforeLoc, beforeStatus, beforeIelts, afterUni, afterStatus, afterSalary, quote, timeline
+          name, photo, type, score, country
         ).run();
-        successMessage = `Successfully added ${name}.`;
+        successMessage = `Successfully added success story for ${name}.`;
       } else {
-        errorMessage = "Student name is required.";
+        errorMessage = "Please fill in all required fields (Name, Photo, and Type).";
       }
     } else if (action === "update-story") {
       const id = parseInt(formData.get("id")?.toString() || "0");
       const name = formData.get("name")?.toString().trim();
-      const avatar = formData.get("avatar")?.toString().trim();
-      const destination = formData.get("destination")?.toString().trim();
-      const destFlag = formData.get("dest_flag")?.toString().trim();
-      const beforeLoc = formData.get("before_loc")?.toString().trim();
-      const beforeStatus = formData.get("before_status")?.toString().trim();
-      const beforeIelts = formData.get("before_ielts")?.toString().trim();
-      const afterUni = formData.get("after_uni")?.toString().trim();
-      const afterStatus = formData.get("after_status")?.toString().trim();
-      const afterSalary = formData.get("after_salary")?.toString().trim();
-      const quote = formData.get("quote")?.toString().trim();
-      const timeline = formData.get("timeline")?.toString().trim();
+      const photo = formData.get("photo")?.toString().trim();
+      const type = formData.get("type")?.toString().trim();
+      const score = formData.get("score")?.toString().trim() || null;
+      const country = formData.get("country")?.toString().trim() || null;
 
-      if (id && name) {
+      if (id && name && photo && type) {
         await db.prepare(
-          `UPDATE success_stories SET name=?, avatar=?, destination=?, dest_flag=?, before_loc=?, before_status=?, before_ielts=?, after_uni=?, after_status=?, after_salary=?, quote=?, timeline=? WHERE id=?`
+          `UPDATE success_stories SET name=?, photo=?, type=?, score=?, country=? WHERE id=?`
         ).bind(
-          name, avatar || "", destination || "", destFlag || "", beforeLoc || "", beforeStatus || "", beforeIelts || "",
-          afterUni || "", afterStatus || "", afterSalary || "", quote || "", timeline || "[]", id
+          name, photo, type, score, country, id
         ).run();
         successMessage = `Successfully updated ${name}.`;
       } else {
-        errorMessage = "Student name is required.";
+        errorMessage = "Please fill in all required fields.";
       }
     }
   } catch (err: any) {
@@ -87,7 +72,7 @@ if (Astro.request.method === "POST" && db) {
 // Fetch success stories
 if (db) {
   try {
-    const res = await db.prepare("SELECT * FROM success_stories ORDER BY id ASC").all();
+    const res = await db.prepare("SELECT * FROM success_stories ORDER BY id DESC").all();
     stories = res.results || [];
   } catch (err) {
     console.error("Failed to load success stories:", err);
@@ -111,7 +96,7 @@ if (db) {
         <h1 class="text-3xl font-extrabold font-display tracking-tight text-slate-800">
           Manage Success Stories
         </h1>
-        <p class="text-slate-500 text-xs mt-1">Remove student success stories that are featured in the landing carousel.</p>
+        <p class="text-slate-500 text-xs mt-1">Configure student success stories that are featured in the landing carousel.</p>
       </div>
 
       {/* Messages */}
@@ -128,7 +113,7 @@ if (db) {
       )}
 
       {/* Add New Button */}
-      <button id="show-add-form-btn" onclick="showAddForm()" class="mb-6 flex items-center gap-2 px-5 py-3 bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs rounded-xl transition-all cursor-pointer shadow-sm">
+      <button id="show-add-form-btn" class="mb-6 flex items-center gap-2 px-5 py-3 bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs rounded-xl transition-all cursor-pointer shadow-sm">
         <Plus class="w-4 h-4" /> Add New Success Story
       </button>
 
@@ -140,59 +125,55 @@ if (db) {
         <form method="POST" class="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs font-semibold text-slate-600">
           <input type="hidden" name="action" id="story-form-action" value="add-story" />
           <input type="hidden" name="id" id="story-edit-id" value="" />
+          
           <div class="space-y-1.5">
-            <label class="text-[10px] text-slate-500 uppercase tracking-wide">Name *</label>
-            <input type="text" name="name" id="s-name" required class="w-full px-3 py-2.5 rounded-lg border border-slate-200 bg-slate-50 text-slate-800 focus:outline-none" />
+            <label class="text-[10px] text-slate-500 uppercase tracking-wide">Student Name *</label>
+            <input type="text" name="name" id="s-name" required class="w-full px-3 py-2.5 rounded-lg border border-slate-200 bg-slate-50 text-slate-800 focus:outline-none focus:ring-1 focus:ring-indigo-500" placeholder="e.g. Aarav Patel" />
           </div>
+          
           <div class="space-y-1.5">
-            <label class="text-[10px] text-slate-500 uppercase tracking-wide">Avatar (emoji)</label>
-            <input type="text" name="avatar" id="s-avatar" class="w-full px-3 py-2.5 rounded-lg border border-slate-200 bg-slate-50 text-slate-800 focus:outline-none" placeholder="e.g. 👨‍🎓" />
+            <label class="text-[10px] text-slate-500 uppercase tracking-wide">Photo URL *</label>
+            <input type="text" name="photo" id="s-photo" required class="w-full px-3 py-2.5 rounded-lg border border-slate-200 bg-slate-50 text-slate-800 focus:outline-none focus:ring-1 focus:ring-indigo-500" placeholder="e.g. /images/students/aarav.jpg or unsplash URL" />
           </div>
+
           <div class="space-y-1.5">
-            <label class="text-[10px] text-slate-500 uppercase tracking-wide">Destination</label>
-            <input type="text" name="destination" id="s-destination" class="w-full px-3 py-2.5 rounded-lg border border-slate-200 bg-slate-50 text-slate-800 focus:outline-none" />
+            <label class="text-[10px] text-slate-500 uppercase tracking-wide">Type *</label>
+            <select name="type" id="s-type" required class="w-full px-3 py-2.5 rounded-lg border border-slate-200 bg-slate-50 text-slate-800 focus:outline-none focus:ring-1 focus:ring-indigo-500">
+              <option value="Visa Success">Visa Success</option>
+              <option value="IELTS">IELTS</option>
+              <option value="PTE">PTE</option>
+            </select>
           </div>
-          <div class="space-y-1.5">
-            <label class="text-[10px] text-slate-500 uppercase tracking-wide">Dest Flag</label>
-            <input type="text" name="dest_flag" id="s-dest-flag" class="w-full px-3 py-2.5 rounded-lg border border-slate-200 bg-slate-50 text-slate-800 focus:outline-none" placeholder="e.g. 🇨🇦" />
+
+          <div class="space-y-1.5" id="score-container">
+            <label class="text-[10px] text-slate-500 uppercase tracking-wide">Overall Score *</label>
+            <input type="text" name="score" id="s-score" class="w-full px-3 py-2.5 rounded-lg border border-slate-200 bg-slate-50 text-slate-800 focus:outline-none focus:ring-1 focus:ring-indigo-500" placeholder="e.g. 8.0 or 79" />
           </div>
-          <div class="space-y-1.5">
-            <label class="text-[10px] text-slate-500 uppercase tracking-wide">Before Location</label>
-            <input type="text" name="before_loc" id="s-before-loc" class="w-full px-3 py-2.5 rounded-lg border border-slate-200 bg-slate-50 text-slate-800 focus:outline-none" />
+
+          <div class="space-y-1.5 hidden" id="country-container">
+            <label class="text-[10px] text-slate-500 uppercase tracking-wide">Visa Country *</label>
+            <select name="country" id="s-country" class="w-full px-3 py-2.5 rounded-lg border border-slate-200 bg-slate-50 text-slate-800 focus:outline-none focus:ring-1 focus:ring-indigo-500">
+              <option value="">Select Country</option>
+              <option value="USA">USA</option>
+              <option value="United Kingdom">United Kingdom</option>
+              <option value="Canada">Canada</option>
+              <option value="Australia">Australia</option>
+              <option value="Germany">Germany</option>
+              <option value="New Zealand">New Zealand</option>
+              <option value="Ireland">Ireland</option>
+              <option value="Singapore">Singapore</option>
+              <option value="Switzerland">Switzerland</option>
+              <option value="Malaysia">Malaysia</option>
+              <option value="Dubai">Dubai</option>
+              <option value="Europe">Europe</option>
+            </select>
           </div>
-          <div class="space-y-1.5">
-            <label class="text-[10px] text-slate-500 uppercase tracking-wide">Before Status</label>
-            <input type="text" name="before_status" id="s-before-status" class="w-full px-3 py-2.5 rounded-lg border border-slate-200 bg-slate-50 text-slate-800 focus:outline-none" />
-          </div>
-          <div class="space-y-1.5">
-            <label class="text-[10px] text-slate-500 uppercase tracking-wide">Before IELTS</label>
-            <input type="text" name="before_ielts" id="s-before-ielts" class="w-full px-3 py-2.5 rounded-lg border border-slate-200 bg-slate-50 text-slate-800 focus:outline-none" />
-          </div>
-          <div class="space-y-1.5">
-            <label class="text-[10px] text-slate-500 uppercase tracking-wide">After University</label>
-            <input type="text" name="after_uni" id="s-after-uni" class="w-full px-3 py-2.5 rounded-lg border border-slate-200 bg-slate-50 text-slate-800 focus:outline-none" />
-          </div>
-          <div class="space-y-1.5">
-            <label class="text-[10px] text-slate-500 uppercase tracking-wide">After Status</label>
-            <input type="text" name="after_status" id="s-after-status" class="w-full px-3 py-2.5 rounded-lg border border-slate-200 bg-slate-50 text-slate-800 focus:outline-none" />
-          </div>
-          <div class="space-y-1.5">
-            <label class="text-[10px] text-slate-500 uppercase tracking-wide">After Salary</label>
-            <input type="text" name="after_salary" id="s-after-salary" class="w-full px-3 py-2.5 rounded-lg border border-slate-200 bg-slate-50 text-slate-800 focus:outline-none" />
-          </div>
-          <div class="md:col-span-2 space-y-1.5">
-            <label class="text-[10px] text-slate-500 uppercase tracking-wide">Quote</label>
-            <textarea name="quote" id="s-quote" rows="2" class="w-full px-3 py-2.5 rounded-lg border border-slate-200 bg-slate-50 text-slate-800 focus:outline-none"></textarea>
-          </div>
-          <div class="md:col-span-2 space-y-1.5">
-            <label class="text-[10px] text-slate-500 uppercase tracking-wide">Timeline (JSON array)</label>
-            <input type="text" name="timeline" id="s-timeline" class="w-full px-3 py-2.5 rounded-lg border border-slate-200 bg-slate-50 text-slate-800 focus:outline-none" placeholder='e.g. ["Step 1", "Step 2"]' />
-          </div>
-          <div class="md:col-span-2 flex gap-3">
+
+          <div class="md:col-span-2 flex gap-3 mt-2">
             <button type="submit" id="story-submit-btn" class="flex-1 py-3 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-xl transition-all cursor-pointer shadow-md hover:scale-[1.01]">
               Add Story
             </button>
-            <button type="button" id="cancel-story-edit" onclick="cancelStoryForm()" class="px-6 py-3 bg-slate-100 hover:bg-slate-200 text-slate-600 font-bold rounded-xl transition-all cursor-pointer border border-slate-200">
+            <button type="button" id="cancel-story-edit" class="px-6 py-3 bg-slate-100 hover:bg-slate-200 text-slate-600 font-bold rounded-xl transition-all cursor-pointer border border-slate-200">
               Cancel
             </button>
           </div>
@@ -210,55 +191,51 @@ if (db) {
             <table class="w-full text-left border-collapse text-xs">
               <thead>
                 <tr class="bg-slate-50 text-slate-500 border-b border-slate-200 font-bold uppercase tracking-wider">
-                  <th class="px-6 py-4">Avatar</th>
+                  <th class="px-6 py-4">Photo</th>
                   <th class="px-6 py-4">Student Name</th>
-                  <th class="px-6 py-4">Destination</th>
-                  <th class="px-6 py-4">Admitted Uni</th>
+                  <th class="px-6 py-4">Type</th>
+                  <th class="px-6 py-4">Details</th>
                   <th class="px-6 py-4 text-right">Actions</th>
-                  <th class="px-6 py-4 text-right w-20"></th>
                 </tr>
               </thead>
               <tbody class="divide-y divide-slate-100 font-sans text-xs">
                 {stories.map((s) => (
                   <tr class="hover:bg-slate-50 transition-colors">
-                    <td class="px-6 py-4 text-2xl">{s.avatar}</td>
+                    <td class="px-6 py-4">
+                      <img src={s.photo} alt={s.name} class="w-10 h-10 rounded-full object-cover border border-slate-200" />
+                    </td>
                     <td class="px-6 py-4 font-bold text-slate-800 whitespace-nowrap">{s.name}</td>
-                    <td class="px-6 py-4 text-slate-600 whitespace-nowrap">{s.destination} {s.dest_flag}</td>
-                    <td class="px-6 py-4 text-slate-600">{s.after_uni}</td>
-                    <td class="px-6 py-4 text-right whitespace-nowrap">
-                      <form method="POST" onsubmit="return confirm('Are you sure you want to remove this success story?');" class="inline">
-                        <input type="hidden" name="action" value="delete-story" />
-                        <input type="hidden" name="id" value={s.id} />
-                        <button 
-                          type="submit" 
-                          class="p-2 text-rose-500 hover:bg-rose-50 rounded-lg hover:scale-105 transition-all cursor-pointer border border-transparent hover:border-rose-200"
-                          aria-label={`Delete ${s.name}`}
-                        >
-                          <Trash2 class="w-3.5 h-3.5" />
-                        </button>
-                      </form>
+                    <td class="px-6 py-4 text-slate-600 whitespace-nowrap">{s.type}</td>
+                    <td class="px-6 py-4 text-slate-600 whitespace-nowrap">
+                      {s.type === "Visa Success" ? `Visa: ${s.country || "N/A"}` : `Score: ${s.score || "N/A"}`}
                     </td>
                     <td class="px-6 py-4 text-right whitespace-nowrap">
-                      <button
-                        type="button"
-                        class="edit-story-btn p-2 text-indigo-500 hover:bg-indigo-50 rounded-lg hover:scale-105 transition-all cursor-pointer border border-transparent hover:border-indigo-200"
-                        data-id={s.id}
-                        data-name={s.name}
-                        data-avatar={s.avatar}
-                        data-destination={s.destination}
-                        data-dest-flag={s.dest_flag}
-                        data-before-loc={s.before_loc}
-                        data-before-status={s.before_status}
-                        data-before-ielts={s.before_ielts}
-                        data-after-uni={s.after_uni}
-                        data-after-status={s.after_status}
-                        data-after-salary={s.after_salary}
-                        data-quote={s.quote}
-                        data-timeline={s.timeline}
-                        aria-label={`Edit ${s.name}`}
-                      >
-                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/><path d="m15 5 4 4"/></svg>
-                      </button>
+                      <div class="flex items-center justify-end gap-1">
+                        <button
+                          type="button"
+                          class="edit-story-btn p-2 text-indigo-500 hover:bg-indigo-50 rounded-lg hover:scale-105 transition-all cursor-pointer border border-transparent hover:border-indigo-200"
+                          data-id={s.id}
+                          data-name={s.name}
+                          data-photo={s.photo}
+                          data-type={s.type}
+                          data-score={s.score || ""}
+                          data-country={s.country || ""}
+                          aria-label={`Edit ${s.name}`}
+                        >
+                          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/><path d="m15 5 4 4"/></svg>
+                        </button>
+                        <form method="POST" onsubmit="return confirm('Are you sure you want to remove this success story?');" class="inline">
+                          <input type="hidden" name="action" value="delete-story" />
+                          <input type="hidden" name="id" value={s.id} />
+                          <button 
+                            type="submit" 
+                            class="p-2 text-rose-500 hover:bg-rose-50 rounded-lg hover:scale-105 transition-all cursor-pointer border border-transparent hover:border-rose-200"
+                            aria-label={`Delete ${s.name}`}
+                          >
+                            <Trash2 class="w-3.5 h-3.5" />
+                          </button>
+                        </form>
+                      </div>
                     </td>
                   </tr>
                 ))}
@@ -275,54 +252,138 @@ if (db) {
 <script>
   function showAddForm() {
     const panel = document.getElementById("story-form-panel");
-    cancelStoryForm();
-    panel.classList.remove("hidden");
-    document.getElementById("show-add-form-btn").classList.add("hidden");
-    document.getElementById("story-form-action").value = "add-story";
-    document.getElementById("story-form-heading").innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4 text-indigo-600"><path d="M12 5v14"/><path d="M5 12h14"/></svg> Add Success Story';
-    document.getElementById("story-submit-btn").textContent = "Add Story";
-    panel.scrollIntoView({ behavior: "smooth", block: "start" });
+    if (panel) {
+      cancelStoryForm();
+      panel.classList.remove("hidden");
+      document.getElementById("show-add-form-btn")?.classList.add("hidden");
+      
+      const formAction = document.getElementById("story-form-action") as HTMLInputElement;
+      if (formAction) formAction.value = "add-story";
+      
+      const formHeading = document.getElementById("story-form-heading");
+      if (formHeading) formHeading.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4 text-indigo-600"><path d="M12 5v14"/><path d="M5 12h14"/></svg> Add Success Story';
+      
+      const submitBtn = document.getElementById("story-submit-btn");
+      if (submitBtn) submitBtn.textContent = "Add Story";
+      
+      panel.scrollIntoView({ behavior: "smooth", block: "start" });
+    }
   }
 
   function setupStoryEdit() {
+    const addBtn = document.getElementById("show-add-form-btn");
+    if (addBtn) {
+      addBtn.replaceWith(addBtn.cloneNode(true));
+      const newAddBtn = document.getElementById("show-add-form-btn");
+      newAddBtn?.addEventListener("click", showAddForm);
+    }
+
+    const cancelBtn = document.getElementById("cancel-story-edit");
+    if (cancelBtn) {
+      cancelBtn.replaceWith(cancelBtn.cloneNode(true));
+      const newCancelBtn = document.getElementById("cancel-story-edit");
+      newCancelBtn?.addEventListener("click", cancelStoryForm);
+    }
+
+    const typeSelect = document.getElementById("s-type") as HTMLSelectElement;
+    if (typeSelect) {
+      typeSelect.replaceWith(typeSelect.cloneNode(true));
+      const newTypeSelect = document.getElementById("s-type") as HTMLSelectElement;
+      newTypeSelect.addEventListener("change", toggleFields);
+    }
+
     const editBtns = document.querySelectorAll(".edit-story-btn");
     editBtns.forEach(btn => {
       btn.addEventListener("click", () => {
         const panel = document.getElementById("story-form-panel");
-        panel.classList.remove("hidden");
-        document.getElementById("show-add-form-btn").classList.add("hidden");
+        if (panel) {
+          panel.classList.remove("hidden");
+          document.getElementById("show-add-form-btn")?.classList.add("hidden");
 
-        document.getElementById("story-form-action").value = "update-story";
-        document.getElementById("story-form-heading").innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4 text-indigo-600"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/><path d="m15 5 4 4"/></svg> Edit Success Story';
-        document.getElementById("story-submit-btn").textContent = "Update Story";
+          const formAction = document.getElementById("story-form-action") as HTMLInputElement;
+          if (formAction) formAction.value = "update-story";
+          
+          const formHeading = document.getElementById("story-form-heading");
+          if (formHeading) formHeading.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4 text-indigo-600"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/><path d="m15 5 4 4"/></svg> Edit Success Story';
+          
+          const submitBtn = document.getElementById("story-submit-btn");
+          if (submitBtn) submitBtn.textContent = "Update Story";
 
-        document.getElementById("story-edit-id").value = btn.dataset.id;
-        document.getElementById("s-name").value = btn.dataset.name || "";
-        document.getElementById("s-avatar").value = btn.dataset.avatar || "";
-        document.getElementById("s-destination").value = btn.dataset.destination || "";
-        document.getElementById("s-dest-flag").value = btn.dataset.destFlag || "";
-        document.getElementById("s-before-loc").value = btn.dataset.beforeLoc || "";
-        document.getElementById("s-before-status").value = btn.dataset.beforeStatus || "";
-        document.getElementById("s-before-ielts").value = btn.dataset.beforeIelts || "";
-        document.getElementById("s-after-uni").value = btn.dataset.afterUni || "";
-        document.getElementById("s-after-status").value = btn.dataset.afterStatus || "";
-        document.getElementById("s-after-salary").value = btn.dataset.afterSalary || "";
-        document.getElementById("s-quote").value = btn.dataset.quote || "";
-        document.getElementById("s-timeline").value = btn.dataset.timeline || "";
+          const ds = (btn as HTMLElement).dataset;
+          const editIdInput = document.getElementById("story-edit-id") as HTMLInputElement;
+          if (editIdInput) editIdInput.value = ds.id || "";
+          
+          const nameInput = document.getElementById("s-name") as HTMLInputElement;
+          if (nameInput) nameInput.value = ds.name || "";
+          
+          const photoInput = document.getElementById("s-photo") as HTMLInputElement;
+          if (photoInput) photoInput.value = ds.photo || "";
+          
+          const currentTypeSelect = document.getElementById("s-type") as HTMLSelectElement;
+          if (currentTypeSelect) currentTypeSelect.value = ds.type || "Visa Success";
+          
+          const scoreInput = document.getElementById("s-score") as HTMLInputElement;
+          if (scoreInput) scoreInput.value = ds.score || "";
+          
+          const countrySelect = document.getElementById("s-country") as HTMLSelectElement;
+          if (countrySelect) countrySelect.value = ds.country || "";
 
-        panel.scrollIntoView({ behavior: "smooth", block: "start" });
+          toggleFields();
+          panel.scrollIntoView({ behavior: "smooth", block: "start" });
+        }
       });
     });
   }
 
+  function toggleFields() {
+    const typeSelect = document.getElementById("s-type") as HTMLSelectElement;
+    const scoreContainer = document.getElementById("score-container");
+    const countryContainer = document.getElementById("country-container");
+    
+    const scoreInput = document.getElementById("s-score") as HTMLInputElement;
+    const countrySelect = document.getElementById("s-country") as HTMLSelectElement;
+
+    if (typeSelect && scoreContainer && countryContainer) {
+      if (typeSelect.value === "Visa Success") {
+        scoreContainer.classList.add("hidden");
+        if (scoreInput) scoreInput.removeAttribute("required");
+        
+        countryContainer.classList.remove("hidden");
+        if (countrySelect) countrySelect.setAttribute("required", "required");
+      } else {
+        scoreContainer.classList.remove("hidden");
+        if (scoreInput) scoreInput.setAttribute("required", "required");
+        
+        countryContainer.classList.add("hidden");
+        if (countrySelect) countrySelect.removeAttribute("required");
+      }
+    }
+  }
+
   function cancelStoryForm() {
-    document.getElementById("story-form-panel").classList.add("hidden");
-    document.getElementById("show-add-form-btn").classList.remove("hidden");
-    document.getElementById("story-edit-id").value = "";
-    document.getElementById("story-form-action").value = "add-story";
-    document.querySelectorAll("#story-form-panel input, #story-form-panel textarea").forEach(el => {
-      if (el.type !== "hidden") el.value = "";
-    });
+    document.getElementById("story-form-panel")?.classList.add("hidden");
+    document.getElementById("show-add-form-btn")?.classList.remove("hidden");
+    
+    const editId = document.getElementById("story-edit-id") as HTMLInputElement;
+    if (editId) editId.value = "";
+    
+    const actionInput = document.getElementById("story-form-action") as HTMLInputElement;
+    if (actionInput) actionInput.value = "add-story";
+
+    const form = document.querySelector("#story-form-panel form");
+    if (form) {
+      form.querySelectorAll("input, select").forEach(el => {
+        const input = el as HTMLInputElement;
+        if (input.type !== "hidden" && input.id !== "s-type" && input.id !== "s-country") {
+          input.value = "";
+        }
+      });
+      const typeSelect = document.getElementById("s-type") as HTMLSelectElement;
+      if (typeSelect) typeSelect.value = "Visa Success";
+      const countrySelect = document.getElementById("s-country") as HTMLSelectElement;
+      if (countrySelect) countrySelect.value = "";
+      toggleFields();
+    }
   }
 
   setupStoryEdit();
