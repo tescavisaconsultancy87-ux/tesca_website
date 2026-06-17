@@ -17,6 +17,16 @@ let stories = [];
 let successMessage = "";
 let errorMessage = "";
 
+// Self-healing: make sure 'score' and 'country' columns exist in success_stories table
+if (db) {
+  try {
+    await db.prepare("ALTER TABLE success_stories ADD COLUMN score TEXT").run();
+  } catch (e) {}
+  try {
+    await db.prepare("ALTER TABLE success_stories ADD COLUMN country TEXT").run();
+  } catch (e) {}
+}
+
 // Helper to convert ArrayBuffer to Base64 (compatible with all JS runtimes)
 const arrayBufferToBase64 = (buffer: ArrayBuffer): string => {
   let binary = "";
@@ -35,7 +45,7 @@ if (Astro.request.method === "POST" && db) {
     const action = formData.get("action");
 
     if (action === "delete-story") {
-      const id = formData.get("id");
+      const id = parseInt(formData.get("id")?.toString() || "0");
       await db.prepare("DELETE FROM success_stories WHERE id = ?").bind(id).run();
       successMessage = "Success story profile deleted successfully.";
     } else if (action === "add-story") {
@@ -206,35 +216,26 @@ if (db) {
           </div>
 
           <div class="space-y-1.5 hidden" id="country-container">
-            <label class="text-[10px] text-slate-500 uppercase tracking-wide">Visa Country *</label>
-            <input type="hidden" name="country" id="s-country" />
-            <div class="relative">
-              <button type="button" id="country-select-trigger" class="w-full flex items-center justify-between px-3 py-2.5 rounded-lg border border-slate-200 bg-slate-50 text-slate-800 focus:outline-none focus:ring-1 focus:ring-indigo-500 text-left font-sans text-xs cursor-pointer">
-                <span id="country-select-label" class="flex items-center gap-2">Select Country</span>
-                <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-slate-400 shrink-0"><path d="m6 9 6 6 6-6"/></svg>
-              </button>
-              <div id="country-select-options" class="absolute z-50 left-0 right-0 mt-1 max-h-60 overflow-y-auto rounded-lg border border-slate-200 bg-white shadow-lg hidden">
-                {[
-                  { name: "USA", code: "us" },
-                  { name: "United Kingdom", code: "gb" },
-                  { name: "Canada", code: "ca" },
-                  { name: "Australia", code: "au" },
-                  { name: "Germany", code: "de" },
-                  { name: "New Zealand", code: "nz" },
-                  { name: "Ireland", code: "ie" },
-                  { name: "Singapore", code: "sg" },
-                  { name: "Switzerland", code: "ch" },
-                  { name: "Malaysia", code: "my" },
-                  { name: "Dubai", code: "ae" },
-                  { name: "Europe", code: "eu" }
-                ].map(c => (
-                  <button type="button" class="country-option w-full flex items-center gap-2 px-3 py-2 text-left hover:bg-slate-50 text-xs font-sans text-slate-800 cursor-pointer" data-value={c.name} data-code={c.code}>
-                    <img src={`https://flagcdn.com/w40/${c.code}.png`} class="w-5 h-3.5 object-cover rounded-xs border border-slate-100 shrink-0" />
-                    <span>{c.name}</span>
-                  </button>
-                ))}
-              </div>
-            </div>
+            <label for="s-country" class="text-[10px] text-slate-500 uppercase tracking-wide">Visa Country *</label>
+            <select 
+              name="country" 
+              id="s-country" 
+              class="w-full px-3 py-2.5 rounded-lg border border-slate-200 bg-slate-50 text-slate-800 focus:outline-none focus:ring-1 focus:ring-indigo-500 text-xs font-sans font-semibold cursor-pointer"
+            >
+              <option value="">Select Country</option>
+              <option value="USA">USA</option>
+              <option value="United Kingdom">United Kingdom</option>
+              <option value="Canada">Canada</option>
+              <option value="Australia">Australia</option>
+              <option value="Germany">Germany</option>
+              <option value="New Zealand">New Zealand</option>
+              <option value="Ireland">Ireland</option>
+              <option value="Singapore">Singapore</option>
+              <option value="Switzerland">Switzerland</option>
+              <option value="Malaysia">Malaysia</option>
+              <option value="Dubai">Dubai</option>
+              <option value="Europe">Europe</option>
+            </select>
           </div>
 
           <div class="md:col-span-2 flex gap-3 mt-2">
@@ -255,15 +256,15 @@ if (db) {
         </div>
       ) : (
         <div class="bg-white border border-slate-200 rounded-3xl overflow-hidden shadow-sm">
-          <div class="overflow-x-auto">
-            <table class="w-full text-left border-collapse text-xs">
+          <div class="overflow-x-auto w-full">
+            <table class="w-full min-w-[750px] text-left border-collapse text-xs">
               <thead>
                 <tr class="bg-slate-50 text-slate-500 border-b border-slate-200 font-bold uppercase tracking-wider">
-                  <th class="px-6 py-4">Photo</th>
-                  <th class="px-6 py-4">Student Name</th>
-                  <th class="px-6 py-4">Type</th>
-                  <th class="px-6 py-4">Details</th>
-                  <th class="px-6 py-4 text-right">Actions</th>
+                  <th class="px-6 py-4 w-[100px]">Photo</th>
+                  <th class="px-6 py-4 w-[200px]">Student Name</th>
+                  <th class="px-6 py-4 w-[150px]">Type</th>
+                  <th class="px-6 py-4 w-[180px]">Details</th>
+                  <th class="px-6 py-4 text-right w-[120px]">Actions</th>
                 </tr>
               </thead>
               <tbody class="divide-y divide-slate-100 font-sans text-xs">
@@ -292,7 +293,7 @@ if (db) {
                         >
                           <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/><path d="m15 5 4 4"/></svg>
                         </button>
-                        <form method="POST" onsubmit="return confirm('Are you sure you want to remove this success story?');" class="inline">
+                        <form method="POST" class="inline delete-story-form">
                           <input type="hidden" name="action" value="delete-story" />
                           <input type="hidden" name="id" value={s.id} />
                           <button 
@@ -318,65 +319,6 @@ if (db) {
 </Layout>
 
 <script>
-  const countriesMap = [
-    { name: "USA", code: "us" },
-    { name: "United Kingdom", code: "gb" },
-    { name: "Canada", code: "ca" },
-    { name: "Australia", code: "au" },
-    { name: "Germany", code: "de" },
-    { name: "New Zealand", code: "nz" },
-    { name: "Ireland", code: "ie" },
-    { name: "Singapore", code: "sg" },
-    { name: "Switzerland", code: "ch" },
-    { name: "Malaysia", code: "my" },
-    { name: "Dubai", code: "ae" },
-    { name: "Europe", code: "eu" }
-  ];
-
-  // Global event delegation for the custom country selector
-  document.addEventListener("click", (e) => {
-    const target = e.target as HTMLElement;
-
-    // Handle option click
-    const option = target.closest(".country-option") as HTMLButtonElement;
-    if (option) {
-      e.stopPropagation();
-      const val = option.dataset.value || "";
-      const code = option.dataset.code || "";
-      const countryInput = document.getElementById("s-country") as HTMLInputElement;
-      const countryLabel = document.getElementById("country-select-label");
-      const countryOptionsContainer = document.getElementById("country-select-options");
-
-      if (countryInput && countryLabel && countryOptionsContainer) {
-        countryInput.value = val;
-        countryLabel.innerHTML = `<img src="https://flagcdn.com/w40/${code}.png" class="w-5 h-3.5 object-cover rounded-xs border border-slate-100 shrink-0" /> <span>${val}</span>`;
-        countryOptionsContainer.classList.add("hidden");
-      }
-      return;
-    }
-
-    // Handle trigger click
-    const trigger = target.closest("#country-select-trigger");
-    if (trigger) {
-      e.stopPropagation();
-      const container = document.getElementById("country-select-options");
-      if (container) {
-        container.classList.toggle("hidden");
-      }
-      return;
-    }
-
-    // Close dropdown when clicking outside
-    const container = document.getElementById("country-select-options");
-    if (container && !container.classList.contains("hidden")) {
-      const trigger = document.getElementById("country-select-trigger");
-      // Check if click was outside the trigger and outside the options container
-      if (!container.contains(target) && (!trigger || !trigger.contains(target))) {
-        container.classList.add("hidden");
-      }
-    }
-  });
-
   function showAddForm() {
     const panel = document.getElementById("story-form-panel");
     if (panel) {
@@ -404,51 +346,46 @@ if (db) {
   }
 
   function setupStoryEdit() {
-    // Buttons setup
+    // Buttons setup - use clean binding checks to avoid cloning
     const addBtn = document.getElementById("show-add-form-btn");
-    if (addBtn) {
-      addBtn.replaceWith(addBtn.cloneNode(true));
-      const newAddBtn = document.getElementById("show-add-form-btn");
-      newAddBtn?.addEventListener("click", showAddForm);
+    if (addBtn && !(addBtn as any)._bound) {
+      (addBtn as any)._bound = true;
+      addBtn.addEventListener("click", showAddForm);
     }
 
     const cancelBtn = document.getElementById("cancel-story-edit");
-    if (cancelBtn) {
-      cancelBtn.replaceWith(cancelBtn.cloneNode(true));
-      const newCancelBtn = document.getElementById("cancel-story-edit");
-      newCancelBtn?.addEventListener("click", cancelStoryForm);
+    if (cancelBtn && !(cancelBtn as any)._bound) {
+      (cancelBtn as any)._bound = true;
+      cancelBtn.addEventListener("click", cancelStoryForm);
     }
 
     // Category Select Listener
     const categorySelect = document.getElementById("s-category") as HTMLSelectElement;
-    if (categorySelect) {
-      categorySelect.replaceWith(categorySelect.cloneNode(true));
-      const newCategorySelect = document.getElementById("s-category") as HTMLSelectElement;
-      newCategorySelect.addEventListener("change", toggleFields);
+    if (categorySelect && !(categorySelect as any)._bound) {
+      (categorySelect as any)._bound = true;
+      categorySelect.addEventListener("change", toggleFields);
     }
 
     // Test Type Listener
     const testTypeSelect = document.getElementById("s-test-type") as HTMLSelectElement;
-    if (testTypeSelect) {
-      testTypeSelect.replaceWith(testTypeSelect.cloneNode(true));
-      const newTestTypeSelect = document.getElementById("s-test-type") as HTMLSelectElement;
-      newTestTypeSelect.addEventListener("change", () => {
+    if (testTypeSelect && !(testTypeSelect as any)._bound) {
+      (testTypeSelect as any)._bound = true;
+      testTypeSelect.addEventListener("change", () => {
         const typeInput = document.getElementById("s-type") as HTMLInputElement;
-        if (typeInput) typeInput.value = newTestTypeSelect.value;
+        if (typeInput) typeInput.value = testTypeSelect.value;
       });
     }
 
-    // Form validation check on submit with AJAX submit
+    // Form submit AJAX
     const form = document.querySelector("#story-form-panel form") as HTMLFormElement;
-    if (form) {
-      form.replaceWith(form.cloneNode(true));
-      const newForm = document.querySelector("#story-form-panel form") as HTMLFormElement;
-      newForm.addEventListener("submit", async (e) => {
+    if (form && !(form as any)._ajaxBound) {
+      (form as any)._ajaxBound = true;
+      form.addEventListener("submit", async (e) => {
         const categoryVal = (document.getElementById("s-category") as HTMLSelectElement).value;
         if (categoryVal === "Visa") {
-          const countryVal = (document.getElementById("s-country") as HTMLInputElement).value;
+          const countryVal = (document.getElementById("s-country") as HTMLSelectElement).value;
           if (!countryVal) {
-            alert("Please select a visa country from the list.");
+            alert("Please select a visa country.");
             e.preventDefault();
             return;
           }
@@ -460,7 +397,7 @@ if (db) {
         submitBtn.disabled = true;
         submitBtn.textContent = "Saving...";
 
-        const formData = new FormData(newForm);
+        const formData = new FormData(form);
         try {
           const res = await fetch(window.location.href, {
             method: "POST",
@@ -492,7 +429,8 @@ if (db) {
 
     // Client-side file size/type validation
     const fileInput = document.getElementById("s-photo-file") as HTMLInputElement;
-    if (fileInput) {
+    if (fileInput && !(fileInput as any)._bound) {
+      (fileInput as any)._bound = true;
       fileInput.addEventListener("change", () => {
         const file = fileInput.files?.[0];
         if (file) {
@@ -522,8 +460,11 @@ if (db) {
       });
     }
 
+    // Edit buttons handler
     const editBtns = document.querySelectorAll(".edit-story-btn");
     editBtns.forEach(btn => {
+      if ((btn as any)._bound) return;
+      (btn as any)._bound = true;
       btn.addEventListener("click", () => {
         const panel = document.getElementById("story-form-panel");
         if (panel) {
@@ -568,29 +509,19 @@ if (db) {
           const typeInput = document.getElementById("s-type") as HTMLInputElement;
           const categorySelect = document.getElementById("s-category") as HTMLSelectElement;
           const testTypeSelect = document.getElementById("s-test-type") as HTMLSelectElement;
-          const countryInput = document.getElementById("s-country") as HTMLInputElement;
-          const countryLabel = document.getElementById("country-select-label");
+          const countrySelect = document.getElementById("s-country") as HTMLSelectElement;
 
           if (typeInput) typeInput.value = typeVal;
 
           if (typeVal === "Visa Success") {
             if (categorySelect) categorySelect.value = "Visa";
-            if (countryInput) countryInput.value = countryVal;
-            if (countryLabel) {
-              const countryCodeObj = countriesMap.find(c => c.name.toLowerCase() === countryVal.toLowerCase());
-              if (countryCodeObj) {
-                countryLabel.innerHTML = `<img src="https://flagcdn.com/w40/${countryCodeObj.code}.png" class="w-5 h-3.5 object-cover rounded-xs border border-slate-100 shrink-0" /> <span>${countryVal}</span>`;
-              } else {
-                countryLabel.textContent = countryVal || "Select Country";
-              }
-            }
+            if (countrySelect) countrySelect.value = countryVal;
             if (scoreInput) scoreInput.value = "";
           } else {
             if (categorySelect) categorySelect.value = "English Test";
             if (testTypeSelect) testTypeSelect.value = typeVal;
             if (scoreInput) scoreInput.value = ds.score || "";
-            if (countryInput) countryInput.value = "";
-            if (countryLabel) countryLabel.textContent = "Select Country";
+            if (countrySelect) countrySelect.value = "";
           }
 
           toggleFields();
@@ -600,39 +531,36 @@ if (db) {
     });
 
     // Intercept delete forms
-    const deleteForms = document.querySelectorAll("form");
+    const deleteForms = document.querySelectorAll("form.delete-story-form");
     deleteForms.forEach(df => {
-      const actionInput = df.querySelector('input[name="action"]') as HTMLInputElement;
-      if (actionInput && actionInput.value === "delete-story") {
-        if ((df as any)._deleteBound) return;
-        (df as any)._deleteBound = true;
-        df.addEventListener("submit", async (e) => {
-          e.preventDefault();
-          if (!confirm("Are you sure you want to remove this success story?")) return;
-          
-          const formData = new FormData(df);
-          try {
-            const res = await fetch(window.location.href, {
-              method: "POST",
-              body: formData
-            });
-            if (res.ok) {
-              const htmlText = await res.text();
-              const parser = new DOMParser();
-              const doc = parser.parseFromString(htmlText, "text/html");
+      if ((df as any)._ajaxBound) return;
+      (df as any)._ajaxBound = true;
+      df.addEventListener("submit", async (e) => {
+        e.preventDefault();
+        if (!confirm("Are you sure you want to remove this success story?")) return;
+        
+        const formData = new FormData(df);
+        try {
+          const res = await fetch(window.location.href, {
+            method: "POST",
+            body: formData
+          });
+          if (res.ok) {
+            const htmlText = await res.text();
+            const parser = new DOMParser();
+            const doc = parser.parseFromString(htmlText, "text/html");
 
-              const oldMain = document.querySelector("main");
-              const newMain = doc.querySelector("main");
-              if (oldMain && newMain) {
-                oldMain.innerHTML = newMain.innerHTML;
-              }
-              setupStoryEdit();
+            const oldMain = document.querySelector("main");
+            const newMain = doc.querySelector("main");
+            if (oldMain && newMain) {
+              oldMain.innerHTML = newMain.innerHTML;
             }
-          } catch (err) {
-            console.error("Failed to delete story:", err);
+            setupStoryEdit();
           }
-        });
-      }
+        } catch (err) {
+          console.error("Failed to delete story:", err);
+        }
+      });
     });
   }
 
@@ -683,10 +611,8 @@ if (db) {
     const photoExistingInput = document.getElementById("s-photo-existing") as HTMLInputElement;
     if (photoExistingInput) photoExistingInput.value = "";
 
-    const countryInput = document.getElementById("s-country") as HTMLInputElement;
-    if (countryInput) countryInput.value = "";
-    const countryLabel = document.getElementById("country-select-label");
-    if (countryLabel) countryLabel.textContent = "Select Country";
+    const countrySelect = document.getElementById("s-country") as HTMLSelectElement;
+    if (countrySelect) countrySelect.value = "";
 
     const form = document.querySelector("#story-form-panel form");
     if (form) {

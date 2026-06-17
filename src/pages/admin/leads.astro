@@ -17,25 +17,34 @@ let leads = [];
 let successMessage = "";
 let errorMessage = "";
 
-// Handle server actions (e.g. delete lead)
+// Self-healing: make sure 'status' column exists in leads table
+if (db) {
+  try {
+    await db.prepare("ALTER TABLE leads ADD COLUMN status TEXT DEFAULT 'pending'").run();
+  } catch (e) {
+    // Ignore if column already exists
+  }
+}
+
+// Handle server actions (e.g. delete lead, update status)
 if (Astro.request.method === "POST" && db) {
   try {
     const formData = await Astro.request.formData();
     const action = formData.get("action");
 
     if (action === "delete-lead") {
-      const id = formData.get("id");
+      const id = parseInt(formData.get("id")?.toString() || "0");
       await db.prepare("DELETE FROM leads WHERE id = ?").bind(id).run();
       successMessage = "Lead removed successfully.";
     } else if (action === "update-status") {
-      const id = formData.get("id");
+      const id = parseInt(formData.get("id")?.toString() || "0");
       const status = formData.get("status")?.toString().trim();
       await db.prepare("UPDATE leads SET status = ? WHERE id = ?").bind(status, id).run();
       successMessage = "Lead status updated successfully.";
     }
-  } catch (err) {
+  } catch (err: any) {
     console.error("Failed to process action:", err);
-    errorMessage = "Failed to complete action.";
+    errorMessage = `Failed to complete action: ${err.message || "Unknown error"}`;
   }
 }
 
@@ -90,16 +99,16 @@ if (db) {
         </div>
       ) : (
         <div class="bg-white border border-slate-200 rounded-3xl overflow-hidden shadow-sm">
-          <div class="overflow-x-auto">
-            <table class="w-full text-left border-collapse text-xs">
+          <div class="overflow-x-auto w-full">
+            <table class="w-full min-w-[900px] text-left border-collapse text-xs">
               <thead>
                 <tr class="bg-slate-50 text-slate-500 border-b border-slate-200 font-bold uppercase tracking-wider">
-                  <th class="px-6 py-4">Submitted At</th>
-                  <th class="px-6 py-4">Lead Type</th>
-                  <th class="px-6 py-4">Student Name</th>
-                  <th class="px-6 py-4">Contact info</th>
-                  <th class="px-6 py-4">Status</th>
-                  <th class="px-6 py-4 text-right">Actions</th>
+                  <th class="px-6 py-4 w-[160px]">Submitted At</th>
+                  <th class="px-6 py-4 w-[140px]">Lead Type</th>
+                  <th class="px-6 py-4 w-[160px]">Student Name</th>
+                  <th class="px-6 py-4 w-[180px]">Contact Info</th>
+                  <th class="px-6 py-4 w-[120px]">Status</th>
+                  <th class="px-6 py-4 text-right w-[140px]">Actions</th>
                 </tr>
               </thead>
               <tbody class="divide-y divide-slate-100">
@@ -152,17 +161,16 @@ if (db) {
                         )}
                       </td>
                       <td class="px-6 py-4 whitespace-nowrap">
-                        <form method="POST" class="inline-block relative">
+                        <form method="POST" class="inline-block relative status-update-form">
                           <input type="hidden" name="action" value="update-status" />
                           <input type="hidden" name="id" value={lead.id} />
                           <select 
                             name="status" 
-                            onchange="this.form.submit()" 
-                            class={`px-2.5 py-1 pr-6 pl-2.5 rounded-full border text-[10px] font-bold tracking-wide focus:outline-none focus:ring-1 focus:ring-indigo-500 cursor-pointer appearance-none bg-no-repeat bg-[right_0.5rem_center] bg-[length:0.75em]` +
-                              (lead.status === 'completed' ? ' bg-emerald-50 text-emerald-700 border-emerald-200' :
-                               lead.status === 'processing' ? ' bg-blue-50 text-blue-700 border-blue-200' :
-                               lead.status === 'follow up' ? ' bg-violet-50 text-violet-700 border-violet-200' :
-                               ' bg-amber-50 text-amber-700 border-amber-200')}
+                            class={`px-2.5 py-1 pr-6 pl-2.5 rounded-full border text-[10px] font-bold tracking-wide focus:outline-none focus:ring-1 focus:ring-indigo-500 cursor-pointer appearance-none bg-no-repeat bg-[right_0.5rem_center] bg-[length:0.75em] ` +
+                              (lead.status === 'completed' ? 'bg-emerald-50 text-emerald-700 border-emerald-200' :
+                               lead.status === 'processing' ? 'bg-blue-50 text-blue-700 border-blue-200' :
+                               lead.status === 'follow up' ? 'bg-violet-50 text-violet-700 border-violet-200' :
+                               'bg-amber-50 text-amber-700 border-amber-200')}
                             style="background-image: url('data:image/svg+xml;utf8,<svg xmlns=\'http://www.w3.org/2000/svg\' width=\'12\' height=\'12\' viewBox=\'0 0 24 24\' fill=\'none\' stroke=\'%2364748b\' stroke-width=\'2\' stroke-linecap=\'round\' stroke-linejoin=\'round\'><path d=\'m6 9 6 6 6-6\'/></svg>');"
                           >
                             <option value="pending" selected={lead.status === 'pending' || !lead.status}>Pending</option>
@@ -183,7 +191,7 @@ if (db) {
                         >
                           <Eye class="w-3.5 h-3.5" /> View Details
                         </button>
-                        <form method="POST" onsubmit="return confirm('Are you sure you want to delete this lead?');" class="inline">
+                        <form method="POST" class="inline delete-lead-form">
                           <input type="hidden" name="action" value="delete-lead" />
                           <input type="hidden" name="id" value={lead.id} />
                           <button
@@ -320,6 +328,11 @@ if (db) {
       document.body.style.overflow = "";
     };
 
+    // Remove old event listeners if any (though astro runs scripts scoped, it's good practice)
+    viewButtons.forEach(btn => {
+      btn.addEventListener("click", () => openModal(btn));
+    });
+
     closeBtn?.addEventListener("click", closeModal);
     closeFooterBtn?.addEventListener("click", closeModal);
     modal?.addEventListener("click", (e) => {
@@ -340,6 +353,14 @@ if (db) {
       const statusSelect = form.querySelector('select[name="status"]') as HTMLSelectElement;
       if (statusSelect) {
         statusSelect.addEventListener("change", async () => {
+          // Immediately update colors for premium feel
+          const val = statusSelect.value;
+          statusSelect.className = `px-2.5 py-1 pr-6 pl-2.5 rounded-full border text-[10px] font-bold tracking-wide focus:outline-none focus:ring-1 focus:ring-indigo-500 cursor-pointer appearance-none bg-no-repeat bg-[right_0.5rem_center] bg-[length:0.75em] ` +
+            (val === 'completed' ? 'bg-emerald-50 text-emerald-700 border-emerald-200' :
+             val === 'processing' ? 'bg-blue-50 text-blue-700 border-blue-200' :
+             val === 'follow up' ? 'bg-violet-50 text-violet-700 border-violet-200' :
+             'bg-amber-50 text-amber-700 border-amber-200');
+
           const formData = new FormData(form);
           try {
             const res = await fetch(window.location.href, {
@@ -365,8 +386,7 @@ if (db) {
       }
 
       // Intercept delete submit
-      const actionInput = form.querySelector('input[name="action"]') as HTMLInputElement;
-      if (actionInput && actionInput.value === "delete-lead") {
+      if (form.classList.contains("delete-lead-form")) {
         form.addEventListener("submit", async (e) => {
           e.preventDefault();
           if (!confirm("Are you sure you want to delete this lead?")) return;

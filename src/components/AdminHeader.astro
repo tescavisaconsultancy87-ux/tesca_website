@@ -1,8 +1,9 @@
 ---
 import { 
   LayoutDashboard, Users, GraduationCap, 
-  MessageSquare, AlertCircle, FileText, LogOut 
+  MessageSquare, AlertCircle, FileText, LogOut, Bell
 } from "lucide-react";
+import { env } from "cloudflare:workers";
 
 interface Props {
   activeTab: "dashboard" | "leads" | "universities" | "stories" | "announcements" | "updates";
@@ -18,16 +19,33 @@ const navItems = [
   { id: "announcements", label: "Announcement Bar", href: "/admin/announcements", icon: AlertCircle },
   { id: "updates", label: "Visa Bulletins", href: "/admin/visa-updates", icon: FileText },
 ];
+
+const db = env?.tesca_db || env?.DB;
+let totalLeadsCount = 0;
+if (db) {
+  try {
+    const res = await db.prepare("SELECT COUNT(*) as count FROM leads").first();
+    totalLeadsCount = res?.count || 0;
+  } catch (err) {
+    console.error("Failed to query leads count in AdminHeader:", err);
+  }
+}
 ---
+
+<div id="admin-header-data" class="hidden" data-total-leads={totalLeadsCount}></div>
 
 <!-- Desktop Sidebar -->
 <aside class="hidden lg:flex flex-col w-64 bg-slate-900 border-r border-slate-800 text-white select-none shrink-0 fixed left-0 top-0 bottom-0 z-30">
-  <!-- Brand -->
-  <div class="flex items-center gap-3 px-6 h-16 border-b border-slate-800 shrink-0">
+  <!-- Brand & Bell -->
+  <div class="flex items-center justify-between px-6 h-16 border-b border-slate-800 shrink-0">
     <a href="/admin/dashboard" class="flex items-center gap-2 outline-none">
       <span class="text-base font-extrabold tracking-wider font-display text-white">
         TESCA <span class="text-indigo-400">ADMIN</span>
       </span>
+    </a>
+    <a href="/admin/leads" class="relative text-slate-400 hover:text-white transition-colors" title="View Leads">
+      <Bell class="w-5 h-5" />
+      <span class="leads-nav-badge hidden absolute -top-1 -right-1 w-2.5 h-2.5 rounded-full bg-rose-500 ring-4 ring-rose-500/20 animate-pulse"></span>
     </a>
   </div>
 
@@ -39,14 +57,19 @@ const navItems = [
       return (
         <a
           href={item.href}
-          class={`flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-bold transition-all shrink-0 ${
+          class={`flex items-center justify-between px-4 py-3 rounded-xl text-sm font-bold transition-all shrink-0 ${
             isActive
               ? "bg-slate-800 text-indigo-400 border border-slate-700/60"
               : "text-slate-400 hover:bg-slate-800/40 hover:text-white border border-transparent"
           }`}
         >
-          <Icon class="w-5 h-5 shrink-0" />
-          {item.label}
+          <div class="flex items-center gap-3">
+            <Icon class="w-5 h-5 shrink-0" />
+            {item.label}
+          </div>
+          {item.id === "leads" && (
+            <span class="leads-nav-badge hidden w-2 h-2 rounded-full bg-rose-500 ring-4 ring-rose-500/20 animate-pulse"></span>
+          )}
         </a>
       );
     })}
@@ -70,11 +93,15 @@ const navItems = [
 <header class="lg:hidden w-full bg-slate-900 border-b border-slate-800 text-white select-none">
   <div class="max-w-7xl mx-auto px-4">
     <div class="flex items-center justify-between h-16">
-      <div class="flex items-center gap-3">
+      <div class="flex items-center gap-4">
         <a href="/admin/dashboard" class="flex items-center gap-2 outline-none">
           <span class="text-base font-extrabold tracking-wider font-display text-white">
             TESCA <span class="text-indigo-400">ADMIN</span>
           </span>
+        </a>
+        <a href="/admin/leads" class="relative text-slate-400 hover:text-white transition-colors" title="View Leads">
+          <Bell class="w-4.5 h-4.5" />
+          <span class="leads-nav-badge hidden absolute -top-1 -right-1 w-2 h-2 rounded-full bg-rose-500 ring-2 ring-rose-500/20 animate-pulse"></span>
         </a>
       </div>
       <form method="POST" action="/admin" class="inline" onsubmit="return confirm('Are you sure you want to sign out?');">
@@ -96,7 +123,7 @@ const navItems = [
       return (
         <a
           href={item.href}
-          class={`flex items-center gap-1.5 px-3 py-2 rounded-lg text-[11px] font-bold whitespace-nowrap transition-all shrink-0 ${
+          class={`flex items-center gap-1.5 px-3 py-2 rounded-lg text-[11px] font-bold whitespace-nowrap transition-all shrink-0 relative ${
             isActive
               ? "bg-slate-800 text-indigo-400 border border-slate-700/60"
               : "text-slate-400 hover:bg-slate-800/40 hover:text-white border border-transparent"
@@ -104,8 +131,97 @@ const navItems = [
         >
           <Icon class="w-3.5 h-3.5" />
           {item.label}
+          {item.id === "leads" && (
+            <span class="leads-nav-badge hidden absolute -top-1 -right-1 w-2 h-2 rounded-full bg-rose-500 ring-2 ring-rose-500/20 animate-pulse"></span>
+          )}
         </a>
       );
     })}
   </div>
 </header>
+
+<script>
+  let pollInterval: any = null;
+
+  function checkNewLeads() {
+    const lastViewed = Number(localStorage.getItem("lastViewedLeadsCount") || 0);
+    const totalLeadsAttr = document.getElementById("admin-header-data")?.getAttribute("data-total-leads");
+    const currentTotal = Number(totalLeadsAttr || 0);
+
+    const showBadges = (show: boolean) => {
+      document.querySelectorAll(".leads-nav-badge").forEach(badge => {
+        if (show) {
+          badge.classList.remove("hidden");
+        } else {
+          badge.classList.add("hidden");
+        }
+      });
+    };
+
+    // If currently on the leads tab, hide immediately and update local count
+    const isLeadsPage = window.location.pathname === "/admin/leads";
+    if (isLeadsPage) {
+      showBadges(false);
+      const mainEl = document.querySelector("main");
+      if (mainEl) {
+        const total = mainEl.getAttribute("data-total-leads") || String(currentTotal);
+        localStorage.setItem("lastViewedLeadsCount", total);
+      }
+    } else {
+      if (currentTotal > lastViewed) {
+        showBadges(true);
+      } else {
+        showBadges(false);
+      }
+    }
+
+    // Clear any existing poll
+    if (pollInterval) {
+      clearInterval(pollInterval);
+    }
+
+    // Set polling interval for checking new leads every 12 seconds
+    pollInterval = setInterval(async () => {
+      try {
+        const res = await fetch("/api/leads-count");
+        if (res.ok) {
+          const data = await res.json();
+          const latestCount = Number(data.count || 0);
+          
+          const headerData = document.getElementById("admin-header-data");
+          if (headerData) {
+            headerData.setAttribute("data-total-leads", String(latestCount));
+          }
+
+          const updatedLastViewed = Number(localStorage.getItem("lastViewedLeadsCount") || 0);
+          const isLeadsPageNow = window.location.pathname === "/admin/leads";
+          
+          if (isLeadsPageNow) {
+            localStorage.setItem("lastViewedLeadsCount", String(latestCount));
+            showBadges(false);
+          } else {
+            if (latestCount > updatedLastViewed) {
+              showBadges(true);
+            } else {
+              showBadges(false);
+            }
+          }
+        }
+      } catch (err) {
+        console.error("Failed to poll leads count:", err);
+      }
+    }, 12000);
+  }
+
+  // Clean up interval before page transitions
+  document.addEventListener("astro:before-preparation", () => {
+    if (pollInterval) {
+      clearInterval(pollInterval);
+      pollInterval = null;
+    }
+  });
+
+  // Run on first load and on view transitions
+  checkNewLeads();
+  document.addEventListener("astro:page-load", checkNewLeads);
+</script>

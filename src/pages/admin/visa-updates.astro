@@ -24,7 +24,7 @@ if (Astro.request.method === "POST" && db) {
     const action = formData.get("action");
 
     if (action === "delete-update") {
-      const id = formData.get("id");
+      const id = parseInt(formData.get("id")?.toString() || "0");
       await db.prepare("DELETE FROM visa_updates WHERE id = ?").bind(id).run();
       successMessage = "Visa bulletin update deleted successfully.";
     } else if (action === "add-update") {
@@ -161,42 +161,44 @@ if (db) {
             </div>
           ) : (
             <div class="bg-white border border-slate-200 rounded-3xl overflow-hidden shadow-sm max-h-[70vh] overflow-y-auto">
-              <table class="w-full text-left border-collapse text-xs">
-                <thead>
-                  <tr class="bg-slate-50 text-slate-500 border-b border-slate-200 font-bold uppercase tracking-wider">
-                    <th class="px-6 py-4">Date</th>
-                    <th class="px-6 py-4">Tag</th>
-                    <th class="px-6 py-4">Title</th>
-                    <th class="px-6 py-4 text-right">Actions</th>
-                  </tr>
-                </thead>
-                <tbody class="divide-y divide-slate-100 font-sans text-xs">
-                  {visaUpdates.map((u) => (
-                    <tr class="hover:bg-slate-50 transition-colors">
-                      <td class="px-6 py-4 text-slate-600 whitespace-nowrap">{u.date}</td>
-                      <td class="px-6 py-4 whitespace-nowrap">
-                        <span class={`text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded border ${u.tag_bg}`}>
-                          {u.tag}
-                        </span>
-                      </td>
-                      <td class="px-6 py-4 font-semibold text-slate-700 truncate max-w-[200px]">{u.title}</td>
-                      <td class="px-6 py-4 text-right whitespace-nowrap">
-                        <form method="POST" onsubmit="return confirm('Are you sure you want to delete this bulletin?');" class="inline">
-                          <input type="hidden" name="action" value="delete-update" />
-                          <input type="hidden" name="id" value={u.id} />
-                          <button
-                            type="submit"
-                            class="p-2 text-rose-500 hover:bg-rose-50 rounded-lg hover:scale-105 transition-all cursor-pointer border border-transparent hover:border-rose-200"
-                            aria-label="Delete bulletin"
-                          >
-                            <Trash2 class="w-3.5 h-3.5" />
-                          </button>
-                        </form>
-                      </td>
+              <div class="overflow-x-auto w-full">
+                <table class="w-full min-w-[650px] text-left border-collapse text-xs">
+                  <thead>
+                    <tr class="bg-slate-50 text-slate-500 border-b border-slate-200 font-bold uppercase tracking-wider">
+                      <th class="px-6 py-4 w-[120px]">Date</th>
+                      <th class="px-6 py-4 w-[150px]">Tag</th>
+                      <th class="px-6 py-4 w-[260px]">Title</th>
+                      <th class="px-6 py-4 text-right w-[120px]">Actions</th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
+                  </thead>
+                  <tbody class="divide-y divide-slate-100 font-sans text-xs">
+                    {visaUpdates.map((u) => (
+                      <tr class="hover:bg-slate-50 transition-colors">
+                        <td class="px-6 py-4 text-slate-600 whitespace-nowrap">{u.date}</td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                          <span class={`text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded border ${u.tag_bg}`}>
+                            {u.tag}
+                          </span>
+                        </td>
+                        <td class="px-6 py-4 font-semibold text-slate-700 truncate max-w-[200px]">{u.title}</td>
+                        <td class="px-6 py-4 text-right whitespace-nowrap">
+                          <form method="POST" class="inline delete-bulletin-form">
+                            <input type="hidden" name="action" value="delete-update" />
+                            <input type="hidden" name="id" value={u.id} />
+                            <button
+                              type="submit"
+                              class="p-2 text-rose-500 hover:bg-rose-50 rounded-lg hover:scale-105 transition-all cursor-pointer border border-transparent hover:border-rose-200"
+                              aria-label="Delete bulletin"
+                            >
+                              <Trash2 class="w-3.5 h-3.5" />
+                            </button>
+                          </form>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
             </div>
           )}
         </div>
@@ -217,8 +219,7 @@ if (db) {
 
       form.addEventListener("submit", async (e) => {
         // For delete form, ask for confirmation
-        const actionInput = form.querySelector('input[name="action"]') as HTMLInputElement;
-        if (actionInput && actionInput.value === "delete-update") {
+        if (form.classList.contains("delete-bulletin-form")) {
           if (!confirm("Are you sure you want to delete this bulletin?")) {
             e.preventDefault();
             return;
