@@ -333,6 +333,50 @@ if (db) {
     { name: "Europe", code: "eu" }
   ];
 
+  // Global event delegation for the custom country selector
+  document.addEventListener("click", (e) => {
+    const target = e.target as HTMLElement;
+
+    // Handle option click
+    const option = target.closest(".country-option") as HTMLButtonElement;
+    if (option) {
+      e.stopPropagation();
+      const val = option.dataset.value || "";
+      const code = option.dataset.code || "";
+      const countryInput = document.getElementById("s-country") as HTMLInputElement;
+      const countryLabel = document.getElementById("country-select-label");
+      const countryOptionsContainer = document.getElementById("country-select-options");
+
+      if (countryInput && countryLabel && countryOptionsContainer) {
+        countryInput.value = val;
+        countryLabel.innerHTML = `<img src="https://flagcdn.com/w40/${code}.png" class="w-5 h-3.5 object-cover rounded-xs border border-slate-100 shrink-0" /> <span>${val}</span>`;
+        countryOptionsContainer.classList.add("hidden");
+      }
+      return;
+    }
+
+    // Handle trigger click
+    const trigger = target.closest("#country-select-trigger");
+    if (trigger) {
+      e.stopPropagation();
+      const container = document.getElementById("country-select-options");
+      if (container) {
+        container.classList.toggle("hidden");
+      }
+      return;
+    }
+
+    // Close dropdown when clicking outside
+    const container = document.getElementById("country-select-options");
+    if (container && !container.classList.contains("hidden")) {
+      const trigger = document.getElementById("country-select-trigger");
+      // Check if click was outside the trigger and outside the options container
+      if (!container.contains(target) && (!trigger || !trigger.contains(target))) {
+        container.classList.add("hidden");
+      }
+    }
+  });
+
   function showAddForm() {
     const panel = document.getElementById("story-form-panel");
     if (panel) {
@@ -360,6 +404,7 @@ if (db) {
   }
 
   function setupStoryEdit() {
+    // Buttons setup
     const addBtn = document.getElementById("show-add-form-btn");
     if (addBtn) {
       addBtn.replaceWith(addBtn.cloneNode(true));
@@ -392,50 +437,6 @@ if (db) {
         if (typeInput) typeInput.value = newTestTypeSelect.value;
       });
     }
-
-    // Custom Country Select Listeners
-    const countryTrigger = document.getElementById("country-select-trigger");
-    const countryOptionsContainer = document.getElementById("country-select-options");
-    const countryInput = document.getElementById("s-country") as HTMLInputElement;
-    const countryLabel = document.getElementById("country-select-label");
-
-    if (countryTrigger && countryOptionsContainer) {
-      // Clone trigger to clear previous event listeners
-      countryTrigger.replaceWith(countryTrigger.cloneNode(true));
-      const newCountryTrigger = document.getElementById("country-select-trigger");
-      newCountryTrigger?.addEventListener("click", (e) => {
-        e.stopPropagation();
-        countryOptionsContainer.classList.toggle("hidden");
-      });
-    }
-
-    // Close options on click outside
-    document.addEventListener("click", () => {
-      const countryOptionsContainer = document.getElementById("country-select-options");
-      countryOptionsContainer?.classList.add("hidden");
-    });
-
-    const countryOptions = document.querySelectorAll(".country-option");
-    countryOptions.forEach(opt => {
-      opt.replaceWith(opt.cloneNode(true));
-    });
-    
-    // Re-select options and bind
-    const newCountryOptions = document.querySelectorAll(".country-option");
-    newCountryOptions.forEach(opt => {
-      opt.addEventListener("click", (e) => {
-        e.stopPropagation();
-        const btn = opt as HTMLButtonElement;
-        const val = btn.dataset.value || "";
-        const code = btn.dataset.code || "";
-        
-        if (countryInput && countryLabel && countryOptionsContainer) {
-          countryInput.value = val;
-          countryLabel.innerHTML = `<img src="https://flagcdn.com/w40/${code}.png" class="w-5 h-3.5 object-cover rounded-xs border border-slate-100 shrink-0" /> <span>${val}</span>`;
-          countryOptionsContainer.classList.add("hidden");
-        }
-      });
-    });
 
     // Form validation check on submit
     const form = document.querySelector("#story-form-panel form") as HTMLFormElement;
@@ -530,6 +531,8 @@ if (db) {
           const typeInput = document.getElementById("s-type") as HTMLInputElement;
           const categorySelect = document.getElementById("s-category") as HTMLSelectElement;
           const testTypeSelect = document.getElementById("s-test-type") as HTMLSelectElement;
+          const countryInput = document.getElementById("s-country") as HTMLInputElement;
+          const countryLabel = document.getElementById("country-select-label");
 
           if (typeInput) typeInput.value = typeVal;
 
