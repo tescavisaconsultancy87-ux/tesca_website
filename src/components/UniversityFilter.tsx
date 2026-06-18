@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Globe, GraduationCap, ArrowRight, Search, X, Compass, Award, RefreshCw, Star, MapPin } from "lucide-react";
+import { Globe, GraduationCap, ArrowRight, Search, X, Compass, Award, RefreshCw, Star, MapPin, DollarSign, Calendar, BookOpen, ShieldCheck } from "lucide-react";
 
 interface University {
   id: number;
@@ -532,130 +532,141 @@ export default function UniversityFilter() {
         return (
           <div
             className="fixed inset-0 z-50 flex items-center justify-center p-4"
-            style={{ background: "rgba(15,23,42,0.72)", backdropFilter: "blur(12px)" }}
+            style={{ background: "rgba(15,23,42,0.6)", backdropFilter: "blur(16px)" }}
             onClick={(e) => { if (e.target === e.currentTarget) setSelectedUniversity(null); }}
           >
             <div
-              className="relative bg-white w-full max-w-[680px] rounded-[2rem] shadow-[0_32px_80px_-8px_rgba(0,0,0,0.32)] overflow-hidden flex flex-col"
-              style={{ maxHeight: "90vh", animation: "cardPop 0.22s cubic-bezier(.34,1.56,.64,1) both" }}
+              className="relative bg-white w-full max-w-[700px] rounded-[2.5rem] shadow-[0_32px_80px_-12px_rgba(10,120,128,0.18)] overflow-hidden flex flex-col border border-slate-100"
+              style={{ maxHeight: "92vh", animation: "cardPop 0.35s cubic-bezier(0.16, 1, 0.3, 1) both" }}
             >
               <style>{`
                 @keyframes cardPop {
-                  from { opacity:0; transform:scale(0.94) translateY(24px); }
-                  to   { opacity:1; transform:scale(1) translateY(0); }
+                  from { opacity: 0; transform: scale(0.96) translateY(32px); }
+                  to   { opacity: 1; transform: scale(1) translateY(0); }
                 }
               `}</style>
 
               {/* ── Hero banner ── */}
-              <div className="relative h-52 shrink-0 overflow-hidden">
+              <div className="relative h-56 shrink-0 overflow-hidden group/hero">
                 {selectedUniversity.image_url || selectedUniversity.photo ? (
                   <img
                     src={selectedUniversity.image_url || selectedUniversity.photo || ""}
                     alt={selectedUniversity.name}
-                    className="w-full h-full object-cover"
+                    className="w-full h-full object-cover transition-transform duration-700 group-hover/hero:scale-105"
                   />
                 ) : (
                   <div
-                    className="w-full h-full flex items-center justify-center"
+                    className="w-full h-full flex items-center justify-center relative overflow-hidden"
                     style={{
-                      background: `linear-gradient(135deg, #4f46e5 0%, #0ea5e9 50%, #06b6d4 100%)`
+                      background: `linear-gradient(135deg, #0A7880 0%, #075E64 100%)`
                     }}
                   >
-                    <GraduationCap className="w-20 h-20 text-white/30" />
+                    <div className="absolute w-[200px] h-[200px] bg-white/5 rounded-full -top-12 -left-12 blur-2xl"></div>
+                    <GraduationCap className="w-24 h-24 text-white/15 relative z-10" />
                   </div>
                 )}
                 {/* gradient overlay */}
                 <div
-                  className="absolute inset-0"
-                  style={{ background: "linear-gradient(to top, rgba(15,23,42,0.88) 0%, rgba(15,23,42,0.32) 55%, transparent 100%)" }}
+                  className="absolute inset-0 z-10"
+                  style={{ background: "linear-gradient(to top, rgba(15,23,42,0.92) 0%, rgba(15,23,42,0.2) 60%, transparent 100%)" }}
                 />
 
                 {/* Close button */}
                 <button
                   onClick={() => setSelectedUniversity(null)}
-                  className="absolute top-4 right-4 z-20 w-9 h-9 rounded-full bg-white/20 hover:bg-white/40 backdrop-blur-sm flex items-center justify-center text-white transition-all cursor-pointer border border-white/20 hover:scale-105"
+                  className="absolute top-5 right-5 z-20 w-10 h-10 rounded-full bg-slate-900/40 hover:bg-slate-900/60 backdrop-blur-md flex items-center justify-center text-white transition-all border border-white/15 hover:scale-110 shadow-lg cursor-pointer"
                   aria-label="Close"
                 >
                   <X className="w-4 h-4" />
                 </button>
 
                 {/* Bottom overlay identity */}
-                <div className="absolute bottom-0 left-0 right-0 p-5 flex items-end gap-4">
+                <div className="absolute bottom-0 left-0 right-0 p-6 flex items-end gap-5 z-20">
                   {/* Logo bubble */}
-                  <div className="w-16 h-16 rounded-2xl bg-white shadow-xl border-2 border-white/60 flex items-center justify-center shrink-0 overflow-hidden p-1">
+                  <div className="w-18 h-18 rounded-2xl bg-white shadow-[0_8px_30px_rgb(0,0,0,0.12)] border border-slate-100 flex items-center justify-center shrink-0 overflow-hidden p-1.5 hover:rotate-3 transition-transform">
                     <UniversityLogo domain={domain} name={selectedUniversity.name} />
                   </div>
                   <div className="flex-1 min-w-0">
-                    <div className="flex flex-wrap items-center gap-2 mb-1">
-                      <img src={`https://flagcdn.com/w20/${flagCode}.png`} alt="Flag" className="w-4 h-3 rounded-sm object-cover" />
-                      <span className="text-[10px] text-white/80 font-bold uppercase tracking-widest">{selectedUniversity.country}</span>
-                      <span className="text-[9px] bg-white/20 text-white px-2 py-0.5 rounded-full font-bold uppercase tracking-wider border border-white/20">
+                    <div className="flex flex-wrap items-center gap-2 mb-1.5">
+                      <img src={`https://flagcdn.com/w20/${flagCode}.png`} alt="Flag" className="w-4.5 h-3.5 rounded-sm object-cover shadow-sm" />
+                      <span className="text-[10px] text-white/90 font-extrabold uppercase tracking-widest font-sans">{selectedUniversity.country}</span>
+                      <span className="text-[9px] bg-[#FFE5CC] text-[#0A7880] px-2 py-0.5 rounded-full font-bold uppercase tracking-wider border border-[#FFE5CC]/25">
                         {selectedUniversity.code.toUpperCase()}
                       </span>
                     </div>
-                    <h3 className="text-lg sm:text-xl font-extrabold text-white leading-tight font-display line-clamp-2">
+                    <h3 className="text-xl sm:text-2xl font-extrabold text-white leading-tight font-display tracking-tight drop-shadow-sm">
                       {selectedUniversity.name}
                     </h3>
                   </div>
                 </div>
               </div>
 
-              {/* ── Min score ribbon ── */}
-              <div className="shrink-0 flex items-center justify-between bg-gradient-to-r from-indigo-600 to-blue-600 px-6 py-3">
+              {/* ── Brand Stats Ribbon ── */}
+              <div className="shrink-0 flex items-center justify-between bg-gradient-to-r from-[#0A7880] to-[#075E64] px-6 py-3.5 shadow-inner">
                 <div className="flex items-center gap-2">
-                  <Star className="w-3.5 h-3.5 text-yellow-300" />
-                  <span className="text-[10px] font-bold uppercase tracking-widest text-white/70">Minimum Score Required</span>
+                  <Star className="w-4 h-4 text-[#FFE5CC] fill-[#FFE5CC]" />
+                  <span className="text-[10px] font-extrabold uppercase tracking-widest text-[#E6F2F3] font-sans">Minimum Academic Standard</span>
                 </div>
-                <span className="text-white font-extrabold text-sm font-mono">{selectedUniversity.min_cgpa_percent}</span>
+                <span className="text-white font-extrabold text-xs bg-white/20 border border-white/25 px-3 py-1 rounded-full font-mono shadow-sm">{selectedUniversity.min_cgpa_percent}</span>
               </div>
 
               {/* ── Scrollable body ── */}
-              <div className="overflow-y-auto flex-1 p-6 space-y-6">
+              <div className="overflow-y-auto flex-1 p-6 space-y-6 bg-slate-50/30">
 
                 {/* UG + PG side-by-side panels */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
 
                   {/* UG Panel */}
-                  <div className="rounded-2xl border border-indigo-200/60 overflow-hidden">
-                    <div className="flex items-center gap-2 px-4 py-3 bg-indigo-600">
-                      <GraduationCap className="w-3.5 h-3.5 text-white" />
-                      <span className="text-[11px] font-bold text-white uppercase tracking-widest">Undergraduate (UG)</span>
+                  <div className="rounded-[1.5rem] border border-slate-200/60 bg-white shadow-sm overflow-hidden flex flex-col justify-between group/ug">
+                    <div>
+                      <div className="flex items-center gap-2.5 px-5 py-4 bg-[#0A7880]">
+                        <GraduationCap className="w-4 h-4 text-white" />
+                        <span className="text-[11px] font-extrabold text-white uppercase tracking-widest font-display">Undergraduate (UG)</span>
+                      </div>
+                      
+                      <div className="p-5 space-y-3.5 border-t border-slate-100">
+                        {[
+                          { label: "Tuition Fees", value: ugFees, icon: DollarSign },
+                          { label: "Intakes", value: ugIntakes, icon: Calendar },
+                          { label: "IELTS / PTE", value: ugIelts, icon: Globe },
+                          {
+                            label: "MOI Accepted",
+                            value: ugMoi,
+                            icon: ShieldCheck,
+                            badge: true,
+                            isYes: ugMoi.toLowerCase() !== "no"
+                          }
+                        ].map((row) => (
+                          <div key={row.label} className="flex items-center justify-between gap-3 text-xs font-sans">
+                            <div className="flex items-center gap-2 text-slate-500 font-medium">
+                              <row.icon className="w-4 h-4 text-slate-400 shrink-0" />
+                              <span>{row.label}</span>
+                            </div>
+                            {row.badge ? (
+                              <span className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[9px] font-bold border ${row.isYes ? "bg-emerald-50 text-emerald-700 border-emerald-200" : "bg-rose-50 text-rose-600 border-rose-200"}`}>
+                                {row.value}
+                              </span>
+                            ) : (
+                              <span className="font-bold text-slate-800 text-right">{row.value}</span>
+                            )}
+                          </div>
+                        ))}
+                      </div>
                     </div>
-                    <div className="p-4 space-y-2.5 bg-indigo-50/30">
-                      {[
-                        { label: "Tuition Fees", value: ugFees },
-                        { label: "Intakes", value: ugIntakes },
-                        { label: "IELTS / PTE", value: ugIelts },
-                        {
-                          label: "MOI Accepted",
-                          value: ugMoi,
-                          badge: true,
-                          isYes: ugMoi.toLowerCase() !== "no"
-                        }
-                      ].map((row) => (
-                        <div key={row.label} className="flex items-start justify-between gap-2 text-xs">
-                          <span className="text-slate-500 font-medium shrink-0">{row.label}</span>
-                          {row.badge ? (
-                            <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[9px] font-bold border ${row.isYes ? "bg-emerald-50 text-emerald-700 border-emerald-200" : "bg-rose-50 text-rose-600 border-rose-200"}`}>
-                              {row.isYes ? "✓" : "✗"} {row.value}
-                            </span>
-                          ) : (
-                            <span className="font-bold text-slate-800 text-right">{row.value}</span>
-                          )}
-                        </div>
-                      ))}
-                    </div>
+
                     {ugCourses.length > 0 && (
-                      <div className="px-4 pb-4 bg-indigo-50/30">
-                        <p className="text-[9px] font-bold text-slate-400 uppercase tracking-wider mb-1.5">Key Programmes</p>
-                        <div className="flex flex-wrap gap-1">
+                      <div className="px-5 pb-5 pt-1 border-t border-slate-50 bg-slate-50/30">
+                        <p className="text-[9px] font-extrabold text-slate-400 uppercase tracking-wider mb-2.5 flex items-center gap-1">
+                          <BookOpen className="w-3 h-3" /> Key Programmes
+                        </p>
+                        <div className="flex flex-wrap gap-1.5">
                           {ugCourses.slice(0, 6).map((c, i) => (
-                            <span key={i} className="text-[9px] px-2 py-0.5 rounded-full bg-indigo-100 text-indigo-700 font-semibold border border-indigo-200/60">
+                            <span key={i} className="text-[9px] px-2.5 py-1 rounded-lg bg-slate-100/80 text-slate-600 font-semibold border border-slate-200/40 hover:border-[#0A7880]/30 hover:text-[#0A7880] hover:bg-[#0A7880]/5 transition-colors cursor-default">
                               {c}
                             </span>
                           ))}
                           {ugCourses.length > 6 && (
-                            <span className="text-[9px] px-2 py-0.5 rounded-full bg-slate-100 text-slate-500 font-semibold">
+                            <span className="text-[9px] px-2.5 py-1 rounded-lg bg-slate-50 text-slate-400 font-semibold border border-dashed border-slate-200">
                               +{ugCourses.length - 6} more
                             </span>
                           )}
@@ -665,54 +676,64 @@ export default function UniversityFilter() {
                   </div>
 
                   {/* PG Panel */}
-                  <div className="rounded-2xl border border-emerald-200/60 overflow-hidden">
-                    <div className="flex items-center gap-2 px-4 py-3 bg-emerald-600">
-                      <Award className="w-3.5 h-3.5 text-white" />
-                      <span className="text-[11px] font-bold text-white uppercase tracking-widest">Postgraduate (PG)</span>
+                  <div className="rounded-[1.5rem] border border-slate-200/60 bg-white shadow-sm overflow-hidden flex flex-col justify-between group/pg">
+                    <div>
+                      <div className="flex items-center gap-2.5 px-5 py-4 bg-[#F08A00]">
+                        <Award className="w-4 h-4 text-white" />
+                        <span className="text-[11px] font-extrabold text-white uppercase tracking-widest font-display">Postgraduate (PG)</span>
+                      </div>
+                      
+                      <div className="p-5 space-y-3.5 border-t border-slate-100">
+                        {[
+                          { label: "Tuition Fees", value: pgFees, icon: DollarSign },
+                          { label: "Intakes", value: pgIntakes, icon: Calendar },
+                          { label: "IELTS / PTE", value: pgIelts, icon: Globe },
+                          {
+                            label: "MOI Accepted",
+                            value: pgMoi,
+                            icon: ShieldCheck,
+                            badge: true,
+                            isYes: pgMoi.toLowerCase() !== "no" && pgMoi !== "N/A"
+                          }
+                        ].map((row) => (
+                          <div key={row.label} className="flex items-center justify-between gap-3 text-xs font-sans">
+                            <div className="flex items-center gap-2 text-slate-500 font-medium">
+                              <row.icon className="w-4 h-4 text-slate-400 shrink-0" />
+                              <span>{row.label}</span>
+                            </div>
+                            {row.badge ? (
+                              <span className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[9px] font-bold border ${row.isYes ? "bg-emerald-50 text-emerald-700 border-emerald-200" : "bg-rose-50 text-rose-600 border-rose-200"}`}>
+                                {row.value}
+                              </span>
+                            ) : (
+                              <span className="font-bold text-slate-800 text-right">{row.value}</span>
+                            )}
+                          </div>
+                        ))}
+                      </div>
                     </div>
-                    <div className="p-4 space-y-2.5 bg-emerald-50/30">
-                      {[
-                        { label: "Tuition Fees", value: pgFees },
-                        { label: "Intakes", value: pgIntakes },
-                        { label: "IELTS / PTE", value: pgIelts },
-                        {
-                          label: "MOI Accepted",
-                          value: pgMoi,
-                          badge: true,
-                          isYes: pgMoi.toLowerCase() !== "no" && pgMoi !== "N/A"
-                        }
-                      ].map((row) => (
-                        <div key={row.label} className="flex items-start justify-between gap-2 text-xs">
-                          <span className="text-slate-500 font-medium shrink-0">{row.label}</span>
-                          {row.badge ? (
-                            <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[9px] font-bold border ${row.isYes ? "bg-emerald-50 text-emerald-700 border-emerald-200" : "bg-rose-50 text-rose-600 border-rose-200"}`}>
-                              {row.isYes ? "✓" : "✗"} {row.value}
-                            </span>
-                          ) : (
-                            <span className="font-bold text-slate-800 text-right">{row.value}</span>
-                          )}
-                        </div>
-                      ))}
-                    </div>
+
                     {pgCourses.length > 0 ? (
-                      <div className="px-4 pb-4 bg-emerald-50/30">
-                        <p className="text-[9px] font-bold text-slate-400 uppercase tracking-wider mb-1.5">Key Programmes</p>
-                        <div className="flex flex-wrap gap-1">
+                      <div className="px-5 pb-5 pt-1 border-t border-slate-50 bg-slate-50/30">
+                        <p className="text-[9px] font-extrabold text-slate-400 uppercase tracking-wider mb-2.5 flex items-center gap-1">
+                          <BookOpen className="w-3 h-3" /> Key Programmes
+                        </p>
+                        <div className="flex flex-wrap gap-1.5">
                           {pgCourses.slice(0, 6).map((c, i) => (
-                            <span key={i} className="text-[9px] px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-700 font-semibold border border-emerald-200/60">
+                            <span key={i} className="text-[9px] px-2.5 py-1 rounded-lg bg-slate-100/80 text-slate-600 font-semibold border border-slate-200/40 hover:border-[#F08A00]/30 hover:text-[#F08A00] hover:bg-[#F08A00]/5 transition-colors cursor-default">
                               {c}
                             </span>
                           ))}
                           {pgCourses.length > 6 && (
-                            <span className="text-[9px] px-2 py-0.5 rounded-full bg-slate-100 text-slate-500 font-semibold">
+                            <span className="text-[9px] px-2.5 py-1 rounded-lg bg-slate-50 text-slate-400 font-semibold border border-dashed border-slate-200">
                               +{pgCourses.length - 6} more
                             </span>
                           )}
                         </div>
                       </div>
                     ) : (
-                      <div className="px-4 pb-4 bg-emerald-50/30">
-                        <span className="text-[10px] text-slate-400 italic">No PG programmes listed</span>
+                      <div className="px-5 pb-5 pt-1 border-t border-slate-50 bg-slate-50/30 flex items-center justify-center">
+                        <span className="text-[10px] text-slate-400 italic font-medium font-sans py-2">No postgraduate programs listed</span>
                       </div>
                     )}
                   </div>
@@ -720,16 +741,16 @@ export default function UniversityFilter() {
               </div>
 
               {/* ── Footer CTA ── */}
-              <div className="shrink-0 px-6 py-4 border-t border-slate-100 bg-slate-50/60 flex flex-col sm:flex-row items-center justify-between gap-3">
+              <div className="shrink-0 px-6 py-5 border-t border-slate-100 bg-white flex flex-col sm:flex-row items-center justify-between gap-4">
                 <div className="text-left">
-                  <p className="text-[10px] text-slate-400 font-semibold uppercase tracking-wider">Ready to apply?</p>
-                  <p className="text-xs font-bold text-slate-700">Our counsellors can guide your application</p>
+                  <p className="text-[9px] text-slate-400 font-extrabold uppercase tracking-widest font-sans">Admissions & Visa Support</p>
+                  <p className="text-xs font-bold text-slate-700 font-sans">Get one-on-one expert guidance from our counsellors</p>
                 </div>
-                <div className="flex gap-2.5 w-full sm:w-auto">
+                <div className="flex gap-3 w-full sm:w-auto">
                   <button
                     type="button"
                     onClick={() => setSelectedUniversity(null)}
-                    className="flex-1 sm:flex-none px-5 py-2.5 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 text-xs font-bold transition-all cursor-pointer"
+                    className="flex-1 sm:flex-none px-6 py-3 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 hover:border-slate-300 text-slate-700 text-xs font-bold transition-all cursor-pointer"
                   >
                     Close
                   </button>
@@ -739,8 +760,8 @@ export default function UniversityFilter() {
                       setSelectedUniversity(null);
                       (window as any).openCounsellorForm?.();
                     }}
-                    className="flex-1 sm:flex-none px-5 py-2.5 rounded-xl text-white text-xs font-bold shadow-md hover:scale-[1.02] cursor-pointer transition-all"
-                    style={{ background: "linear-gradient(135deg, #4f46e5 0%, #0ea5e9 100%)" }}
+                    className="flex-1 sm:flex-none px-6 py-3 rounded-xl text-white text-xs font-extrabold shadow-[0_4px_14px_0_rgba(10,120,128,0.25)] hover:shadow-[0_6px_20px_0_rgba(10,120,128,0.35)] hover:scale-[1.02] cursor-pointer transition-all duration-200"
+                    style={{ background: "linear-gradient(135deg, #0A7880 0%, #075E64 100%)" }}
                   >
                     Speak to Counsellor
                   </button>
