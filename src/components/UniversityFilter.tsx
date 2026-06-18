@@ -203,6 +203,20 @@ export default function UniversityFilter() {
   const [isLoading, setIsLoading] = useState(true);
   const [selectedUniversity, setSelectedUniversity] = useState<University | null>(null);
 
+  useEffect(() => {
+    if (selectedUniversity) {
+      document.body.style.overflow = "hidden";
+      (window as any).lenis?.stop();
+    } else {
+      document.body.style.overflow = "";
+      (window as any).lenis?.start();
+    }
+    return () => {
+      document.body.style.overflow = "";
+      (window as any).lenis?.start();
+    };
+  }, [selectedUniversity]);
+
   // Sync state from query parameters on mount
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
@@ -559,6 +573,7 @@ export default function UniversityFilter() {
             className="fixed inset-0 z-50 flex items-center justify-center p-4"
             style={{ background: "rgba(15,23,42,0.6)", backdropFilter: "blur(16px)" }}
             onClick={(e) => { if (e.target === e.currentTarget) setSelectedUniversity(null); }}
+            data-lenis-prevent
           >
             <div
               className="relative bg-white w-full max-w-[700px] rounded-[2.5rem] shadow-[0_32px_80px_-12px_rgba(10,120,128,0.18)] overflow-hidden flex flex-col border border-slate-100"

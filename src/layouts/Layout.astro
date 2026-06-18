@@ -990,7 +990,7 @@ try {
 
 				let handleCtaClick: any;
 
-				if (!isModalShown) {
+				if (!isModalShown && !isAdminRoute) {
 					console.log("[Soft Modal] Initializing 45s timer.");
 					// Detect standard CTA click
 					handleCtaClick = (e: MouseEvent) => {
@@ -1051,7 +1051,12 @@ try {
 				let rafId: number;
 				const isAdminRoute = window.location.pathname.startsWith("/admin");
 				
-				if (!isAdminRoute) {
+				if (isAdminRoute) {
+					if ((window as any).lenis) {
+						(window as any).lenis.destroy();
+						(window as any).lenis = null;
+					}
+				} else {
 					if ((window as any).lenis) {
 						(window as any).lenis.destroy();
 					}

@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { 
   GraduationCap, Award, Globe, Phone, Mail, User, 
@@ -253,6 +253,20 @@ export default function EligibilityForm() {
   const [matchingUnis, setMatchingUnis] = useState<University[]>([]);
   const [reachUnis, setReachUnis] = useState<University[]>([]);
   const [selectedUniversity, setSelectedUniversity] = useState<University | null>(null);
+
+  useEffect(() => {
+    if (selectedUniversity) {
+      document.body.style.overflow = "hidden";
+      (window as any).lenis?.stop();
+    } else {
+      document.body.style.overflow = "";
+      (window as any).lenis?.start();
+    }
+    return () => {
+      document.body.style.overflow = "";
+      (window as any).lenis?.start();
+    };
+  }, [selectedUniversity]);
 
   const handleCountrySelect = (code: string) => {
     setSelectedCountry(code);
@@ -1098,7 +1112,7 @@ export default function EligibilityForm() {
 
       {/* University Detail Modal Overlay */}
       {selectedUniversity && (
-        <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-md flex items-center justify-center p-4 overflow-y-auto">
+        <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-md flex items-center justify-center p-4 overflow-y-auto" data-lenis-prevent>
           <div className="bg-white rounded-[2rem] border border-slate-100 shadow-2xl w-full max-w-2xl overflow-hidden relative animate-in fade-in zoom-in-95 duration-200">
             {/* Modal close */}
             <button
@@ -1144,7 +1158,7 @@ export default function EligibilityForm() {
             </div>
 
             {/* Modal Body content */}
-            <div className="p-6 space-y-6 max-h-[60vh] overflow-y-auto text-left">
+            <div className="p-6 space-y-6 max-h-[60vh] overflow-y-auto text-left" data-lenis-prevent>
               {/* General criteria */}
               <div className="bg-slate-50 border border-slate-100 rounded-2xl p-4 flex items-center justify-between text-xs">
                 <div>
