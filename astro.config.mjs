@@ -3,6 +3,8 @@ import react from '@astrojs/react';
 import tailwindcss from '@tailwindcss/vite';
 import cloudflare from '@astrojs/cloudflare';
 
+const isDev = process.env.NODE_ENV === 'development' || !process.env.NODE_ENV;
+
 export default defineConfig({
   output: 'server',
   integrations: [react()],
@@ -16,16 +18,10 @@ export default defineConfig({
     resolve: {
       dedupe: ['react', 'react-dom'],
     },
-    ssr: {
-      noExternal: ['react', 'react-dom'], 
-      optimizeDeps: {
-        include: ['react', 'react-dom']
-      }
-    },
     optimizeDeps: {
       // Add lucide-react to exclude if Vite continues to struggle optimizing it
       exclude: ['audit', 'xray', 'lucide-react'], 
     },
   },
-  adapter: cloudflare()
+  adapter: isDev ? undefined : cloudflare()
 });
