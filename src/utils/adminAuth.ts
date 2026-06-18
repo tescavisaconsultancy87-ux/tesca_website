@@ -1,4 +1,5 @@
 import { supabase } from "./supabase";
+import { getEnv } from "./env";
 
 // Cryptographic hash token helper for legacy session fallback
 export async function hashToken(password: string): Promise<string> {
@@ -27,7 +28,7 @@ export async function checkAdminAuth(cookies: any): Promise<boolean> {
   }
 
   // 2. Fallback to legacy session cookie check
-  const expectedPassword = process.env.ADMIN_PASSWORD || import.meta.env.ADMIN_PASSWORD || "admin1234";
+  const expectedPassword = getEnv("ADMIN_PASSWORD") || import.meta.env.ADMIN_PASSWORD || "admin1234";
   const sessionCookie = cookies.get("admin_session")?.value;
   const expectedHash = await hashToken(expectedPassword);
   return sessionCookie === expectedHash;

@@ -3,6 +3,7 @@ import Layout from "../../layouts/Layout.astro";
 import AdminHeader from "../../components/AdminHeader.astro";
 import { checkAdminAuth } from "../../utils/adminAuth";
 import { supabase } from "../../utils/supabase";
+import { getEnv } from "../../utils/env";
 // Inline SVG helpers — no lucide-react in .astro (SSR hook errors)
 const _s = (d: string) => `<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${d}</svg>`;
 const SVG = {
@@ -43,7 +44,7 @@ const uploadImageToR2 = async (photoFile: File, env: any): Promise<string> => {
       await bucket.put(key, buffer, {
         httpMetadata: { contentType: photoFile.type }
       });
-      const r2PublicUrl = process.env.R2_PUBLIC_URL || import.meta.env.R2_PUBLIC_URL;
+      const r2PublicUrl = getEnv("R2_PUBLIC_URL") || import.meta.env.R2_PUBLIC_URL;
       return r2PublicUrl ? `${r2PublicUrl.replace(/\/$/, '')}/${key}` : `/api/assets?key=${key}`;
     } catch (err) {
       console.error("Direct R2 upload failed, falling back to base64:", err);

@@ -8,6 +8,7 @@ const SVG = {
 };
 import { supabase } from "../utils/supabase";
 import { checkAdminAuth, hashToken } from "../utils/adminAuth";
+import { getEnv } from "../utils/env";
 
 let errorMessage = "";
 
@@ -46,8 +47,8 @@ if (Astro.request.method === "POST") {
         }
 
         // 2. Fallback to Env variable check
-        const expectedEmail = process.env.ADMIN_EMAIL || import.meta.env.ADMIN_EMAIL || "admin@tesca.com";
-        const expectedPassword = process.env.ADMIN_PASSWORD || import.meta.env.ADMIN_PASSWORD || "admin1234";
+        const expectedEmail = getEnv("ADMIN_EMAIL") || import.meta.env.ADMIN_EMAIL || "admin@tesca.com";
+        const expectedPassword = getEnv("ADMIN_PASSWORD") || import.meta.env.ADMIN_PASSWORD || "admin1234";
 
         if (email === expectedEmail && password === expectedPassword) {
           const expectedHash = await hashToken(expectedPassword);

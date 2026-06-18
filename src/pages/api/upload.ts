@@ -1,5 +1,6 @@
 import type { APIRoute } from 'astro';
 import { env } from "cloudflare:workers";
+import { getEnv } from '../../utils/env';
 
 export const POST: APIRoute = async ({ request }) => {
   try {
@@ -39,7 +40,7 @@ export const POST: APIRoute = async ({ request }) => {
     });
 
     // Generate public URL using config, falling back to local proxy API
-    const r2PublicUrl = process.env.R2_PUBLIC_URL || import.meta.env.R2_PUBLIC_URL;
+    const r2PublicUrl = getEnv('R2_PUBLIC_URL') || import.meta.env.R2_PUBLIC_URL;
     const publicUrl = r2PublicUrl ? `${r2PublicUrl.replace(/\/$/, '')}/${key}` : `/api/assets?key=${key}`;
 
     return new Response(JSON.stringify({ success: true, url: publicUrl }), { 
