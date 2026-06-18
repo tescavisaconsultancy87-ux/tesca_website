@@ -7,12 +7,32 @@ CREATE TABLE universities (
     name TEXT NOT NULL,
     country TEXT NOT NULL,
     code TEXT NOT NULL,
-    tuition_fees TEXT NOT NULL,
-    intake TEXT NOT NULL,
-    ielts_pte_req TEXT, -- optional
-    moi_accepted TEXT NOT NULL, -- "Yes" or "No"
+    tuition_fees TEXT, -- old field
+    intake TEXT, -- old field
+    ielts_pte_req TEXT, -- old field
+    moi_accepted TEXT, -- old field
     min_cgpa_percent TEXT NOT NULL,
-    courses TEXT NOT NULL
+    courses TEXT, -- old field
+    photo TEXT, -- old intermediate field
+    image_url TEXT, -- new field
+    ug_fees TEXT, -- old intermediate field
+    pg_fees TEXT, -- old intermediate field
+    ug_ielts_pte_req TEXT, -- old intermediate field
+    pg_ielts_pte_req TEXT, -- old intermediate field
+    ug_moi_accepted TEXT, -- old intermediate field
+    pg_moi_accepted TEXT, -- old intermediate field
+    ug_intake TEXT, -- old intermediate field
+    pg_intake TEXT, -- old intermediate field
+    ug_courses TEXT, -- new/old intermediate field
+    pg_courses TEXT, -- new/old intermediate field
+    ug_tuition_fees TEXT, -- new field
+    ug_intakes TEXT, -- new field
+    ug_ielts_pte TEXT, -- new field
+    ug_moi TEXT, -- new field
+    pg_tuition_fees TEXT, -- new field
+    pg_intakes TEXT, -- new field
+    pg_ielts_pte TEXT, -- new field
+    pg_moi TEXT -- new field
 );
 
 -- 2. Success Stories Table

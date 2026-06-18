@@ -3,7 +3,14 @@ import Layout from "../../layouts/Layout.astro";
 import AdminHeader from "../../components/AdminHeader.astro";
 import { checkAdminAuth } from "../../utils/adminAuth";
 import { env } from "cloudflare:workers";
-import { Trash2, Plus, Landmark, ShieldAlert } from "lucide-react";
+// Inline SVG helpers — no lucide-react in .astro (SSR hook errors)
+const _s = (d: string) => `<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${d}</svg>`;
+const SVG = {
+  Trash2: _s('<path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/><line x1="10" x2="10" y1="11" y2="17"/><line x1="14" x2="14" y1="11" y2="17"/>'),
+  Plus: _s('<path d="M12 5v14"/><path d="M5 12h14"/>'),
+  Landmark: _s('<line x1="3" x2="21" y1="22" y2="22"/><line x1="6" x2="6" y1="18" y2="22"/><line x1="10" x2="10" y1="18" y2="22"/><line x1="14" x2="14" y1="18" y2="22"/><line x1="18" x2="18" y1="18" y2="22"/><polygon points="12 2 20 7 4 7"/>'),
+  ShieldAlert: _s('<path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="M12 8v4"/><path d="M12 16h.01"/>'),
+};
 
 // Check session
 const isAuthenticated = await checkAdminAuth(Astro.cookies);
@@ -12,6 +19,35 @@ if (!isAuthenticated) {
 }
 
 const db = env?.tesca_db || env?.DB;
+
+// Self-healing database migrations to add UG/PG fields and photo/image_url columns
+if (db) {
+  const columns = [
+    "photo", "ug_fees", "pg_fees",
+    "ug_ielts_pte_req", "pg_ielts_pte_req",
+    "ug_moi_accepted", "pg_moi_accepted",
+    "ug_intake", "pg_intake",
+    "ug_courses", "pg_courses",
+    "image_url", "ug_tuition_fees", "ug_intakes", "ug_ielts_pte", "ug_moi",
+    "pg_tuition_fees", "pg_intakes", "pg_ielts_pte", "pg_moi"
+  ];
+  for (const col of columns) {
+    try {
+      await db.prepare(`ALTER TABLE universities ADD COLUMN ${col} TEXT`).run();
+    } catch (e) {}
+  }
+}
+
+// Helper to convert ArrayBuffer to Base64 (compatible with Cloudflare workerd)
+const arrayBufferToBase64 = (buffer: ArrayBuffer): string => {
+  let binary = "";
+  const bytes = new Uint8Array(buffer);
+  const len = bytes.byteLength;
+  for (let i = 0; i < len; i++) {
+    binary += String.fromCharCode(bytes[i]);
+  }
+  return btoa(binary);
+};
 
 let universities = [];
 let successMessage = "";
@@ -31,47 +67,103 @@ if (Astro.request.method === "POST" && db) {
       const name = formData.get("name")?.toString().trim();
       const country = formData.get("country")?.toString().trim();
       const code = formData.get("code")?.toString().trim();
-      const tuitionFees = formData.get("tuition_fees")?.toString().trim();
-      const intake = formData.get("intake")?.toString().trim();
-      const ieltsPteReq = formData.get("ielts_pte_req")?.toString().trim() || null;
-      const moiAccepted = formData.get("moi_accepted")?.toString().trim();
+      
+      const ugTuitionFees = formData.get("ug_tuition_fees")?.toString().trim();
+      const pgTuitionFees = formData.get("pg_tuition_fees")?.toString().trim();
+      const ugIelts = formData.get("ug_ielts_pte")?.toString().trim() || null;
+      const pgIelts = formData.get("pg_ielts_pte")?.toString().trim() || null;
+      const ugMoi = formData.get("ug_moi")?.toString().trim();
+      const pgMoi = formData.get("pg_moi")?.toString().trim();
+      const ugIntakes = formData.get("ug_intakes")?.toString().trim();
+      const pgIntakes = formData.get("pg_intakes")?.toString().trim();
+      const ugCourses = formData.get("ug_courses")?.toString().trim();
+      const pgCourses = formData.get("pg_courses")?.toString().trim();
+      
       const minCgpaPercent = formData.get("min_cgpa_percent")?.toString().trim();
-      const courses = formData.get("courses")?.toString().trim();
+      const photoFile = formData.get("photo_file") as File;
 
-      if (name && country && code && tuitionFees && intake && moiAccepted && minCgpaPercent && courses) {
+      let imageUrl = "";
+      if (photoFile && photoFile.size > 0) {
+        if (photoFile.size > 1024 * 1024) {
+          errorMessage = "Image size must be less than 1MB.";
+        } else if (!["image/jpeg", "image/png", "image/jpg"].includes(photoFile.type)) {
+          errorMessage = "Only JPEG, JPG, and PNG images are allowed.";
+        } else {
+          const buffer = await photoFile.arrayBuffer();
+          const base64 = arrayBufferToBase64(buffer);
+          imageUrl = `data:${photoFile.type};base64,${base64}`;
+        }
+      }
+
+      if (!errorMessage && name && country && code && ugTuitionFees && pgTuitionFees && ugIntakes && pgIntakes && ugMoi && pgMoi && minCgpaPercent && ugCourses && pgCourses) {
         await db.prepare(
           `INSERT INTO universities 
-          (name, country, code, tuition_fees, intake, ielts_pte_req, moi_accepted, min_cgpa_percent, courses) 
-          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`
+          (name, country, code, min_cgpa_percent, tuition_fees, intake, ielts_pte_req, moi_accepted, courses, photo,
+           ug_fees, pg_fees, ug_ielts_pte_req, pg_ielts_pte_req, ug_moi_accepted, pg_moi_accepted, ug_intake, pg_intake, ug_courses, pg_courses,
+           image_url, ug_tuition_fees, ug_intakes, ug_ielts_pte, ug_moi, pg_tuition_fees, pg_intakes, pg_ielts_pte, pg_moi) 
+          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
         ).bind(
-          name, country, code, tuitionFees, intake, ieltsPteReq, moiAccepted, minCgpaPercent, courses
+          name, country, code, minCgpaPercent, ugTuitionFees, ugIntakes, ugIelts, ugMoi, ugCourses, imageUrl,
+          ugTuitionFees, pgTuitionFees, ugIelts, pgIelts, ugMoi, pgMoi, ugIntakes, pgIntakes, ugCourses, pgCourses,
+          imageUrl, ugTuitionFees, ugIntakes, ugIelts, ugMoi, pgTuitionFees, pgIntakes, pgIelts, pgMoi
         ).run();
 
         successMessage = `Successfully added ${name} to database.`;
-      } else {
-        errorMessage = "Please fill in all required fields (Name, Country, Tuition Fees, Intake, MOI Accepted, Min CGPA/Percentage, Courses).";
+      } else if (!errorMessage) {
+        errorMessage = "Please fill in all required fields (Name, Country, fees, intakes, MOI and courses for both UG/PG).";
       }
     } else if (action === "update-university") {
       const id = parseInt(formData.get("id")?.toString() || "0");
       const name = formData.get("name")?.toString().trim();
       const country = formData.get("country")?.toString().trim();
       const code = formData.get("code")?.toString().trim();
-      const tuitionFees = formData.get("tuition_fees")?.toString().trim();
-      const intake = formData.get("intake")?.toString().trim();
-      const ieltsPteReq = formData.get("ielts_pte_req")?.toString().trim() || null;
-      const moiAccepted = formData.get("moi_accepted")?.toString().trim();
+      
+      const ugTuitionFees = formData.get("ug_tuition_fees")?.toString().trim();
+      const pgTuitionFees = formData.get("pg_tuition_fees")?.toString().trim();
+      const ugIelts = formData.get("ug_ielts_pte")?.toString().trim() || null;
+      const pgIelts = formData.get("pg_ielts_pte")?.toString().trim() || null;
+      const ugMoi = formData.get("ug_moi")?.toString().trim();
+      const pgMoi = formData.get("pg_moi")?.toString().trim();
+      const ugIntakes = formData.get("ug_intakes")?.toString().trim();
+      const pgIntakes = formData.get("pg_intakes")?.toString().trim();
+      const ugCourses = formData.get("ug_courses")?.toString().trim();
+      const pgCourses = formData.get("pg_courses")?.toString().trim();
+      
       const minCgpaPercent = formData.get("min_cgpa_percent")?.toString().trim();
-      const courses = formData.get("courses")?.toString().trim();
+      const photoFile = formData.get("photo_file") as File;
+      const imageUrlExisting = formData.get("image_url_existing")?.toString().trim() || "";
 
-      if (id && name && country && code && tuitionFees && intake && moiAccepted && minCgpaPercent && courses) {
+      let imageUrl = imageUrlExisting;
+      if (photoFile && photoFile.size > 0) {
+        if (photoFile.size > 1024 * 1024) {
+          errorMessage = "Image size must be less than 1MB.";
+        } else if (!["image/jpeg", "image/png", "image/jpg"].includes(photoFile.type)) {
+          errorMessage = "Only JPEG, JPG, and PNG images are allowed.";
+        } else {
+          const buffer = await photoFile.arrayBuffer();
+          const base64 = arrayBufferToBase64(buffer);
+          imageUrl = `data:${photoFile.type};base64,${base64}`;
+        }
+      }
+
+      if (!errorMessage && id && name && country && code && ugTuitionFees && pgTuitionFees && ugIntakes && pgIntakes && ugMoi && pgMoi && minCgpaPercent && ugCourses && pgCourses) {
         await db.prepare(
-          `UPDATE universities SET name=?, country=?, code=?, tuition_fees=?, intake=?, ielts_pte_req=?, moi_accepted=?, min_cgpa_percent=?, courses=? WHERE id=?`
+          `UPDATE universities SET 
+           name=?, country=?, code=?, min_cgpa_percent=?,
+           tuition_fees=?, intake=?, ielts_pte_req=?, moi_accepted=?, courses=?, photo=?,
+           ug_fees=?, pg_fees=?, ug_ielts_pte_req=?, pg_ielts_pte_req=?, ug_moi_accepted=?, pg_moi_accepted=?, ug_intake=?, pg_intake=?, ug_courses=?, pg_courses=?,
+           image_url=?, ug_tuition_fees=?, ug_intakes=?, ug_ielts_pte=?, ug_moi=?, pg_tuition_fees=?, pg_intakes=?, pg_ielts_pte=?, pg_moi=?
+           WHERE id=?`
         ).bind(
-          name, country, code, tuitionFees, intake, ieltsPteReq, moiAccepted, minCgpaPercent, courses, id
+          name, country, code, minCgpaPercent,
+          ugTuitionFees, ugIntakes, ugIelts, ugMoi, ugCourses, imageUrl,
+          ugTuitionFees, pgTuitionFees, ugIelts, pgIelts, ugMoi, pgMoi, ugIntakes, pgIntakes, ugCourses, pgCourses,
+          imageUrl, ugTuitionFees, ugIntakes, ugIelts, ugMoi, pgTuitionFees, pgIntakes, pgIelts, pgMoi,
+          id
         ).run();
 
         successMessage = `Successfully updated ${name}.`;
-      } else {
+      } else if (!errorMessage) {
         errorMessage = "Please fill in all required fields.";
       }
     }
@@ -98,7 +190,7 @@ if (db) {
   description="Administrative portal to configure university options and admission criteria."
   showNavFooter={false}
 >
-  <div class="min-h-screen bg-slate-50 text-slate-800 font-sans flex">
+  <div class="min-h-screen bg-slate-50 text-slate-800 font-sans flex flex-col lg:flex-row">
     <AdminHeader activeTab="universities" />
 
     <main class="flex-1 px-4 md:px-8 py-10 overflow-y-auto text-left lg:ml-64">
@@ -114,7 +206,7 @@ if (db) {
       {/* Messages */}
       {errorMessage && (
         <div class="p-4 bg-rose-50 border border-rose-200 rounded-2xl text-rose-600 text-xs font-semibold mb-6 flex items-center gap-2">
-          <ShieldAlert class="w-4 h-4 shrink-0" />
+          <span set:html={SVG.ShieldAlert} class="w-4 h-4 shrink-0" />
           <span>{errorMessage}</span>
         </div>
       )}
@@ -129,12 +221,13 @@ if (db) {
         {/* Form panel (5 cols) */}
         <div class="lg:col-span-5 bg-white border border-slate-200 rounded-3xl p-6 shadow-sm">
           <h2 id="form-heading" class="text-base font-bold text-slate-800 mb-4 flex items-center gap-2">
-            <Plus class="w-4 h-4 text-indigo-600" /> Add New University
+            <span set:html={SVG.Plus} class="w-4 h-4 text-indigo-600 inline-block" /> Add New University
           </h2>
           
-          <form method="POST" class="space-y-4 text-xs font-semibold text-slate-600">
+          <form method="POST" enctype="multipart/form-data" class="space-y-4 text-xs font-semibold text-slate-600">
             <input type="hidden" id="form-action" name="action" value="add-university" />
             <input type="hidden" id="edit-id" name="id" value="" />
+            <input type="hidden" id="image-url-existing" name="image_url_existing" value="" />
             
             <div class="space-y-1.5">
               <label for="uni-name" class="text-[10px] text-slate-500 uppercase tracking-wide">University Name *</label>
@@ -167,39 +260,90 @@ if (db) {
               </div>
             </div>
 
-            <div class="grid grid-cols-2 gap-3">
-              <div class="space-y-1.5">
-                <label for="uni-tuition" class="text-[10px] text-slate-500 uppercase tracking-wide">Tuition Fees *</label>
-                <input type="text" id="uni-tuition" name="tuition_fees" required class="w-full px-3 py-2.5 rounded-lg border border-slate-200 bg-slate-50 text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-1 focus:ring-indigo-500" placeholder="e.g. £15,000 - £20,000 / year" />
-              </div>
-              <div class="space-y-1.5">
-                <label for="uni-intake" class="text-[10px] text-slate-500 uppercase tracking-wide">Intakes *</label>
-                <input type="text" id="uni-intake" name="intake" required class="w-full px-3 py-2.5 rounded-lg border border-slate-200 bg-slate-50 text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-1 focus:ring-indigo-500" placeholder="e.g. Sept, Jan, May" />
-              </div>
-            </div>
-
-            <div class="grid grid-cols-2 gap-3">
-              <div class="space-y-1.5">
-                <label for="uni-ielts-pte" class="text-[10px] text-slate-500 uppercase tracking-wide">IELTS/PTE Requirement (Optional)</label>
-                <input type="text" id="uni-ielts-pte" name="ielts_pte_req" class="w-full px-3 py-2.5 rounded-lg border border-slate-200 bg-slate-50 text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-1 focus:ring-indigo-500" placeholder="e.g. 6.0 overall / PTE 50" />
-              </div>
-              <div class="space-y-1.5">
-                <label for="uni-moi" class="text-[10px] text-slate-500 uppercase tracking-wide">MOI Accepted *</label>
-                <select id="uni-moi" name="moi_accepted" required class="w-full px-3 py-2.5 rounded-lg border border-slate-200 bg-slate-50 text-slate-800 focus:outline-none focus:ring-1 focus:ring-indigo-500">
-                  <option value="Yes">Yes</option>
-                  <option value="No">No</option>
-                </select>
-              </div>
-            </div>
-
             <div class="space-y-1.5">
               <label for="uni-cgpa" class="text-[10px] text-slate-500 uppercase tracking-wide">Min CGPA / Percentage *</label>
               <input type="text" id="uni-cgpa" name="min_cgpa_percent" required class="w-full px-3 py-2.5 rounded-lg border border-slate-200 bg-slate-50 text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-1 focus:ring-indigo-500" placeholder="e.g. 55% or 6.0 CGPA" />
             </div>
 
             <div class="space-y-1.5">
-              <label for="uni-courses" class="text-[10px] text-slate-500 uppercase tracking-wide">Courses Offered *</label>
-              <textarea id="uni-courses" name="courses" required rows="3" class="w-full px-3 py-2.5 rounded-lg border border-slate-200 bg-slate-50 text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-1 focus:ring-indigo-500" placeholder="e.g. MBA, MSc Data Science, CS, BBA (comma separated)"></textarea>
+              <label for="uni-photo" class="text-[10px] text-slate-500 uppercase tracking-wide">University Logo/Photo (Max 1MB)</label>
+              <input type="file" id="uni-photo" name="photo_file" accept="image/png, image/jpeg, image/jpg" class="w-full text-slate-500 border border-slate-200 bg-slate-50 rounded-lg file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100" />
+              <div id="photo-preview-container" class="mt-2 hidden flex items-center gap-3">
+                <img id="photo-preview" class="w-16 h-16 object-cover rounded-lg border border-slate-200" src="" />
+                <button type="button" id="remove-photo-btn" class="text-rose-500 hover:text-rose-700 text-[10px] font-bold uppercase tracking-wider cursor-pointer">Remove Photo</button>
+              </div>
+            </div>
+
+            {/* TAB toggles */}
+            <div class="flex border-b border-slate-200 mb-2 mt-4">
+              <button type="button" id="tab-ug" class="flex-1 pb-2 text-center border-b-2 border-indigo-600 font-bold text-indigo-600 focus:outline-none cursor-pointer">UG Level</button>
+              <button type="button" id="tab-pg" class="flex-1 pb-2 text-center border-b-2 border-transparent text-slate-400 hover:text-slate-600 font-bold focus:outline-none cursor-pointer">PG Level</button>
+            </div>
+
+            {/* UG Fields Container */}
+            <div id="ug-fields" class="space-y-4">
+              <div class="grid grid-cols-2 gap-3">
+                <div class="space-y-1.5">
+                  <label for="ug-fees" class="text-[10px] text-slate-500 uppercase tracking-wide">UG Tuition Fees *</label>
+                  <input type="text" id="ug-fees" name="ug_tuition_fees" class="w-full px-3 py-2.5 rounded-lg border border-slate-200 bg-slate-50 text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-1 focus:ring-indigo-500" placeholder="e.g. £15,000 / year" />
+                </div>
+                <div class="space-y-1.5">
+                  <label for="ug-intake" class="text-[10px] text-slate-500 uppercase tracking-wide">UG Intakes *</label>
+                  <input type="text" id="ug-intake" name="ug_intakes" class="w-full px-3 py-2.5 rounded-lg border border-slate-200 bg-slate-50 text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-1 focus:ring-indigo-500" placeholder="e.g. Sept, Jan" />
+                </div>
+              </div>
+
+              <div class="grid grid-cols-2 gap-3">
+                <div class="space-y-1.5">
+                  <label for="ug-ielts" class="text-[10px] text-slate-500 uppercase tracking-wide">UG IELTS/PTE (Optional)</label>
+                  <input type="text" id="ug-ielts" name="ug_ielts_pte" class="w-full px-3 py-2.5 rounded-lg border border-slate-200 bg-slate-50 text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-1 focus:ring-indigo-500" placeholder="e.g. 6.0 overall" />
+                </div>
+                <div class="space-y-1.5">
+                  <label for="ug-moi" class="text-[10px] text-slate-500 uppercase tracking-wide">UG MOI Accepted *</label>
+                  <select id="ug-moi" name="ug_moi" class="w-full px-3 py-2.5 rounded-lg border border-slate-200 bg-slate-50 text-slate-800 focus:outline-none focus:ring-1 focus:ring-indigo-500">
+                    <option value="Yes">Yes</option>
+                    <option value="No">No</option>
+                  </select>
+                </div>
+              </div>
+
+              <div class="space-y-1.5">
+                <label for="ug-courses" class="text-[10px] text-slate-500 uppercase tracking-wide">UG Courses Offered *</label>
+                <textarea id="ug-courses" name="ug_courses" rows="2" class="w-full px-3 py-2.5 rounded-lg border border-slate-200 bg-slate-50 text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-1 focus:ring-indigo-500" placeholder="e.g. BSc CS, BBA, BEng (comma separated)"></textarea>
+              </div>
+            </div>
+
+            {/* PG Fields Container */}
+            <div id="pg-fields" class="space-y-4 hidden">
+              <div class="grid grid-cols-2 gap-3">
+                <div class="space-y-1.5">
+                  <label for="pg-fees" class="text-[10px] text-slate-500 uppercase tracking-wide">PG Tuition Fees *</label>
+                  <input type="text" id="pg-fees" name="pg_tuition_fees" class="w-full px-3 py-2.5 rounded-lg border border-slate-200 bg-slate-50 text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-1 focus:ring-indigo-500" placeholder="e.g. £17,000 / year" />
+                </div>
+                <div class="space-y-1.5">
+                  <label for="pg-intake" class="text-[10px] text-slate-500 uppercase tracking-wide">PG Intakes *</label>
+                  <input type="text" id="pg-intake" name="pg_intakes" class="w-full px-3 py-2.5 rounded-lg border border-slate-200 bg-slate-50 text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-1 focus:ring-indigo-500" placeholder="e.g. Sept, Jan, May" />
+                </div>
+              </div>
+
+              <div class="grid grid-cols-2 gap-3">
+                <div class="space-y-1.5">
+                  <label for="pg-ielts" class="text-[10px] text-slate-500 uppercase tracking-wide">PG IELTS/PTE (Optional)</label>
+                  <input type="text" id="pg-ielts" name="pg_ielts_pte" class="w-full px-3 py-2.5 rounded-lg border border-slate-200 bg-slate-50 text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-1 focus:ring-indigo-500" placeholder="e.g. 6.5 overall" />
+                </div>
+                <div class="space-y-1.5">
+                  <label for="pg-moi" class="text-[10px] text-slate-500 uppercase tracking-wide">PG MOI Accepted *</label>
+                  <select id="pg-moi" name="pg_moi" class="w-full px-3 py-2.5 rounded-lg border border-slate-200 bg-slate-50 text-slate-800 focus:outline-none focus:ring-1 focus:ring-indigo-500">
+                    <option value="Yes">Yes</option>
+                    <option value="No">No</option>
+                  </select>
+                </div>
+              </div>
+
+              <div class="space-y-1.5">
+                <label for="pg-courses" class="text-[10px] text-slate-500 uppercase tracking-wide">PG Courses Offered *</label>
+                <textarea id="pg-courses" name="pg_courses" rows="2" class="w-full px-3 py-2.5 rounded-lg border border-slate-200 bg-slate-50 text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-1 focus:ring-indigo-500" placeholder="e.g. MBA, MSc Data Science, CS (comma separated)"></textarea>
+              </div>
             </div>
 
             <button type="submit" id="submit-btn" class="w-full py-3 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-xl transition-all cursor-pointer shadow-md hover:scale-[1.01] mt-2">
@@ -214,37 +358,63 @@ if (db) {
         {/* List panel (7 cols) */}
         <div class="lg:col-span-7 space-y-4">
           <h2 class="text-base font-bold text-slate-800 flex items-center gap-2">
-            <Landmark class="w-4 h-4 text-emerald-600" /> Active Universities Database ({universities.length})
+            <span set:html={SVG.Landmark} class="text-emerald-600" /> Active Universities Database ({universities.length})
           </h2>
 
           {universities.length === 0 ? (
             <p class="text-xs text-slate-500 py-6 text-center">No universities found in database.</p>
           ) : (
-            <div class="bg-white border border-slate-200 rounded-3xl shadow-sm max-h-[70vh] overflow-y-scroll overscroll-contain">
-              <table class="w-full text-left border-collapse text-xs">
+            <div class="bg-white border border-slate-200 rounded-3xl shadow-sm max-h-[85vh] overflow-y-scroll overflow-x-auto overscroll-contain">
+              <table class="w-full text-left border-collapse text-xs min-w-[700px]">
                 <thead>
                   <tr class="bg-slate-50 text-slate-500 border-b border-slate-200 font-bold uppercase tracking-wider">
-                    <th class="px-6 py-4">University</th>
-                    <th class="px-6 py-4">Details</th>
-                    <th class="px-6 py-4 text-right">Actions</th>
+                    <th class="px-4 py-4">University</th>
+                    <th class="px-4 py-4">UG Program</th>
+                    <th class="px-4 py-4">PG Program</th>
+                    <th class="px-4 py-4 text-right">Actions</th>
                   </tr>
                 </thead>
                 <tbody class="divide-y divide-slate-100">
                   {universities.map((u) => (
                     <tr class="hover:bg-slate-50 transition-colors">
-                      <td class="px-6 py-4">
-                        <div class="font-bold text-slate-800 text-xs">{u.name}</div>
-                        <div class="text-[10px] text-slate-500 mt-1 font-mono">Courses: {u.courses}</div>
+                      <td class="px-4 py-4 align-top">
+                        <div class="flex items-start gap-3">
+                          {u.image_url || u.photo ? (
+                            <img src={u.image_url || u.photo} alt={u.name} class="w-12 h-12 rounded-lg object-cover border border-slate-200 bg-slate-50 shrink-0" />
+                          ) : (
+                            <div class="w-12 h-12 rounded-lg bg-slate-100 flex items-center justify-center text-slate-400 border border-slate-200 shrink-0">
+                              <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+                            </div>
+                          )}
+                          <div class="min-w-0">
+                            <div class="font-bold text-slate-800 text-xs leading-tight">{u.name}</div>
+                            <div class="flex items-center gap-1 mt-1">
+                              <img
+                                src={`https://flagcdn.com/w20/${u.code === "uk" ? "gb" : u.code}.png`}
+                                alt={`${u.country} flag`}
+                                class="w-3.5 h-2.5 rounded-sm object-cover"
+                              />
+                              <span class="text-[10px] text-slate-500 font-medium">{u.country} ({u.code.toUpperCase()})</span>
+                            </div>
+                            <div class="text-[9px] text-slate-400 mt-1">Min CGPA: <span class="font-bold text-slate-600">{u.min_cgpa_percent}</span></div>
+                          </div>
+                        </div>
                       </td>
-                      <td class="px-6 py-4 space-y-1">
-                        <div>Country: <span class="font-bold text-slate-700">{u.country} ({u.code.toUpperCase()})</span></div>
-                        <div>Fees: <span class="font-bold text-slate-700">{u.tuition_fees}</span></div>
-                        <div>Intake: <span class="font-bold text-slate-700">{u.intake}</span></div>
-                        <div>IELTS/PTE: <span class="font-bold text-slate-700">{u.ielts_pte_req || "N/A"}</span></div>
-                        <div>MOI Accepted: <span class="font-bold text-slate-700">{u.moi_accepted}</span></div>
-                        <div>Min CGPA/Score: <span class="font-bold text-slate-700">{u.min_cgpa_percent}</span></div>
+                      <td class="px-4 py-4 align-top space-y-0.5 text-[11px]">
+                        <div><span class="text-slate-400">Fees:</span> <span class="font-bold text-slate-700">{u.ug_tuition_fees || u.ug_fees || u.tuition_fees || "N/A"}</span></div>
+                        <div><span class="text-slate-400">Intake:</span> <span class="font-semibold text-slate-700">{u.ug_intakes || u.ug_intake || u.intake || "N/A"}</span></div>
+                        <div><span class="text-slate-400">IELTS:</span> <span class="font-semibold text-slate-700">{u.ug_ielts_pte || u.ug_ielts_pte_req || u.ielts_pte_req || "N/A"}</span></div>
+                        <div><span class="text-slate-400">MOI:</span> <span class="font-semibold text-slate-700">{u.ug_moi || u.ug_moi_accepted || u.moi_accepted || "N/A"}</span></div>
+                        <div class="text-[9px] text-slate-500 font-mono line-clamp-2 mt-0.5">Courses: {u.ug_courses || u.courses || "N/A"}</div>
                       </td>
-                      <td class="px-6 py-4 text-right whitespace-nowrap">
+                      <td class="px-4 py-4 align-top space-y-0.5 text-[11px]">
+                        <div><span class="text-slate-400">Fees:</span> <span class="font-bold text-slate-700">{u.pg_tuition_fees || u.pg_fees || "N/A"}</span></div>
+                        <div><span class="text-slate-400">Intake:</span> <span class="font-semibold text-slate-700">{u.pg_intakes || u.pg_intake || "N/A"}</span></div>
+                        <div><span class="text-slate-400">IELTS:</span> <span class="font-semibold text-slate-700">{u.pg_ielts_pte || u.pg_ielts_pte_req || "N/A"}</span></div>
+                        <div><span class="text-slate-400">MOI:</span> <span class="font-semibold text-slate-700">{u.pg_moi || u.pg_moi_accepted || "N/A"}</span></div>
+                        <div class="text-[9px] text-slate-500 font-mono line-clamp-2 mt-0.5">Courses: {u.pg_courses || "N/A"}</div>
+                      </td>
+                      <td class="px-4 py-4 align-top text-right whitespace-nowrap">
                         <div class="flex items-center justify-end gap-1">
                           <button
                             type="button"
@@ -253,17 +423,23 @@ if (db) {
                             data-name={u.name}
                             data-country={u.country}
                             data-code={u.code}
-                            data-tuition-fees={u.tuition_fees}
-                            data-intake={u.intake}
-                            data-ielts-pte-req={u.ielts_pte_req || ""}
-                            data-moi-accepted={u.moi_accepted}
                             data-min-cgpa-percent={u.min_cgpa_percent}
-                            data-courses={u.courses}
+                            data-image-url={u.image_url || u.photo || ""}
+                            data-ug-tuition-fees={u.ug_tuition_fees || u.ug_fees || u.tuition_fees || ""}
+                            data-ug-intakes={u.ug_intakes || u.ug_intake || u.intake || ""}
+                            data-ug-ielts-pte={u.ug_ielts_pte || u.ug_ielts_pte_req || u.ielts_pte_req || ""}
+                            data-ug-moi={u.ug_moi || u.ug_moi_accepted || u.moi_accepted || "Yes"}
+                            data-ug-courses={u.ug_courses || u.courses || ""}
+                            data-pg-tuition-fees={u.pg_tuition_fees || u.pg_fees || ""}
+                            data-pg-intakes={u.pg_intakes || u.pg_intake || ""}
+                            data-pg-ielts-pte={u.pg_ielts_pte || u.pg_ielts_pte_req || ""}
+                            data-pg-moi={u.pg_moi || u.pg_moi_accepted || "Yes"}
+                            data-pg-courses={u.pg_courses || ""}
                             aria-label={`Edit ${u.name}`}
                           >
                             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/><path d="m15 5 4 4"/></svg>
                           </button>
-                          <form method="POST" onsubmit="return confirm('Are you sure you want to remove this university?');" class="inline">
+                          <form method="POST" onsubmit="return confirm('Are you sure you want to remove this university?');" class="inline" data-no-loader>
                             <input type="hidden" name="action" value="delete-university" />
                             <input type="hidden" name="id" value={u.id} />
                             <button
@@ -271,7 +447,7 @@ if (db) {
                               class="p-2 text-rose-500 hover:bg-rose-50 rounded-lg hover:scale-105 transition-all cursor-pointer border border-transparent hover:border-rose-200"
                               aria-label={`Delete ${u.name}`}
                             >
-                              <Trash2 class="w-3.5 h-3.5" />
+                              <span set:html={SVG.Trash2} />
                             </button>
                           </form>
                         </div>
@@ -307,6 +483,75 @@ if (db) {
   };
 
   function setupUniEdit() {
+    // Tabs functionality
+    const tabUg = document.getElementById("tab-ug");
+    const tabPg = document.getElementById("tab-pg");
+    const ugFields = document.getElementById("ug-fields");
+    const pgFields = document.getElementById("pg-fields");
+
+    if (tabUg && tabPg && ugFields && pgFields) {
+      tabUg.replaceWith(tabUg.cloneNode(true));
+      tabPg.replaceWith(tabPg.cloneNode(true));
+      
+      const newTabUg = document.getElementById("tab-ug")!;
+      const newTabPg = document.getElementById("tab-pg")!;
+      const newUgFields = document.getElementById("ug-fields")!;
+      const newPgFields = document.getElementById("pg-fields")!;
+
+      newTabUg.addEventListener("click", () => {
+        newUgFields.classList.remove("hidden");
+        newPgFields.classList.add("hidden");
+        newTabUg.className = "flex-1 pb-2 text-center border-b-2 border-indigo-600 font-bold text-indigo-600 focus:outline-none cursor-pointer";
+        newTabPg.className = "flex-1 pb-2 text-center border-b-2 border-transparent text-slate-400 hover:text-slate-600 font-bold focus:outline-none cursor-pointer";
+      });
+
+      newTabPg.addEventListener("click", () => {
+        newPgFields.classList.remove("hidden");
+        newUgFields.classList.add("hidden");
+        newTabPg.className = "flex-1 pb-2 text-center border-b-2 border-indigo-600 font-bold text-indigo-600 focus:outline-none cursor-pointer";
+        newTabUg.className = "flex-1 pb-2 text-center border-b-2 border-transparent text-slate-400 hover:text-slate-600 font-bold focus:outline-none cursor-pointer";
+      });
+    }
+
+    // Photo preview functionality
+    const photoInput = document.getElementById("uni-photo") as HTMLInputElement;
+    const photoPreviewContainer = document.getElementById("photo-preview-container");
+    const photoPreview = document.getElementById("photo-preview") as HTMLImageElement;
+    const removePhotoBtn = document.getElementById("remove-photo-btn");
+    const photoExistingInput = document.getElementById("image-url-existing") as HTMLInputElement;
+
+    if (photoInput && photoPreviewContainer && photoPreview && removePhotoBtn && photoExistingInput) {
+      photoInput.replaceWith(photoInput.cloneNode(true));
+      removePhotoBtn.replaceWith(removePhotoBtn.cloneNode(true));
+
+      const newPhotoInput = document.getElementById("uni-photo") as HTMLInputElement;
+      const newRemovePhotoBtn = document.getElementById("remove-photo-btn")!;
+
+      newPhotoInput.addEventListener("change", () => {
+        const file = newPhotoInput.files?.[0];
+        if (file) {
+          if (file.size > 1024 * 1024) {
+            alert("Image size must be less than 1MB.");
+            newPhotoInput.value = "";
+            return;
+          }
+          const reader = new FileReader();
+          reader.onload = (e) => {
+            photoPreview.src = e.target?.result as string;
+            photoPreviewContainer.classList.remove("hidden");
+          };
+          reader.readAsDataURL(file);
+        }
+      });
+
+      newRemovePhotoBtn.addEventListener("click", () => {
+        newPhotoInput.value = "";
+        photoExistingInput.value = "";
+        photoPreview.src = "";
+        photoPreviewContainer.classList.add("hidden");
+      });
+    }
+
     const editBtns = document.querySelectorAll(".edit-uni-btn");
     editBtns.forEach(btn => {
       btn.addEventListener("click", () => {
@@ -328,24 +573,50 @@ if (db) {
         const countrySelect = document.querySelector('[name="country"]') as HTMLSelectElement;
         const codeInput = document.getElementById("uni-code") as HTMLInputElement;
         const codeDisplay = document.getElementById("uni-code-display") as HTMLInputElement;
-        const tuitionFeesInput = document.querySelector('[name="tuition_fees"]') as HTMLInputElement;
-        const intakeInput = document.querySelector('[name="intake"]') as HTMLInputElement;
-        const ieltsPteReqInput = document.querySelector('[name="ielts_pte_req"]') as HTMLInputElement;
-        const moiAcceptedSelect = document.querySelector('[name="moi_accepted"]') as HTMLSelectElement;
         const minCgpaPercentInput = document.querySelector('[name="min_cgpa_percent"]') as HTMLInputElement;
-        const coursesInput = document.querySelector('[name="courses"]') as HTMLTextAreaElement;
+        
+        const ugFeesInput = document.querySelector('[name="ug_tuition_fees"]') as HTMLInputElement;
+        const ugIntakeInput = document.querySelector('[name="ug_intakes"]') as HTMLInputElement;
+        const ugIeltsInput = document.querySelector('[name="ug_ielts_pte"]') as HTMLInputElement;
+        const ugMoiSelect = document.querySelector('[name="ug_moi"]') as HTMLSelectElement;
+        const ugCoursesInput = document.querySelector('[name="ug_courses"]') as HTMLTextAreaElement;
+
+        const pgFeesInput = document.querySelector('[name="pg_tuition_fees"]') as HTMLInputElement;
+        const pgIntakeInput = document.querySelector('[name="pg_intakes"]') as HTMLInputElement;
+        const pgIeltsInput = document.querySelector('[name="pg_ielts_pte"]') as HTMLInputElement;
+        const pgMoiSelect = document.querySelector('[name="pg_moi"]') as HTMLSelectElement;
+        const pgCoursesInput = document.querySelector('[name="pg_courses"]') as HTMLTextAreaElement;
 
         const ds = (btn as HTMLElement).dataset;
         if (nameInput) nameInput.value = getValue(ds.name);
         if (countrySelect) countrySelect.value = getValue(ds.country);
         if (codeInput) codeInput.value = getValue(ds.code);
         if (codeDisplay) codeDisplay.value = getValue(ds.code).toUpperCase();
-        if (tuitionFeesInput) tuitionFeesInput.value = getValue(ds.tuitionFees);
-        if (intakeInput) intakeInput.value = getValue(ds.intake);
-        if (ieltsPteReqInput) ieltsPteReqInput.value = getValue(ds.ieltsPteReq);
-        if (moiAcceptedSelect) moiAcceptedSelect.value = getValue(ds.moiAccepted);
         if (minCgpaPercentInput) minCgpaPercentInput.value = getValue(ds.minCgpaPercent);
-        if (coursesInput) coursesInput.value = getValue(ds.courses);
+        
+        if (ugFeesInput) ugFeesInput.value = getValue(ds.ugTuitionFees);
+        if (ugIntakeInput) ugIntakeInput.value = getValue(ds.ugIntakes);
+        if (ugIeltsInput) ugIeltsInput.value = getValue(ds.ugIeltsPte);
+        if (ugMoiSelect) ugMoiSelect.value = getValue(ds.ugMoi);
+        if (ugCoursesInput) ugCoursesInput.value = getValue(ds.ugCourses);
+
+        if (pgFeesInput) pgFeesInput.value = getValue(ds.pgTuitionFees);
+        if (pgIntakeInput) pgIntakeInput.value = getValue(ds.pgIntakes);
+        if (pgIeltsInput) pgIeltsInput.value = getValue(ds.pgIeltsPte);
+        if (pgMoiSelect) pgMoiSelect.value = getValue(ds.pgMoi);
+        if (pgCoursesInput) pgCoursesInput.value = getValue(ds.pgCourses);
+
+        if (photoExistingInput && photoPreview && photoPreviewContainer) {
+          const photoVal = getValue(ds.imageUrl);
+          photoExistingInput.value = photoVal;
+          if (photoVal) {
+            photoPreview.src = photoVal;
+            photoPreviewContainer.classList.remove("hidden");
+          } else {
+            photoPreview.src = "";
+            photoPreviewContainer.classList.add("hidden");
+          }
+        }
 
         document.querySelector("form")?.scrollIntoView({ behavior: "smooth", block: "start" });
       });
@@ -364,13 +635,52 @@ if (db) {
     const codeDisplay = document.getElementById("uni-code-display") as HTMLInputElement;
 
     if (countrySelect && codeInput && codeDisplay) {
-      // Clear listener if already added by replacing element
       countrySelect.replaceWith(countrySelect.cloneNode(true));
       const newCountrySelect = document.getElementById("uni-country") as HTMLSelectElement;
       newCountrySelect.addEventListener("change", () => {
         const code = countryToCode[newCountrySelect.value] || "";
         codeInput.value = code;
         codeDisplay.value = code.toUpperCase();
+      });
+    }
+
+    // Form client-side validation for required tab-fields
+    const form = document.querySelector("form");
+    if (form) {
+      form.replaceWith(form.cloneNode(true));
+      const newForm = document.querySelector("form")!;
+      newForm.addEventListener("submit", (e) => {
+        const name = (document.getElementById("uni-name") as HTMLInputElement).value.trim();
+        const country = (document.getElementById("uni-country") as HTMLSelectElement).value;
+        const cgpa = (document.getElementById("uni-cgpa") as HTMLInputElement).value.trim();
+        
+        const ugFees = (document.getElementById("ug-fees") as HTMLInputElement).value.trim();
+        const ugIntake = (document.getElementById("ug-intake") as HTMLInputElement).value.trim();
+        const ugCourses = (document.getElementById("ug-courses") as HTMLTextAreaElement).value.trim();
+        
+        const pgFees = (document.getElementById("pg-fees") as HTMLInputElement).value.trim();
+        const pgIntake = (document.getElementById("pg-intake") as HTMLInputElement).value.trim();
+        const pgCourses = (document.getElementById("pg-courses") as HTMLTextAreaElement).value.trim();
+
+        if (!name || !country || !cgpa) {
+          alert("Please fill in all general fields.");
+          e.preventDefault();
+          return;
+        }
+
+        if (!ugFees || !ugIntake || !ugCourses) {
+          alert("Please fill in all Undergraduate (UG) details.");
+          document.getElementById("tab-ug")?.click();
+          e.preventDefault();
+          return;
+        }
+
+        if (!pgFees || !pgIntake || !pgCourses) {
+          alert("Please fill in all Postgraduate (PG) details.");
+          document.getElementById("tab-pg")?.click();
+          e.preventDefault();
+          return;
+        }
       });
     }
   }
@@ -381,6 +691,10 @@ if (db) {
     const formHeading = document.getElementById("form-heading");
     const submitBtn = document.getElementById("submit-btn");
     const cancelBtn = document.getElementById("cancel-edit-btn");
+    const photoExistingInput = document.getElementById("image-url-existing") as HTMLInputElement;
+    const photoPreview = document.getElementById("photo-preview") as HTMLImageElement;
+    const photoPreviewContainer = document.getElementById("photo-preview-container");
+    const photoInput = document.getElementById("uni-photo") as HTMLInputElement;
 
     if (editId) editId.value = "";
     if (formAction) formAction.value = "add-university";
@@ -388,11 +702,16 @@ if (db) {
     if (submitBtn) submitBtn.textContent = "Save University";
     if (cancelBtn) cancelBtn.classList.add("hidden");
 
+    if (photoExistingInput) photoExistingInput.value = "";
+    if (photoPreview) photoPreview.src = "";
+    if (photoPreviewContainer) photoPreviewContainer.classList.add("hidden");
+    if (photoInput) photoInput.value = "";
+
     const form = document.querySelector("form");
     if (form) {
       form.querySelectorAll("input, textarea, select").forEach(el => {
         const input = el as HTMLInputElement;
-        if (input.type !== "hidden" && input.name !== "moi_accepted") {
+        if (input.type !== "hidden" && input.name !== "ug_moi_accepted" && input.name !== "pg_moi_accepted" && input.type !== "file") {
           input.value = "";
         }
       });
@@ -402,5 +721,16 @@ if (db) {
   }
 
   setupUniEdit();
+
+  // Add loader to submit button on form submit
+  const uniForm = document.querySelector("form");
+  if (uniForm && !(uniForm as any)._loaderBound) {
+    (uniForm as any)._loaderBound = true;
+    uniForm.addEventListener("submit", () => {
+      const btn = document.getElementById("submit-btn");
+      if (btn) (window as any).showBtnLoader?.(btn, "Saving...");
+    });
+  }
+
   document.addEventListener("astro:page-load", setupUniEdit);
 </script>

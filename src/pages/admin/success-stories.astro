@@ -3,7 +3,13 @@ import Layout from "../../layouts/Layout.astro";
 import AdminHeader from "../../components/AdminHeader.astro";
 import { checkAdminAuth } from "../../utils/adminAuth";
 import { env } from "cloudflare:workers";
-import { Trash2, ShieldAlert, Plus } from "lucide-react";
+// Inline SVG helpers — no lucide-react in .astro (SSR hook errors)
+const _s = (d: string) => `<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${d}</svg>`;
+const SVG = {
+  Trash2: _s('<path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/><line x1="10" x2="10" y1="11" y2="17"/><line x1="14" x2="14" y1="11" y2="17"/>'),
+  ShieldAlert: _s('<path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="M12 8v4"/><path d="M12 16h.01"/>'),
+  Plus: _s('<path d="M12 5v14"/><path d="M5 12h14"/>'),
+};
 
 // Check session
 const isAuthenticated = await checkAdminAuth(Astro.cookies);
@@ -136,7 +142,7 @@ if (db) {
   description="Administrative portal to manage success stories on the home page."
   showNavFooter={false}
 >
-  <div class="min-h-screen bg-slate-50 text-slate-800 font-sans flex">
+  <div class="min-h-screen bg-slate-50 text-slate-800 font-sans flex flex-col lg:flex-row">
     <AdminHeader activeTab="stories" />
 
     <main class="flex-1 px-4 md:px-8 py-10 overflow-y-auto text-left lg:ml-64">
@@ -152,7 +158,7 @@ if (db) {
       {/* Messages */}
       {errorMessage && (
         <div class="p-4 bg-rose-50 border border-rose-200 rounded-2xl text-rose-600 text-xs font-semibold mb-6 flex items-center gap-2">
-          <ShieldAlert class="w-4 h-4 shrink-0" />
+          <span set:html={SVG.ShieldAlert} class="w-4 h-4 shrink-0" />
           <span>{errorMessage}</span>
         </div>
       )}
@@ -164,13 +170,13 @@ if (db) {
 
       {/* Add New Button */}
       <button id="show-add-form-btn" class="mb-6 flex items-center gap-2 px-5 py-3 bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs rounded-xl transition-all cursor-pointer shadow-sm">
-        <Plus class="w-4 h-4" /> Add New Success Story
+        <span set:html={SVG.Plus} /> Add New Success Story
       </button>
 
       {/* Add/Edit Form Panel */}
       <div id="story-form-panel" class="bg-white border border-slate-200 rounded-3xl p-6 shadow-sm mb-8 hidden">
         <h2 class="text-base font-bold text-slate-800 mb-4 flex items-center gap-2" id="story-form-heading">
-          <Plus class="w-4 h-4 text-indigo-600" /> Add Success Story
+          <span set:html={SVG.Plus} class="text-indigo-600" /> Add Success Story
         </h2>
         <form method="POST" enctype="multipart/form-data" class="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs font-semibold text-slate-600">
           <input type="hidden" name="action" id="story-form-action" value="add-story" />
@@ -301,7 +307,7 @@ if (db) {
                             class="p-2 text-rose-500 hover:bg-rose-50 rounded-lg hover:scale-105 transition-all cursor-pointer border border-transparent hover:border-rose-200"
                             aria-label={`Delete ${s.name}`}
                           >
-                            <Trash2 class="w-3.5 h-3.5" />
+                            <span set:html={SVG.Trash2} />
                           </button>
                         </form>
                       </div>
@@ -393,9 +399,7 @@ if (db) {
 
         e.preventDefault();
         const submitBtn = document.getElementById("story-submit-btn") as HTMLButtonElement;
-        const originalText = submitBtn.textContent;
-        submitBtn.disabled = true;
-        submitBtn.textContent = "Saving...";
+        (window as any).showBtnLoader?.(submitBtn, "Saving...");
 
         const formData = new FormData(form);
         try {
@@ -421,8 +425,9 @@ if (db) {
           console.error("Failed to submit story:", err);
           alert("An error occurred while saving the story.");
         } finally {
-          submitBtn.disabled = false;
-          submitBtn.textContent = originalText;
+          if (submitBtn) {
+            (window as any).hideBtnLoader?.(submitBtn);
+          }
         }
       });
     }
@@ -538,6 +543,9 @@ if (db) {
       df.addEventListener("submit", async (e) => {
         e.preventDefault();
         if (!confirm("Are you sure you want to remove this success story?")) return;
+
+        const btn = df.querySelector('button[type="submit"]') as HTMLElement;
+        (window as any).showBtnLoader?.(btn);
         
         const formData = new FormData(df);
         try {

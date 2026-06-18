@@ -8,14 +8,23 @@ export default defineConfig({
   integrations: [react()],
   vite: {
     plugins: [tailwindcss()],
+    server: {
+      watch: {
+        ignored: ['**/.wrangler/**', '**/.git/**', '**/node_modules/**']
+      }
+    },
     resolve: {
       dedupe: ['react', 'react-dom'],
     },
     ssr: {
-      noExternal: ['react', 'react-dom'],
+      noExternal: ['react', 'react-dom'], 
+      optimizeDeps: {
+        include: ['react', 'react-dom']
+      }
     },
     optimizeDeps: {
-      exclude: ['audit', 'xray'],
+      // Add lucide-react to exclude if Vite continues to struggle optimizing it
+      exclude: ['audit', 'xray', 'lucide-react'], 
     },
   },
   adapter: cloudflare()

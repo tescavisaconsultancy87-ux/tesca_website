@@ -1,7 +1,15 @@
 ---
 import Layout from "../layouts/Layout.astro";
 import AICounsellor from "../components/AICounsellor";
-import { ShieldCheck, Lock, EyeOff, Server, HardDrive, Key, ArrowLeft } from "lucide-react";
+const SVG = {
+  ArrowLeft: `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="inline-block"><path d="m12 19-7-7 7-7"/><path d="M19 12H5"/></svg>`,
+  Lock: `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-6 h-6"><rect width="18" height="11" x="3" y="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>`,
+  EyeOff: `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-6 h-6"><path d="M9.88 9.88a3 3 0 1 0 4.24 4.24"/><path d="M10.73 5.08A10.43 10.43 0 0 1 12 5c7 0 10 7 10 7a13.16 13.16 0 0 1-1.67 2.68"/><path d="M6.61 6.61A13.52 13.52 0 0 0 2 12s3 7 10 7a9.74 9.74 0 0 0 5.39-1.61"/><line x1="2" x2="22" y1="2" y2="22"/></svg>`,
+  Server: `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-6 h-6"><rect width="20" height="8" x="2" y="2" rx="2" ry="2"/><rect width="20" height="8" x="2" y="14" rx="2" ry="2"/><line x1="6" x2="6" y1="6" y2="6"/><line x1="6" x2="6" y1="18" y2="18"/></svg>`,
+  Key: `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-6 h-6"><path d="m21 2-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.777-7.777zm0 0L15.5 7.5m0 0 1.5 1.5M15.5 7.5 14 6"/></svg>`,
+  HardDrive: `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-6 h-6"><rect width="20" height="8" x="2" y="14" rx="2"/><path d="M6 18h.01"/><path d="M10 18h.01"/><path d="M2 10V6a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v4"/></svg>`,
+  ShieldCheck: `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-6 h-6"><path d="M20 13c0 5-8 7-8 7s-8-2-8-7V5l8-3 8 3v8Z"/><path d="m9 12 2 2 4-4"/></svg>`
+};
 ---
 
 <Layout 
@@ -12,7 +20,7 @@ import { ShieldCheck, Lock, EyeOff, Server, HardDrive, Key, ArrowLeft } from "lu
     
     <!-- Go Back Link -->
     <a href="/" class="inline-flex items-center gap-1.5 text-sm font-semibold text-accent-blue hover:underline mb-8 font-sans">
-      <ArrowLeft class="w-4 h-4" /> Back to Home
+      <span set:html={SVG.ArrowLeft} /> Back to Home
     </a>
 
     <!-- Premium Header Banner -->
@@ -35,8 +43,8 @@ import { ShieldCheck, Lock, EyeOff, Server, HardDrive, Key, ArrowLeft } from "lu
     <!-- Core Security Pillars -->
     <div class="grid grid-cols-1 md:grid-cols-3 gap-8 mb-16">
       <div class="p-8 rounded-3xl bg-gradient-to-br from-blue-50 to-indigo-50/70 border border-blue-100 space-y-4 shadow-sm">
-        <div class="p-3 rounded-2xl bg-white text-accent-blue inline-block shadow-sm">
-          <Lock class="w-6 h-6" />
+        <div class="p-3 rounded-2xl bg-white text-accent-blue inline-flex shadow-sm items-center justify-center">
+          <span set:html={SVG.Lock} />
         </div>
         <h3 class="text-xl font-bold text-slate-800 font-display">AES-256 Encryption</h3>
         <p class="text-sm text-slate-600 font-sans leading-relaxed">
@@ -45,8 +53,8 @@ import { ShieldCheck, Lock, EyeOff, Server, HardDrive, Key, ArrowLeft } from "lu
       </div>
 
       <div class="p-8 rounded-3xl bg-gradient-to-br from-purple-50 to-pink-50/70 border border-purple-100 space-y-4 shadow-sm">
-        <div class="p-3 rounded-2xl bg-white text-purple-600 inline-block shadow-sm">
-          <EyeOff class="w-6 h-6" />
+        <div class="p-3 rounded-2xl bg-white text-purple-600 inline-flex shadow-sm items-center justify-center">
+          <span set:html={SVG.EyeOff} />
         </div>
         <h3 class="text-xl font-bold text-slate-800 font-display">RBAC Data Access</h3>
         <p class="text-sm text-slate-600 font-sans leading-relaxed">
@@ -55,8 +63,8 @@ import { ShieldCheck, Lock, EyeOff, Server, HardDrive, Key, ArrowLeft } from "lu
       </div>
 
       <div class="p-8 rounded-3xl bg-gradient-to-br from-emerald-50 to-teal-50/70 border border-emerald-100 space-y-4 shadow-sm">
-        <div class="p-3 rounded-2xl bg-white text-emerald-600 inline-block shadow-sm">
-          <Server class="w-6 h-6" />
+        <div class="p-3 rounded-2xl bg-white text-emerald-600 inline-flex shadow-sm items-center justify-center">
+          <span set:html={SVG.Server} />
         </div>
         <h3 class="text-xl font-bold text-slate-800 font-display">ISO 27001 Standards</h3>
         <p class="text-sm text-slate-600 font-sans leading-relaxed">
@@ -69,7 +77,7 @@ import { ShieldCheck, Lock, EyeOff, Server, HardDrive, Key, ArrowLeft } from "lu
     <div class="space-y-12 max-w-4xl font-sans">
       <div class="space-y-4">
         <h2 class="text-2xl lg:text-3xl font-bold text-slate-800 font-display tracking-tight flex items-center gap-2">
-          <Key class="w-6 h-6 text-accent-blue" /> 1. Encryption Keys & Key Management
+          <span set:html={SVG.Key} class="w-6 h-6 text-accent-blue flex items-center justify-center shrink-0" /> 1. Encryption Keys & Key Management
         </h2>
         <p class="text-sm md:text-base text-slate-600 font-sans leading-relaxed">
           TESCA utilizes automated key rotation algorithms. Master keys are kept in secure physical key vaults separated from the secondary databases containing metadata. This structure protects candidate records from brute force or network interception vectors.
@@ -78,7 +86,7 @@ import { ShieldCheck, Lock, EyeOff, Server, HardDrive, Key, ArrowLeft } from "lu
 
       <div class="space-y-4">
         <h2 class="text-2xl lg:text-3xl font-bold text-slate-800 font-display tracking-tight flex items-center gap-2">
-          <HardDrive class="w-6 h-6 text-accent-blue" /> 2. Document Retention & Purge Cycles
+          <span set:html={SVG.HardDrive} class="w-6 h-6 text-accent-blue flex items-center justify-center shrink-0" /> 2. Document Retention & Purge Cycles
         </h2>
         <p class="text-sm md:text-base text-slate-600 font-sans leading-relaxed">
           Following visa approval and program commencement, all sensitive applicant records (financial receipts, passports, transcript backups) are securely wiped from our online databases after 90 days. We preserve only standard accounting ledgers and university tracking codes offline.
@@ -87,7 +95,7 @@ import { ShieldCheck, Lock, EyeOff, Server, HardDrive, Key, ArrowLeft } from "lu
 
       <div class="space-y-4">
         <h2 class="text-2xl lg:text-3xl font-bold text-slate-800 font-display tracking-tight flex items-center gap-2">
-          <ShieldCheck class="w-6 h-6 text-accent-blue" /> 3. External Penetration Audits
+          <span set:html={SVG.ShieldCheck} class="w-6 h-6 text-accent-blue flex items-center justify-center shrink-0" /> 3. External Penetration Audits
         </h2>
         <p class="text-sm md:text-base text-slate-600 font-sans leading-relaxed">
           Our platform undergoes external penetration testing twice a year. Audit statements verify complete firewall security against injection, cross-site scripting, and credential exploitation. Our verified ISO certification confirms zero security leaks.
@@ -97,5 +105,5 @@ import { ShieldCheck, Lock, EyeOff, Server, HardDrive, Key, ArrowLeft } from "lu
 
   </section>
 
-  <AICounsellor client:load />
+  <AICounsellor client:only="react" />
 </Layout>

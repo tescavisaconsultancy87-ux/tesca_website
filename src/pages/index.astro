@@ -5,10 +5,14 @@ import CountrySelector from "../components/CountrySelector";
 import StudentCarousel from "../components/StudentCarousel";
 import FintechCalculators from "../components/FintechCalculators";
 import AICounsellor from "../components/AICounsellor";
-import { 
-  Landmark, Calendar, ShieldCheck, Compass, Briefcase, GraduationCap, 
-  CheckCircle, ArrowUpRight, ArrowRight, ChevronDown 
-} from "lucide-react";
+const SVG = {
+  Compass: `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-6 h-6"><circle cx="12" cy="12" r="10"/><polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76"/></svg>`,
+  Landmark: `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-6 h-6"><line x1="3" x2="21" y1="22" y2="22"/><line x1="6" x2="6" y1="18" y2="22"/><line x1="10" x2="10" y1="18" y2="22"/><line x1="14" x2="14" y1="18" y2="22"/><line x1="18" x2="18" y1="18" y2="22"/><polygon points="12 2 20 7 4 7"/></svg>`,
+  ShieldCheck: `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-6 h-6"><path d="M20 13c0 5-8 7-8 7s-8-2-8-7V5l8-3 8 3v8Z"/><path d="m9 12 2 2 4-4"/></svg>`,
+  ArrowUpRight: `<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-3.5 h-3.5 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform"><line x1="7" x2="17" y1="17" y2="7"/><polyline points="7 7 17 7 17 17"/></svg>`,
+  ArrowRight: `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4"><line x1="5" x2="19" y1="12" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>`,
+  ChevronDown: (id: string, cls: string) => `<svg id="${id}" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="${cls}"><path d="m6 9 6 6 6-6"/></svg>`
+};
 
 let stories = [];
 let visaUpdates = [];
@@ -140,17 +144,17 @@ try {
           {
             title: "University Matchmaking",
             desc: "Find the right university, course, and destination aligned with your goals and future career plans.",
-            icon: Compass
+            icon: SVG.Compass
           },
           {
             title: "Smart Financial Planning",
             desc: "Explore scholarships, education loans, and cost-effective study options designed for your budget.",
-            icon: Landmark
+            icon: SVG.Landmark
           },
           {
             title: "Visa Success Expertise",
             desc: "Application reviews, document checks, and strategic guidance to maximize approval confidence.",
-            icon: ShieldCheck
+            icon: SVG.ShieldCheck
           }
         ].map((item, idx) => {
           const colors = [
@@ -161,8 +165,8 @@ try {
           return (
           <div key={idx} class={`rounded-3xl p-8 space-y-6 text-left border shadow-sm flex flex-col justify-between items-start hover:-translate-y-1 transition-all duration-300 ${colors[idx]}`}>
             <div class="space-y-4">
-              <div class="p-3.5 rounded-xl bg-white/60 text-accent-blue inline-block">
-                <item.icon class="w-6 h-6" />
+              <div class="p-3.5 rounded-xl bg-white/60 text-accent-blue inline-flex items-center justify-center">
+                <span set:html={item.icon} />
               </div>
               <h3 class="text-[20px] lg:text-[24px] font-bold text-slate-800 font-display leading-snug">{item.title}</h3>
               <p class="text-[16px] text-slate-600 leading-relaxed font-sans font-normal">{item.desc}</p>
@@ -170,7 +174,7 @@ try {
             
             {/* Button: Plus Jakarta Sans 600 */}
             <a href="/countries" class="text-[16px] font-semibold font-sans tracking-wide text-accent-blue hover:underline inline-flex items-center gap-1 pt-4 group">
-              Read More <ArrowUpRight class="w-3.5 h-3.5 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
+              Read More <span set:html={SVG.ArrowUpRight} />
             </a>
           </div>
           );
@@ -361,8 +365,8 @@ try {
                 {item.title}
               </a>
             </div>
-            <a href={item.link} class="p-1.5 rounded-full bg-white/10 hover:bg-white/20 text-white shrink-0 self-end sm:self-auto">
-              <ArrowRight class="w-4 h-4" />
+            <a href={item.link} class="p-1.5 rounded-full bg-white/10 hover:bg-white/20 text-white shrink-0 self-end sm:self-auto flex items-center justify-center">
+              <span set:html={SVG.ArrowRight} />
             </a>
           </div>
         ))}
@@ -434,7 +438,7 @@ try {
                 `}
               >
                 <span>{faq.q}</span>
-                <ChevronDown id={`faq-chevron-${idx}`} class="w-4 h-4 text-slate-400 shrink-0 transition-transform duration-200" />
+                <span set:html={SVG.ChevronDown(`faq-chevron-${idx}`, "w-4 h-4 text-slate-400 shrink-0 transition-transform duration-200")} />
               </button>
               <div id={`faq-ans-${idx}`} class="grid grid-rows-[0fr] transition-all duration-300 ease-in-out overflow-hidden">
                 <p class="min-h-0 text-[16px] text-slate-600 leading-relaxed pt-1 font-sans font-normal">
@@ -471,7 +475,7 @@ Expert guidance, top universities, and visa success—everything you need to tak
   </section>
 
   <!-- Client floating chatbot -->
-  <AICounsellor client:load />
+  <AICounsellor client:only="react" />
 
 </Layout>
 

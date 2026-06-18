@@ -3,22 +3,22 @@ import "../styles/global.css";
 import CounsellorForm from "../components/CounsellorForm";
 import { env } from "cloudflare:workers";
 import { ClientRouter } from "astro:transitions";
-import {
-	ArrowRight,
-	ChevronDown,
-	Phone,
-	User,
-	GraduationCap,
-	FileText,
-	Award,
-	BookOpen,
-	Briefcase,
-	Heart,
-	Shield,
-	Landmark,
-	Home,
-	Plane,
-} from "lucide-react";
+// Inline SVG helpers — no lucide-react in .astro (SSR hook errors)
+const _svg = (d: string, size = 16) => `<svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${d}</svg>`;
+const NavIcons = {
+	User: _svg('<path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/>'),
+	GraduationCap: _svg('<path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/>'),
+	FileText: _svg('<path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"/><path d="M14 2v4a2 2 0 0 0 2 2h4"/>'),
+	Award: _svg('<circle cx="12" cy="8" r="6"/><path d="M15.477 12.89 17 22l-5-3-5 3 1.523-9.11"/>'),
+	BookOpen: _svg('<path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/>'),
+	Briefcase: _svg('<rect width="20" height="14" x="2" y="7" rx="2" ry="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/>'),
+	Heart: _svg('<path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/>'),
+	Landmark: _svg('<line x1="3" x2="21" y1="22" y2="22"/><line x1="6" x2="6" y1="18" y2="22"/><line x1="10" x2="10" y1="18" y2="22"/><line x1="14" x2="14" y1="18" y2="22"/><line x1="18" x2="18" y1="18" y2="22"/><polygon points="12 2 20 7 4 7"/>'),
+	Home: _svg('<path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/>'),
+	Plane: _svg('<path d="M17.8 19.2 16 11l3.5-3.5C21 6 21 4 19 4c-2 0-2.5 2.5-3.5 3.5L11 11 2.8 6.2l-.7.8 4 6L4 15l-2-1-.7.7 1.5 2.5L5.3 19l2.5 1.5.7-.7-1-2 1.8-2.1 6 4 .8-.7-4.8-8.2L18.6 8l2 4.8-2.8 6.4z"/>'),
+	ArrowRight: _svg('<path d="M5 12h14"/><path d="m12 5 7 7-7 7"/>'),
+	Phone: _svg('<path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 12 19.79 19.79 0 0 1 1.61 3.4a2 2 0 0 1 2-2.18h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/>'),
+};
 
 interface Props {
 	title?: string;
@@ -372,9 +372,7 @@ try {
 										class="flex items-center justify-between p-3 rounded-xl border border-slate-100 bg-slate-50/60 hover:bg-accent-blue hover:text-white transition-all duration-200 group/action text-xs font-bold font-sans tracking-wide text-left"
 									>
 										<span>Explore Destinations</span>
-										<ArrowRight
-											class="w-4 h-4 group-hover/action:translate-x-0.5 transition-transform"
-										/>
+										<span set:html={NavIcons.ArrowRight} class="group-hover/action:translate-x-0.5 transition-transform" />
 									</a>
 
 									<a
@@ -382,9 +380,7 @@ try {
 										class="flex items-center justify-between p-3 rounded-xl border border-slate-100 bg-slate-50/60 hover:bg-accent-blue hover:text-white transition-all duration-200 group/action text-xs font-bold font-sans tracking-wide text-left"
 									>
 										<span>Explore Universities</span>
-										<ArrowRight
-											class="w-4 h-4 group-hover/action:translate-x-0.5 transition-transform"
-										/>
+										<span set:html={NavIcons.ArrowRight} class="group-hover/action:translate-x-0.5 transition-transform" />
 									</a>
 								</div>
 							</div>
@@ -409,90 +405,30 @@ try {
 							>
 								{/* Services Grid (3 columns) */}
 								<div class="grid grid-cols-3 gap-3">
-									{
-										[
-											{
-												name: "Expert Counselling",
-												icon: User,
-												id: "counselling",
-												color: "bg-blue-100 text-blue-600",
-											},
-											{
-												name: "University Admission Process",
-												icon: GraduationCap,
-												id: "admission",
-												color: "bg-emerald-100 text-emerald-600",
-											},
-											{
-												name: "SOP & Documentation",
-												icon: FileText,
-												id: "sop",
-												color: "bg-amber-100 text-amber-600",
-											},
-											{
-												name: "Scholarship Guidance",
-												icon: Award,
-												id: "scholarships",
-												color: "bg-purple-100 text-purple-600",
-											},
-											{
-												name: "Test Prep & Coaching",
-												icon: BookOpen,
-												id: "testprep",
-												color: "bg-rose-100 text-rose-600",
-											},
-											{
-												name: "Expert Visa Assistance",
-												icon: Briefcase,
-												id: "visa",
-												color: "bg-teal-100 text-teal-600",
-											},
-											{
-												name: "Health Insurance",
-												icon: Heart,
-												id: "insurance",
-												color: "bg-pink-100 text-pink-600",
-											},
-											{
-												name: "Financial & Loan Guidance",
-												icon: Landmark,
-												id: "financial",
-												color: "bg-orange-100 text-orange-600",
-											},
-											{
-												name: "Accommodation Assistance",
-												icon: Home,
-												id: "accommodation",
-												color: "bg-indigo-100 text-indigo-600",
-											},
-											{
-												name: "Pre & Post Departure Services",
-												icon: Plane,
-												id: "departure",
-												color: "bg-cyan-100 text-cyan-600",
-											},
-										].map((srv) => {
-											const IconComponent = srv.icon;
-											return (
+										{
+											[
+												{ name: "Expert Counselling", iconSvg: NavIcons.User, id: "counselling", color: "bg-blue-100 text-blue-600" },
+												{ name: "University Admission Process", iconSvg: NavIcons.GraduationCap, id: "admission", color: "bg-emerald-100 text-emerald-600" },
+												{ name: "SOP & Documentation", iconSvg: NavIcons.FileText, id: "sop", color: "bg-amber-100 text-amber-600" },
+												{ name: "Scholarship Guidance", iconSvg: NavIcons.Award, id: "scholarships", color: "bg-purple-100 text-purple-600" },
+												{ name: "Test Prep & Coaching", iconSvg: NavIcons.BookOpen, id: "testprep", color: "bg-rose-100 text-rose-600" },
+												{ name: "Expert Visa Assistance", iconSvg: NavIcons.Briefcase, id: "visa", color: "bg-teal-100 text-teal-600" },
+												{ name: "Health Insurance", iconSvg: NavIcons.Heart, id: "insurance", color: "bg-pink-100 text-pink-600" },
+												{ name: "Financial & Loan Guidance", iconSvg: NavIcons.Landmark, id: "financial", color: "bg-orange-100 text-orange-600" },
+												{ name: "Accommodation Assistance", iconSvg: NavIcons.Home, id: "accommodation", color: "bg-indigo-100 text-indigo-600" },
+												{ name: "Pre & Post Departure Services", iconSvg: NavIcons.Plane, id: "departure", color: "bg-cyan-100 text-cyan-600" },
+											].map((srv) => (
 												<a
 													href={srv.id === 'testprep' ? '/services/testprep' : `/services#${srv.id}`}
 													class="flex items-center gap-3.5 p-3 rounded-xl border border-slate-100 bg-slate-50/50 hover:bg-accent-blue/5 hover:border-accent-blue/20 hover:text-accent-indigo transition-all duration-200"
 												>
-													<div
-														class={
-															"p-2 rounded-lg shrink-0 " +
-															srv.color
-														}
-													>
-														<IconComponent class="w-4 h-4" />
+													<div class={"p-2 rounded-lg shrink-0 " + srv.color}>
+														<span set:html={srv.iconSvg} />
 													</div>
-													<span class="text-xs font-semibold font-sans tracking-wide leading-tight">
-														{srv.name}
-													</span>
+													<span class="text-xs font-semibold font-sans tracking-wide leading-tight">{srv.name}</span>
 												</a>
-											);
-										})
-									}
+											))
+										}
 								</div>
 
 								{/* Bottom Button "View All ->" (Centered) */}
@@ -504,7 +440,7 @@ try {
 										class="flex items-center gap-1.5 px-6 py-2 rounded-full border border-slate-200 bg-slate-50 hover:bg-accent-blue hover:text-white transition-all duration-200 text-xs font-bold font-sans tracking-wide cursor-pointer"
 									>
 										<span>View All Services</span>
-										<ArrowRight class="w-3.5 h-3.5" />
+										<span set:html={NavIcons.ArrowRight} />
 									</a>
 								</div>
 							</div>
@@ -543,7 +479,7 @@ try {
 						onclick="window.openCounsellorForm?.()"
 						class="hidden sm:flex text-xs font-semibold font-sans tracking-wide bg-[#F08A00] hover:bg-[#C06E00] rounded-full px-4 py-1.5 text-white items-center gap-1.5 transition-all duration-300 outline-none focus-visible:ring-2 focus-visible:ring-[#F08A00] cursor-pointer shadow-sm hover:shadow-md hover:scale-[1.02]"
 					>
-						<Phone class="w-3.5 h-3.5" />
+						<span set:html={NavIcons.Phone} />
 						Speak to Our Counsellor
 					</button>
 					<a
@@ -656,7 +592,7 @@ try {
 								<span class="truncate">tescavisaconsultancy87@gmail.com</span>
 							</a>
 							<a href="tel:9824152731" class="flex items-center gap-2.5 hover:text-accent-cyan transition-colors text-white/80">
-								<Phone class="w-4 h-4 text-accent-cyan shrink-0" />
+								<span set:html={NavIcons.Phone} class="text-accent-cyan shrink-0" />
 								<span>9824152731</span>
 							</a>
 							<div class="space-y-3 pt-4 border-t border-white/10">
@@ -1155,7 +1091,48 @@ try {
 			// Bind page initialization to Astro page load event
 			document.addEventListener("astro:page-load", initPage);
 
-			// 4. Custom Alert Toast Override (Runs once globally)
+			// 4. Global button loader helper for all pages
+			if (typeof window !== "undefined" && !(window as any).hasBtnLoader) {
+				(window as any).hasBtnLoader = true;
+				const SPINNER_HTML = '<svg class="btn-spinner" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="3"><circle cx="12" cy="12" r="10" stroke-dasharray="31.4 31.4" stroke-linecap="round" /></svg>';
+
+				(window as any).showBtnLoader = function(btn: HTMLElement, label?: string) {
+					if (!btn) return;
+					(btn as any)._originalHTML = btn.innerHTML;
+					(btn as HTMLButtonElement).disabled = true;
+					btn.innerHTML = SPINNER_HTML + (label ? ' ' + label : '');
+				};
+
+				(window as any).hideBtnLoader = function(btn: HTMLElement) {
+					if (!btn) return;
+					(btn as HTMLButtonElement).disabled = false;
+					const orig = (btn as any)._originalHTML;
+					if (orig) btn.innerHTML = orig;
+				};
+
+				// Global form submission handler for non-AJAX forms
+				document.addEventListener("submit", (e) => {
+					const form = e.target as HTMLFormElement;
+					const btn = form.querySelector('button[type="submit"]') as HTMLElement;
+					if (btn && !(form as any)._ajaxBound && !btn.closest('[data-no-loader]')) {
+						(window as any).showBtnLoader(btn);
+					}
+				});
+			}
+
+			// 5. Auto-dismiss success messages after 2 seconds
+			function dismissSuccessMessages() {
+				document.querySelectorAll('[class*="bg-emerald-50"][class*="text-emerald"]').forEach(el => {
+					setTimeout(() => {
+						el.classList.add("opacity-0", "transition-opacity", "duration-500");
+						setTimeout(() => el.remove(), 500);
+					}, 2000);
+				});
+			}
+			dismissSuccessMessages();
+			document.addEventListener("astro:page-load", dismissSuccessMessages);
+
+			// 6. Custom Alert Toast Override (Runs once globally)
 			if (typeof window !== "undefined" && !(window as any).hasToastOverride) {
 				(window as any).hasToastOverride = true;
 				const toastContainer = document.createElement("div");
@@ -1170,9 +1147,11 @@ try {
 							<div class="toast-icon-bg">
 								<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" class="toast-icon"><circle cx="12" cy="12" r="10"/><path d="m9 12 2 2 4-4"/></svg>
 							</div>
-							<span class="toast-message">${message}</span>
+							<span class="toast-message"></span>
 						</div>
 					`;
+					const msgSpan = toast.querySelector(".toast-message");
+					if (msgSpan) msgSpan.textContent = message;
 					toastContainer.appendChild(toast);
 
 					setTimeout(() => {
@@ -1256,7 +1235,7 @@ try {
 			</div>
 		</div>
 
-		<CounsellorForm client:load />
+		<CounsellorForm client:only="react" />
 
 
 	</body>

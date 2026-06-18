@@ -1,6 +1,9 @@
 ---
 import Layout from "../layouts/Layout.astro";
-import { ArrowLeft, Home } from "lucide-react";
+const SVG = {
+  ArrowLeft: `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4"><path d="m12 19-7-7 7-7"/><path d="M19 12H5"/></svg>`,
+  Home: `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>`
+};
 ---
 
 <Layout
@@ -27,14 +30,14 @@ import { ArrowLeft, Home } from "lucide-react";
           href="/"
           class="px-7 py-3 rounded-full text-white bg-accent-blue shadow-md hover:scale-[1.02] transition-transform duration-300 inline-flex items-center gap-2"
         >
-          <Home class="w-4 h-4" />
+          <span set:html={SVG.Home} />
           Go Home
         </a>
         <button
           onclick="history.back()"
           class="px-7 py-3 rounded-full text-support-slate border border-slate-200 hover:bg-slate-50 transition-all duration-300 inline-flex items-center gap-2 cursor-pointer"
         >
-          <ArrowLeft class="w-4 h-4" />
+          <span set:html={SVG.ArrowLeft} />
           Go Back
         </button>
       </div>

@@ -3,10 +3,17 @@ import Layout from "../../layouts/Layout.astro";
 import AdminHeader from "../../components/AdminHeader.astro";
 import { checkAdminAuth } from "../../utils/adminAuth";
 import { env } from "cloudflare:workers";
-import { 
-  Users, GraduationCap, MessageSquare, 
-  AlertCircle, FileText, ArrowRight 
-} from "lucide-react";
+
+// Inline SVG helpers — no lucide-react in .astro (SSR hook errors)
+const _s = (d: string) => `<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${d}</svg>`;
+const SVG = {
+  Users: _s('<path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>'),
+  GraduationCap: _s('<path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/>'),
+  MessageSquare: _s('<path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>'),
+  AlertCircle: _s('<circle cx="12" cy="12" r="10"/><line x1="12" x2="12" y1="8" y2="12"/><line x1="12" x2="12.01" y1="16" y2="16"/>'),
+  FileText: _s('<path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"/><path d="M14 2v4a2 2 0 0 0 2 2h4"/><path d="M10 9H8"/><path d="M16 13H8"/><path d="M16 17H8"/>'),
+  ArrowRight: `<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>`,
+};
 
 // Check session
 const isAuthenticated = await checkAdminAuth(Astro.cookies);
@@ -50,7 +57,7 @@ const cards = [
     desc: "View and manage submissions from assessment forms & counselor requests.",
     count: totalLeads,
     color: "from-blue-50 to-indigo-50 hover:border-indigo-300",
-    icon: Users,
+    iconSvg: SVG.Users,
     iconColor: "text-indigo-600 bg-indigo-50",
     href: "/admin/leads"
   },
@@ -60,7 +67,7 @@ const cards = [
     desc: "Add new universities and adjust scores/tuition criteria for matching.",
     count: totalUniversities,
     color: "from-emerald-50 to-teal-50 hover:border-teal-300",
-    icon: GraduationCap,
+    iconSvg: SVG.GraduationCap,
     iconColor: "text-teal-600 bg-teal-50",
     href: "/admin/universities"
   },
@@ -70,7 +77,7 @@ const cards = [
     desc: "Manage testimonials, student admissions, and flags shown on main page.",
     count: totalStories,
     color: "from-amber-50 to-orange-50 hover:border-orange-300",
-    icon: MessageSquare,
+    iconSvg: SVG.MessageSquare,
     iconColor: "text-orange-600 bg-orange-50",
     href: "/admin/success-stories"
   },
@@ -80,7 +87,7 @@ const cards = [
     desc: "Add or delete global alert text rotating at the very top of your site.",
     count: totalAnnouncements,
     color: "from-purple-50 to-fuchsia-50 hover:border-fuchsia-300",
-    icon: AlertCircle,
+    iconSvg: SVG.AlertCircle,
     iconColor: "text-fuchsia-600 bg-fuchsia-50",
     href: "/admin/announcements"
   },
@@ -90,7 +97,7 @@ const cards = [
     desc: "Publish study abroad news and link them directly to blogs.",
     count: totalUpdates,
     color: "from-rose-50 to-red-50 hover:border-red-300",
-    icon: FileText,
+    iconSvg: SVG.FileText,
     iconColor: "text-red-600 bg-red-50",
     href: "/admin/visa-updates"
   }
@@ -102,7 +109,7 @@ const cards = [
   description="Secure access configuration for TESCA web portals."
   showNavFooter={false}
 >
-  <div class="min-h-screen bg-slate-50 text-slate-800 font-sans flex">
+  <div class="min-h-screen bg-slate-50 text-slate-800 font-sans flex flex-col lg:flex-row">
     <AdminHeader activeTab="dashboard" />
 
     <main class="flex-1 px-4 md:px-8 py-10 overflow-y-auto text-left lg:ml-64">
@@ -116,35 +123,32 @@ const cards = [
 
       {/* Grid of Control Cards */}
       <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {cards.map((card) => {
-          const Icon = card.icon;
-          return (
-            <a 
-              href={card.href}
-              class={`group block p-6 rounded-3xl border border-slate-200 bg-gradient-to-br ${card.color} shadow-sm transition-all duration-300 hover:scale-[1.01]`}
-            >
-              <div class="flex items-start justify-between mb-4">
-                <div class={`w-10 h-10 rounded-xl flex items-center justify-center ${card.iconColor}`}>
-                  <Icon class="w-5 h-5" />
-                </div>
-                <div class="text-2xl font-extrabold font-mono text-slate-700 group-hover:text-indigo-600 transition-colors">
-                  {card.count}
-                </div>
+        {cards.map((card) => (
+          <a 
+            href={card.href}
+            class={`group block p-6 rounded-3xl border border-slate-200 bg-gradient-to-br ${card.color} shadow-sm transition-all duration-300 hover:scale-[1.01]`}
+          >
+            <div class="flex items-start justify-between mb-4">
+              <div class={`w-10 h-10 rounded-xl flex items-center justify-center ${card.iconColor}`}>
+                <span set:html={card.iconSvg} />
               </div>
-              
-              <h2 class="text-lg font-bold font-display text-slate-800 group-hover:text-indigo-600 transition-colors">
-                {card.title}
-              </h2>
-              <p class="text-xs text-slate-500 mt-1.5 leading-relaxed">
-                {card.desc}
-              </p>
+              <div class="text-2xl font-extrabold font-mono text-slate-700 group-hover:text-indigo-600 transition-colors">
+                {card.count}
+              </div>
+            </div>
+            
+            <h2 class="text-lg font-bold font-display text-slate-800 group-hover:text-indigo-600 transition-colors">
+              {card.title}
+            </h2>
+            <p class="text-xs text-slate-500 mt-1.5 leading-relaxed">
+              {card.desc}
+            </p>
 
-              <div class="mt-6 flex items-center gap-1.5 text-xs font-bold text-slate-500 group-hover:text-indigo-600 transition-colors">
-                Open Portal <ArrowRight class="w-3.5 h-3.5 transition-transform group-hover:translate-x-1" />
-              </div>
-            </a>
-          );
-        })}
+            <div class="mt-6 flex items-center gap-1.5 text-xs font-bold text-slate-500 group-hover:text-indigo-600 transition-colors">
+              Open Portal <span set:html={SVG.ArrowRight} class="transition-transform group-hover:translate-x-1" />
+            </div>
+          </a>
+        ))}
       </div>
     </main>
   </div>

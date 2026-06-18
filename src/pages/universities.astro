@@ -1,22 +1,7 @@
 ---
-import { env } from "cloudflare:workers";
 import Layout from "../layouts/Layout.astro";
 import AICounsellor from "../components/AICounsellor";
 import UniversityFilter from "../components/UniversityFilter";
-import { GraduationCap } from "lucide-react";
-
-let universities = [];
-try {
-  const db = env?.tesca_db || env?.DB;
-  if (db) {
-    const { results } = await db.prepare("SELECT * FROM universities ORDER BY name ASC").all();
-    universities = results || [];
-  } else {
-    console.error("D1 database binding not found in env.");
-  }
-} catch (err) {
-  console.error("Failed to fetch universities from D1:", err);
-}
 ---
 
 <Layout
@@ -31,10 +16,10 @@ try {
         <span class="inline-block text-xs font-semibold tracking-wider text-slate-800 bg-accent-blue/10 px-4 py-1.5 rounded-full border border-accent-blue/20 font-sans uppercase">
           WORLD-CLASS UNIVERSITIES
         </span>
-        <h1 class="text-[36px] sm:text-[48px] lg:text-[56px] font-extrabold font-display text-support-white tracking-tight leading-none">
+        <h1 class="text-[36px] sm:text-[48px] lg:text-[56px] font-extrabold font-display text-slate-800 tracking-tight leading-none">
          Find the University That Fits Your Future
         </h1>
-        <p class="text-base md:text-[18px] text-support-gray font-sans font-normal leading-relaxed max-w-xl">
+        <p class="text-base md:text-[18px] text-slate-600 font-sans font-normal leading-relaxed max-w-xl">
 Explore leading universities, compare programs, and discover the right academic pathway to achieve your global career goals.        </p>
       </div>
       <div class="md:col-span-5 relative flex justify-center md:justify-end self-stretch items-center">
@@ -49,8 +34,8 @@ Explore leading universities, compare programs, and discover the right academic 
     </div>
 
     <!-- Country Filter + University Grid (client-side) -->
-    <UniversityFilter client:load universities={universities} />
+    <UniversityFilter client:load />
   </section>
 
-  <AICounsellor client:load />
+  <AICounsellor client:only="react" />
 </Layout>

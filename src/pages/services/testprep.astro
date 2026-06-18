@@ -2,14 +2,14 @@
 import Layout from "../../layouts/Layout.astro";
 import AICounsellor from "../../components/AICounsellor";
 import IELTSBandCalculator from "../../components/IELTSBandCalculator";
-import {
-  Calculator,
-  Download,
-  BookOpen,
-  Mic,
-  Globe,
-  Languages,
-} from "lucide-react";
+const SVG = {
+  BookOpen: `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-6 h-6"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>`,
+  Mic: `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-6 h-6"><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" x2="12" y1="19" y2="22"/></svg>`,
+  Languages: `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-6 h-6"><path d="m5 8 6 6"/><path d="m4 14 6-6 2-3"/><path d="M2 5h12"/><path d="M7 2h1"/><path d="m22 22-5-10-5 10"/><path d="M14 18h6"/></svg>`,
+  Globe: `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-6 h-6"><circle cx="12" cy="12" r="10"/><path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20"/><path d="M2 12h20"/></svg>`,
+  Calculator: `<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-5 h-5"><rect width="16" height="20" x="4" y="2" rx="2"/><line x1="8" x2="16" y1="6" y2="6"/><line x1="16" x2="16" y1="14" y2="18"/><path d="M16 10h.01"/><path d="M12 10h.01"/><path d="M8 10h.01"/><path d="M12 14h.01"/><path d="M8 14h.01"/><path d="M12 18h.01"/><path d="M8 18h.01"/></svg>`,
+  Download: `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" x2="12" y1="15" y2="3"/></svg>`
+};
 ---
 
 <Layout
@@ -77,7 +77,7 @@ import {
             color: "from-accent-blue to-accent-indigo",
             bg: "bg-accent-blue/5",
             text: "text-accent-blue",
-            icon: BookOpen,
+            icon: SVG.BookOpen,
             detailedContent: [
               "Covers both IELTS Academic and IELTS General Training modules.",
               "Comprehensive coverage of Listening, Reading, Writing, and Speaking sections.",
@@ -92,7 +92,7 @@ import {
             color: "from-blue-500 to-blue-600",
             bg: "bg-blue-50",
             text: "text-blue-600",
-            icon: Mic,
+            icon: SVG.Mic,
             detailedContent: [
               "Fully computer-based with automated AI scoring mapping university standards.",
               "Dedicated practice on Speaking & Writing, Reading, and Listening modules.",
@@ -107,7 +107,7 @@ import {
             color: "from-amber-500 to-amber-600",
             bg: "bg-amber-50",
             text: "text-amber-600",
-            icon: Languages,
+            icon: SVG.Languages,
             detailedContent: [
               "Covers Goethe-Zertifikat levels (A1-C2), TestDaF, and university entry exams.",
               "Focused coaching on advanced grammar, complex text reading, and listening compression.",
@@ -122,7 +122,7 @@ import {
             color: "from-purple-500 to-purple-600",
             bg: "bg-purple-50",
             text: "text-purple-600",
-            icon: Globe,
+            icon: SVG.Globe,
             detailedContent: [
               "Fluency building exercises, vocabulary enrichment, and accent training.",
               "Simulated corporate job interviews, group discussions, and public speaking coaching.",
@@ -137,7 +137,7 @@ import {
             color: "from-indigo-500 to-indigo-600",
             bg: "bg-indigo-50",
             text: "text-indigo-600",
-            icon: Languages,
+            icon: SVG.Languages,
             detailedContent: [
               "DELF/DALF certification preparation across levels A1 to C2.",
               "Structured practice modules for writing, reading, listening, and conversational skills.",
@@ -157,7 +157,7 @@ import {
                   <div
                     class={`p-3.5 rounded-xl ${test.bg} ${test.text} inline-block`}
                   >
-                    <Icon class="w-6 h-6" />
+                    <span set:html={test.icon} />
                   </div>
                   <h3 class="text-[20px] lg:text-[24px] font-bold text-slate-800 font-display leading-snug">
                     {test.name}
@@ -213,8 +213,8 @@ import {
           class="lg:col-span-7 rounded-3xl p-6 md:p-8 flex flex-col justify-between space-y-6 text-left bg-gradient-to-br from-[#F5FAFA] to-white border border-[#E6F2F3]"
         >
           <div class="flex items-center gap-2.5">
-            <div class="p-2 rounded-lg bg-accent-blue/10 text-accent-blue">
-              <Calculator class="w-5 h-5" />
+            <div class="p-2 rounded-lg bg-accent-blue/10 text-accent-blue flex items-center justify-center">
+              <span set:html={SVG.Calculator} />
             </div>
             <div>
               <h3
@@ -402,7 +402,7 @@ import {
                   class="p-2.5 rounded-lg bg-accent-blue/10 hover:bg-accent-blue hover:text-white text-accent-blue transition-colors cursor-pointer flex items-center justify-center"
                   aria-label={`Download ${doc.title}`}
                 >
-                  <Download class="w-4 h-4" />
+                  <span set:html={SVG.Download} class="w-4 h-4 flex items-center justify-center" />
                 </a>
               </div>
             </div>
@@ -412,7 +412,7 @@ import {
     </div>
   </section>
 
-  <AICounsellor client:load />
+  <AICounsellor client:only="react" />
 </Layout>
 
 <script>
