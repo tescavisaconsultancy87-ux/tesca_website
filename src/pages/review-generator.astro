@@ -8,15 +8,12 @@ import AICounsellor from "../components/AICounsellor";
   description="Generate a natural, genuine Google review for visa and study abroad consultancy services instantly."
   showNavFooter={false}
 >
-<section class="max-w-3xl mx-auto px-4 sm:px-6 pt-0 pb-10 sm:pt-0 sm:pb-16">
-
-<section class="max-w-3xl mx-auto px-4 sm:px-6 pt-2 pb-10 sm:pt-4 sm:pb-16">    
-    <!-- Main Generator Container -->
-    <div class="bg-white border border-slate-200 rounded-[2.5rem] p-6 sm:p-10 shadow-xl relative text-left">
-      <div class="space-y-8">
+  <section class="max-w-3xl mx-auto px-4 sm:px-6 pt-2 pb-10 sm:pt-4 sm:pb-16">
+    
+    <div class="bg-white border border-slate-200 rounded-[2rem] p-5 sm:p-6 lg:p-8 shadow-xl relative text-left w-full max-h-[85vh] overflow-y-auto">
+      <div class="space-y-4 sm:space-y-5">
         
-        <!-- 1. Country Pills Selection (Top) -->
-        <div class="space-y-3">
+        <div class="space-y-2">
           <span class="block text-xs font-bold text-slate-700 uppercase tracking-wider">
             Target Country (Optional)
           </span>
@@ -112,8 +109,7 @@ import AICounsellor from "../components/AICounsellor";
           </div>
         </div>
 
-        <!-- 2. Visa Type Pills Selection -->
-        <div class="space-y-3">
+        <div class="space-y-2">
           <span class="block text-xs font-bold text-slate-700 uppercase tracking-wider">
             Visa Type (Optional)
           </span>
@@ -144,41 +140,37 @@ import AICounsellor from "../components/AICounsellor";
               data-value="Dependent Visa"
               class="visa-pill flex items-center justify-center gap-2 px-4 py-3 rounded-xl border text-xs font-bold transition-all hover:bg-slate-50 active:scale-95 cursor-pointer bg-white border-slate-200 text-slate-700"
             >
-              👥 Dependent Visa
+              👨‍👩‍👧‍👦 Dependent Visa
             </button>
           </div>
         </div>
 
-        <!-- 3. Generated Review Area (Below Selection Grid) -->
-        <div class="space-y-3 pt-6 border-t border-slate-100">
+        <div class="space-y-2 pt-4 border-t border-slate-100">
           <label for="review-output-textarea" class="block text-xs font-bold text-slate-700 uppercase tracking-wider">
             Your Generated Review (~30 words)
           </label>
           <textarea
             id="review-output-textarea"
-            rows="4"
+            rows="3"
             readonly
-            class="w-full bg-slate-50 border border-slate-200 rounded-2xl px-5 py-4 text-sm text-slate-700 leading-relaxed focus:outline-none resize-none font-sans font-medium"
+            class="w-full bg-slate-50 border border-slate-200 rounded-2xl px-4 py-3 text-sm text-slate-700 leading-relaxed focus:outline-none resize-none font-sans font-medium"
             placeholder="Generating review..."
           ></textarea>
         </div>
 
-        <!-- 4. Action Buttons Stack -->
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <!-- Submit Button (Direct copy and redirect) -->
           <button
             type="button"
             id="submit-btn"
-            class="w-full py-4 bg-[#F08A00] hover:bg-[#C06E00] text-white font-bold text-sm rounded-full shadow-md hover:scale-[1.01] transition-all flex items-center justify-center gap-2 cursor-pointer font-sans tracking-wide active:scale-95"
+            class="w-full py-3 bg-[#F08A00] hover:bg-[#C06E00] text-white font-bold text-sm rounded-full shadow-md hover:scale-[1.01] transition-all flex items-center justify-center gap-2 cursor-pointer font-sans tracking-wide active:scale-95"
           >
             <span>Copy & Go to Google Reviews</span>
           </button>
           
-          <!-- Regenerate Button -->
           <button
             type="button"
             id="regenerate-btn"
-            class="w-full py-4 bg-[#0A7880] hover:bg-[#075E64] text-white font-bold text-sm rounded-full shadow-md hover:scale-[1.01] transition-all flex items-center justify-center gap-2 cursor-pointer font-sans tracking-wide active:scale-95"
+            class="w-full py-3 bg-[#0A7880] hover:bg-[#075E64] text-white font-bold text-sm rounded-full shadow-md hover:scale-[1.01] transition-all flex items-center justify-center gap-2 cursor-pointer font-sans tracking-wide active:scale-95"
           >
             <span>Regenerate Variation</span>
           </button>
