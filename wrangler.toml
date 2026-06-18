@@ -6,13 +6,9 @@ PUBLIC_SUPABASE_URL = "https://qncvxphdelmhuyeuijqr.supabase.co"
 PUBLIC_SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFuY3Z4cGhkZWxtaHV5ZXVpanFyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE3NTM5OTgsImV4cCI6MjA5NzMyOTk5OH0.ObIPBAucEWePPnmMRw1D-SDbPnCH_W-EsvMW3sc0yBc"
 PUBLIC_GOOGLE_SHEET_URL = "https://script.google.com/macros/s/AKfycbz2xv6MM9A46qrGm-WFnGz4KIdpcLfU6mw7oqySR1w48tmF8JHCCXtZLLnCd9mFO9Ujbg/exec"
 WEB3FORMS_ACCESS_KEY = "85242216-06e7-475c-ad35-beb2808b60d7"
-
-[[d1_databases]]
-binding = "tesca_db"
-database_name = "tesca_db"
-database_id = "a172c7e8-fb9a-4f62-a814-6b250e6192a3"
-
-[[kv_namespaces]]
-binding = "SESSION"
-id = "16ed5b9ce27c4ef88087c3c19cc2c924"
-
+ADMIN_EMAIL = "admin@tesca.com"
+ADMIN_PASSWORD = "admin1234"
+OWNER_EMAIL = "tescavisaconsultancy87@gmail.com"
+PUBLIC_EMAILJS_SERVICE_ID = "service_vfdr3hs"
+PUBLIC_EMAILJS_TEMPLATE_ID = "template_waascyg"
+PUBLIC_EMAILJS_PUBLIC_KEY = "pNLQH3QRrFsPG86pR"
