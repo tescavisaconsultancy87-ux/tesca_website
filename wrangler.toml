@@ -1,6 +1,12 @@
 name = "tesca-website"
 compatibility_date = "2024-11-01"
 
+[vars]
+PUBLIC_SUPABASE_URL = "https://qncvxphdelmhuyeuijqr.supabase.co"
+PUBLIC_SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFuY3Z4cGhkZWxtaHV5ZXVpanFyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE3NTM5OTgsImV4cCI6MjA5NzMyOTk5OH0.ObIPBAucEWePPnmMRw1D-SDbPnCH_W-EsvMW3sc0yBc"
+PUBLIC_GOOGLE_SHEET_URL = "https://script.google.com/macros/s/AKfycbz2xv6MM9A46qrGm-WFnGz4KIdpcLfU6mw7oqySR1w48tmF8JHCCXtZLLnCd9mFO9Ujbg/exec"
+WEB3FORMS_ACCESS_KEY = "85242216-06e7-475c-ad35-beb2808b60d7"
+
 [[d1_databases]]
 binding = "tesca_db"
 database_name = "tesca_db"
