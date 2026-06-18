@@ -2,7 +2,7 @@
 import Layout from "../../layouts/Layout.astro";
 import AdminHeader from "../../components/AdminHeader.astro";
 import { checkAdminAuth } from "../../utils/adminAuth";
-import { env } from "cloudflare:workers";
+import { supabase } from "../../utils/supabase";
 // Inline SVG helpers — no lucide-react in .astro (SSR hook errors)
 const _s = (d: string) => `<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${d}</svg>`;
 const SVG = {
@@ -17,21 +17,24 @@ if (!isAuthenticated) {
   return Astro.redirect("/admin");
 }
 
-const db = env?.tesca_db || env?.DB;
-
 let visaUpdates = [];
 let successMessage = "";
 let errorMessage = "";
 
 // Handle server actions (Add / Delete)
-if (Astro.request.method === "POST" && db) {
+if (Astro.request.method === "POST") {
   try {
     const formData = await Astro.request.formData();
     const action = formData.get("action");
 
     if (action === "delete-update") {
       const id = parseInt(formData.get("id")?.toString() || "0");
-      await db.prepare("DELETE FROM visa_updates WHERE id = ?").bind(id).run();
+      const { error } = await supabase
+        .from('visa_updates')
+        .delete()
+        .eq('id', id);
+
+      if (error) throw error;
       successMessage = "Visa bulletin update deleted successfully.";
     } else if (action === "add-update") {
       const date = formData.get("date")?.toString().trim();
@@ -42,15 +45,22 @@ if (Astro.request.method === "POST" && db) {
 
       if (date && tag && tagColor && title && link) {
         let tagBg = "bg-amber-100 text-amber-700 border-amber-200";
-        let tagText = "text-amber-700";
-        if (tagColor === "emerald") { tagBg = "bg-emerald-100 text-emerald-700 border-emerald-200"; tagText = "text-emerald-700"; }
-        if (tagColor === "purple") { tagBg = "bg-purple-100 text-purple-700 border-purple-200"; tagText = "text-purple-700"; }
-        if (tagColor === "cyan") { tagBg = "bg-cyan-100 text-cyan-700 border-cyan-200"; tagText = "text-cyan-700"; }
-        if (tagColor === "rose") { tagBg = "bg-rose-100 text-rose-700 border-rose-200"; tagText = "text-rose-700"; }
+        if (tagColor === "emerald") { tagBg = "bg-emerald-100 text-emerald-700 border-emerald-200"; }
+        if (tagColor === "purple") { tagBg = "bg-purple-100 text-purple-700 border-purple-200"; }
+        if (tagColor === "cyan") { tagBg = "bg-cyan-100 text-cyan-700 border-cyan-200"; }
+        if (tagColor === "rose") { tagBg = "bg-rose-100 text-rose-700 border-rose-200"; }
 
-        await db.prepare("INSERT INTO visa_updates (date, tag, tag_bg, title, link) VALUES (?, ?, ?, ?, ?)")
-          .bind(date, tag, tagBg, title, link)
-          .run();
+        const { error } = await supabase
+          .from('visa_updates')
+          .insert({
+            date,
+            tag,
+            tag_bg: tagBg,
+            title,
+            link
+          });
+
+        if (error) throw error;
         successMessage = "Visa bulletin update posted successfully.";
       } else {
         errorMessage = "Please fill in all visa bulletin fields.";
@@ -63,14 +73,17 @@ if (Astro.request.method === "POST" && db) {
 }
 
 // Fetch visa updates
-if (db) {
-  try {
-    const res = await db.prepare("SELECT * FROM visa_updates ORDER BY id DESC").all();
-    visaUpdates = res.results || [];
-  } catch (err) {
-    console.error("Failed to load visa updates:", err);
-    errorMessage = "Failed to load database records.";
-  }
+try {
+  const { data, error } = await supabase
+    .from('visa_updates')
+    .select('*')
+    .order('id', { ascending: false });
+
+  if (error) throw error;
+  visaUpdates = data || [];
+} catch (err) {
+  console.error("Failed to load visa updates:", err);
+  errorMessage = "Failed to load database records.";
 }
 ---
 

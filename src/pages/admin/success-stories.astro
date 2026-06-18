@@ -2,7 +2,7 @@
 import Layout from "../../layouts/Layout.astro";
 import AdminHeader from "../../components/AdminHeader.astro";
 import { checkAdminAuth } from "../../utils/adminAuth";
-import { env } from "cloudflare:workers";
+import { supabase } from "../../utils/supabase";
 // Inline SVG helpers — no lucide-react in .astro (SSR hook errors)
 const _s = (d: string) => `<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${d}</svg>`;
 const SVG = {
@@ -17,21 +17,9 @@ if (!isAuthenticated) {
   return Astro.redirect("/admin");
 }
 
-const db = env?.tesca_db || env?.DB;
-
 let stories = [];
 let successMessage = "";
 let errorMessage = "";
-
-// Self-healing: make sure 'score' and 'country' columns exist in success_stories table
-if (db) {
-  try {
-    await db.prepare("ALTER TABLE success_stories ADD COLUMN score TEXT").run();
-  } catch (e) {}
-  try {
-    await db.prepare("ALTER TABLE success_stories ADD COLUMN country TEXT").run();
-  } catch (e) {}
-}
 
 // Helper to convert ArrayBuffer to Base64 (compatible with all JS runtimes)
 const arrayBufferToBase64 = (buffer: ArrayBuffer): string => {
@@ -44,15 +32,44 @@ const arrayBufferToBase64 = (buffer: ArrayBuffer): string => {
   return btoa(binary);
 };
 
+// Helper to upload file directly to Cloudflare R2 on the edge, with Base64 fallback for local dev
+const uploadImageToR2 = async (photoFile: File, env: any): Promise<string> => {
+  const bucket = env?.R2_BUCKET;
+  if (bucket) {
+    try {
+      const ext = photoFile.name.split('.').pop() || 'jpg';
+      const key = `uploads/${crypto.randomUUID()}.${ext}`;
+      const buffer = await photoFile.arrayBuffer();
+      await bucket.put(key, buffer, {
+        httpMetadata: { contentType: photoFile.type }
+      });
+      const r2PublicUrl = process.env.R2_PUBLIC_URL || import.meta.env.R2_PUBLIC_URL;
+      return r2PublicUrl ? `${r2PublicUrl.replace(/\/$/, '')}/${key}` : `/api/assets?key=${key}`;
+    } catch (err) {
+      console.error("Direct R2 upload failed, falling back to base64:", err);
+    }
+  }
+  
+  // Local/Dev fallback to Base64
+  const buffer = await photoFile.arrayBuffer();
+  const base64 = arrayBufferToBase64(buffer);
+  return `data:${photoFile.type};base64,${base64}`;
+};
+
 // Handle server actions (Add / Update / Delete)
-if (Astro.request.method === "POST" && db) {
+if (Astro.request.method === "POST") {
   try {
     const formData = await Astro.request.formData();
     const action = formData.get("action");
 
     if (action === "delete-story") {
       const id = parseInt(formData.get("id")?.toString() || "0");
-      await db.prepare("DELETE FROM success_stories WHERE id = ?").bind(id).run();
+      const { error } = await supabase
+        .from('success_stories')
+        .delete()
+        .eq('id', id);
+
+      if (error) throw error;
       successMessage = "Success story profile deleted successfully.";
     } else if (action === "add-story") {
       const name = formData.get("name")?.toString().trim();
@@ -68,20 +85,25 @@ if (Astro.request.method === "POST" && db) {
         } else if (!["image/jpeg", "image/png", "image/jpg"].includes(photoFile.type)) {
           errorMessage = "Only JPEG, JPG, and PNG images are allowed.";
         } else {
-          const buffer = await photoFile.arrayBuffer();
-          const base64 = arrayBufferToBase64(buffer);
-          photo = `data:${photoFile.type};base64,${base64}`;
+          const runtimeEnv = (Astro.locals as any)?.runtime?.env;
+          photo = await uploadImageToR2(photoFile, runtimeEnv);
         }
       } else {
         errorMessage = "Student photo is required.";
       }
 
       if (!errorMessage && name && photo && type) {
-        await db.prepare(
-          `INSERT INTO success_stories (name, photo, type, score, country) VALUES (?, ?, ?, ?, ?)`
-        ).bind(
-          name, photo, type, score, country
-        ).run();
+        const { error } = await supabase
+          .from('success_stories')
+          .insert({
+            name,
+            photo,
+            type,
+            score,
+            country
+          });
+
+        if (error) throw error;
         successMessage = `Successfully added success story for ${name}.`;
       } else if (!errorMessage) {
         errorMessage = "Please fill in all required fields (Name, Photo, and Type).";
@@ -102,18 +124,24 @@ if (Astro.request.method === "POST" && db) {
         } else if (!["image/jpeg", "image/png", "image/jpg"].includes(photoFile.type)) {
           errorMessage = "Only JPEG, JPG, and PNG images are allowed.";
         } else {
-          const buffer = await photoFile.arrayBuffer();
-          const base64 = arrayBufferToBase64(buffer);
-          photo = `data:${photoFile.type};base64,${base64}`;
+          const runtimeEnv = (Astro.locals as any)?.runtime?.env;
+          photo = await uploadImageToR2(photoFile, runtimeEnv);
         }
       }
 
       if (!errorMessage && id && name && photo && type) {
-        await db.prepare(
-          `UPDATE success_stories SET name=?, photo=?, type=?, score=?, country=? WHERE id=?`
-        ).bind(
-          name, photo, type, score, country, id
-        ).run();
+        const { error } = await supabase
+          .from('success_stories')
+          .update({
+            name,
+            photo,
+            type,
+            score,
+            country
+          })
+          .eq('id', id);
+
+        if (error) throw error;
         successMessage = `Successfully updated ${name}.`;
       } else if (!errorMessage) {
         errorMessage = "Please fill in all required fields.";
@@ -126,14 +154,17 @@ if (Astro.request.method === "POST" && db) {
 }
 
 // Fetch success stories
-if (db) {
-  try {
-    const res = await db.prepare("SELECT * FROM success_stories ORDER BY id DESC").all();
-    stories = res.results || [];
-  } catch (err) {
-    console.error("Failed to load success stories:", err);
-    errorMessage = "Failed to load database records.";
-  }
+try {
+  const { data, error } = await supabase
+    .from('success_stories')
+    .select('*')
+    .order('id', { ascending: false });
+
+  if (error) throw error;
+  stories = data || [];
+} catch (err) {
+  console.error("Failed to load success stories:", err);
+  errorMessage = "Failed to load database records.";
 }
 ---
 

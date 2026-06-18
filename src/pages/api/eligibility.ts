@@ -1,16 +1,8 @@
 import type { APIRoute } from 'astro';
-import { env } from "cloudflare:workers";
+import { supabase } from '../../utils/supabase';
 
 export const POST: APIRoute = async ({ request, locals }) => {
   try {
-    const db = env?.tesca_db || env?.DB;
-    if (!db) {
-      return new Response(JSON.stringify({ error: "Database connection not available." }), {
-        status: 500,
-        headers: { "Content-Type": "application/json" }
-      });
-    }
-
     const body = await request.json();
     const { name, email, phone, score, ielts, budget, destination } = body;
 
@@ -35,18 +27,31 @@ export const POST: APIRoute = async ({ request, locals }) => {
         budget: budgetLakhsNum,
         destination: destination || "Any"
       });
-      const result = await db.prepare(
-        "INSERT INTO leads (lead_type, name, email, phone, details) VALUES (?, ?, ?, ?, ?)"
-      ).bind("eligibility", name, email || null, phone, detailsStr).run();
+      const { data: insertedData, error: dbErr } = await supabase
+        .from('leads')
+        .insert({
+          lead_type: 'eligibility',
+          name: name,
+          email: email || null,
+          phone: phone,
+          details: detailsStr,
+          status: 'pending'
+        })
+        .select('id')
+        .single();
       
-      leadId = result.meta?.last_row_id || null;
+      if (dbErr) {
+        console.error("Failed to save lead in Supabase:", dbErr);
+      } else {
+        leadId = insertedData?.id || null;
+      }
     } catch (dbErr) {
-      console.error("Failed to save lead in D1:", dbErr);
+      console.error("Failed to save lead in Supabase:", dbErr);
     }
 
     // Submit lead to Google Sheets & Web3Forms
-    const googleSheetUrl = env?.PUBLIC_GOOGLE_SHEET_URL;
-    const web3formsAccessKey = env?.WEB3FORMS_ACCESS_KEY || "85242216-06e7-475c-ad35-beb2808b60d7";
+    const googleSheetUrl = process.env.PUBLIC_GOOGLE_SHEET_URL;
+    const web3formsAccessKey = process.env.WEB3FORMS_ACCESS_KEY || "85242216-06e7-475c-ad35-beb2808b60d7";
 
     // 1. Submit to Web3Forms
     try {
@@ -93,16 +98,15 @@ export const POST: APIRoute = async ({ request, locals }) => {
     const budgetUSD = budgetLakhsNum * 1200;
 
     // Fetch all universities or filter by destination code
-    let dbQuery = "SELECT * FROM universities";
-    let dbParams: any[] = [];
+    let query = supabase.from('universities').select('*');
     if (destination && destination !== "all") {
-      dbQuery += " WHERE code = ?";
-      dbParams.push(destination);
+      query = query.eq('code', destination);
     }
-    dbQuery += " ORDER BY name ASC";
+    const { data: allUniversities, error: queryErr } = await query.order('name', { ascending: true });
+    if (queryErr) {
+      throw queryErr;
+    }
 
-    const dbRes = await db.prepare(dbQuery).bind(...dbParams).all();
-    const allUniversities = dbRes.results || [];
 
     // Helper to map and parse D1 rows
     const parseIelts = (req: string | null | undefined): number => {

@@ -1,16 +1,8 @@
 import type { APIRoute } from 'astro';
-import { env } from "cloudflare:workers";
+import { supabase } from '../../utils/supabase';
 
 export const POST: APIRoute = async ({ request }) => {
   try {
-    const db = env?.tesca_db || env?.DB;
-    if (!db) {
-      return new Response(JSON.stringify({ error: "Database connection not available." }), {
-        status: 500,
-        headers: { "Content-Type": "application/json" }
-      });
-    }
-
     const body = await request.json();
     const { firstName, lastName, email, phone, mode, destination } = body;
 
@@ -24,13 +16,26 @@ export const POST: APIRoute = async ({ request }) => {
     const fullName = `${firstName} ${lastName}`;
     const detailsStr = JSON.stringify({ mode, destination });
 
-    const result = await db.prepare(
-      "INSERT INTO leads (lead_type, name, email, phone, details) VALUES (?, ?, ?, ?, ?)"
-    ).bind("counsellor", fullName, email || null, phone, detailsStr).run();
+    const { data: insertedData, error } = await supabase
+      .from('leads')
+      .insert({
+        lead_type: 'counsellor',
+        name: fullName,
+        email: email || null,
+        phone,
+        details: detailsStr,
+        status: 'pending'
+      })
+      .select('id')
+      .single();
+
+    if (error) {
+      throw error;
+    }
 
     return new Response(JSON.stringify({
       success: true,
-      leadId: result.meta?.last_row_id || null
+      leadId: insertedData?.id || null
     }), {
       status: 200,
       headers: { "Content-Type": "application/json" }
@@ -44,3 +49,4 @@ export const POST: APIRoute = async ({ request }) => {
     });
   }
 };
+

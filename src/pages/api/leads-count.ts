@@ -1,5 +1,5 @@
 import type { APIRoute } from 'astro';
-import { env } from "cloudflare:workers";
+import { supabase } from '../../utils/supabase';
 import { checkAdminAuth } from "../../utils/adminAuth";
 
 export const GET: APIRoute = async ({ cookies }) => {
@@ -11,24 +11,16 @@ export const GET: APIRoute = async ({ cookies }) => {
     });
   }
 
-  const db = env?.tesca_db || env?.DB;
-  if (!db) {
-    return new Response(JSON.stringify({ error: "Database not available" }), { 
-      status: 500,
-      headers: { "Content-Type": "application/json" }
-    });
-  }
-
   try {
-    // Run self-healing ALTER TABLE if needed, just to be robust
-    try {
-      await db.prepare("ALTER TABLE leads ADD COLUMN status TEXT DEFAULT 'pending'").run();
-    } catch (e) {
-      // Column already exists, ignore
+    const { count, error } = await supabase
+      .from('leads')
+      .select('*', { count: 'exact', head: true });
+
+    if (error) {
+      throw error;
     }
 
-    const res = await db.prepare("SELECT COUNT(*) as count FROM leads").first();
-    return new Response(JSON.stringify({ count: res?.count || 0 }), {
+    return new Response(JSON.stringify({ count: count || 0 }), {
       status: 200,
       headers: { "Content-Type": "application/json" }
     });
@@ -40,3 +32,4 @@ export const GET: APIRoute = async ({ cookies }) => {
     });
   }
 };
+

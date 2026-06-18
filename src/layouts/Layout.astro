@@ -1,7 +1,7 @@
 ---
 import "../styles/global.css";
 import CounsellorForm from "../components/CounsellorForm";
-import { env } from "cloudflare:workers";
+import { supabase } from "../utils/supabase";
 import { ClientRouter } from "astro:transitions";
 // Inline SVG helpers — no lucide-react in .astro (SSR hook errors)
 const _svg = (d: string, size = 16) => `<svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${d}</svg>`;
@@ -35,15 +35,17 @@ const {
 let announcements = [];
 
 try {
-	const db = env?.tesca_db || env?.DB;
-	if (db) {
-		const { results } = await db.prepare("SELECT text FROM announcements ORDER BY id ASC").all();
-		if (results && results.length > 0) {
-			announcements = results.map(r => r.text);
-		}
+	const { data, error } = await supabase
+		.from('announcements')
+		.select('text')
+		.order('id', { ascending: true });
+
+	if (error) throw error;
+	if (data && data.length > 0) {
+		announcements = data.map((r: any) => r.text);
 	}
 } catch (err) {
-	console.error("Failed to fetch announcements from D1:", err);
+	console.error("Failed to fetch announcements from Supabase:", err);
 }
 ---
 

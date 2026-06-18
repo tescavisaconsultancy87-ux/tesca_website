@@ -2,7 +2,7 @@
 import Layout from "../../layouts/Layout.astro";
 import AdminHeader from "../../components/AdminHeader.astro";
 import { checkAdminAuth } from "../../utils/adminAuth";
-import { env } from "cloudflare:workers";
+import { supabase } from "../../utils/supabase";
 
 // Inline SVG helpers — no lucide-react in .astro (SSR hook errors)
 const _s = (d: string) => `<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${d}</svg>`;
@@ -21,33 +21,29 @@ if (!isAuthenticated) {
   return Astro.redirect("/admin");
 }
 
-const db = env?.tesca_db || env?.DB;
-
 let totalLeads = 0;
 let totalUniversities = 0;
 let totalStories = 0;
 let totalAnnouncements = 0;
 let totalUpdates = 0;
 
-if (db) {
-  try {
-    const leadsRes = await db.prepare("SELECT COUNT(*) as count FROM leads").first();
-    totalLeads = leadsRes?.count || 0;
+try {
+  const { count: leadsCount } = await supabase.from('leads').select('*', { count: 'exact', head: true });
+  totalLeads = leadsCount || 0;
 
-    const uniRes = await db.prepare("SELECT COUNT(*) as count FROM universities").first();
-    totalUniversities = uniRes?.count || 0;
+  const { count: uniCount } = await supabase.from('universities').select('*', { count: 'exact', head: true });
+  totalUniversities = uniCount || 0;
 
-    const storiesRes = await db.prepare("SELECT COUNT(*) as count FROM success_stories").first();
-    totalStories = storiesRes?.count || 0;
+  const { count: storiesCount } = await supabase.from('success_stories').select('*', { count: 'exact', head: true });
+  totalStories = storiesCount || 0;
 
-    const annRes = await db.prepare("SELECT COUNT(*) as count FROM announcements").first();
-    totalAnnouncements = annRes?.count || 0;
+  const { count: annCount } = await supabase.from('announcements').select('*', { count: 'exact', head: true });
+  totalAnnouncements = annCount || 0;
 
-    const updatesRes = await db.prepare("SELECT COUNT(*) as count FROM visa_updates").first();
-    totalUpdates = updatesRes?.count || 0;
-  } catch (err) {
-    console.error("Dashboard overview query failed:", err);
-  }
+  const { count: updatesCount } = await supabase.from('visa_updates').select('*', { count: 'exact', head: true });
+  totalUpdates = updatesCount || 0;
+} catch (err) {
+  console.error("Dashboard overview query failed:", err);
 }
 
 const cards = [

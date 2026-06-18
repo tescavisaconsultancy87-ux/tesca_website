@@ -1,32 +1,24 @@
 import type { APIRoute } from 'astro';
-import { env } from "cloudflare:workers";
+import { supabase } from '../../utils/supabase';
 
 export const GET: APIRoute = async ({ request }) => {
   const url = new URL(request.url);
   const countryCode = url.searchParams.get("country")?.trim().toLowerCase();
 
-  const db = env?.tesca_db || env?.DB;
-  if (!db) {
-    return new Response(JSON.stringify({ error: "Database not available" }), { 
-      status: 500,
-      headers: { "Content-Type": "application/json" }
-    });
-  }
-
   try {
-    let res;
+    let query = supabase.from('universities').select('*');
+    
     if (countryCode && countryCode !== "all") {
-      res = await db
-        .prepare("SELECT * FROM universities WHERE code = ? ORDER BY name ASC")
-        .bind(countryCode)
-        .all();
-    } else {
-      res = await db
-        .prepare("SELECT * FROM universities ORDER BY name ASC")
-        .all();
+      query = query.eq('code', countryCode);
     }
+    
+    const { data: universities, error } = await query.order('name', { ascending: true });
       
-    const list = (res.results || []).map((u: any) => ({
+    if (error) {
+      throw error;
+    }
+
+    const list = (universities || []).map((u: any) => ({
       ...u,
       image_url: u.image_url || u.photo || "",
       ug_tuition_fees: u.ug_tuition_fees || u.ug_fees || u.tuition_fees || "",
@@ -40,6 +32,7 @@ export const GET: APIRoute = async ({ request }) => {
       pg_moi: u.pg_moi || u.pg_moi_accepted || "",
       pg_courses: u.pg_courses || ""
     }));
+
     return new Response(JSON.stringify(list), {
       status: 200,
       headers: { 
@@ -55,3 +48,4 @@ export const GET: APIRoute = async ({ request }) => {
     });
   }
 };
+

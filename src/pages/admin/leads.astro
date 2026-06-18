@@ -2,7 +2,7 @@
 import Layout from "../../layouts/Layout.astro";
 import AdminHeader from "../../components/AdminHeader.astro";
 import { checkAdminAuth } from "../../utils/adminAuth";
-import { env } from "cloudflare:workers";
+import { supabase } from "../../utils/supabase";
 // Inline SVG helpers — no lucide-react in .astro (SSR hook errors)
 const _s = (d: string) => `<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${d}</svg>`;
 const SVG = {
@@ -21,35 +21,35 @@ if (!isAuthenticated) {
   return Astro.redirect("/admin");
 }
 
-const db = env?.tesca_db || env?.DB;
-
 let leads = [];
 let successMessage = "";
 let errorMessage = "";
 
-// Self-healing: make sure 'status' column exists in leads table
-if (db) {
-  try {
-    await db.prepare("ALTER TABLE leads ADD COLUMN status TEXT DEFAULT 'pending'").run();
-  } catch (e) {
-    // Ignore if column already exists
-  }
-}
-
 // Handle server actions (e.g. delete lead, update status)
-if (Astro.request.method === "POST" && db) {
+if (Astro.request.method === "POST") {
   try {
     const formData = await Astro.request.formData();
     const action = formData.get("action");
 
     if (action === "delete-lead") {
       const id = parseInt(formData.get("id")?.toString() || "0");
-      await db.prepare("DELETE FROM leads WHERE id = ?").bind(id).run();
+      const { error } = await supabase
+        .from('leads')
+        .delete()
+        .eq('id', id);
+
+      if (error) throw error;
       successMessage = "Lead removed successfully.";
     } else if (action === "update-status") {
       const id = parseInt(formData.get("id")?.toString() || "0");
       const status = formData.get("status")?.toString().trim();
-      await db.prepare("UPDATE leads SET status = ? WHERE id = ?").bind(status, id).run();
+      
+      const { error } = await supabase
+        .from('leads')
+        .update({ status })
+        .eq('id', id);
+
+      if (error) throw error;
       successMessage = "Lead status updated successfully.";
     }
   } catch (err: any) {
@@ -59,14 +59,17 @@ if (Astro.request.method === "POST" && db) {
 }
 
 // Fetch leads
-if (db) {
-  try {
-    const res = await db.prepare("SELECT * FROM leads ORDER BY id DESC").all();
-    leads = res.results || [];
-  } catch (err) {
-    console.error("Failed to load leads from D1:", err);
-    errorMessage = "Failed to load database records.";
-  }
+try {
+  const { data, error } = await supabase
+    .from('leads')
+    .select('*')
+    .order('id', { ascending: false });
+
+  if (error) throw error;
+  leads = data || [];
+} catch (err) {
+  console.error("Failed to load leads from Supabase:", err);
+  errorMessage = "Failed to load database records.";
 }
 ---
 

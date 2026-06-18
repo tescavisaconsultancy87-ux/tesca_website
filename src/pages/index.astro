@@ -1,5 +1,5 @@
 ---
-import { env } from "cloudflare:workers";
+import { supabase } from "../utils/supabase";
 import Layout from "../layouts/Layout.astro";
 import CountrySelector from "../components/CountrySelector";
 import StudentCarousel from "../components/StudentCarousel";
@@ -16,27 +16,32 @@ const SVG = {
 
 let stories = [];
 let visaUpdates = [];
-const db = env?.tesca_db || env?.DB;
 
 try {
-  if (db) {
-    const { results } = await db.prepare("SELECT * FROM success_stories ORDER BY id DESC").all();
-    stories = results || [];
-  }
+  const { data, error } = await supabase
+    .from('success_stories')
+    .select('*')
+    .order('id', { ascending: false });
+
+  if (error) throw error;
+  stories = data || [];
 } catch (err) {
-  console.error("Failed to fetch success stories from D1:", err);
+  console.error("Failed to fetch success stories from Supabase:", err);
 }
 
 try {
-  if (db) {
-    const { results } = await db.prepare("SELECT * FROM visa_updates ORDER BY id DESC").all();
-    visaUpdates = results.map(u => ({
-      ...u,
-      tagBg: u.tag_bg
-    })) || [];
-  }
+  const { data, error } = await supabase
+    .from('visa_updates')
+    .select('*')
+    .order('id', { ascending: false });
+
+  if (error) throw error;
+  visaUpdates = (data || []).map(u => ({
+    ...u,
+    tagBg: u.tag_bg
+  }));
 } catch (err) {
-  console.error("Failed to fetch visa updates from D1:", err);
+  console.error("Failed to fetch visa updates from Supabase:", err);
 }
 
 

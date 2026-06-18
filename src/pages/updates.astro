@@ -1,5 +1,5 @@
 ---
-import { env } from "cloudflare:workers";
+import { supabase } from "../utils/supabase";
 import Layout from "../layouts/Layout.astro";
 import AICounsellor from "../components/AICounsellor";
 const SVG = {
@@ -9,16 +9,19 @@ const SVG = {
 
 let visaUpdates = [];
 try {
-  const db = env?.tesca_db || env?.DB;
-  if (db) {
-    const { results } = await db.prepare("SELECT * FROM visa_updates ORDER BY id DESC").all();
-    visaUpdates = results.map(u => ({
-      ...u,
-      tagBg: u.tag_bg
-    })) || [];
-  }
+  const { data, error } = await supabase
+    .from('visa_updates')
+    .select('*')
+    .order('id', { ascending: false });
+
+  if (error) throw error;
+  
+  visaUpdates = (data || []).map(u => ({
+    ...u,
+    tagBg: u.tag_bg
+  }));
 } catch (err) {
-  console.error("Failed to fetch visa updates from D1:", err);
+  console.error("Failed to fetch visa updates from Supabase:", err);
 }
 ---
 

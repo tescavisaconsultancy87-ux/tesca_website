@@ -2,7 +2,7 @@
 import Layout from "../../layouts/Layout.astro";
 import AdminHeader from "../../components/AdminHeader.astro";
 import { checkAdminAuth } from "../../utils/adminAuth";
-import { env } from "cloudflare:workers";
+import { supabase } from "../../utils/supabase";
 // Inline SVG helpers — no lucide-react in .astro (SSR hook errors)
 const _s = (d: string) => `<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${d}</svg>`;
 const SVG = {
@@ -17,26 +17,33 @@ if (!isAuthenticated) {
   return Astro.redirect("/admin");
 }
 
-const db = env?.tesca_db || env?.DB;
-
 let announcements = [];
 let successMessage = "";
 let errorMessage = "";
 
 // Handle server actions (Add / Delete)
-if (Astro.request.method === "POST" && db) {
+if (Astro.request.method === "POST") {
   try {
     const formData = await Astro.request.formData();
     const action = formData.get("action");
 
     if (action === "delete-announcement") {
       const id = parseInt(formData.get("id")?.toString() || "0");
-      await db.prepare("DELETE FROM announcements WHERE id = ?").bind(id).run();
+      const { error } = await supabase
+        .from('announcements')
+        .delete()
+        .eq('id', id);
+
+      if (error) throw error;
       successMessage = "Announcement alert text deleted successfully.";
     } else if (action === "add-announcement") {
       const text = formData.get("text")?.toString().trim();
       if (text) {
-        await db.prepare("INSERT INTO announcements (text) VALUES (?)").bind(text).run();
+        const { error } = await supabase
+          .from('announcements')
+          .insert({ text });
+
+        if (error) throw error;
         successMessage = "New announcement alert bar message posted.";
       } else {
         errorMessage = "Announcement text cannot be empty.";
@@ -49,14 +56,17 @@ if (Astro.request.method === "POST" && db) {
 }
 
 // Fetch announcements
-if (db) {
-  try {
-    const res = await db.prepare("SELECT * FROM announcements ORDER BY id ASC").all();
-    announcements = res.results || [];
-  } catch (err) {
-    console.error("Failed to load announcements:", err);
-    errorMessage = "Failed to load database records.";
-  }
+try {
+  const { data, error } = await supabase
+    .from('announcements')
+    .select('*')
+    .order('id', { ascending: true });
+
+  if (error) throw error;
+  announcements = data || [];
+} catch (err) {
+  console.error("Failed to load announcements:", err);
+  errorMessage = "Failed to load database records.";
 }
 ---
 

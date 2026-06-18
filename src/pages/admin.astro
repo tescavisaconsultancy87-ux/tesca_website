@@ -6,8 +6,8 @@ const SVG = {
   ShieldAlert: _s('<path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="M12 8v4"/><path d="M12 16h.01"/>', 24),
   AlertCircle: _s('<circle cx="12" cy="12" r="10"/><line x1="12" x2="12" y1="8" y2="12"/><line x1="12" x2="12.01" y1="16" y2="16"/>', 20),
 };
+import { supabase } from "../utils/supabase";
 import { checkAdminAuth, hashToken } from "../utils/adminAuth";
-import { env } from "cloudflare:workers";
 
 let errorMessage = "";
 
@@ -18,26 +18,61 @@ if (Astro.request.method === "POST") {
     const action = formData.get("action");
 
     if (action === "login") {
-      const email = formData.get("email");
-      const password = formData.get("password");
+      const email = formData.get("email")?.toString();
+      const password = formData.get("password")?.toString();
 
-      const expectedEmail = env?.ADMIN_EMAIL || import.meta.env.ADMIN_EMAIL || "admin@tesca.com";
-      const expectedPassword = env?.ADMIN_PASSWORD || import.meta.env.ADMIN_PASSWORD || "admin1234";
-
-      if (email === expectedEmail && password === expectedPassword) {
-        const expectedHash = await hashToken(expectedPassword);
-        Astro.cookies.set("admin_session", expectedHash, {
-          path: "/",
-          httpOnly: true,
-          secure: true,
-          maxAge: 60 * 60 * 24, // 1 day
+      if (email && password) {
+        // 1. Try Supabase Auth
+        const { data, error } = await supabase.auth.signInWithPassword({
+          email,
+          password
         });
-        return Astro.redirect("/admin/dashboard");
+
+        if (data?.session) {
+          Astro.cookies.set("sb-access-token", data.session.access_token, {
+            path: "/",
+            httpOnly: true,
+            secure: true,
+            maxAge: data.session.expires_in,
+          });
+          Astro.cookies.set("sb-refresh-token", data.session.refresh_token, {
+            path: "/",
+            httpOnly: true,
+            secure: true,
+            maxAge: data.session.expires_in,
+          });
+          Astro.cookies.delete("admin_session", { path: "/" });
+          return Astro.redirect("/admin/dashboard");
+        }
+
+        // 2. Fallback to Env variable check
+        const expectedEmail = process.env.ADMIN_EMAIL || import.meta.env.ADMIN_EMAIL || "admin@tesca.com";
+        const expectedPassword = process.env.ADMIN_PASSWORD || import.meta.env.ADMIN_PASSWORD || "admin1234";
+
+        if (email === expectedEmail && password === expectedPassword) {
+          const expectedHash = await hashToken(expectedPassword);
+          Astro.cookies.set("admin_session", expectedHash, {
+            path: "/",
+            httpOnly: true,
+            secure: true,
+            maxAge: 60 * 60 * 24, // 1 day
+          });
+          Astro.cookies.delete("sb-access-token", { path: "/" });
+          Astro.cookies.delete("sb-refresh-token", { path: "/" });
+          return Astro.redirect("/admin/dashboard");
+        } else {
+          errorMessage = error?.message || "Invalid email or password credentials.";
+        }
       } else {
-        errorMessage = "Invalid email or password credentials.";
+        errorMessage = "Email and password are required.";
       }
     } else if (action === "logout") {
+      try {
+        await supabase.auth.signOut();
+      } catch (e) {}
       Astro.cookies.delete("admin_session", { path: "/" });
+      Astro.cookies.delete("sb-access-token", { path: "/" });
+      Astro.cookies.delete("sb-refresh-token", { path: "/" });
       return Astro.redirect("/admin");
     }
   } catch (err) {

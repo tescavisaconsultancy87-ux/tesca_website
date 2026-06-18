@@ -9,3 +9,7 @@ database_id = "a172c7e8-fb9a-4f62-a814-6b250e6192a3"
 [[kv_namespaces]]
 binding = "SESSION"
 id = "16ed5b9ce27c4ef88087c3c19cc2c924"
+
+[[r2_buckets]]
+binding = "R2_BUCKET"
+bucket_name = "tesca-assets"
