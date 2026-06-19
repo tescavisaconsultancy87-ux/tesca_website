@@ -307,14 +307,29 @@ import AICounsellor from "../components/AICounsellor";
         return;
       }
 
-      navigator.clipboard.writeText(text).then(() => {
-        // Redirect to Google Reviews write url
-        window.location.href = "https://search.google.com/local/writereview?placeid=ChIJs1mzR4ZP4DsR_nxj9fVK9hE";
-      }).catch((err) => {
-        console.error("Failed to copy text:", err);
-        // Fallback redirect even if copy fails
-        window.location.href = "https://search.google.com/local/writereview?placeid=ChIJs1mzR4ZP4DsR_nxj9fVK9hE";
-      });
+      // Try to copy to clipboard safely
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(text).catch((err) => {
+          console.error("Failed to copy text:", err);
+        });
+      } else {
+        // Fallback copy for webviews / in-app browsers on iOS
+        try {
+          const textarea = document.createElement("textarea");
+          textarea.value = text;
+          textarea.style.position = "fixed";
+          document.body.appendChild(textarea);
+          textarea.focus();
+          textarea.select();
+          document.execCommand("copy");
+          document.body.removeChild(textarea);
+        } catch (err) {
+          console.error("Fallback copy failed:", err);
+        }
+      }
+
+      // Synchronous redirect is fully trusted and not blocked by iOS Safari
+      window.location.href = "https://search.google.com/local/writereview?placeid=ChIJs1mzR4ZP4DsR_nxj9fVK9hE";
     });
 
     // Trigger initial load review

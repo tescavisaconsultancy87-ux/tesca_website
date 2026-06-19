@@ -36,3 +36,23 @@ ON CONFLICT (email) DO NOTHING;
 INSERT INTO public.admins (email)
 VALUES ('admin@tesca.com')
 ON CONFLICT (email) DO NOTHING;
+
+
+-- 3. Create Gallery Images Table
+CREATE TABLE IF NOT EXISTS public.gallery_images (
+    id SERIAL PRIMARY KEY,
+    title TEXT NOT NULL,
+    description TEXT,
+    image_url TEXT NOT NULL,
+    category TEXT NOT NULL, -- 'classroom' or 'campus'
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
+);
+
+-- 4. Create Carousel Videos Table
+CREATE TABLE IF NOT EXISTS public.carousel_videos (
+    id SERIAL PRIMARY KEY,
+    title TEXT NOT NULL,
+    video_url TEXT NOT NULL,
+    thumbnail_url TEXT NOT NULL,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
+);

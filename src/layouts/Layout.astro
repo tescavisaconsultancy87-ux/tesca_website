@@ -787,6 +787,7 @@ try {
 			import Lenis from "lenis";
 
 			function initPage() {
+				const isAdminRoute = window.location.pathname.startsWith("/admin");
 				// Mobile Menu Drawer Handlers
 				const mobileMenuBtn = document.getElementById("mobile-menu-btn");
 				const mobileMenuDrawer = document.getElementById("mobile-menu-drawer");
@@ -1049,7 +1050,6 @@ try {
 
 				// 2. Fast & Responsive Lenis Scroll Configuration
 				let rafId: number;
-				const isAdminRoute = window.location.pathname.startsWith("/admin");
 				
 				if (isAdminRoute) {
 					if ((window as any).lenis) {

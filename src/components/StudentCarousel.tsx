@@ -4,9 +4,11 @@ interface D1Story {
   id: number;
   name: string;
   photo: string;
-  type: string; // "Visa Success", "IELTS", "PTE"
+  type: string; // "Visa Success", "IELTS", "PTE", or "Video"
   score?: string | null;
   country?: string | null;
+  video_url?: string | null;
+  is_video?: boolean;
 }
 
 const countryToCode = (country: string) => {
@@ -114,63 +116,102 @@ export default function StudentCarousel({ stories = [] }: { stories?: D1Story[] 
         {/* Scrolling wrapper */}
         <div className="flex w-max gap-6 animate-scroll hover:[animation-play-state:paused]">
           {/* Double map for seamless loop */}
-          {[...displayStories, ...displayStories].map((student, idx) => (
-            <div
-              key={`${student.id}-${idx}`}
-              className="flex-shrink-0 w-[230px] rounded-[1.5rem] border border-slate-200 bg-white hover:border-[#0A7880]/30 hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1 text-left relative group shadow-sm flex flex-col overflow-hidden"
-            >
-              {/* Photo Box Container */}
-              <div className="relative w-full h-[160px] overflow-hidden bg-slate-50 shrink-0">
-                <img
-                  src={student.photo}
-                  alt={student.name}
-                  className="w-full h-full object-cover group-hover:scale-[1.03] transition-transform duration-500 select-none"
-                  loading="lazy"
-                />
-                
-                {/* Country Flag overlay on Top Right corner */}
-                {student.type === "Visa Success" && student.country && (
-                  <div className="absolute top-3 right-3 bg-white/90 backdrop-blur-[2px] p-1.5 rounded-xl shadow-xs border border-slate-100 flex items-center justify-center">
-                    <img
-                      src={`https://flagcdn.com/w40/${countryToCode(student.country)}.png`}
-                      alt={`${student.country} flag`}
-                      className="w-5 h-3.5 rounded-xs object-cover"
-                      loading="lazy"
-                    />
-                  </div>
-                )}
-              </div>
-
-              {/* Info Text Area (at bottom) */}
-              <div className="p-4 flex flex-col justify-between flex-grow bg-white border-t border-slate-50">
-                <div>
-                  <h4 className="text-sm font-bold text-slate-800 font-display truncate leading-snug group-hover:text-[#0A7880] transition-colors">
-                    {student.name}
-                  </h4>
+          {[...displayStories, ...displayStories].map((student, idx) => {
+            const cardContent = (
+              <div className="flex-shrink-0 w-[230px] rounded-[1.5rem] border border-slate-200 bg-white hover:border-[#0A7880]/30 hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1 text-left relative group shadow-sm flex flex-col overflow-hidden h-full">
+                {/* Photo Box Container */}
+                <div className="relative w-full h-[160px] overflow-hidden bg-slate-50 shrink-0">
+                  <img
+                    src={student.photo}
+                    alt={student.name}
+                    className="w-full h-full object-cover group-hover:scale-[1.03] transition-transform duration-550 select-none"
+                    loading="lazy"
+                  />
                   
-                  {student.type === "Visa Success" ? (
-                    <p className="text-[11px] text-slate-500 font-medium truncate mt-1">
-                      Visa: {student.country}
-                    </p>
-                  ) : (
-                    <p className="text-[11px] text-slate-500 font-medium truncate mt-1">
-                      {student.type} Overall: {student.score}
-                    </p>
+                  {/* Play button overlay for video */}
+                  {student.is_video && (
+                    <div className="absolute inset-0 flex items-center justify-center bg-black/25 group-hover:bg-black/35 transition-colors">
+                      <div className="w-12 h-12 rounded-full bg-white/90 flex items-center justify-center shadow-md transform group-hover:scale-110 transition-transform">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="currentColor" className="text-[#0A7880] ml-0.5">
+                          <polygon points="5 3 19 12 5 21 5 3"/>
+                        </svg>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Country Flag overlay on Top Right corner */}
+                  {student.type === "Visa Success" && student.country && (
+                    <div className="absolute top-3 right-3 bg-white/90 backdrop-blur-[2px] p-1.5 rounded-xl shadow-xs border border-slate-100 flex items-center justify-center">
+                      <img
+                        src={`https://flagcdn.com/w40/${countryToCode(student.country)}.png`}
+                        alt={`${student.country} flag`}
+                        className="w-5 h-3.5 rounded-xs object-cover"
+                        loading="lazy"
+                      />
+                    </div>
                   )}
                 </div>
 
-                {/* Score badge at bottom */}
-                <div className="flex items-center justify-between mt-3.5 pt-3 border-t border-slate-100">
-                  <span className="text-[12px] font-extrabold text-[#0A7880] font-display">
-                    {student.type === "Visa Success" ? "Approved" : student.score}
-                  </span>
-                  <span className="text-[9.5px] text-slate-400 font-bold uppercase tracking-wider">
-                    {student.type}
-                  </span>
+                {/* Info Text Area (at bottom) */}
+                <div className="p-4 flex flex-col justify-between flex-grow bg-white border-t border-slate-50">
+                  <div>
+                    <h4 className="text-sm font-bold text-slate-800 font-display truncate leading-snug group-hover:text-[#0A7880] transition-colors">
+                      {student.name}
+                    </h4>
+                    
+                    {student.is_video ? (
+                      <p className="text-[11px] text-slate-500 font-medium truncate mt-1">
+                        Watch Success Video
+                      </p>
+                    ) : student.type === "Visa Success" ? (
+                      <p className="text-[11px] text-slate-500 font-medium truncate mt-1">
+                        Visa: {student.country}
+                      </p>
+                    ) : (
+                      <p className="text-[11px] text-slate-500 font-medium truncate mt-1">
+                        {student.type} Overall: {student.score}
+                      </p>
+                    )}
+                  </div>
+
+                  {/* Score badge at bottom */}
+                  <div className="flex items-center justify-between mt-3.5 pt-3 border-t border-slate-100">
+                    <span className="text-[12px] font-extrabold text-[#0A7880] font-display">
+                      {student.is_video ? "Play ➔" : student.type === "Visa Success" ? "Approved" : student.score}
+                    </span>
+                    <span className="text-[9.5px] text-slate-400 font-bold uppercase tracking-wider">
+                      {student.type}
+                    </span>
+                  </div>
                 </div>
               </div>
-            </div>
-          ))}
+            );
+
+            if (student.is_video && student.video_url) {
+              return (
+                <a
+                  key={`${student.id}-${idx}`}
+                  href={student.video_url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="no-underline cursor-pointer block hover:no-underline"
+                >
+                  {cardContent}
+                </a>
+              );
+            }
+
+            return (
+              <div key={`${student.id}-${idx}`}>
+                {cardContent}
+              </div>
+            );
+          })}
+        </div>
+      </div>
+    </div>
+  );
+}
         </div>
       </div>
     </div>

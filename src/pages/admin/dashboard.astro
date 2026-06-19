@@ -26,6 +26,8 @@ let totalUniversities = 0;
 let totalStories = 0;
 let totalAnnouncements = 0;
 let totalUpdates = 0;
+let totalGalleryImages = 0;
+let totalCarouselVideos = 0;
 
 try {
   const { count: leadsCount } = await supabase.from('leads').select('*', { count: 'exact', head: true });
@@ -42,6 +44,14 @@ try {
 
   const { count: updatesCount } = await supabase.from('visa_updates').select('*', { count: 'exact', head: true });
   totalUpdates = updatesCount || 0;
+
+  // Query gallery images count (catch errors if table not created yet)
+  const { count: galleryCount } = await supabase.from('gallery_images').select('*', { count: 'exact', head: true });
+  totalGalleryImages = galleryCount || 0;
+
+  // Query carousel videos count
+  const { count: videosCount } = await supabase.from('carousel_videos').select('*', { count: 'exact', head: true });
+  totalCarouselVideos = videosCount || 0;
 } catch (err) {
   console.error("Dashboard overview query failed:", err);
 }
@@ -76,6 +86,26 @@ const cards = [
     iconSvg: SVG.MessageSquare,
     iconColor: "text-orange-600 bg-orange-50",
     href: "/admin/success-stories"
+  },
+  {
+    id: "gallery",
+    title: "Gallery Manager",
+    desc: "Upload and organize student activity photos and institute events.",
+    count: totalGalleryImages,
+    color: "from-sky-50 to-blue-50 hover:border-blue-300",
+    iconSvg: _s('<rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/>'),
+    iconColor: "text-blue-600 bg-blue-50",
+    href: "/admin/gallery"
+  },
+  {
+    id: "carousel-videos",
+    title: "Carousel Videos",
+    desc: "Manage success story videos with redirection links.",
+    count: totalCarouselVideos,
+    color: "from-indigo-50 to-purple-50 hover:border-purple-300",
+    iconSvg: _s('<path d="m22 8-6 4 6 4V8Z"/><rect width="14" height="12" x="2" y="6" rx="2" ry="2"/>'),
+    iconColor: "text-purple-600 bg-purple-50",
+    href: "/admin/carousel-videos"
   },
   {
     id: "announcements",

@@ -16,6 +16,7 @@ const SVG = {
 
 let stories = [];
 let visaUpdates = [];
+let combinedCarouselItems = [];
 
 try {
   const { data, error } = await supabase
@@ -28,6 +29,32 @@ try {
 } catch (err) {
   console.error("Failed to fetch success stories from Supabase:", err);
 }
+
+// Fetch carousel videos
+let videos = [];
+try {
+  const { data, error } = await supabase
+    .from('carousel_videos')
+    .select('*')
+    .order('id', { ascending: false });
+
+  if (!error && data) {
+    videos = data.map(v => ({
+      id: v.id,
+      name: v.title,
+      photo: v.thumbnail_url,
+      type: "Video",
+      score: "Watch Video",
+      country: null,
+      video_url: v.video_url,
+      is_video: true
+    }));
+  }
+} catch (err) {
+  console.error("Failed to fetch carousel videos from Supabase:", err);
+}
+
+combinedCarouselItems = [...videos, ...stories];
 
 try {
   const { data, error } = await supabase
@@ -249,7 +276,7 @@ try {
   </section>
 
   {/* ==================== STUDENT SUCCESS STORIES ==================== */}
-  <StudentCarousel stories={stories} client:load />
+  <StudentCarousel stories={combinedCarouselItems} client:load />
 
   {/* ==================== SECTION 4: TESTIMONIALS (VOICES FROM COMMUNITY) ==================== */}
   <section class="py-24 bg-white relative text-left font-sans">
