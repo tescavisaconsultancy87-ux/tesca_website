@@ -56,3 +56,14 @@ CREATE TABLE IF NOT EXISTS public.carousel_videos (
     thumbnail_url TEXT NOT NULL,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
 );
+
+-- 5. Create Social Causes ('Our Social') Table
+CREATE TABLE IF NOT EXISTS public.social_causes (
+    id SERIAL PRIMARY KEY,
+    title TEXT NOT NULL,
+    link_url TEXT NOT NULL,
+    platform TEXT NOT NULL, -- 'youtube', 'instagram', 'facebook'
+    thumbnail_url TEXT NOT NULL,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
+);
+

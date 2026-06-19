@@ -28,6 +28,7 @@ let totalAnnouncements = 0;
 let totalUpdates = 0;
 let totalGalleryImages = 0;
 let totalCarouselVideos = 0;
+let totalSocialCauses = 0;
 
 try {
   const { count: leadsCount } = await supabase.from('leads').select('*', { count: 'exact', head: true });
@@ -52,6 +53,10 @@ try {
   // Query carousel videos count
   const { count: videosCount } = await supabase.from('carousel_videos').select('*', { count: 'exact', head: true });
   totalCarouselVideos = videosCount || 0;
+
+  // Query social causes count
+  const { count: socialCount } = await supabase.from('social_causes').select('*', { count: 'exact', head: true });
+  totalSocialCauses = socialCount || 0;
 } catch (err) {
   console.error("Dashboard overview query failed:", err);
 }
@@ -106,6 +111,16 @@ const cards = [
     iconSvg: _s('<path d="m22 8-6 4 6 4V8Z"/><rect width="14" height="12" x="2" y="6" rx="2" ry="2"/>'),
     iconColor: "text-purple-600 bg-purple-50",
     href: "/admin/carousel-videos"
+  },
+  {
+    id: "social-causes",
+    title: "Our Social",
+    desc: "Manage YouTube, Instagram, and Facebook posts featured on the home page.",
+    count: totalSocialCauses,
+    color: "from-pink-50 to-rose-50 hover:border-rose-300",
+    iconSvg: _s('<circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/>'),
+    iconColor: "text-rose-600 bg-rose-50",
+    href: "/admin/social-causes"
   },
   {
     id: "announcements",

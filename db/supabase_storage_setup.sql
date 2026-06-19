@@ -63,3 +63,22 @@ CREATE TABLE IF NOT EXISTS public.carousel_videos (
 ALTER TABLE public.carousel_videos ENABLE ROW LEVEL SECURITY;
 CREATE POLICY "Public read carousel_videos" ON public.carousel_videos FOR SELECT USING (true);
 CREATE POLICY "Allow all on carousel_videos" ON public.carousel_videos FOR ALL USING (true) WITH CHECK (true);
+
+-- ============================================================
+-- Ensure the social_causes table exists for 'Our Social'
+-- ============================================================
+
+CREATE TABLE IF NOT EXISTS public.social_causes (
+    id SERIAL PRIMARY KEY,
+    title TEXT NOT NULL,
+    link_url TEXT NOT NULL,
+    platform TEXT NOT NULL, -- 'youtube', 'instagram', 'facebook'
+    thumbnail_url TEXT NOT NULL,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
+);
+
+-- Enable RLS and allow public read and all actions for admins
+ALTER TABLE public.social_causes ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "Public read social_causes" ON public.social_causes FOR SELECT USING (true);
+CREATE POLICY "Allow all on social_causes" ON public.social_causes FOR ALL USING (true) WITH CHECK (true);
+
