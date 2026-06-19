@@ -2,8 +2,7 @@
 import Layout from "../../layouts/Layout.astro";
 import AdminHeader from "../../components/AdminHeader.astro";
 import { checkAdminAuth } from "../../utils/adminAuth";
-import { supabase } from "../../utils/supabase";
-import { getEnv } from "../../utils/env";
+import { getSupabase } from "../../utils/supabase";
 
 const _s = (d: string) => `<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${d}</svg>`;
 const SVG = {
@@ -22,39 +21,24 @@ let galleryImages = [];
 let successMessage = "";
 let errorMessage = "";
 
-// Helper to convert ArrayBuffer to Base64 (compatible with all JS runtimes)
-const arrayBufferToBase64 = (buffer: ArrayBuffer): string => {
-  let binary = "";
-  const bytes = new Uint8Array(buffer);
-  const len = bytes.byteLength;
-  for (let i = 0; i < len; i++) {
-    binary += String.fromCharCode(bytes[i]);
-  }
-  return btoa(binary);
-};
-
-// Helper to upload file directly to Cloudflare R2 on the edge, with Base64 fallback for local dev
-const uploadImageToR2 = async (photoFile: File, env: any): Promise<string> => {
-  const bucket = env?.R2_BUCKET;
-  if (bucket) {
-    try {
-      const ext = photoFile.name.split('.').pop() || 'jpg';
-      const key = `uploads/gallery/${crypto.randomUUID()}.${ext}`;
-      const buffer = await photoFile.arrayBuffer();
-      await bucket.put(key, buffer, {
-        httpMetadata: { contentType: photoFile.type }
-      });
-      const r2PublicUrl = getEnv("R2_PUBLIC_URL") || import.meta.env.R2_PUBLIC_URL;
-      return r2PublicUrl ? `${r2PublicUrl.replace(/\/$/, '')}/${key}` : `/api/assets?key=${key}`;
-    } catch (err) {
-      console.error("Direct R2 upload failed, falling back to base64:", err);
-    }
-  }
-  
-  // Local/Dev fallback to Base64
+// Helper to upload file to Supabase Storage
+const uploadImageToSupabase = async (photoFile: File): Promise<string> => {
+  const sb = getSupabase();
+  const ext = (photoFile.name.split('.').pop() || 'jpg').toLowerCase();
+  const key = `gallery/${crypto.randomUUID()}.${ext}`;
   const buffer = await photoFile.arrayBuffer();
-  const base64 = arrayBufferToBase64(buffer);
-  return `data:${photoFile.type};base64,${base64}`;
+
+  const { error } = await sb.storage
+    .from('tesca-assets')
+    .upload(key, buffer, {
+      contentType: photoFile.type,
+      upsert: false,
+    });
+
+  if (error) throw new Error(`Storage upload failed: ${error.message}`);
+
+  const { data } = sb.storage.from('tesca-assets').getPublicUrl(key);
+  return data.publicUrl;
 };
 
 // Handle server actions (Add / Update / Delete)
@@ -65,7 +49,7 @@ if (Astro.request.method === "POST") {
 
     if (action === "delete-image") {
       const id = parseInt(formData.get("id")?.toString() || "0");
-      const { error } = await supabase
+      const { error } = await getSupabase()
         .from('gallery_images')
         .delete()
         .eq('id', id);
@@ -85,15 +69,14 @@ if (Astro.request.method === "POST") {
         } else if (!["image/jpeg", "image/png", "image/jpg", "image/webp"].includes(photoFile.type)) {
           errorMessage = "Only JPEG, JPG, WEBP and PNG images are allowed.";
         } else {
-          const runtimeEnv = (Astro.locals as any)?.runtime?.env;
-          imageUrl = await uploadImageToR2(photoFile, runtimeEnv);
+          imageUrl = await uploadImageToSupabase(photoFile);
         }
       } else {
         errorMessage = "Image file is required.";
       }
 
       if (!errorMessage && title && imageUrl && category) {
-        const { error } = await supabase
+        const { error } = await getSupabase()
           .from('gallery_images')
           .insert({
             title,
@@ -122,13 +105,12 @@ if (Astro.request.method === "POST") {
         } else if (!["image/jpeg", "image/png", "image/jpg", "image/webp"].includes(photoFile.type)) {
           errorMessage = "Only JPEG, JPG, WEBP and PNG images are allowed.";
         } else {
-          const runtimeEnv = (Astro.locals as any)?.runtime?.env;
-          imageUrl = await uploadImageToR2(photoFile, runtimeEnv);
+          imageUrl = await uploadImageToSupabase(photoFile);
         }
       }
 
       if (!errorMessage && id && title && imageUrl && category) {
-        const { error } = await supabase
+        const { error } = await getSupabase()
           .from('gallery_images')
           .update({
             title,
@@ -152,7 +134,7 @@ if (Astro.request.method === "POST") {
 
 // Fetch gallery images
 try {
-  const { data, error } = await supabase
+  const { data, error } = await getSupabase()
     .from('gallery_images')
     .select('*')
     .order('id', { ascending: false });
