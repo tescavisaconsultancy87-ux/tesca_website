@@ -23,5 +23,7 @@ export default defineConfig({
       exclude: ['audit', 'xray', 'lucide-react'], 
     },
   },
-  adapter: isDev ? undefined : cloudflare()
+  adapter: isDev ? undefined : cloudflare({
+    imageService: 'passthrough',
+  })
 });

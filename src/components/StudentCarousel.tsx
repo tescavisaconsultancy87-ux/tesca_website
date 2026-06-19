@@ -212,8 +212,3 @@ export default function StudentCarousel({ stories = [] }: { stories?: D1Story[] 
     </div>
   );
 }
-        </div>
-      </div>
-    </div>
-  );
-}
