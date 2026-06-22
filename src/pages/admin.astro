@@ -116,6 +116,12 @@ if (isAuthenticated) {
         </div>
       )}
 
+      {/* Client-side error container */}
+      <div id="client-error-container" class="hidden flex items-center gap-3 p-4 bg-rose-50 border border-rose-200 rounded-2xl text-rose-600 text-sm mb-6 font-medium">
+        <span set:html={SVG.AlertCircle} class="text-rose-500 shrink-0" />
+        <span id="client-error-message"></span>
+      </div>
+
       {/* Card */}
       <div class="bg-white border border-slate-200 rounded-3xl p-8 shadow-lg">
         <div class="w-12 h-12 rounded-2xl bg-indigo-50 text-indigo-600 flex items-center justify-center mx-auto mb-6 border border-indigo-100">
@@ -189,6 +195,49 @@ if (isAuthenticated) {
 
           {/* Status message area */}
           <div id="reset-status" class="mt-4 hidden"></div>
+        </div>
+
+        {/* Set New Password Form — hidden by default */}
+        <div id="reset-password-form-wrapper" class="hidden">
+          <div class="text-center mb-5">
+            <h2 class="text-lg font-extrabold text-slate-800 tracking-tight">Set New Password</h2>
+            <p class="text-xs text-slate-500 mt-1">Enter your new administrator security password.</p>
+          </div>
+
+          <div class="space-y-5">
+            <div class="space-y-1.5">
+              <label for="new-password" class="text-xs font-bold text-slate-600 uppercase tracking-wider">New Password</label>
+              <input 
+                type="password" 
+                id="new-password" 
+                required 
+                class="w-full px-4 py-3 rounded-xl border border-slate-200 bg-slate-50 text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/30 focus:border-indigo-500 font-sans text-sm transition-all"
+                placeholder="••••••••"
+              />
+            </div>
+
+            <div class="space-y-1.5">
+              <label for="confirm-password" class="text-xs font-bold text-slate-600 uppercase tracking-wider">Confirm New Password</label>
+              <input 
+                type="password" 
+                id="confirm-password" 
+                required 
+                class="w-full px-4 py-3 rounded-xl border border-slate-200 bg-slate-50 text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/30 focus:border-indigo-500 font-sans text-sm transition-all"
+                placeholder="••••••••"
+              />
+            </div>
+
+            <button
+              type="button"
+              id="update-password-btn"
+              class="w-full py-3.5 bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-sm rounded-xl transition-all cursor-pointer shadow-md hover:scale-[1.01] flex items-center justify-center gap-2 disabled:opacity-50 disabled:scale-100 disabled:cursor-not-allowed"
+            >
+              <span id="update-password-btn-text">Update Password</span>
+            </button>
+          </div>
+
+          {/* Status message area */}
+          <div id="reset-password-status" class="mt-4 hidden"></div>
         </div>
 
         {/* Toggle link */}
@@ -328,7 +377,148 @@ if (isAuthenticated) {
     }
   }
 
+  function setupRecoveryFlow() {
+    const hash = window.location.hash.substring(1);
+    if (!hash) return;
+
+    const params = new URLSearchParams(hash);
+    const accessToken = params.get('access_token');
+    const refreshToken = params.get('refresh_token');
+    const type = params.get('type');
+    const error = params.get('error');
+    const errorDescription = params.get('error_description');
+
+    const clientErrorContainer = document.getElementById('client-error-container');
+    const clientErrorMessage = document.getElementById('client-error-message');
+
+    if (error || errorDescription) {
+      // Clear hash so page reload doesn't keep showing the error
+      window.location.hash = '';
+      
+      if (clientErrorContainer && clientErrorMessage) {
+        clientErrorMessage.textContent = decodeURIComponent(errorDescription || error || 'Recovery link invalid or expired.');
+        clientErrorContainer.classList.remove('hidden');
+      }
+      return;
+    }
+
+    if (type === 'recovery' && accessToken && refreshToken) {
+      const loginForm = document.getElementById('login-form');
+      const forgotWrapper = document.getElementById('forgot-form-wrapper');
+      const toggleForgotBtn = document.getElementById('toggle-forgot');
+      const resetPasswordWrapper = document.getElementById('reset-password-form-wrapper');
+      const updatePasswordBtn = document.getElementById('update-password-btn');
+      const newPasswordInput = document.getElementById('new-password') as HTMLInputElement;
+      const confirmPasswordInput = document.getElementById('confirm-password') as HTMLInputElement;
+      const resetPasswordStatus = document.getElementById('reset-password-status');
+
+      // Hide login and forgot forms
+      if (loginForm) loginForm.classList.add('hidden');
+      if (forgotWrapper) forgotWrapper.classList.add('hidden');
+      if (toggleForgotBtn) toggleForgotBtn.classList.add('hidden');
+
+      // Show reset password form
+      if (resetPasswordWrapper) {
+        resetPasswordWrapper.classList.remove('hidden');
+      }
+
+      // Handle updating the password
+      if (updatePasswordBtn) {
+        // Clone to remove existing listeners
+        const newBtn = updatePasswordBtn.cloneNode(true) as HTMLButtonElement;
+        updatePasswordBtn.parentNode?.replaceChild(newBtn, updatePasswordBtn);
+
+        newBtn.addEventListener('click', async () => {
+          const newPassword = newPasswordInput?.value;
+          const confirmPassword = confirmPasswordInput?.value;
+
+          if (!newPassword || newPassword.length < 6) {
+            showResetStatus('Password must be at least 6 characters.', 'error');
+            return;
+          }
+
+          if (newPassword !== confirmPassword) {
+            showResetStatus('Passwords do not match.', 'error');
+            return;
+          }
+
+          newBtn.disabled = true;
+          const textSpan = newBtn.querySelector('#update-password-btn-text');
+          if (textSpan) textSpan.textContent = 'Updating...';
+
+          try {
+            const { getSupabase } = await import('../utils/supabase');
+            const supabase = getSupabase();
+
+            // Set the session first so we are authenticated
+            const { error: sessionError } = await supabase.auth.setSession({
+              access_token: accessToken,
+              refresh_token: refreshToken,
+            });
+
+            if (sessionError) throw sessionError;
+
+            // Update user password
+            const { error: updateError } = await supabase.auth.updateUser({
+              password: newPassword,
+            });
+
+            if (updateError) throw updateError;
+
+            // Set cookies on the server so they are logged in on the SSR pages
+            const setSessionRes = await fetch('/api/set-session', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                access_token: accessToken,
+                refresh_token: refreshToken,
+                expires_in: 3600,
+              }),
+            });
+
+            if (!setSessionRes.ok) {
+              throw new Error('Failed to establish secure session cookies.');
+            }
+
+            showResetStatus('Password updated successfully! Redirecting...', 'success');
+            
+            // Clear hash
+            window.location.hash = '';
+
+            setTimeout(() => {
+              window.location.href = '/admin/dashboard';
+            }, 1500);
+
+          } catch (err: any) {
+            console.error('Password reset failure:', err);
+            showResetStatus(err.message || 'Failed to update password. Please request a new link.', 'error');
+            newBtn.disabled = false;
+            if (textSpan) textSpan.textContent = 'Update Password';
+          }
+        });
+      }
+
+      function showResetStatus(message: string, type: 'success' | 'error') {
+        if (!resetPasswordStatus) return;
+        resetPasswordStatus.classList.remove('hidden');
+        resetPasswordStatus.className = `mt-4 p-3.5 rounded-xl text-xs font-semibold flex items-center gap-2 ${
+          type === 'success'
+            ? 'bg-emerald-50 border border-emerald-200 text-emerald-700'
+            : 'bg-rose-50 border border-rose-200 text-rose-600'
+        }`;
+        const icon = type === 'success'
+          ? '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>'
+          : '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" x2="12" y1="8" y2="12"/><line x1="12" x2="12.01" y1="16" y2="16"/></svg>';
+        resetPasswordStatus.innerHTML = `<span class="shrink-0">${icon}</span><span>${message}</span>`;
+      }
+    }
+  }
+
   setupForgotPassword();
-  document.addEventListener('astro:page-load', setupForgotPassword);
+  setupRecoveryFlow();
+  document.addEventListener('astro:page-load', () => {
+    setupForgotPassword();
+    setupRecoveryFlow();
+  });
 </script>
 
