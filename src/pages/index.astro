@@ -310,72 +310,93 @@ try {
           </p>
         </div>
 
-        {/* Links Grid */}
-        <div class="flex flex-wrap gap-6 justify-center">
-          {socialCauses.map((cause) => (
-            <a 
-              href={cause.link_url} 
-              target="_blank" 
-              rel="noopener noreferrer"
-              class="flex-shrink-0 w-[230px] rounded-[1.5rem] border border-slate-200 bg-white hover:border-[#0A7880]/30 hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1 text-left relative group shadow-sm flex flex-col overflow-hidden h-full no-underline"
-            >
-              {/* Photo Box Container */}
-              <div class="relative w-full aspect-square overflow-hidden bg-slate-50 shrink-0">
-                <img 
-                  src={cause.thumbnail_url} 
-                  alt={cause.title} 
-                  class="w-full h-full object-cover group-hover:scale-[1.03] transition-transform duration-550 select-none" 
-                  loading="lazy" 
-                />
+        {/* Links Grid / Horizontal Slider */}
+        <div class="relative w-full group/slider">
+          <!-- Left Arrow Button -->
+          <button 
+            id="social-prev-btn" 
+            class="absolute left-2 top-1/2 -translate-y-1/2 z-20 w-10 h-10 rounded-full bg-white/90 backdrop-blur-md border border-slate-200 shadow-md flex items-center justify-center text-slate-700 hover:text-[#0A7880] hover:bg-white active:scale-95 transition-all md:opacity-0 md:group-hover/slider:opacity-100 md:-translate-x-5 md:group-hover/slider:translate-x-2 pointer-events-auto cursor-pointer"
+            aria-label="Previous"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="w-5 h-5"><path d="m15 18-6-6 6-6"/></svg>
+          </button>
+
+          <!-- Right Arrow Button -->
+          <button 
+            id="social-next-btn" 
+            class="absolute right-2 top-1/2 -translate-y-1/2 z-20 w-10 h-10 rounded-full bg-white/90 backdrop-blur-md border border-slate-200 shadow-md flex items-center justify-center text-slate-700 hover:text-[#0A7880] hover:bg-white active:scale-95 transition-all md:opacity-0 md:group-hover/slider:opacity-100 md:translate-x-5 md:group-hover/slider:-translate-x-2 pointer-events-auto cursor-pointer"
+            aria-label="Next"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="w-5 h-5"><path d="m9 18 6-6-6-6"/></svg>
+          </button>
+
+          <!-- Scrollable container -->
+          <div id="social-slider" class="flex gap-6 overflow-x-auto scroll-smooth [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden pb-6 px-2 select-none">
+            {socialCauses.map((cause) => (
+              <a 
+                href={cause.link_url} 
+                target="_blank" 
+                rel="noopener noreferrer"
+                class="flex-shrink-0 w-[230px] rounded-[1.5rem] border border-slate-200 bg-white hover:border-[#0A7880]/30 hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1 text-left relative group shadow-sm flex flex-col overflow-hidden h-full no-underline"
+              >
+                {/* Photo Box Container */}
+                <div class="relative w-full aspect-square overflow-hidden bg-slate-50 shrink-0">
+                  <img 
+                    src={cause.thumbnail_url} 
+                    alt={cause.title} 
+                    class="w-full h-full object-cover group-hover:scale-[1.03] transition-transform duration-550 select-none" 
+                    loading="lazy" 
+                  />
+                  
+                  {/* Platform Badge overlay on Top Right */}
+                  <div class="absolute top-3 right-3 bg-white/90 backdrop-blur-[2px] p-1.5 rounded-xl shadow-xs border border-slate-100 flex items-center justify-center">
+                    {cause.platform === "youtube" && (
+                      <span class="flex items-center text-red-600">
+                        <svg class="w-4 h-4 fill-current" viewBox="0 0 24 24">
+                          <path d="M23.498 6.163a3.003 3.003 0 0 0-2.11-2.108C19.524 3.545 12 3.545 12 3.545s-7.525 0-9.388.51a3.002 3.002 0 0 0-2.11 2.107C0 8.028 0 12 0 12s0 3.972.502 5.837a3.002 3.002 0 0 0 2.11 2.108C4.474 20.455 12 20.455 12 20.455s7.524 0 9.388-.51a3.002 3.002 0 0 0 2.11-2.108C24 15.972 24 12 24 12s0-3.972-.502-5.837zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/>
+                        </svg>
+                      </span>
+                    )}
+                    {cause.platform === "instagram" && (
+                      <span class="flex items-center text-pink-600">
+                        <svg class="w-4 h-4 stroke-current fill-none stroke-[2]" viewBox="0 0 24 24">
+                          <rect x="2" y="2" width="20" height="20" rx="5" ry="5"/>
+                          <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/>
+                          <line x1="17.5" x2="17.51" y1="6.5" y2="6.5"/>
+                        </svg>
+                      </span>
+                    )}
+                    {cause.platform === "facebook" && (
+                      <span class="flex items-center text-blue-600">
+                        <svg class="w-4 h-4 fill-current" viewBox="0 0 24 24">
+                          <path d="M9 8h-3v4h3v12h5v-12h3.642l.358-4h-4v-1.667c0-.955.192-1.333 1.115-1.333h2.885v-5h-3.808c-3.596 0-5.192 1.583-5.192 4.615v3.385z"/>
+                        </svg>
+                      </span>
+                    )}
+                  </div>
+                </div>
                 
-                {/* Platform Badge overlay on Top Right */}
-                <div class="absolute top-3 right-3 bg-white/90 backdrop-blur-[2px] p-1.5 rounded-xl shadow-xs border border-slate-100 flex items-center justify-center">
-                  {cause.platform === "youtube" && (
-                    <span class="flex items-center text-red-600">
-                      <svg class="w-4 h-4 fill-current" viewBox="0 0 24 24">
-                        <path d="M23.498 6.163a3.003 3.003 0 0 0-2.11-2.108C19.524 3.545 12 3.545 12 3.545s-7.525 0-9.388.51a3.002 3.002 0 0 0-2.11 2.107C0 8.028 0 12 0 12s0 3.972.502 5.837a3.002 3.002 0 0 0 2.11 2.108C4.474 20.455 12 20.455 12 20.455s7.524 0 9.388-.51a3.002 3.002 0 0 0 2.11-2.108C24 15.972 24 12 24 12s0-3.972-.502-5.837zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/>
-                      </svg>
+                {/* Info Text Area */}
+                <div class="p-4 flex flex-col justify-between flex-grow bg-white border-t border-slate-50">
+                  <div>
+                    <h4 class="text-sm font-bold text-slate-800 font-display line-clamp-2 leading-snug group-hover:text-[#0A7880] transition-colors">
+                      {cause.title}
+                    </h4>
+                  </div>
+                  
+                  {/* Score badge / action at bottom */}
+                  <div class="flex items-center justify-between mt-3.5 pt-3 border-t border-slate-100">
+                    <span class="text-[12px] font-extrabold text-[#0A7880] font-display">
+                      View Post ➔
                     </span>
-                  )}
-                  {cause.platform === "instagram" && (
-                    <span class="flex items-center text-pink-600">
-                      <svg class="w-4 h-4 stroke-current fill-none stroke-[2]" viewBox="0 0 24 24">
-                        <rect x="2" y="2" width="20" height="20" rx="5" ry="5"/>
-                        <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/>
-                        <line x1="17.5" x2="17.51" y1="6.5" y2="6.5"/>
-                      </svg>
+                    <span class="text-[9.5px] text-slate-400 font-bold uppercase tracking-wider">
+                      {cause.platform}
                     </span>
-                  )}
-                  {cause.platform === "facebook" && (
-                    <span class="flex items-center text-blue-600">
-                      <svg class="w-4 h-4 fill-current" viewBox="0 0 24 24">
-                        <path d="M9 8h-3v4h3v12h5v-12h3.642l.358-4h-4v-1.667c0-.955.192-1.333 1.115-1.333h2.885v-5h-3.808c-3.596 0-5.192 1.583-5.192 4.615v3.385z"/>
-                      </svg>
-                    </span>
-                  )}
+                  </div>
                 </div>
-              </div>
-              
-              {/* Info Text Area */}
-              <div class="p-4 flex flex-col justify-between flex-grow bg-white border-t border-slate-50">
-                <div>
-                  <h4 class="text-sm font-bold text-slate-800 font-display line-clamp-2 leading-snug group-hover:text-accent-indigo transition-colors">
-                    {cause.title}
-                  </h4>
-                </div>
-                
-                {/* Score badge / action at bottom */}
-                <div class="flex items-center justify-between mt-3.5 pt-3 border-t border-slate-100">
-                  <span class="text-[12px] font-extrabold text-[#0A7880] font-display">
-                    View Post ➔
-                  </span>
-                  <span class="text-[9.5px] text-slate-400 font-bold uppercase tracking-wider">
-                    {cause.platform}
-                  </span>
-                </div>
-              </div>
-            </a>
-          ))}
+              </a>
+            ))}
+          </div>
         </div>
 
       </div>
@@ -721,6 +742,52 @@ Expert guidance, top universities, and visa success—everything you need to tak
     }, { once: true });
   }
 
+  function initSocialSlider() {
+    const slider = document.getElementById("social-slider");
+    const prevBtn = document.getElementById("social-prev-btn");
+    const nextBtn = document.getElementById("social-next-btn");
+
+    if (!slider || !prevBtn || !nextBtn) return;
+
+    // Amount to scroll: card width (230px) + gap (24px) = 254px
+    const scrollAmount = 254;
+
+    prevBtn.addEventListener("click", () => {
+      slider.scrollBy({ left: -scrollAmount, behavior: "smooth" });
+    });
+
+    nextBtn.addEventListener("click", () => {
+      slider.scrollBy({ left: scrollAmount, behavior: "smooth" });
+    });
+
+    function toggleButtons() {
+      const isAtStart = slider.scrollLeft <= 5;
+      const isAtEnd = slider.scrollLeft + slider.clientWidth >= slider.scrollWidth - 5;
+      
+      if (isAtStart) {
+        prevBtn.classList.add("pointer-events-none", "opacity-0");
+      } else {
+        prevBtn.classList.remove("pointer-events-none", "opacity-0");
+      }
+      
+      if (isAtEnd) {
+        nextBtn.classList.add("pointer-events-none", "opacity-0");
+      } else {
+        nextBtn.classList.remove("pointer-events-none", "opacity-0");
+      }
+    }
+
+    slider.addEventListener("scroll", toggleButtons);
+    toggleButtons();
+    
+    // Check again on load/resize to handle dynamic layouts correctly
+    window.addEventListener("load", toggleButtons);
+    window.addEventListener("resize", toggleButtons);
+  }
+
   // Bind to page load event
-  document.addEventListener('astro:page-load', initHeroSlider);
+  document.addEventListener('astro:page-load', () => {
+    initHeroSlider();
+    initSocialSlider();
+  });
 </script>
