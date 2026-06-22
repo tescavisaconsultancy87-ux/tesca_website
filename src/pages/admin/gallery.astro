@@ -21,6 +21,33 @@ let galleryImages = [];
 let successMessage = "";
 let errorMessage = "";
 
+// Fallback images used by the public gallery when DB is empty
+const fallbackClassroom = [
+  { title: "Personal Career Counselling", desc: "One-on-one guidance to help students choose the right country, university, and career pathway.", img: "/images/consultation_gallery.png" },
+  { title: "Student Departure Support", desc: "Comprehensive assistance for travel planning, documentation checks, and departure readiness.", img: "/images/student_abroad_new.png" },
+  { title: "Pre-Visa Preparation", desc: "Expert guidance on visa requirements, documentation, and interview preparation.", img: "/images/services_hero_gallery.png" },
+  { title: "Academic Profile Evaluation", desc: "Detailed assessment of academic records and eligibility for study abroad opportunities.", img: "/images/consultation_new.png" },
+  { title: "IELTS Practice & Assessment", desc: "Real exam-style mock tests designed to improve language proficiency and exam readiness.", img: "/images/testprep_hero_new.png" },
+  { title: "University Admission Support", desc: "Professional assistance with university selection, applications, and admission processes.", img: "/images/university_support.png" },
+  { title: "Visa Documentation Support", desc: "Step-by-step help with SOPs, financial documents, and visa application requirements.", img: "/images/visa_support.png" },
+  { title: "Scholarship Guidance Services", desc: "Helping students identify and apply for scholarships to reduce study costs.", img: "/images/scholarship_new.png" },
+  { title: "Study Abroad Workshops", desc: "Informative seminars covering admissions, visas, scholarships, and student life abroad.", img: "/images/workshop_new.png" },
+  { title: "Career Planning Sessions", desc: "Personalized advice to align education choices with long-term career goals.", img: "/images/consultation.png" }
+];
+
+const fallbackCampus = [
+  { title: "Successful Student Placements", desc: "Celebrating students who achieved admissions and visa approvals for their dream destinations.", img: "/images/graduating_students_new.png" },
+  { title: "Global Education Opportunities", desc: "Exploring international study destinations and future career possibilities worldwide.", img: "/images/global_new.png" },
+  { title: "Pre-Departure Orientation", desc: "Preparing students for life abroad through practical guidance and support sessions.", img: "/images/pre_new.png" },
+  { title: "Admission Success Milestones", desc: "Supporting students from application submission to receiving university offer letters.", img: "/images/milestone_new.png" },
+  { title: "International Student Network", desc: "Connecting aspiring students with alumni and current international students for guidance.", img: "/images/mock_new.png" },
+  { title: "Application Review Support", desc: "Ensuring applications are complete, accurate, and ready for university submission.", img: "/images/support_new.png" },
+  { title: "English Language Training", desc: "Expert coaching for IELTS, PTE, TOEFL, and Spoken English improvement.", img: "/images/training_new.png" },
+  { title: "Visa Interview Coaching", desc: "Mock interviews and confidence-building sessions for successful visa outcomes.", img: "/images/coaching_new.png" },
+  { title: "Student Success Community", desc: "A supportive environment where students share experiences and achievements.", img: "/images/community_new.png" },
+  { title: "Global Study Pathways", desc: "Guiding students toward internationally recognized qualifications and career growth.", img: "/images/pathways_new.png" }
+];
+
 // Helper to upload file to Supabase Storage
 const uploadImageToSupabase = async (photoFile: File): Promise<string> => {
   const sb = getSupabase();
@@ -234,8 +261,35 @@ try {
 
       {/* List Images */}
       {galleryImages.length === 0 ? (
-        <div class="bg-white border border-slate-200 rounded-3xl p-12 text-center shadow-sm">
-          <p class="text-sm text-slate-500">No images added in the database gallery. The public gallery is currently running on hardcoded fallbacks.</p>
+        <div class="space-y-8">
+          <div class="bg-white border border-slate-200 rounded-3xl p-6 shadow-sm">
+            <h2 class="text-base font-bold text-slate-800 mb-2">Classroom Moments (Static Fallbacks)</h2>
+            <p class="text-xs text-slate-500 mb-6">The public gallery currently shows these hardcoded images. Use the "Add New" button to add them to the database for full management.</p>
+            <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
+              {fallbackClassroom.map((item) => (
+                <div class="rounded-xl overflow-hidden border border-slate-200 bg-slate-50 text-left">
+                  <img src={item.img} alt={item.title} class="w-full h-24 object-cover" />
+                  <div class="p-3">
+                    <p class="text-[11px] font-bold text-slate-700 leading-tight">{item.title}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+          <div class="bg-white border border-slate-200 rounded-3xl p-6 shadow-sm">
+            <h2 class="text-base font-bold text-slate-800 mb-2">Global Placements & Campus Success (Static Fallbacks)</h2>
+            <p class="text-xs text-slate-500 mb-6">Same as above — campus success images currently using hardcoded files.</p>
+            <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
+              {fallbackCampus.map((item) => (
+                <div class="rounded-xl overflow-hidden border border-slate-200 bg-slate-50 text-left">
+                  <img src={item.img} alt={item.title} class="w-full h-24 object-cover" />
+                  <div class="p-3">
+                    <p class="text-[11px] font-bold text-slate-700 leading-tight">{item.title}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
         </div>
       ) : (
         <div class="bg-white border border-slate-200 rounded-3xl overflow-hidden shadow-sm">
