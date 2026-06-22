@@ -7,8 +7,8 @@ const SVG = {
   AlertCircle: _s('<circle cx="12" cy="12" r="10"/><line x1="12" x2="12" y1="8" y2="12"/><line x1="12" x2="12.01" y1="16" y2="16"/>', 20),
 };
 import { supabase } from "../utils/supabase";
-import { checkAdminAuth, signSessionToken } from "../utils/adminAuth";
-import { getEnv } from "../utils/env";
+import { checkAdminAuth } from "../utils/adminAuth";
+
 
 let errorMessage = "";
 
@@ -40,11 +40,6 @@ if (Astro.request.method === "POST") {
           let isAllowed = false;
           if (!dbError && adminRecord) {
             isAllowed = true;
-          } else if (dbError && dbError.message.includes('does not exist')) {
-            const expectedEmail = getEnv("ADMIN_EMAIL") || import.meta.env.ADMIN_EMAIL || "admin@tesca.com";
-            if (data.user.email === expectedEmail) {
-              isAllowed = true;
-            }
           }
 
           if (isAllowed) {
@@ -67,26 +62,7 @@ if (Astro.request.method === "POST") {
             errorMessage = "Access denied: Your email is not registered as an administrator.";
           }
         } else {
-          // 2. Fallback to Env variable check
-          const expectedEmail = getEnv("ADMIN_EMAIL") || import.meta.env.ADMIN_EMAIL || "admin@tesca.com";
-          const expectedPassword = getEnv("ADMIN_PASSWORD") || import.meta.env.ADMIN_PASSWORD || "admin1234";
-
-          if (email === expectedEmail && password === expectedPassword) {
-            const oneDaySecs = 60 * 60 * 24;
-            const expiresAt = Date.now() + (oneDaySecs * 1000);
-            const dynamicToken = await signSessionToken(email, expiresAt, expectedPassword);
-            Astro.cookies.set("admin_session", dynamicToken, {
-              path: "/",
-              httpOnly: true,
-              secure: true,
-              maxAge: oneDaySecs, // 1 day
-            });
-            Astro.cookies.delete("sb-access-token", { path: "/" });
-            Astro.cookies.delete("sb-refresh-token", { path: "/" });
-            return Astro.redirect("/admin/dashboard");
-          } else {
-            errorMessage = error?.message || "Invalid email or password credentials.";
-          }
+          errorMessage = error?.message || "Invalid email or password credentials.";
         }
       } else {
         errorMessage = "Email and password are required.";
@@ -146,7 +122,8 @@ if (isAuthenticated) {
           <span set:html={SVG.ShieldAlert} />
         </div>
         
-        <form method="POST" class="space-y-5">
+        {/* Login Form */}
+        <form method="POST" class="space-y-5" id="login-form">
           <input type="hidden" name="action" value="login" />
           
           <div class="space-y-1.5">
@@ -181,6 +158,49 @@ if (isAuthenticated) {
             Authenticate Credentials
           </button>
         </form>
+
+        {/* Forgot Password Form — hidden by default */}
+        <div id="forgot-form-wrapper" class="hidden">
+          <div class="text-center mb-5">
+            <h2 class="text-lg font-extrabold text-slate-800 tracking-tight">Reset Password</h2>
+            <p class="text-xs text-slate-500 mt-1">Enter your admin email and we'll send a secure reset link.</p>
+          </div>
+
+          <div class="space-y-5">
+            <div class="space-y-1.5">
+              <label for="reset-email" class="text-xs font-bold text-slate-600 uppercase tracking-wider">Admin Email Address</label>
+              <input 
+                type="email" 
+                id="reset-email" 
+                required 
+                class="w-full px-4 py-3 rounded-xl border border-slate-200 bg-slate-50 text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/30 focus:border-indigo-500 font-sans text-sm transition-all"
+                placeholder="admin@example.com"
+              />
+            </div>
+
+            <button
+              type="button"
+              id="reset-btn"
+              class="w-full py-3.5 bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-sm rounded-xl transition-all cursor-pointer shadow-md hover:scale-[1.01] flex items-center justify-center gap-2 disabled:opacity-50 disabled:scale-100 disabled:cursor-not-allowed"
+            >
+              <span id="reset-btn-text">Send Reset Link</span>
+            </button>
+          </div>
+
+          {/* Status message area */}
+          <div id="reset-status" class="mt-4 hidden"></div>
+        </div>
+
+        {/* Toggle link */}
+        <div class="text-center mt-5">
+          <button 
+            type="button" 
+            id="toggle-forgot" 
+            class="text-xs font-semibold text-indigo-600 hover:text-indigo-500 transition-colors cursor-pointer bg-transparent border-none"
+          >
+            Forgot your password?
+          </button>
+        </div>
       </div>
 
 
@@ -194,3 +214,121 @@ if (isAuthenticated) {
 
   </div>
 </Layout>
+
+<script>
+  function setupForgotPassword() {
+    const loginForm = document.getElementById('login-form') as HTMLFormElement;
+    const forgotWrapper = document.getElementById('forgot-form-wrapper') as HTMLElement;
+    const toggleBtn = document.getElementById('toggle-forgot') as HTMLButtonElement;
+    const resetBtn = document.getElementById('reset-btn') as HTMLButtonElement;
+    const resetBtnText = document.getElementById('reset-btn-text') as HTMLSpanElement;
+    const resetEmail = document.getElementById('reset-email') as HTMLInputElement;
+    const resetStatus = document.getElementById('reset-status') as HTMLElement;
+
+    if (!loginForm || !forgotWrapper || !toggleBtn || !resetBtn) return;
+
+    let showingForgot = false;
+    let cooldownSeconds = 0;
+    let cooldownInterval: ReturnType<typeof setInterval> | null = null;
+
+    // Toggle between login and forgot password views
+    toggleBtn.addEventListener('click', () => {
+      showingForgot = !showingForgot;
+      if (showingForgot) {
+        loginForm.classList.add('hidden');
+        forgotWrapper.classList.remove('hidden');
+        toggleBtn.textContent = '← Back to Sign In';
+        resetStatus.classList.add('hidden');
+        resetEmail.value = '';
+        resetEmail.focus();
+      } else {
+        loginForm.classList.remove('hidden');
+        forgotWrapper.classList.add('hidden');
+        toggleBtn.textContent = 'Forgot your password?';
+      }
+    });
+
+    // Send reset request
+    resetBtn.addEventListener('click', async () => {
+      const email = resetEmail.value.trim().toLowerCase();
+
+      // Client-side validation
+      if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+        showStatus('Please enter a valid email address.', 'error');
+        return;
+      }
+
+      // Disable button and show loading
+      resetBtn.disabled = true;
+      resetBtnText.textContent = 'Sending...';
+
+      try {
+        const res = await fetch('/api/forgot-password', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email }),
+        });
+
+        const data = await res.json();
+
+        if (res.ok && data.success) {
+          showStatus(data.message, 'success');
+          startCooldown(60); // 60-second cooldown before allowing another attempt
+        } else {
+          showStatus(data.message || 'Something went wrong. Please try again.', 'error');
+        }
+      } catch (err) {
+        showStatus('Network error. Please check your connection and try again.', 'error');
+      } finally {
+        if (cooldownSeconds <= 0) {
+          resetBtn.disabled = false;
+          resetBtnText.textContent = 'Send Reset Link';
+        }
+      }
+    });
+
+    // Allow Enter key on the email input
+    resetEmail.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        resetBtn.click();
+      }
+    });
+
+    function showStatus(message: string, type: 'success' | 'error') {
+      resetStatus.classList.remove('hidden');
+      resetStatus.className = `mt-4 p-3.5 rounded-xl text-xs font-semibold flex items-center gap-2 ${
+        type === 'success'
+          ? 'bg-emerald-50 border border-emerald-200 text-emerald-700'
+          : 'bg-rose-50 border border-rose-200 text-rose-600'
+      }`;
+      const icon = type === 'success'
+        ? '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>'
+        : '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" x2="12" y1="8" y2="12"/><line x1="12" x2="12.01" y1="16" y2="16"/></svg>';
+      resetStatus.innerHTML = `<span class="shrink-0">${icon}</span><span>${message}</span>`;
+    }
+
+    function startCooldown(seconds: number) {
+      cooldownSeconds = seconds;
+      resetBtn.disabled = true;
+      resetBtnText.textContent = `Retry in ${cooldownSeconds}s`;
+
+      if (cooldownInterval) clearInterval(cooldownInterval);
+      cooldownInterval = setInterval(() => {
+        cooldownSeconds--;
+        if (cooldownSeconds <= 0) {
+          if (cooldownInterval) clearInterval(cooldownInterval);
+          cooldownInterval = null;
+          resetBtn.disabled = false;
+          resetBtnText.textContent = 'Send Reset Link';
+        } else {
+          resetBtnText.textContent = `Retry in ${cooldownSeconds}s`;
+        }
+      }, 1000);
+    }
+  }
+
+  setupForgotPassword();
+  document.addEventListener('astro:page-load', setupForgotPassword);
+</script>
+

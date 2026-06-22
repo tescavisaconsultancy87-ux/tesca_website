@@ -1,5 +1,4 @@
 import { supabase } from "./supabase";
-import { getEnv } from "./env";
 
 // Cryptographic hash token helper for legacy session fallback (deprecated, kept for compatibility if needed)
 export async function hashToken(password: string): Promise<string> {
@@ -49,9 +48,8 @@ export async function verifySessionToken(token: string | null | undefined, secre
   return token === expectedToken;
 }
 
-// Authenticate session cookie
+// Authenticate session cookie — uses Supabase Auth + admins table only
 export async function checkAdminAuth(cookies: any): Promise<boolean> {
-  // 1. Try Supabase Auth session first
   const accessToken = cookies.get("sb-access-token")?.value;
   const refreshToken = cookies.get("sb-refresh-token")?.value;
   
@@ -69,23 +67,12 @@ export async function checkAdminAuth(cookies: any): Promise<boolean> {
         if (!dbError && adminRecord) {
           return true;
         }
-
-        // Fallback to check if table doesn't exist yet (migration safety)
-        if (dbError && dbError.message.includes('does not exist')) {
-          const expectedEmail = getEnv("ADMIN_EMAIL") || import.meta.env.ADMIN_EMAIL || "admin@tesca.com";
-          if (user.email === expectedEmail) {
-            return true;
-          }
-        }
       }
     } catch (err) {
       console.error("Supabase getUser failed:", err);
     }
   }
 
-  // 2. Fallback to legacy session cookie check
-  const expectedPassword = getEnv("ADMIN_PASSWORD") || import.meta.env.ADMIN_PASSWORD || "admin1234";
-  const sessionCookie = cookies.get("admin_session")?.value;
-  return await verifySessionToken(sessionCookie, expectedPassword);
+  return false;
 }
 
