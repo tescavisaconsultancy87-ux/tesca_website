@@ -357,6 +357,8 @@ try {
 </Layout>
 
 <script>
+  import { openCropModal } from "../../scripts/image-cropper";
+
   function showAddForm() {
     const panel = document.getElementById("gallery-form-panel");
     if (panel) {
@@ -436,24 +438,35 @@ try {
       });
     }
 
-    // Client-side file preview & validation
+    // Client-side file validation + crop modal
     const fileInput = document.getElementById("g-photo-file") as HTMLInputElement;
     if (fileInput && !(fileInput as any)._bound) {
       (fileInput as any)._bound = true;
-      fileInput.addEventListener("change", () => {
+      fileInput.addEventListener("change", async () => {
         const file = fileInput.files?.[0];
-        if (file) {
-          if (file.size > 2 * 1024 * 1024) {
-            alert("Warning: Image size must be less than 2MB.");
-            fileInput.value = "";
-            return;
-          }
-          if (!["image/jpeg", "image/png", "image/jpg", "image/webp"].includes(file.type)) {
-            alert("Warning: Only JPEG, JPG, PNG and WEBP images are allowed.");
-            fileInput.value = "";
-            return;
-          }
-          
+        if (!file) return;
+
+        if (file.size > 2 * 1024 * 1024) {
+          alert("Warning: Image size must be less than 2MB.");
+          fileInput.value = "";
+          return;
+        }
+        if (!["image/jpeg", "image/png", "image/jpg", "image/webp"].includes(file.type)) {
+          alert("Warning: Only JPEG, JPG, PNG and WEBP images are allowed.");
+          fileInput.value = "";
+          return;
+        }
+
+        const category = (document.getElementById("g-category") as HTMLSelectElement)?.value || "classroom";
+        const aspectRatio = category === "campus" ? 16 / 10 : 4 / 3;
+
+        try {
+          const croppedBlob = await openCropModal({ aspectRatio, file });
+          const croppedFile = new File([croppedBlob], file.name.replace(/\.[^.]+$/, ".jpg"), { type: "image/jpeg" });
+          const dt = new DataTransfer();
+          dt.items.add(croppedFile);
+          fileInput.files = dt.files;
+
           const reader = new FileReader();
           reader.onload = (e) => {
             const previewContainer = document.getElementById("photo-preview-container");
@@ -463,7 +476,9 @@ try {
               previewImg.src = e.target.result as string;
             }
           };
-          reader.readAsDataURL(file);
+          reader.readAsDataURL(croppedFile);
+        } catch {
+          fileInput.value = "";
         }
       });
     }
