@@ -120,11 +120,11 @@ export default function StudentCarousel({ stories = [] }: { stories?: D1Story[] 
             const cardContent = (
               <div className="flex-shrink-0 w-[260px] rounded-[1.5rem] border border-slate-200 bg-white hover:border-[#0A7880]/30 hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1 text-left relative group shadow-sm flex flex-col overflow-hidden h-full">
                 {/* Photo Box Container */}
-                <div className="relative w-full aspect-[4/5] overflow-hidden bg-slate-50 shrink-0">
+                <div className="relative w-full aspect-[4/5] overflow-hidden bg-white shrink-0">
                   <img
                     src={student.photo}
                     alt={student.name}
-                    className="w-full h-full object-cover group-hover:scale-[1.03] transition-transform duration-550 select-none"
+                    className="w-full h-full object-contain group-hover:scale-[1.03] transition-transform duration-550 select-none"
                     loading="lazy"
                   />
                   
