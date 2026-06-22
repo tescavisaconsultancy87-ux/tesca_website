@@ -20,6 +20,8 @@ if (!isAuthenticated) {
 let galleryImages = [];
 let successMessage = "";
 let errorMessage = "";
+let classroomCount = 0;
+let campusCount = 0;
 
 // Fallback images used by the public gallery when DB is empty
 const fallbackClassroom = [
@@ -188,6 +190,8 @@ try {
 
   if (error) throw error;
   galleryImages = data || [];
+  classroomCount = galleryImages.filter(i => i.category === 'classroom').length;
+  campusCount = galleryImages.filter(i => i.category === 'campus').length;
 } catch (err) {
   console.error("Failed to load gallery images:", err);
   errorMessage = "Failed to load database records.";
@@ -280,49 +284,8 @@ try {
       </div>
 
       {/* List Images */}
-      {galleryImages.length === 0 ? (
-        <div class="space-y-8">
-          <div class="bg-white border border-slate-200 rounded-3xl p-6 shadow-sm">
-            <div class="flex items-center justify-between mb-2">
-              <h2 class="text-base font-bold text-slate-800">Classroom Moments (Static Fallbacks)</h2>
-              <button type="button" class="import-fallbacks-btn px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-[11px] rounded-xl transition-all cursor-pointer shadow-sm" data-category="classroom">
-                Import All to Database
-              </button>
-            </div>
-            <p class="text-xs text-slate-500 mb-6">Import these images to enable editing, deleting, and dashboard counting.</p>
-            <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
-              {fallbackClassroom.map((item) => (
-                <div class="rounded-xl overflow-hidden border border-slate-200 bg-slate-50 text-left">
-                  <img src={item.img} alt={item.title} class="w-full h-24 object-cover" />
-                  <div class="p-3">
-                    <p class="text-[11px] font-bold text-slate-700 leading-tight">{item.title}</p>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-          <div class="bg-white border border-slate-200 rounded-3xl p-6 shadow-sm">
-            <div class="flex items-center justify-between mb-2">
-              <h2 class="text-base font-bold text-slate-800">Global Placements & Campus Success (Static Fallbacks)</h2>
-              <button type="button" class="import-fallbacks-btn px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-[11px] rounded-xl transition-all cursor-pointer shadow-sm" data-category="campus">
-                Import All to Database
-              </button>
-            </div>
-            <p class="text-xs text-slate-500 mb-6">Import these images to enable editing, deleting, and dashboard counting.</p>
-            <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
-              {fallbackCampus.map((item) => (
-                <div class="rounded-xl overflow-hidden border border-slate-200 bg-slate-50 text-left">
-                  <img src={item.img} alt={item.title} class="w-full h-24 object-cover" />
-                  <div class="p-3">
-                    <p class="text-[11px] font-bold text-slate-700 leading-tight">{item.title}</p>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-      ) : (
-        <div class="bg-white border border-slate-200 rounded-3xl overflow-hidden shadow-sm">
+      {galleryImages.length > 0 && (
+        <div class="bg-white border border-slate-200 rounded-3xl overflow-hidden shadow-sm mb-8">
           <div class="overflow-x-auto w-full">
             <table class="w-full min-w-[750px] text-left border-collapse text-xs">
               <thead>
@@ -381,6 +344,52 @@ try {
           </div>
         </div>
       )}
+
+      {/* Import fallback sections - shown per category when that category has 0 images */}
+      <div class="space-y-8">
+        {classroomCount === 0 && (
+          <div class="bg-white border border-slate-200 rounded-3xl p-6 shadow-sm">
+            <div class="flex items-center justify-between mb-2">
+              <h2 class="text-base font-bold text-slate-800">Classroom Moments (Static Fallbacks)</h2>
+              <button type="button" class="import-fallbacks-btn px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-[11px] rounded-xl transition-all cursor-pointer shadow-sm" data-category="classroom">
+                Import All to Database
+              </button>
+            </div>
+            <p class="text-xs text-slate-500 mb-6">Import these images to enable editing, deleting, and dashboard counting.</p>
+            <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
+              {fallbackClassroom.map((item) => (
+                <div class="rounded-xl overflow-hidden border border-slate-200 bg-slate-50 text-left">
+                  <img src={item.img} alt={item.title} class="w-full h-24 object-cover" />
+                  <div class="p-3">
+                    <p class="text-[11px] font-bold text-slate-700 leading-tight">{item.title}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+        {campusCount === 0 && (
+          <div class="bg-white border border-slate-200 rounded-3xl p-6 shadow-sm">
+            <div class="flex items-center justify-between mb-2">
+              <h2 class="text-base font-bold text-slate-800">Global Placements & Campus Success (Static Fallbacks)</h2>
+              <button type="button" class="import-fallbacks-btn px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-[11px] rounded-xl transition-all cursor-pointer shadow-sm" data-category="campus">
+                Import All to Database
+              </button>
+            </div>
+            <p class="text-xs text-slate-500 mb-6">Import these images to enable editing, deleting, and dashboard counting.</p>
+            <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
+              {fallbackCampus.map((item) => (
+                <div class="rounded-xl overflow-hidden border border-slate-200 bg-slate-50 text-left">
+                  <img src={item.img} alt={item.title} class="w-full h-24 object-cover" />
+                  <div class="p-3">
+                    <p class="text-[11px] font-bold text-slate-700 leading-tight">{item.title}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+      </div>
 
     </main>
   </div>
