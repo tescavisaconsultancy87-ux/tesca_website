@@ -117,6 +117,13 @@ export default function CounsellorForm() {
     } catch (err: any) {
       console.error("Enquiry submission failed:", err);
       setStatus("failed");
+      setFirstName("");
+      setLastName("");
+      setEmail("");
+      setPhone("");
+      setMode("");
+      setDestination("");
+      setErrors({});
     }
   };
 

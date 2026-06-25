@@ -67,3 +67,39 @@ CREATE TABLE IF NOT EXISTS public.social_causes (
     created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
 );
 
+
+-- 6. Create Leads Table
+CREATE TABLE IF NOT EXISTS public.leads (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    lead_type TEXT NOT NULL,
+    name TEXT NOT NULL,
+    email TEXT,
+    phone TEXT NOT NULL,
+    details TEXT,
+    status TEXT DEFAULT 'pending' NOT NULL,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
+);
+
+-- Enable Row Level Security (RLS)
+ALTER TABLE public.leads ENABLE ROW LEVEL SECURITY;
+
+-- Allow public insert of leads (anon)
+CREATE POLICY "Allow public insert to leads table"
+ON public.leads
+FOR INSERT
+TO anon
+WITH CHECK (true);
+
+-- Allow authenticated admins to view and manage leads
+CREATE POLICY "Allow all actions for allowlisted admins on leads table"
+ON public.leads
+FOR ALL
+TO authenticated
+USING (
+  EXISTS (
+    SELECT 1 FROM public.admins a 
+    WHERE a.email = auth.jwt()->>'email'
+  )
+);
+
+
