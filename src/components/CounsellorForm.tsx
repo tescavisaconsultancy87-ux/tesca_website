@@ -29,10 +29,12 @@ export default function CounsellorForm() {
   const [destination, setDestination] = useState("");
   const [status, setStatus] = useState<"idle" | "sending" | "success" | "failed">("idle");
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [submitError, setSubmitError] = useState("");
 
   useEffect(() => {
     const handleOpen = () => {
       setStatus("idle");
+      setSubmitError("");
       setIsOpen(true);
     };
     window.addEventListener("open-counsellor-form", handleOpen);
@@ -99,7 +101,7 @@ export default function CounsellorForm() {
 
       const data = await response.json();
       if (!response.ok || !data.success) {
-        throw new Error(data.message || `HTTP error! status: ${response.status}`);
+        throw new Error(data.error || data.message || `HTTP error! status: ${response.status}`);
       }
 
       setStatus("success");
@@ -116,6 +118,7 @@ export default function CounsellorForm() {
       }, 3000);
     } catch (err: any) {
       console.error("Enquiry submission failed:", err);
+      setSubmitError(err.message || "Something went wrong. Please try again or reach us directly.");
       setStatus("failed");
       setFirstName("");
       setLastName("");
@@ -220,7 +223,7 @@ export default function CounsellorForm() {
                     </div>
                     <h3 className="text-xl font-bold font-display text-slate-800">Oops, send failed!</h3>
                     <p className="text-sm text-slate-600 font-sans font-normal max-w-xs leading-relaxed">
-                      Something went wrong. Please try again or reach us directly.
+                      {submitError || "Something went wrong. Please try again or reach us directly."}
                     </p>
                     <div className="flex flex-col gap-2 w-full max-w-xs">
                       <button

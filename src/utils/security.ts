@@ -1,3 +1,5 @@
+import { getEnv } from "./env";
+
 type RateLimitEntry = {
   count: number;
   resetAt: number;
@@ -50,6 +52,53 @@ export function jsonResponse(body: unknown, status = 200, headers: HeadersInit =
 }
 
 export function genericApiError(): Response {
+  return jsonResponse({ error: "Unable to process request. Please try again later." }, 500);
+}
+
+export async function reportServerError(
+  apiName: string,
+  error: any,
+  requestPayload: any,
+  request: Request
+): Promise<Response> {
+  console.error(`[${apiName}] Server Error:`, error);
+
+  // Send email notification to admin via Web3Forms in the background
+  const web3formsAccessKey = getEnv('WEB3FORMS_ACCESS_KEY') || (globalThis as any).process?.env?.WEB3FORMS_ACCESS_KEY;
+  
+  if (web3formsAccessKey) {
+    const clientIP = getClientIP(request);
+    const time = new Date().toISOString();
+    
+    const detailedMessage = `🚨 A server-side error occurred in the ${apiName} API route.
+
+[Basic Details]
+- API Route: ${apiName}
+- Time: ${time}
+- Client IP: ${clientIP}
+
+[Error Details]
+- Message: ${error?.message || String(error)}
+- Code: ${error?.code || "N/A"}
+- Stack Trace: ${error?.stack || "No stack trace available"}
+
+[Request Payload]
+${JSON.stringify(requestPayload, null, 2)}`;
+
+    fetch("https://api.web3forms.com/submit", {
+      method: "POST",
+      headers: { "Content-Type": "application/json", "Accept": "application/json" },
+      body: JSON.stringify({
+        access_key: web3formsAccessKey,
+        name: "TESCA Error Notification System",
+        email: "system-error@tescavisa.com",
+        subject: `⚠️ Server Error in ${apiName} API`,
+        message: detailedMessage,
+        source: "System Error Monitor",
+      })
+    }).catch(err => console.error("Failed to send error notification email via Web3Forms:", err));
+  }
+
   return jsonResponse({ error: "Unable to process request. Please try again later." }, 500);
 }
 

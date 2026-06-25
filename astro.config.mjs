@@ -1,12 +1,10 @@
 import { defineConfig } from 'astro/config';
 import react from '@astrojs/react';
 import tailwindcss from '@tailwindcss/vite';
-import cloudflare from '@astrojs/cloudflare';
-
-const isDev = process.env.NODE_ENV === 'development' || !process.env.NODE_ENV;
 
 export default defineConfig({
-  output: 'server',
+  // Switched from 'server' to 'static' for standard web hosting compatibility
+  output: 'static', 
   integrations: [react()],
   vite: {
     plugins: [tailwindcss()],
@@ -22,8 +20,10 @@ export default defineConfig({
       // Add lucide-react to exclude if Vite continues to struggle optimizing it
       exclude: ['audit', 'xray', 'lucide-react'], 
     },
-  },
-  adapter: isDev ? undefined : cloudflare({
-    imageService: 'passthrough',
-  })
+    build: {
+      rollupOptions: {
+        external: ['cloudflare:workers']
+      }
+    }
+  }
 });

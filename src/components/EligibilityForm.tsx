@@ -326,11 +326,15 @@ export default function EligibilityForm() {
         destination: selectedCountry
       };
       
-      await fetch("/api/eligibility", {
+      const elRes = await fetch("/api/eligibility", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(leadBody)
       });
+      const elData = await elRes.json();
+      if (!elRes.ok || !elData.success) {
+        throw new Error(elData.error || elData.message || "Failed to submit eligibility profile");
+      }
 
       // 3. Client-side evaluation
       const parsedUserScore = isCgpa ? parseFloat(academicScore) * 10 : parseFloat(academicScore);
@@ -351,7 +355,7 @@ export default function EligibilityForm() {
           // Verify if MOI is accepted for selected level
           const moiStr = selectedLevel === 'UG'
             ? (uni.ug_moi || uni.ug_moi_accepted || uni.moi_accepted || "")
-            : (uni.pg_moi || uni.pg_moi_accepted || uni.moi_accepted || "");
+            : (uni.pg_moi || uni.pg_moi_accepted || uni.moi_accepted || "")
           const acceptsMoi = moiStr.toLowerCase() === "yes";
           
           englishMatchesDirect = acceptsMoi;
@@ -360,7 +364,7 @@ export default function EligibilityForm() {
           // IELTS/PTE
           const reqStr = selectedLevel === 'UG'
             ? (uni.ug_ielts_pte || uni.ug_ielts_pte_req || uni.ielts_pte_req || "")
-            : (uni.pg_ielts_pte || uni.pg_ielts_pte_req || uni.ielts_pte_req || "");
+            : (uni.pg_ielts_pte || uni.pg_ielts_pte_req || uni.ielts_pte_req || "")
           
           if (englishScoreType === 'IELTS') {
             const reqIelts = parseIelts(reqStr);
@@ -384,9 +388,9 @@ export default function EligibilityForm() {
       setReachUnis(reachMatches);
       setStep(6);
 
-    } catch (err) {
+    } catch (err: any) {
       console.error(err);
-      alert("Something went wrong. Please check your network and try again.");
+      alert(err.message || "Something went wrong. Please check your network and try again.");
     } finally {
       setIsSubmitting(false);
     }

@@ -1,7 +1,7 @@
 import type { APIRoute } from 'astro';
 import { supabase } from '../../utils/supabase';
 import { validateEmail, validatePhone, validateName, sanitizeText } from '../../utils/validation';
-import { genericApiError, getClientIP, isRateLimited, jsonResponse, rateLimitResponse, rejectOversizedJson } from '../../utils/security';
+import { reportServerError, getClientIP, isRateLimited, jsonResponse, rateLimitResponse, rejectOversizedJson } from '../../utils/security';
 import { getEnv } from '../../utils/env';
 
 const RATE_LIMIT_WINDOW_MS = 10 * 60 * 1000;
@@ -16,8 +16,9 @@ export const POST: APIRoute = async ({ request }) => {
     return rateLimitResponse();
   }
 
+  let body: any = {};
   try {
-    const body = await request.json();
+    body = await request.json();
     const { fullName, email, mobileNumber, message, subject } = body;
 
     // 1. Basic check for presence
@@ -96,7 +97,7 @@ export const POST: APIRoute = async ({ request }) => {
       throw error;
     }
 
-    const googleSheetUrl = getEnv('GOOGLE_SHEET_URL') || import.meta.env.GOOGLE_SHEET_URL;
+    const googleSheetUrl = getEnv('GOOGLE_SHEET_URL') || getEnv('PUBLIC_GOOGLE_SHEET_URL') || import.meta.env.GOOGLE_SHEET_URL || (import.meta.env as any).PUBLIC_GOOGLE_SHEET_URL;
     const web3formsAccessKey = getEnv('WEB3FORMS_ACCESS_KEY') || import.meta.env.WEB3FORMS_ACCESS_KEY;
 
     const detailedMessage = [
@@ -151,7 +152,6 @@ export const POST: APIRoute = async ({ request }) => {
     });
 
   } catch (err: any) {
-    console.error("Inquiry API error:", err);
-    return genericApiError();
+    return await reportServerError("inquiry", err, body, request);
   }
 };

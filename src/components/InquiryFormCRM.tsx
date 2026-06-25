@@ -334,16 +334,17 @@ Comments/Additional Info: ${formData.comments || "None"}`;
         })
       });
 
-      if (!response.ok) {
-        throw new Error("Submission failed");
+      const data = await response.json();
+      if (!response.ok || !data.success) {
+        throw new Error(data.error || data.message || "Submission failed");
       }
 
       // Success
       setIsSuccess(true);
       localStorage.removeItem("tesca_crm_inquiry");
-    } catch (err) {
+    } catch (err: any) {
       console.error("Submission failed:", err);
-      alert("Submission encountered an error. We are still attempting to route your inquiry. Please contact us via WhatsApp.");
+      alert(err.message || "Submission encountered an error. We are still attempting to route your inquiry. Please contact us via WhatsApp.");
     } finally {
       setIsSubmitting(false);
     }
