@@ -3,6 +3,8 @@ import { supabase } from '../../utils/supabase';
 import { validateEmail, validatePhone, validateName, sanitizeText } from '../../utils/validation';
 import { reportServerError, getClientIP, isRateLimited, jsonResponse, rateLimitResponse, rejectOversizedJson } from '../../utils/security';
 import { getEnv } from '../../utils/env';
+import { sendMail } from '../../utils/mailer';
+import { inquiryConfirmationEmail } from '../../utils/emailTemplates';
 
 const RATE_LIMIT_WINDOW_MS = 10 * 60 * 1000;
 const RATE_LIMIT_MAX = 8;
@@ -144,6 +146,22 @@ export const POST: APIRoute = async ({ request }) => {
       });
       fetch(`${googleSheetUrl}?${params.toString()}`, { method: "GET" })
         .catch(err => console.error("Google Sheets inquiry GET failed:", err));
+    }
+
+    // Send confirmation email to user if email provided
+    if (cleanEmail) {
+      try {
+        const { subject, html } = inquiryConfirmationEmail({
+          name: cleanFullName,
+          leadId: cleanLeadId,
+          inquiryTypes: Array.isArray(cleanDetails.inquiryType) ? cleanDetails.inquiryType : [],
+          preferredCountries: cleanPreferredCountries,
+          phone: cleanMobile,
+        });
+        await sendMail({ to: cleanEmail, subject, html });
+      } catch (mailErr) {
+        console.error('Inquiry email send failed:', mailErr);
+      }
     }
 
     return jsonResponse({

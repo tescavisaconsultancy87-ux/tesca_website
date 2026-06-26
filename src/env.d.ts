@@ -7,6 +7,8 @@ interface Env {
   WEB3FORMS_ACCESS_KEY?: string;
   PUBLIC_SUPABASE_URL?: string;
   PUBLIC_SUPABASE_ANON_KEY?: string;
+  GMAIL_USER?: string;
+  GMAIL_APP_PASSWORD?: string;
 }
 
 declare module "cloudflare:workers" {

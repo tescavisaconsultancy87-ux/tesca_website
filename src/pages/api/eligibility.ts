@@ -3,6 +3,8 @@ import { supabase } from '../../utils/supabase';
 import { getEnv } from '../../utils/env';
 import { validateEmail, validatePhone, validateName, validateScoreRange, sanitizeText } from '../../utils/validation';
 import { reportServerError, getClientIP, isRateLimited, jsonResponse, rateLimitResponse, rejectOversizedJson } from '../../utils/security';
+import { sendMail } from '../../utils/mailer';
+import { eligibilityResultEmail } from '../../utils/emailTemplates';
 
 const RATE_LIMIT_WINDOW_MS = 10 * 60 * 1000;
 const RATE_LIMIT_MAX = 8;
@@ -259,6 +261,23 @@ export const POST: APIRoute = async ({ request, locals }) => {
         
         return gpaEligible && ieltsEligible && feeEligible;
       }).slice(0, 5);
+    }
+
+    // Send confirmation email to user if email provided
+    if (cleanEmail) {
+      try {
+        const { subject, html } = eligibilityResultEmail({
+          name: cleanName,
+          academicScore: academicScoreNum,
+          ieltsScore: ieltsScoreNum,
+          budget: budgetLakhsNum,
+          destination: cleanDestination,
+          matchCount: matches.length,
+        });
+        await sendMail({ to: cleanEmail, subject, html });
+      } catch (mailErr) {
+        console.error('Eligibility email send failed:', mailErr);
+      }
     }
 
     return jsonResponse({
