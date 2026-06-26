@@ -69,8 +69,8 @@ export default function CounsellorForm() {
     const digitsOnly = phone.replace(/\D/g, "");
     if (!phone.trim()) {
       errs.phone = "Phone number is required";
-    } else if (digitsOnly.length !== 10) {
-      errs.phone = "Phone number must be exactly 10 digits";
+    } else if (digitsOnly.length < 8 || digitsOnly.length > 15) {
+      errs.phone = "Phone number must be between 8 and 15 digits";
     }
     if (!mode) errs.mode = "Please select a counselling mode";
     setErrors(errs);
@@ -316,11 +316,11 @@ export default function CounsellorForm() {
                             type="tel"
                             value={phone}
                             onChange={e => {
-                              const digits = e.target.value.replace(/\D/g, "").slice(0, 10);
+                              const digits = e.target.value.replace(/\D/g, "").slice(0, 15);
                               setPhone(digits);
                             }}
                             placeholder="1234567890"
-                            maxLength={10}
+                            maxLength={15}
                             className={`${inputClass("phone")} pl-10`}
                           />
                       </div>

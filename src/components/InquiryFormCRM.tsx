@@ -189,8 +189,8 @@ export default function InquiryFormCRM() {
       if (!formData.fullName.trim()) errs.fullName = "Full Name is required";
       if (!formData.mobileNumber.trim()) {
         errs.mobileNumber = "Mobile Number is required";
-      } else if (formData.mobileNumber.replace(/\D/g, "").length !== 10) {
-        errs.mobileNumber = "Enter a valid 10-digit mobile number";
+      } else if (formData.mobileNumber.replace(/\D/g, "").length < 8 || formData.mobileNumber.replace(/\D/g, "").length > 15) {
+        errs.mobileNumber = "Enter a valid phone number (between 8 and 15 digits)";
       }
       if (formData.email.trim() && !/\S+@\S+\.\S+/.test(formData.email)) {
         errs.email = "Enter a valid email address";
@@ -211,8 +211,8 @@ export default function InquiryFormCRM() {
         if (!formData.refName.trim()) errs.refName = "Reference Name is required";
         if (!formData.refMobile.trim()) {
           errs.refMobile = "Reference Mobile Number is required";
-        } else if (formData.refMobile.replace(/\D/g, "").length !== 10) {
-          errs.refMobile = "Enter a valid 10-digit reference phone number";
+        } else if (formData.refMobile.replace(/\D/g, "").length < 8 || formData.refMobile.replace(/\D/g, "").length > 15) {
+          errs.refMobile = "Enter a valid reference phone number (between 8 and 15 digits)";
         }
       }
     }
@@ -514,9 +514,9 @@ Comments/Additional Info: ${formData.comments || "None"}`;
                       <input 
                         type="tel" 
                         value={formData.mobileNumber} 
-                        onChange={e => updateField({ mobileNumber: e.target.value.replace(/\D/g, "").slice(0, 10) })}
-                        placeholder="10-digit mobile number" 
-                        maxLength={10}
+                        onChange={e => updateField({ mobileNumber: e.target.value.replace(/\D/g, "").slice(0, 15) })}
+                        placeholder="Mobile or WhatsApp number" 
+                        maxLength={15}
                         className={`w-full pl-10 pr-4 py-2.5 bg-white border ${errors.mobileNumber ? 'border-red-400' : 'border-slate-200 focus:border-[#0F4C81] focus:ring-[#0F4C81]/15'} rounded-xl text-sm placeholder-slate-400 focus:outline-none focus:ring-2 transition-all font-sans`}
                       />
                     </div>
@@ -650,9 +650,9 @@ Comments/Additional Info: ${formData.comments || "None"}`;
                       <input 
                         type="tel" 
                         value={formData.refMobile} 
-                        onChange={e => updateField({ refMobile: e.target.value.replace(/\D/g, "").slice(0, 10) })}
-                        placeholder="Reference's 10-digit mobile" 
-                        maxLength={10}
+                        onChange={e => updateField({ refMobile: e.target.value.replace(/\D/g, "").slice(0, 15) })}
+                        placeholder="Reference's mobile number" 
+                        maxLength={15}
                         className={`w-full px-4 py-2.5 bg-white border ${errors.refMobile ? 'border-red-400' : 'border-slate-200 focus:border-[#0F4C81]'} rounded-xl text-sm placeholder-slate-400 focus:outline-none transition-all font-sans`}
                       />
                       {errors.refMobile && <p className="text-[10px] text-red-500 font-sans font-medium mt-0.5">{errors.refMobile}</p>}

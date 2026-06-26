@@ -304,8 +304,11 @@ export default function EligibilityForm() {
 
   const handleSubmitLead = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!name || !email || !phone) return;
-    if (phone.replace(/[^\d]/g, "").length !== 10) return;
+    const digitsOnly = phone.replace(/[^\d]/g, "");
+    if (digitsOnly.length < 8 || digitsOnly.length > 15) {
+      alert("Please enter a valid phone number (between 8 and 15 digits).");
+      return;
+    }
 
     setIsSubmitting(true);
 
@@ -789,10 +792,10 @@ export default function EligibilityForm() {
                     id="lead-phone"
                     type="tel"
                     required
-                    maxLength={10}
-                    placeholder="10 Digit Mobile Number"
+                    maxLength={15}
+                    placeholder="Mobile Number"
                     value={phone}
-                    onChange={(e) => setPhone(e.target.value.replace(/[^\d]/g, ""))}
+                    onChange={(e) => setPhone(e.target.value.replace(/[^\d]/g, "").slice(0, 15))}
                     className="w-full bg-white border border-slate-200 rounded-xl pl-10 pr-4 py-3 text-sm text-slate-800 placeholder-slate-400 focus:outline-none focus:border-accent-blue focus:ring-1 focus:ring-accent-blue transition-all font-sans"
                   />
                 </div>
