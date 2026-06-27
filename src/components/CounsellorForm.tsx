@@ -247,13 +247,13 @@ export default function CounsellorForm() {
                     </p>
                   </div>
 
-                  <ul className="space-y-5 pt-4 border-t border-white/10 text-sm font-sans font-medium">
+                  <ul className="space-y-4 pt-4 border-t border-white/10 text-sm font-sans font-medium">
                     <li className="flex items-start gap-3">
                       <CheckCircle className="w-5 h-5 text-accent-cyan shrink-0 mt-0.5" />
                       <span>
                         <strong className="text-white font-semibold block text-sm">Free Profile Evaluation</strong>
-                        <span className="block text-white/70 mt-1 leading-relaxed text-xs">
-                          Get a detailed assessment of your academic scores, backlog history, and language test results (IELTS/PTE/TOEFL) to map out your best-fit university options.
+                        <span className="block text-white/70 mt-0.5 leading-snug text-xs">
+                          Assessment of your scores, backlogs & language tests to find best-fit universities.
                         </span>
                       </span>
                     </li>
@@ -261,8 +261,8 @@ export default function CounsellorForm() {
                       <CheckCircle className="w-5 h-5 text-accent-cyan shrink-0 mt-0.5" />
                       <span>
                         <strong className="text-white font-semibold block text-sm">Document & Visa Audit</strong>
-                        <span className="block text-white/70 mt-1 leading-relaxed text-xs">
-                          Benefit from our pre-visa file audit. Our certified advisors run compliance pre-checks on your SOP, LORs, and financial drafts to ensure maximum approval probability.
+                        <span className="block text-white/70 mt-0.5 leading-snug text-xs">
+                          Pre-visa compliance checks on SOP, LORs & financial documents.
                         </span>
                       </span>
                     </li>
@@ -270,20 +270,20 @@ export default function CounsellorForm() {
                       <CheckCircle className="w-5 h-5 text-accent-cyan shrink-0 mt-0.5" />
                       <span>
                         <strong className="text-white font-semibold block text-sm">Scholarship & Loan Guidance</strong>
-                        <span className="block text-white/70 mt-1 leading-relaxed text-xs">
-                          Unlock merit-based grants, fee waivers, and exclusive institutional scholarships. We also assist in securing educational loans and setting up blocked accounts.
+                        <span className="block text-white/70 mt-0.5 leading-snug text-xs">
+                          Merit-based grants, fee waivers & education loan assistance.
                         </span>
                       </span>
                     </li>
                   </ul>
                 </div>
 
-                <div className="relative z-10 pt-6 border-t border-white/10 text-left space-y-2">
+                <div className="relative z-10 pt-4 border-t border-white/10 text-left space-y-1">
                   <span className="text-xs font-bold uppercase tracking-widest text-white/50">Trust Indicator</span>
                   <div className="flex items-center gap-3">
                     <span className="text-3xl font-black font-display text-accent-cyan leading-none">99%</span>
                     <div className="text-[11px] leading-tight text-white/80 font-medium">
-                      Visa Success SLA <br />ISO 9001 Certified
+                      Visa Success Rate<br />Since 2005
                     </div>
                   </div>
                 </div>
