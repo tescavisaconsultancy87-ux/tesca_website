@@ -489,42 +489,47 @@ try {
 
   {/* ==================== SECTION 5: BULLETINS / ARTICLES (GREEN BACKGROUND) ==================== */}
   {(visaUpdates.length > 0 || videos.length > 0) && (
-  <section class="py-24 bg-white border-y border-slate-100 relative text-left font-sans">
-    <div class="max-w-7xl mx-auto px-6 md:px-8">
+  <section class="py-24 bg-gradient-to-b from-[#083338] via-[#051c1e] to-[#020b0c] relative text-left font-sans overflow-hidden border-y border-[#083338]">
+    
+    <!-- Premium radial glow aurora overlays -->
+    <div class="absolute w-[450px] h-[450px] bg-accent-blue/15 rounded-full blur-[130px] -top-20 -right-20 pointer-events-none"></div>
+    <div class="absolute w-[450px] h-[450px] bg-accent-indigo/20 rounded-full blur-[130px] -bottom-20 -left-20 pointer-events-none"></div>
+
+    <div class="max-w-7xl mx-auto px-6 md:px-8 relative z-10">
       
       {/* Blog Title: General Sans 700, Headings 48-64px */}
       {visaUpdates.length > 0 && (
         <>
           <div class="flex flex-col sm:flex-row sm:items-end justify-between gap-6 mb-12">
             <div class="space-y-3">
-              <span class="text-[14px] font-semibold font-sans tracking-widest text-accent-indigo bg-accent-blue/10 px-3 py-1 rounded-full border border-accent-blue/20 inline-block uppercase">
+              <span class="text-[13px] font-bold font-sans tracking-widest text-cyan-400 bg-cyan-950/55 px-3.5 py-1.5 rounded-full border border-cyan-800/35 inline-block uppercase shadow-inner">
                Insights & Updates 
               </span>
-              <h2 class="text-[28px] sm:text-[34px] lg:text-[38px] xl:text-[44px] font-extrabold font-display leading-tight text-slate-900">
+              <h2 class="text-[28px] sm:text-[34px] lg:text-[38px] xl:text-[44px] font-extrabold font-display leading-tight text-white drop-shadow-sm">
                 Latest Study Abroad & Visa Updates
               </h2>
             </div>
-            <a href="/updates" class="text-[16px] font-semibold font-sans tracking-wide px-4 py-2 border border-slate-200 rounded-full hover:bg-slate-50 text-slate-700 hover:text-accent-blue transition-colors no-underline">
+            <a href="/updates" class="text-[15px] font-semibold font-sans tracking-wide px-5 py-2.5 border border-white/20 rounded-full hover:bg-white/10 text-white hover:text-cyan-300 transition-all duration-300 no-underline shadow-sm hover:scale-[1.02]">
               View All Updates →
             </a>
           </div>
 
           {/* Row list of bulletins: Blog Title: General Sans 700 */}
-          <div class="border-t border-slate-200/60 font-sans">
+          <div class="border-t border-white/10 font-sans">
             {visaUpdates.map((item, idx) => (
-              <div class="py-5 border-b border-slate-100 flex flex-col sm:flex-row sm:items-center justify-between gap-4 hover:bg-slate-50/50 transition-colors px-4 rounded-lg">
+              <div class="py-5 border-b border-white/10 flex flex-col sm:flex-row sm:items-center justify-between gap-4 hover:bg-white/5 transition-colors px-4 rounded-lg">
                 <div class="flex flex-col sm:flex-row sm:items-center gap-4 sm:gap-6 min-w-0">
                   <div class="flex items-center gap-4 shrink-0">
-                    <span class="text-[14px] font-sans font-medium text-slate-500 whitespace-nowrap">{item.date}</span>
+                    <span class="text-[14px] font-sans font-medium text-slate-400 whitespace-nowrap">{item.date}</span>
                     <span class={`text-[11px] font-bold font-sans uppercase tracking-wider px-2 py-0.5 rounded border whitespace-nowrap ${item.tagBg}`}>
                       {item.tag}
                     </span>
                   </div>
-                  <a href={item.link} class="text-[16px] lg:text-[18px] font-bold font-display text-slate-800 hover:text-accent-blue transition-colors text-left no-underline truncate min-w-0">
+                  <a href={item.link} class="text-[16px] lg:text-[18px] font-bold font-display text-white/95 hover:text-cyan-400 transition-colors text-left no-underline truncate min-w-0">
                     {item.title}
                   </a>
                 </div>
-                <a href={item.link} class="p-1.5 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-600 hover:text-accent-blue shrink-0 self-end sm:self-auto flex items-center justify-center">
+                <a href={item.link} class="p-1.5 rounded-full bg-white/10 hover:bg-white/20 text-white hover:text-cyan-300 shrink-0 self-end sm:self-auto flex items-center justify-center transition-colors">
                   <span set:html={SVG.ArrowRight} />
                 </a>
               </div>
@@ -535,15 +540,15 @@ try {
 
       {/* Success Videos grid (Static) */}
       {videos.length > 0 && (
-        <div class={`${visaUpdates.length > 0 ? "mt-20 pt-16 border-t border-slate-200/60" : ""}`}>
+        <div class={`${visaUpdates.length > 0 ? "mt-20 pt-16 border-t border-white/10" : ""}`}>
           <div class="mb-12 space-y-3">
-            <span class="text-[14px] font-semibold font-sans tracking-widest text-accent-indigo bg-accent-blue/10 px-3 py-1 rounded-full border border-accent-blue/20 inline-block uppercase">
+            <span class="text-[13px] font-bold font-sans tracking-widest text-cyan-400 bg-cyan-950/55 px-3.5 py-1.5 rounded-full border border-cyan-800/35 inline-block uppercase shadow-inner">
              Video Testimonials
             </span>
-            <h2 class="text-[28px] sm:text-[34px] lg:text-[38px] xl:text-[44px] font-extrabold font-display leading-tight text-slate-900">
+            <h2 class="text-[28px] sm:text-[34px] lg:text-[38px] xl:text-[44px] font-extrabold font-display leading-tight text-white drop-shadow-sm">
               Featured Success Videos
             </h2>
-            <p class="text-[16px] lg:text-[17px] text-slate-600 max-w-xl font-sans font-normal leading-relaxed">
+            <p class="text-[16px] lg:text-[17px] text-slate-300 max-w-xl font-sans font-normal leading-relaxed">
               Listen to our successful candidates celebrate their visa approvals and academic goals directly.
             </p>
           </div>
@@ -554,7 +559,7 @@ try {
                 href={v.video_url} 
                 target="_blank" 
                 rel="noopener noreferrer"
-                class="group block bg-slate-50/50 rounded-3xl border border-slate-200/60 overflow-hidden hover:bg-slate-50 hover:-translate-y-1 transition-all duration-300 flex flex-col h-full shadow-sm"
+                class="group block bg-[#051c1e]/60 border border-white/10 overflow-hidden hover:bg-[#051c1e]/80 hover:-translate-y-1 hover:border-cyan-500/30 transition-all duration-300 flex flex-col h-full shadow-lg rounded-[1.75rem]"
               >
                 {/* Thumbnail image area */}
                 <div class="relative aspect-video w-full overflow-hidden bg-slate-950/40 shrink-0">
@@ -566,8 +571,8 @@ try {
                   />
                   {/* Play Button Overlay */}
                   <div class="absolute inset-0 flex items-center justify-center bg-black/20 group-hover:bg-black/35 transition-colors">
-                    <div class="w-12 h-12 rounded-full bg-white/95 flex items-center justify-center shadow-md transform group-hover:scale-110 transition-transform duration-300">
-                      <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="currentColor" class="text-accent-indigo ml-0.5">
+                    <div class="w-12 h-12 rounded-full bg-cyan-400 flex items-center justify-center shadow-lg transform group-hover:scale-110 transition-transform duration-300">
+                      <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="currentColor" class="text-[#051c1e] ml-0.5">
                         <polygon points="5 3 19 12 5 21 5 3"/>
                       </svg>
                     </div>
@@ -576,10 +581,10 @@ try {
                 
                 {/* Content Info */}
                 <div class="p-6 flex flex-col justify-between flex-grow">
-                  <h4 class="text-[17px] font-bold text-slate-800 font-display leading-snug group-hover:text-accent-blue transition-colors line-clamp-2">
+                  <h4 class="text-[17px] font-bold text-white/95 font-display leading-snug group-hover:text-cyan-400 transition-colors line-clamp-2">
                     {v.name}
                   </h4>
-                  <div class="flex items-center gap-1 text-[13px] font-semibold text-accent-blue mt-4">
+                  <div class="flex items-center gap-1 text-[13px] font-semibold text-cyan-400 mt-4 group-hover:text-cyan-300 transition-colors">
                     Watch Video <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-3.5 h-3.5 transition-transform group-hover:translate-x-0.5"><line x1="5" x2="19" y1="12" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
                   </div>
                 </div>
