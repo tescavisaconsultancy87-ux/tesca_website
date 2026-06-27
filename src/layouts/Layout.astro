@@ -1045,12 +1045,11 @@ try {
 
 				// 4. Alert Auto-Fade & Session Storage Alerts
 				const handleAlerts = () => {
-					// Only target actual alert banner divs inside main (not status badges, table cells, etc.)
-					// Alert banners have: p-4, bg-emerald-50/bg-rose-50, border, rounded-2xl, text-xs, font-semibold, mb-6
 					const mainEl = document.querySelector("main");
 					if (!mainEl) return;
 
-					const alertBanners = mainEl.querySelectorAll(":scope > .bg-emerald-50.mb-6, :scope > .bg-rose-50.mb-6, :scope > div > .bg-emerald-50.mb-6, :scope > div > .bg-rose-50.mb-6");
+					// Target actual alert banners using the specific .admin-alert-banner class
+					const alertBanners = mainEl.querySelectorAll(".admin-alert-banner");
 
 					alertBanners.forEach(banner => {
 						if ((banner as any)._autoFading) return;
@@ -1075,13 +1074,13 @@ try {
 							const { type, message } = JSON.parse(savedAlert);
 							if (mainEl) {
 								const alertDiv = document.createElement("div");
-								alertDiv.className = `p-4 ${type === 'success' ? 'bg-emerald-50 border-emerald-200 text-emerald-600' : 'bg-rose-50 border-rose-200 text-rose-600'} border rounded-2xl text-xs font-semibold mb-6 flex items-center gap-2`;
+								alertDiv.className = `admin-alert-banner p-4 ${type === 'success' ? 'bg-emerald-50 border-emerald-200 text-emerald-600' : 'bg-rose-50 border-rose-200 text-rose-600'} border rounded-2xl text-xs font-semibold mb-6 flex items-center gap-2`;
 								alertDiv.innerHTML = `<span>${message}</span>`;
 								alertDiv.style.transition = "opacity 0.5s ease, max-height 0.5s ease, padding 0.5s ease, margin 0.5s ease";
 								// Insert after the title block
 								const titleBlock = mainEl.querySelector("div.mb-10, div.mb-8");
-								if (titleBlock && titleBlock.nextSibling) {
-									mainEl.insertBefore(alertDiv, titleBlock.nextSibling);
+								if (titleBlock && titleBlock.parentNode) {
+									titleBlock.parentNode.insertBefore(alertDiv, titleBlock.nextSibling);
 								} else {
 									mainEl.insertBefore(alertDiv, mainEl.firstChild);
 								}

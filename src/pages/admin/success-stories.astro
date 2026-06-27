@@ -171,13 +171,13 @@ try {
 
       {/* Messages */}
       {errorMessage && (
-        <div class="p-4 bg-rose-50 border border-rose-200 rounded-2xl text-rose-600 text-xs font-semibold mb-6 flex items-center gap-2">
+        <div class="admin-alert-banner p-4 bg-rose-50 border border-rose-200 rounded-2xl text-rose-600 text-xs font-semibold mb-6 flex items-center gap-2">
           <span set:html={SVG.ShieldAlert} class="w-4 h-4 shrink-0" />
           <span>{errorMessage}</span>
         </div>
       )}
       {successMessage && (
-        <div class="p-4 bg-emerald-50 border border-emerald-200 rounded-2xl text-emerald-600 text-xs font-semibold mb-6">
+        <div class="admin-alert-banner p-4 bg-emerald-50 border border-emerald-200 rounded-2xl text-emerald-600 text-xs font-semibold mb-6">
           {successMessage}
         </div>
       )}
@@ -382,6 +382,27 @@ try {
     });
   }
 
+  async function handleResponse(res: Response, successMsg: string) {
+    if (res.ok) {
+      const htmlText = await res.text();
+      const parser = new DOMParser();
+      const doc = parser.parseFromString(htmlText, "text/html");
+      const errorBanner = doc.querySelector(".bg-rose-50");
+      if (errorBanner) {
+        alert("Error: " + errorBanner.textContent.trim());
+        return false;
+      }
+      sessionStorage.setItem("admin_alert", JSON.stringify({
+        type: "success",
+        message: successMsg
+      }));
+      window.location.href = window.location.href;
+      return true;
+    }
+    alert("Request failed. Please try again.");
+    return false;
+  }
+
   function setupStoryEdit() {
     initAlertDismissal();
     // Buttons setup - use clean binding checks to avoid cloning
@@ -439,14 +460,9 @@ try {
             method: "POST",
             body: formData
           });
-          if (res.ok) {
-            const action = (document.getElementById("story-form-action") as HTMLInputElement)?.value;
-            sessionStorage.setItem("admin_alert", JSON.stringify({
-              type: "success",
-              message: action === "update-story" ? "Success story updated successfully." : "New success story added successfully."
-            }));
-            window.location.href = window.location.href;
-          }
+          const action = (document.getElementById("story-form-action") as HTMLInputElement)?.value;
+          const msg = action === "update-story" ? "Success story updated successfully." : "New success story added successfully.";
+          await handleResponse(res, msg);
         } catch (err) {
           console.error("Failed to submit story:", err);
           alert("An error occurred while saving the story.");
@@ -594,13 +610,7 @@ try {
             headers: { "Content-Type": "application/x-www-form-urlencoded" },
             body: params
           });
-          if (res.ok) {
-            sessionStorage.setItem("admin_alert", JSON.stringify({
-              type: "success",
-              message: "Success story deleted successfully."
-            }));
-            window.location.href = window.location.href;
-          }
+          await handleResponse(res, "Success story deleted successfully.");
         } catch (err) {
           console.error("Failed to delete story:", err);
         }

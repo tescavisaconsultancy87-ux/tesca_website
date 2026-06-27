@@ -134,14 +134,14 @@ try {
       {/* Warnings & Messages */}
 
       {errorMessage && (
-        <div class="p-4 bg-rose-50 border border-rose-200 rounded-2xl text-rose-600 text-xs font-semibold mb-6 flex items-center gap-2">
+        <div class="admin-alert-banner p-4 bg-rose-50 border border-rose-200 rounded-2xl text-rose-600 text-xs font-semibold mb-6 flex items-center gap-2">
           <span set:html={SVG.ShieldAlert} class="shrink-0 text-rose-500" />
           <span>{errorMessage}</span>
         </div>
       )}
 
       {successMessage && (
-        <div class="p-4 bg-emerald-50 border border-emerald-200 rounded-2xl text-emerald-600 text-xs font-semibold mb-6">
+        <div class="admin-alert-banner p-4 bg-emerald-50 border border-emerald-200 rounded-2xl text-emerald-600 text-xs font-semibold mb-6">
           {successMessage}
         </div>
       )}

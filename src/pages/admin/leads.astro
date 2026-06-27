@@ -95,12 +95,12 @@ try {
 
       {/* Messages */}
       {errorMessage && (
-        <div class="p-4 bg-rose-50 border border-rose-200 rounded-2xl text-rose-600 text-xs font-semibold mb-6">
+        <div class="admin-alert-banner p-4 bg-rose-50 border border-rose-200 rounded-2xl text-rose-600 text-xs font-semibold mb-6">
           {errorMessage}
         </div>
       )}
       {successMessage && (
-        <div class="p-4 bg-emerald-50 border border-emerald-200 rounded-2xl text-emerald-600 text-xs font-semibold mb-6">
+        <div class="admin-alert-banner p-4 bg-emerald-50 border border-emerald-200 rounded-2xl text-emerald-600 text-xs font-semibold mb-6">
           {successMessage}
         </div>
       )}
@@ -359,6 +359,27 @@ try {
     });
   }
 
+  async function handleResponse(res: Response, successMsg: string) {
+    if (res.ok) {
+      const htmlText = await res.text();
+      const parser = new DOMParser();
+      const doc = parser.parseFromString(htmlText, "text/html");
+      const errorBanner = doc.querySelector(".bg-rose-50");
+      if (errorBanner) {
+        alert("Error: " + errorBanner.textContent.trim());
+        return false;
+      }
+      sessionStorage.setItem("admin_alert", JSON.stringify({
+        type: "success",
+        message: successMsg
+      }));
+      window.location.href = window.location.href;
+      return true;
+    }
+    alert("Request failed. Please try again.");
+    return false;
+  }
+
   function setupLeadsPage() {
     setupModal();
 
@@ -386,13 +407,7 @@ try {
               method: "POST",
               body: formData
             });
-            if (res.ok) {
-              sessionStorage.setItem("admin_alert", JSON.stringify({
-                type: "success",
-                message: "Lead status updated successfully."
-              }));
-              window.location.href = window.location.href;
-            }
+            await handleResponse(res, "Lead status updated successfully.");
           } catch (err) {
             console.error("AJAX status update error:", err);
           }
@@ -414,13 +429,7 @@ try {
               method: "POST",
               body: formData
             });
-            if (res.ok) {
-              sessionStorage.setItem("admin_alert", JSON.stringify({
-                type: "success",
-                message: "Lead removed successfully."
-              }));
-              window.location.href = window.location.href;
-            }
+            await handleResponse(res, "Lead removed successfully.");
           } catch (err) {
             console.error("AJAX delete lead error:", err);
           }

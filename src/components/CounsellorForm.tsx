@@ -405,11 +405,15 @@ export default function CounsellorForm() {
                           }}
                           className={`flex items-center gap-1 px-3 py-3 border ${errors.phone ? "border-red-400" : "border-slate-200"} border-r-0 rounded-l-xl bg-slate-50 hover:bg-slate-100 text-sm font-medium text-slate-700 transition-all duration-200 cursor-pointer shrink-0 font-sans`}
                         >
-                          <span className="text-base leading-none">{selectedPhoneCountry.flag}</span>
+                          <img 
+                            src={`https://flagcdn.com/w20/${selectedPhoneCountry.code.toLowerCase()}.png`} 
+                            alt={selectedPhoneCountry.name} 
+                            className="w-5 h-3.5 object-contain shrink-0 rounded-[2px]" 
+                          />
                           <span className="text-xs font-semibold text-slate-600">{selectedPhoneCountry.dialCode}</span>
                           <ChevronDown className={`w-3 h-3 text-slate-400 transition-transform duration-200 ${showCountryDropdown ? "rotate-180" : ""}`} />
                         </button>
-
+ 
                         {/* Country Dropdown */}
                         {showCountryDropdown && (
                           <div className="absolute top-full left-0 mt-1 w-64 max-h-52 bg-white border border-slate-200 rounded-xl shadow-xl z-50 overflow-hidden animate-[modalIn_0.15s_ease-out]">
@@ -443,7 +447,11 @@ export default function CounsellorForm() {
                                     c.code === phoneCountry ? "bg-accent-blue/5 text-accent-blue font-bold" : "text-slate-700"
                                   }`}
                                 >
-                                  <span className="text-base leading-none shrink-0">{c.flag}</span>
+                                  <img 
+                                    src={`https://flagcdn.com/w20/${c.code.toLowerCase()}.png`} 
+                                    alt={c.name} 
+                                    className="w-5 h-3.5 object-contain shrink-0 rounded-[2px]" 
+                                  />
                                   <span className="flex-1 font-medium truncate">{c.name}</span>
                                   <span className="text-slate-400 font-semibold shrink-0">{c.dialCode}</span>
                                 </button>

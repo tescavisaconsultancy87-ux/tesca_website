@@ -90,13 +90,13 @@ try {
 
       {/* Messages */}
       {errorMessage && (
-        <div class="p-4 bg-rose-50 border border-rose-200 rounded-2xl text-rose-600 text-xs font-semibold mb-6 flex items-center gap-2">
+        <div class="admin-alert-banner p-4 bg-rose-50 border border-rose-200 rounded-2xl text-rose-600 text-xs font-semibold mb-6 flex items-center gap-2">
           <span set:html={SVG.ShieldAlert} />
           <span>{errorMessage}</span>
         </div>
       )}
       {successMessage && (
-        <div class="p-4 bg-emerald-50 border border-emerald-200 rounded-2xl text-emerald-600 text-xs font-semibold mb-6">
+        <div class="admin-alert-banner p-4 bg-emerald-50 border border-emerald-200 rounded-2xl text-emerald-600 text-xs font-semibold mb-6">
           {successMessage}
         </div>
       )}
@@ -169,6 +169,27 @@ try {
 </Layout>
 
 <script>
+  async function handleResponse(res: Response, successMsg: string) {
+    if (res.ok) {
+      const htmlText = await res.text();
+      const parser = new DOMParser();
+      const doc = parser.parseFromString(htmlText, "text/html");
+      const errorBanner = doc.querySelector(".bg-rose-50");
+      if (errorBanner) {
+        alert("Error: " + errorBanner.textContent.trim());
+        return false;
+      }
+      sessionStorage.setItem("admin_alert", JSON.stringify({
+        type: "success",
+        message: successMsg
+      }));
+      window.location.href = window.location.href;
+      return true;
+    }
+    alert("Request failed. Please try again.");
+    return false;
+  }
+
   function setupAnnouncements() {
     // Handle the add form
     const addForm = document.querySelector('form:not(.delete-announcement-form)') as HTMLFormElement;
@@ -185,13 +206,7 @@ try {
             method: "POST",
             body: formData
           });
-          if (res.ok) {
-            sessionStorage.setItem("admin_alert", JSON.stringify({
-              type: "success",
-              message: "New announcement alert bar message posted."
-            }));
-            window.location.href = window.location.href;
-          }
+          await handleResponse(res, "New announcement alert bar message posted.");
         } catch (err) {
           console.error("AJAX error:", err);
           alert("An error occurred. Please try again.");
@@ -228,13 +243,7 @@ try {
             headers: { "Content-Type": "application/x-www-form-urlencoded" },
             body: params
           });
-          if (res.ok) {
-            sessionStorage.setItem("admin_alert", JSON.stringify({
-              type: "success",
-              message: "Announcement alert text deleted successfully."
-            }));
-            window.location.href = window.location.href;
-          }
+          await handleResponse(res, "Announcement alert text deleted successfully.");
         } catch (err) {
           console.error("AJAX error:", err);
           alert("An error occurred. Please try again.");
