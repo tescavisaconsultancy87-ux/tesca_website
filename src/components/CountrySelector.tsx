@@ -250,7 +250,7 @@ export default function CountrySelector() {
           {/* Job Opportunities */}
           <div className="p-6 rounded-2xl border border-slate-200/80 bg-white shadow-sm flex flex-col justify-between space-y-6">
             <div className="flex items-center gap-2">
-              <div className="p-2 rounded-lg bg-highlight-violet/10 text-highlight-purple">
+              <div className="p-2 rounded-lg bg-highlight-purple/10 text-highlight-purple">
                 <Briefcase className="w-5 h-5" />
               </div>
               <div>

@@ -96,7 +96,7 @@ export default function StudentCarousel({ stories = [] }: { stories?: D1Story[] 
   return (
     <div className="w-full py-16 bg-white overflow-hidden font-sans border-y border-slate-100 relative">
       <div className="max-w-7xl mx-auto px-6 md:px-8 mb-10 text-center">
-        <span className="text-xs font-semibold tracking-wider text-[#F08A00] uppercase bg-[#FFE5CC] px-4 py-1.5 rounded-full border border-[#F08A00]/20 font-sans">
+        <span className="text-xs font-bold tracking-wider text-[#A13B00] uppercase bg-[#FFE5CC] px-4 py-1.5 rounded-full border border-[#A13B00]/25 font-sans">
           TESCA Success Stories
         </span>
         <h2 className="text-3xl md:text-4xl font-extrabold font-display text-slate-800 mt-4 tracking-tight">
