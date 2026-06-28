@@ -34,6 +34,35 @@ export function validateScoreRange(score: any, min: number, max: number): boolea
   return !isNaN(num) && num >= min && num <= max;
 }
 
+// Minimum length for admin account passwords.
+export const MIN_PASSWORD_LENGTH = 12;
+
+/**
+ * Validate an admin password against a baseline strength policy:
+ * at least MIN_PASSWORD_LENGTH chars, with a lowercase letter, an uppercase
+ * letter, and a digit. Returns a human-readable message when invalid.
+ */
+export function validatePassword(
+  password: string | null | undefined
+): { valid: boolean; message?: string } {
+  if (!password) {
+    return { valid: false, message: "Password is required." };
+  }
+  if (password.length < MIN_PASSWORD_LENGTH) {
+    return { valid: false, message: `Password must be at least ${MIN_PASSWORD_LENGTH} characters long.` };
+  }
+  if (password.length > 200) {
+    return { valid: false, message: "Password is too long (max 200 characters)." };
+  }
+  if (!/[a-z]/.test(password) || !/[A-Z]/.test(password) || !/[0-9]/.test(password)) {
+    return {
+      valid: false,
+      message: "Password must include a lowercase letter, an uppercase letter, and a number.",
+    };
+  }
+  return { valid: true };
+}
+
 export function sanitizeText(text: string | null | undefined, maxLen = 100): string {
   if (!text) return "";
   let cleaned = text.trim();

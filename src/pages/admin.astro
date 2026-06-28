@@ -289,6 +289,8 @@ if (isAuthenticated) {
 </Layout>
 
 <script>
+  import { validatePassword } from "../utils/validation";
+
   function setupForgotPassword() {
     const loginForm = document.getElementById('login-form') as HTMLFormElement;
     const forgotWrapper = document.getElementById('forgot-form-wrapper') as HTMLElement;
@@ -461,8 +463,9 @@ if (isAuthenticated) {
           const newPassword = newPasswordInput?.value;
           const confirmPassword = confirmPasswordInput?.value;
 
-          if (!newPassword || newPassword.length < 6) {
-            showResetStatus('Password must be at least 6 characters.', 'error');
+          const pwCheck = validatePassword(newPassword);
+          if (!pwCheck.valid) {
+            showResetStatus(pwCheck.message || 'Password does not meet the security requirements.', 'error');
             return;
           }
 

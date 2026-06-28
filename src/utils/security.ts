@@ -86,21 +86,46 @@ export function genericApiError(): Response {
   return jsonResponse({ error: "Unable to process request. Please try again later." }, 500);
 }
 
+// Field names whose values are considered PII / sensitive and must not leave
+// our infrastructure in error notifications routed through third parties.
+const SENSITIVE_KEYS = new Set([
+  "email", "phone", "mobile", "mobilenumber", "name", "fullname",
+  "firstname", "lastname", "password", "comments", "message", "city",
+]);
+
+// Shallow-redact a request payload: mask values of sensitive keys, keep the
+// structure/keys so the alert remains useful for debugging.
+function redactPayload(value: unknown): unknown {
+  if (value === null || value === undefined) return value;
+  if (Array.isArray(value)) return value.map(redactPayload);
+  if (typeof value === "object") {
+    const out: Record<string, unknown> = {};
+    for (const [k, v] of Object.entries(value as Record<string, unknown>)) {
+      out[k] = SENSITIVE_KEYS.has(k.toLowerCase()) ? "[redacted]" : redactPayload(v);
+    }
+    return out;
+  }
+  return value;
+}
+
 export async function reportServerError(
   apiName: string,
   error: any,
   requestPayload: any,
   request: Request
 ): Promise<Response> {
-  console.error(`[${apiName}] Server Error:`, error);
+  // Full diagnostics (stack trace + raw payload) stay in Cloudflare server logs only.
+  console.error(`[${apiName}] Server Error:`, error, "Payload:", requestPayload);
 
   // Send email notification to admin via Web3Forms in the background
   const web3formsAccessKey = getEnv('WEB3FORMS_ACCESS_KEY') || (globalThis as any).process?.env?.WEB3FORMS_ACCESS_KEY;
-  
+
   if (web3formsAccessKey) {
     const clientIP = getClientIP(request);
     const time = new Date().toISOString();
-    
+
+    // Notification is intentionally PII-free: no stack trace, no raw user data.
+    // Use the timestamp + API route to correlate with full Cloudflare logs.
     const detailedMessage = `🚨 A server-side error occurred in the ${apiName} API route.
 
 [Basic Details]
@@ -111,10 +136,11 @@ export async function reportServerError(
 [Error Details]
 - Message: ${error?.message || String(error)}
 - Code: ${error?.code || "N/A"}
-- Stack Trace: ${error?.stack || "No stack trace available"}
 
-[Request Payload]
-${JSON.stringify(requestPayload, null, 2)}`;
+[Request Fields (PII redacted)]
+${JSON.stringify(redactPayload(requestPayload), null, 2)}
+
+Full stack trace and unredacted payload are available in the Cloudflare Workers logs for this timestamp.`;
 
     fetch("https://api.web3forms.com/submit", {
       method: "POST",

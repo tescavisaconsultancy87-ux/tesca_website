@@ -3,6 +3,7 @@ import Layout from "../../layouts/Layout.astro";
 import AdminHeader from "../../components/AdminHeader.astro";
 import { checkAdminAuth } from "../../utils/adminAuth";
 import { supabase } from "../../utils/supabase";
+import { validateEmail, validatePassword } from "../../utils/validation";
 
 
 // Inline SVG helpers — no lucide-react in .astro
@@ -46,6 +47,15 @@ if (Astro.request.method === "POST") {
       const password = formData.get("password")?.toString().trim();
 
       if (email && password) {
+        // Server-side validation (never trust client-side minlength alone)
+        if (!validateEmail(email)) {
+          throw new Error("Please enter a valid email address.");
+        }
+        const pwCheck = validatePassword(password);
+        if (!pwCheck.valid) {
+          throw new Error(pwCheck.message || "Password does not meet the security requirements.");
+        }
+
         // 1. Try to register user in Supabase Auth first
         const { data: authData, error: authError } = await supabase.auth.signUp({
           email,
@@ -176,11 +186,11 @@ try {
                 type="password" 
                 id="admin-password" 
                 name="password" 
-                required 
+                required
                 disabled={false}
-                minlength="6"
-                class="w-full px-3 py-2.5 rounded-lg border border-slate-200 bg-slate-50 text-slate-800 focus:outline-none focus:ring-1 focus:ring-[#0A7880] disabled:opacity-50" 
-                placeholder="Minimum 6 characters" 
+                minlength="12"
+                class="w-full px-3 py-2.5 rounded-lg border border-slate-200 bg-slate-50 text-slate-800 focus:outline-none focus:ring-1 focus:ring-[#0A7880] disabled:opacity-50"
+                placeholder="Min 12 chars, with upper, lower & number"
               />
             </div>
 
