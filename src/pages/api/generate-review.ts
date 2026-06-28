@@ -1,7 +1,7 @@
 import type { APIRoute } from 'astro';
 import { getEnv } from '../../utils/env';
 import { sanitizeReviewInput } from '../../utils/validation';
-import { getClientIP, isRateLimited, jsonResponse, rateLimitResponse, rejectOversizedJson } from '../../utils/security';
+import { getClientIP, checkRateLimit, jsonResponse, rateLimitResponse, rejectOversizedJson } from '../../utils/security';
 
 const RATE_LIMIT_WINDOW_MS = 10 * 60 * 1000;
 const RATE_LIMIT_MAX = 12;
@@ -29,7 +29,7 @@ export const POST: APIRoute = async ({ request }) => {
   if (oversized) return oversized;
 
   const clientIP = getClientIP(request);
-  if (isRateLimited(`generate-review:${clientIP}`, RATE_LIMIT_MAX, RATE_LIMIT_WINDOW_MS)) {
+  if (await checkRateLimit(`generate-review:${clientIP}`, RATE_LIMIT_MAX, RATE_LIMIT_WINDOW_MS)) {
     return rateLimitResponse();
   }
 

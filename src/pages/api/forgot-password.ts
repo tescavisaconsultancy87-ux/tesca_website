@@ -1,6 +1,6 @@
 import type { APIRoute } from 'astro';
 import { supabase } from '../../utils/supabase';
-import { genericApiError, getClientIP, isRateLimited, jsonResponse, rejectOversizedJson } from '../../utils/security';
+import { genericApiError, getClientIP, checkRateLimit, jsonResponse, rejectOversizedJson } from '../../utils/security';
 
 const RATE_LIMIT_WINDOW_MS = 15 * 60 * 1000;
 const RATE_LIMIT_MAX = 3;
@@ -10,7 +10,7 @@ export const POST: APIRoute = async ({ request }) => {
   if (oversized) return oversized;
 
   const clientIP = getClientIP(request);
-  if (isRateLimited(`forgot-password:${clientIP}`, RATE_LIMIT_MAX, RATE_LIMIT_WINDOW_MS)) {
+  if (await checkRateLimit(`forgot-password:${clientIP}`, RATE_LIMIT_MAX, RATE_LIMIT_WINDOW_MS)) {
     // Return the same generic message to avoid leaking rate limit info
     return jsonResponse({
         success: true,

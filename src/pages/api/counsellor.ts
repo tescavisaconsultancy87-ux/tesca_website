@@ -2,7 +2,7 @@ import type { APIRoute } from 'astro';
 import { supabase } from '../../utils/supabase';
 import { validateEmail, validatePhone, validateName, sanitizeText } from '../../utils/validation';
 import { getEnv } from '../../utils/env';
-import { reportServerError, getClientIP, isRateLimited, jsonResponse, rateLimitResponse, rejectOversizedJson } from '../../utils/security';
+import { reportServerError, getClientIP, checkRateLimit, jsonResponse, rateLimitResponse, rejectOversizedJson } from '../../utils/security';
 import { sendMail } from '../../utils/mailer';
 import { counsellorBookingEmail } from '../../utils/emailTemplates';
 
@@ -14,7 +14,7 @@ export const POST: APIRoute = async ({ request }) => {
   if (oversized) return oversized;
 
   const clientIP = getClientIP(request);
-  if (isRateLimited(`counsellor:${clientIP}`, RATE_LIMIT_MAX, RATE_LIMIT_WINDOW_MS)) {
+  if (await checkRateLimit(`counsellor:${clientIP}`, RATE_LIMIT_MAX, RATE_LIMIT_WINDOW_MS)) {
     return rateLimitResponse();
   }
 

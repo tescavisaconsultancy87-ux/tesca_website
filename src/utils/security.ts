@@ -1,4 +1,5 @@
 import { getEnv } from "./env";
+import { getSupabaseAdmin } from "./supabase";
 
 type RateLimitEntry = {
   count: number;
@@ -38,6 +39,36 @@ export function isRateLimited(key: string, max: number, windowMs: number): boole
 
   entry.count++;
   return entry.count > max;
+}
+
+/**
+ * Shared, cross-isolate rate limiter. Returns true when the caller is OVER the
+ * limit. Backed by the Supabase `check_rate_limit` RPC (see
+ * db/rate_limit_setup.sql) so counts hold across all Cloudflare Workers isolates
+ * and edge locations — unlike the in-memory `isRateLimited` above.
+ *
+ * Falls back to the per-isolate in-memory limiter when the Supabase service-role
+ * key is unavailable (e.g. local dev) or the RPC errors, so requests are never
+ * blocked by limiter infrastructure problems and local development still works.
+ */
+export async function checkRateLimit(key: string, max: number, windowMs: number): Promise<boolean> {
+  try {
+    const sb = getSupabaseAdmin();
+    const { data, error } = await sb.rpc("check_rate_limit", {
+      p_key: key,
+      p_max: max,
+      p_window_seconds: Math.max(1, Math.ceil(windowMs / 1000)),
+    });
+
+    if (!error && typeof data === "boolean") {
+      return data;
+    }
+  } catch (err) {
+    console.error("checkRateLimit: Supabase RPC failed, using in-memory fallback:", err);
+  }
+
+  // Fallback: per-isolate in-memory limiter (best-effort).
+  return isRateLimited(key, max, windowMs);
 }
 
 export function jsonResponse(body: unknown, status = 200, headers: HeadersInit = {}): Response {
