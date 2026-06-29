@@ -43,9 +43,9 @@ export const onRequest = defineMiddleware(async (context, next) => {
   );
   response.headers.set("Cross-Origin-Opener-Policy", "same-origin");
   response.headers.set("Cross-Origin-Resource-Policy", "same-origin");
-  // HSTS: force HTTPS for 1 year. includeSubDomains/preload omitted until every
-  // subdomain (incl. www) is verified HTTPS-only.
-  response.headers.set("Strict-Transport-Security", "max-age=31536000");
+  // HSTS: force HTTPS for 1 year incl. subdomains (www now redirects over HTTPS).
+  // `preload` intentionally omitted — it's a hard-to-reverse public commitment.
+  response.headers.set("Strict-Transport-Security", "max-age=31536000; includeSubDomains");
   // Rolled out as Report-Only first so we can confirm nothing breaks before
   // promoting to the enforcing `Content-Security-Policy` header.
   response.headers.set("Content-Security-Policy-Report-Only", CSP);

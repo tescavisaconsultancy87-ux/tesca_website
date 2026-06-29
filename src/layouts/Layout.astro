@@ -40,6 +40,44 @@ const {
 const canonicalURL = new URL(Astro.url.pathname, "https://tescavisa.com").href;
 const ogImage = new URL(image, "https://tescavisa.com").href;
 
+// Organization / local-business structured data (helps Google Knowledge Panel
+// and local "near me" search for the Surat branches).
+const structuredData = {
+	"@context": "https://schema.org",
+	"@type": "EducationalOrganization",
+	name: "TESCA Visa Consultancy",
+	url: "https://tescavisa.com",
+	logo: "https://tescavisa.com/images/Tesca_logo.png",
+	image: "https://tescavisa.com/images/Tesca_logo.png",
+	description: "Study abroad, university admissions, IELTS/PTE coaching, education loan assistance and student-visa services since 2005.",
+	foundingDate: "2005",
+	telephone: "+91-9824152731",
+	email: "tescavisaconsultancy87@gmail.com",
+	address: [
+		{
+			"@type": "PostalAddress",
+			streetAddress: "110, 111, 112, Royal Arcade, Simada Naka",
+			addressLocality: "Surat",
+			addressRegion: "Gujarat",
+			postalCode: "395013",
+			addressCountry: "IN",
+		},
+		{
+			"@type": "PostalAddress",
+			streetAddress: "Ambika Pinnacle, 106-107, Lajamni Chowk, Mota Varachha",
+			addressLocality: "Surat",
+			addressRegion: "Gujarat",
+			postalCode: "394101",
+			addressCountry: "IN",
+		},
+	],
+	sameAs: [
+		"https://www.facebook.com/tescavisaconsultancy",
+		"https://www.instagram.com/tesca_visaconsultancy",
+		"https://youtube.com/@tescavisaconsultancy",
+	],
+};
+
 let announcements = [];
 
 try {
@@ -101,6 +139,9 @@ try {
 		<meta name="twitter:title" content={title} />
 		<meta name="twitter:description" content={description} />
 		<meta name="twitter:image" content={ogImage} />
+
+		<!-- Structured data (Organization / local business) -->
+		<script type="application/ld+json" is:inline set:html={JSON.stringify(structuredData)} />
 
 		<ClientRouter />
 		<style is:global>
