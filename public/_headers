@@ -1,6 +1,7 @@
-# Default for all responses: security headers + short HTML edge cache.
-# Static assets below use more specific paths, which override Cache-Control.
-# (Applies to static/prerendered files; SSR routes get headers from middleware.ts.)
+# Default security headers for all responses (NO Cache-Control here — Cloudflare
+# _headers APPENDS values across matching rules, which would corrupt the asset
+# Cache-Control below. HTML page caching is handled by the Cloudflare Cache Rule.)
+# Applies to static/prerendered files; SSR routes get headers from middleware.ts.
 /*
   X-Content-Type-Options: nosniff
   X-Frame-Options: DENY
@@ -10,7 +11,6 @@
   Cross-Origin-Resource-Policy: same-origin
   Strict-Transport-Security: max-age=31536000; includeSubDomains
   Content-Security-Policy-Report-Only: default-src 'self'; script-src 'self' 'unsafe-inline' https://www.googletagmanager.com https://www.google-analytics.com; style-src 'self' 'unsafe-inline' https://api.fontshare.com https://fonts.googleapis.com; font-src 'self' data: https://api.fontshare.com https://fonts.gstatic.com; img-src 'self' data: blob: https://flagcdn.com https://*.supabase.co https://www.google-analytics.com https://www.googletagmanager.com; connect-src 'self' https://*.supabase.co https://script.google.com https://api.web3forms.com https://api.emailjs.com https://www.google-analytics.com; frame-ancestors 'none'; base-uri 'self'; form-action 'self' https://script.google.com; object-src 'none'; upgrade-insecure-requests
-  Cache-Control: public, max-age=0, s-maxage=300, stale-while-revalidate=86400
 
 # Content-hashed build assets never change — cache for a year, immutable.
 /_astro/*
