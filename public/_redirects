@@ -1,0 +1,8 @@
+# Legacy / broken URLs → canonical pages (origin-level enforcement)
+# www → apex host redirect is handled by a Cloudflare Redirect Rule (edge-level),
+# because the www origin is currently unreachable.
+
+/TestPrep        /services/testprep    301
+/TestPrep/       /services/testprep    301
+/testprep        /services/testprep    301
+/test-prep       /services/testprep    301

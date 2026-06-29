@@ -1,4 +1,16 @@
 User-agent: *
 Allow: /
+Disallow: /admin
+Disallow: /api/
 
-Sitemap: https://www.tescavisa.com/sitemap-index.xml
+# Aggressive AI scrapers (Google/Bing crawlers are unaffected)
+User-agent: GPTBot
+Disallow: /
+
+User-agent: CCBot
+Disallow: /
+
+User-agent: ClaudeBot
+Disallow: /
+
+Sitemap: https://tescavisa.com/sitemap.xml
