@@ -2,7 +2,44 @@
 export const prerender = true;
 import Layout from "../layouts/Layout.astro";
 import AICounsellor from "../components/AICounsellor";
+import FAQ from "../components/FAQ.astro";
 import { SERVICES } from "../data/services";
+
+// Services FAQ — powers Google Featured Snippets + AI Overviews (AEO)
+const servicesFaqItems = [
+	{
+		question: "What study abroad services does TESCA offer?",
+		answer: "TESCA provides 12 end-to-end services: career counselling, university admissions, SOP & documentation, scholarships & funding, test preparation (IELTS/PTE/TOEFL), visa success support, student health cover, education finance, student housing, pre-departure support, passport assistance, and air ticketing. We cover the entire journey from your first consultation to arriving at your destination."
+	},
+	{
+		question: "How do I start the study abroad process with TESCA?",
+		answer: "Start with a free counselling session where we assess your academic profile, career goals, and budget. We then recommend suitable countries, courses, and universities. From there, we handle university shortlisting, applications, documentation (SOP, LORs), test preparation, visa processing, and pre-departure support. You can book your free session via our contact form or call us at +91 9824152731."
+	},
+	{
+		question: "Which exams does TESCA help me prepare for?",
+		answer: "TESCA offers structured coaching for IELTS, PTE, TOEFL, and GRE. Our programs include experienced trainers, mock tests with detailed performance analysis, targeted improvement strategies for each test section, and comprehensive study materials. We tailor the coaching to your target score and university requirements."
+	},
+	{
+		question: "Does TESCA help with visa interviews and documentation?",
+		answer: "Yes. Our visa success support includes complete guidance for student visa applications, financial document and eligibility verification, visa interview preparation with mock sessions, and a thorough application review before submission. This meticulous approach is why we maintain a 97% visa success rate."
+	},
+	{
+		question: "Can TESCA help me get an education loan?",
+		answer: "Yes. We assist with education loans through trusted banking partners including SBI, HDFC, Avanse, and Credila. We also guide you on blocked accounts (required for Germany and other countries), sponsor declarations, and documentation needed to prove financial capacity for your visa application."
+	},
+	{
+		question: "Do you offer support for scholarship applications?",
+		answer: "Yes. TESCA matches you with relevant scholarships based on your academic profile, provides guidance for scholarship applications and essays, and supports applications for grants, bursaries, and tuition waivers. We help you maximize funding opportunities to make studying abroad more affordable."
+	},
+	{
+		question: "What happens after my visa is approved?",
+		answer: "After visa approval, TESCA provides pre-departure orientation and travel guidance, helps coordinate accommodation near your university, assists with flight bookings at discounted student rates, and guides you on banking, local essentials, and settling into your new destination. We stay connected to ensure a smooth transition to student life abroad."
+	},
+	{
+		question: "How is TESCA different from other visa consultancies?",
+		answer: "TESCA has been operating since 2005 with a 97% visa success rate and over 30,000 students successfully placed abroad. We offer a complete 12-service suite covering the entire journey, free first counselling, partnerships with top universities worldwide, and multiple branches in Surat for convenient in-person support. Our transparency and end-to-end support set us apart."
+	}
+];
 const _s = (d: string) => `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-6 h-6"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/>${d}</svg>`;
 const iconMap: Record<string, string> = {
   User: _s('<path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/>'),
