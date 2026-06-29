@@ -1,0 +1,120 @@
+---
+interface FAQItem {
+	question: string;
+	answer: string;
+}
+
+interface Props {
+	items: FAQItem[];
+	heading?: string;
+	subheading?: string;
+}
+
+const {
+	items,
+	heading = "Frequently Asked Questions",
+	subheading = "Everything you need to know about studying abroad with TESCA.",
+} = Astro.props;
+
+// FAQPage structured data for Google Featured Snippets + AI Overviews (AEO)
+const faqSchema = {
+	"@context": "https://schema.org",
+	"@type": "FAQPage",
+	mainEntity: items.map((item) => ({
+		"@type": "Question",
+		name: item.question,
+		acceptedAnswer: {
+			"@type": "Answer",
+			text: item.answer,
+		},
+	})),
+};
+---
+
+{/* FAQPage JSON-LD — injected automatically for AI/search engines */}
+<script type="application/ld+json" is:inline set:html={JSON.stringify(faqSchema)} />
+
+<section class="max-w-7xl mx-auto px-6 md:px-8 py-16 md:py-24" id="faq">
+	{/* Section Header */}
+	<div class="text-center mb-12 md:mb-16">
+		<span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-accent-blue/10 border border-accent-blue/20 text-xs font-bold text-accent-indigo font-sans mb-4">
+			<span class="w-1.5 h-1.5 rounded-full bg-accent-blue animate-pulse"></span>
+			FAQ
+		</span>
+		<h2 class="text-3xl md:text-4xl font-extrabold font-display text-slate-800 tracking-tight leading-tight">
+			{heading}
+		</h2>
+		{subheading && (
+			<p class="mt-3 text-sm md:text-base text-slate-500 max-w-2xl mx-auto font-sans leading-relaxed">
+				{subheading}
+			</p>
+		)}
+	</div>
+
+	{/* FAQ Accordion */}
+	<div class="max-w-3xl mx-auto space-y-3" id="faq-list">
+		{items.map((item, index) => (
+			<div class="faq-item border border-slate-200 rounded-2xl overflow-hidden bg-white hover:border-slate-300 transition-colors" data-faq-index={index}>
+				<button
+					class="faq-toggle w-full flex items-center justify-between px-6 py-5 text-left cursor-pointer group"
+					aria-expanded="false"
+					aria-controls={`faq-answer-${index}`}
+				>
+					<span class="text-sm md:text-base font-semibold text-slate-800 font-sans pr-4 leading-relaxed">
+						{item.question}
+					</span>
+					<span class="faq-chevron shrink-0 w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center transition-transform duration-300 group-hover:bg-accent-blue/10">
+						<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="text-slate-500 transition-transform duration-300"><path d="m6 9 6 6 6-6"/></svg>
+					</span>
+				</button>
+				<div id={`faq-answer-${index}`} class="faq-answer overflow-hidden max-h-0 transition-all duration-300 ease-in-out">
+					<div class="px-6 pb-5 text-sm text-slate-600 font-sans leading-relaxed border-t border-slate-100 pt-4">
+						{item.answer}
+					</div>
+				</div>
+			</div>
+		))}
+	</div>
+</section>
+
+<script>
+	function initFAQ() {
+		const faqItems = document.querySelectorAll('.faq-item');
+		faqItems.forEach((item) => {
+			const toggle = item.querySelector('.faq-toggle') as HTMLElement;
+			const answer = item.querySelector('.faq-answer') as HTMLElement;
+			const chevron = item.querySelector('.faq-chevron') as HTMLElement;
+
+			toggle?.addEventListener('click', () => {
+				const isOpen = toggle.getAttribute('aria-expanded') === 'true';
+
+				// Close all others
+				faqItems.forEach((otherItem) => {
+					if (otherItem !== item) {
+						const otherToggle = otherItem.querySelector('.faq-toggle') as HTMLElement;
+						const otherAnswer = otherItem.querySelector('.faq-answer') as HTMLElement;
+						const otherChevron = otherItem.querySelector('.faq-chevron svg') as HTMLElement;
+						otherToggle?.setAttribute('aria-expanded', 'false');
+						if (otherAnswer) otherAnswer.style.maxHeight = '0';
+						if (otherChevron) otherChevron.style.transform = 'rotate(0deg)';
+					}
+				});
+
+				// Toggle current
+				if (isOpen) {
+					toggle.setAttribute('aria-expanded', 'false');
+					answer.style.maxHeight = '0';
+					if (chevron) (chevron.querySelector('svg') as HTMLElement).style.transform = 'rotate(0deg)';
+				} else {
+					toggle.setAttribute('aria-expanded', 'true');
+					answer.style.maxHeight = answer.scrollHeight + 'px';
+					if (chevron) (chevron.querySelector('svg') as HTMLElement).style.transform = 'rotate(180deg)';
+				}
+			});
+		});
+	}
+
+	document.addEventListener('astro:page-load', initFAQ);
+	// Also run on initial load
+	initFAQ();
+</script>

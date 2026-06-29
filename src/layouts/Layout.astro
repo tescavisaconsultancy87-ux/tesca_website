@@ -1,7 +1,6 @@
 ---
 import "../styles/global.css";
 import CounsellorForm from "../components/CounsellorForm";
-import { supabase } from "../utils/supabase";
 import { ClientRouter } from "astro:transitions";
 // Inline SVG helpers — no lucide-react in .astro (SSR hook errors)
 const _svg = (d: string, size = 16) => `<svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${d}</svg>`;
@@ -78,21 +77,8 @@ const structuredData = {
 	],
 };
 
-let announcements = [];
-
-try {
-	const { data, error } = await supabase
-		.from('announcements')
-		.select('text')
-		.order('id', { ascending: true });
-
-	if (error) throw error;
-	if (data && data.length > 0) {
-		announcements = data.map((r: any) => r.text);
-	}
-} catch (err) {
-	console.error("Failed to fetch announcements from Supabase:", err);
-}
+// Announcements are loaded client-side from /api/announcements so this layout
+// (and therefore every page) can be statically prerendered and edge-cached.
 ---
 
 <!doctype html>
@@ -301,20 +287,17 @@ try {
 			id="main-header"
 			class="fixed top-0 left-0 right-0 z-40 transition-all duration-500 bg-white/80 backdrop-blur-md border-b border-slate-200/60 shadow-sm flex flex-col"
 		>
-			<!-- Rotating Announcement Bar -->
-			{announcements.length > 0 && (
+			<!-- Rotating Announcement Bar (text populated client-side from /api/announcements) -->
 			<div
 				id="announcement-bar"
 				class="w-full bg-[#075E64] text-white py-2 px-4 transition-all duration-500 overflow-hidden relative z-50 text-center text-[11px] sm:text-xs font-semibold font-sans tracking-wide shrink-0"
 				style="max-height: 56px; box-sizing: border-box;"
-				data-announcements={JSON.stringify(announcements)}
 			>
 				<div class="flex items-center justify-center gap-2 max-w-7xl mx-auto">
 					<span class="inline-flex h-2 w-2 rounded-full bg-[#F08A00] animate-pulse"></span>
-					<span id="announcement-text" class="transition-opacity duration-300">{announcements[0]}</span>
+					<span id="announcement-text" class="transition-opacity duration-300"></span>
 				</div>
 			</div>
-			)}
 
 			<nav
 				class="w-full max-w-7xl mx-auto px-4 lg:px-6 py-3.5 flex items-center justify-between transition-all duration-500"
@@ -621,7 +604,7 @@ try {
 		)}
 
 		<!-- Main Page Content -->
-		<main id="main-content" class={showNavFooter ? (announcements.length > 0 ? "flex-grow pt-[96px] md:pt-[100px]" : "flex-grow pt-[64px] md:pt-[68px]") : "flex-grow pt-0"}>
+		<main id="main-content" class={showNavFooter ? "flex-grow pt-[96px] md:pt-[100px]" : "flex-grow pt-0"}>
 			<slot />
 		</main>
 
@@ -956,22 +939,41 @@ try {
 				window.addEventListener("scroll", handleScroll);
 				handleScroll(); // Trigger immediately to sync layout
 
-				// Announcement Bar Text Rotation
-				const announcementBarEl = document.getElementById("announcement-bar");
-				const announcements = announcementBarEl ? JSON.parse(announcementBarEl.getAttribute("data-announcements") || "[]") : [];
-				let currentAnnIndex = 0;
+				// Announcement Bar — data loaded client-side so pages stay statically cacheable.
+				const annBarEl = document.getElementById("announcement-bar");
 				const annTextEl = document.getElementById("announcement-text");
+				const mainContentEl = document.getElementById("main-content");
+				let currentAnnIndex = 0;
 				let rotationInterval: any;
 
-				if (annTextEl && announcements.length > 1) {
-					rotationInterval = setInterval(() => {
-						annTextEl.style.opacity = "0";
-						setTimeout(() => {
-							currentAnnIndex = (currentAnnIndex + 1) % announcements.length;
-							annTextEl.innerText = announcements[currentAnnIndex];
-							annTextEl.style.opacity = "1";
-						}, 300);
-					}, 4000);
+				// No announcements → remove the bar and reclaim its reserved top padding.
+				const collapseAnnBar = () => {
+					annBarEl?.remove();
+					mainContentEl?.classList.remove("pt-[96px]", "md:pt-[100px]");
+					mainContentEl?.classList.add("pt-[64px]", "md:pt-[68px]");
+				};
+
+				if (annTextEl) {
+					fetch("/api/announcements")
+						.then((r) => (r.ok ? r.json() : []))
+						.then((announcements: string[]) => {
+							if (!Array.isArray(announcements) || announcements.length === 0) {
+								collapseAnnBar();
+								return;
+							}
+							annTextEl.innerText = announcements[0];
+							if (announcements.length > 1) {
+								rotationInterval = setInterval(() => {
+									annTextEl.style.opacity = "0";
+									setTimeout(() => {
+										currentAnnIndex = (currentAnnIndex + 1) % announcements.length;
+										annTextEl.innerText = announcements[currentAnnIndex];
+										annTextEl.style.opacity = "1";
+									}, 300);
+								}, 4000);
+							}
+						})
+						.catch(() => collapseAnnBar());
 				}
 
 				// Establish stable openCounsellorForm function

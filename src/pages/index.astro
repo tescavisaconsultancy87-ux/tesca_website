@@ -5,6 +5,43 @@ import CountrySelector from "../components/CountrySelector";
 import StudentCarousel from "../components/StudentCarousel";
 import FintechCalculators from "../components/FintechCalculators";
 import AICounsellor from "../components/AICounsellor";
+import FAQ from "../components/FAQ.astro";
+
+// Homepage FAQ — powers Google Featured Snippets + AI Overviews (AEO)
+const homeFaqItems = [
+	{
+		question: "Which country is best for Indian students to study abroad?",
+		answer: "The best country depends on your course, budget, and career goals. The USA and UK lead for top-ranked universities and post-study work opportunities. Canada and Australia are popular for PR pathways and post-graduation work permits. Germany offers tuition-free education at public universities. TESCA's counsellors help you compare destinations based on your academic profile and goals to find the right fit."
+	},
+	{
+		question: "What is the visa success rate of TESCA Visa Consultancy?",
+		answer: "TESCA maintains a 97% visa success rate across all country destinations. With 20+ years of experience since 2005 and over 30,000 students placed abroad, our thorough document verification, visa interview preparation, and application review process maximizes your chances of approval."
+	},
+	{
+		question: "How much does it cost to study abroad?",
+		answer: "Study costs vary widely by country. Tuition ranges from INR 6–12 lakhs per year in Germany (public universities are often free) to INR 25–60 lakhs in the USA and UK. Living expenses add INR 5–15 lakhs annually. TESCA provides transparent cost breakdowns through our Study Cost Calculator and helps you explore scholarships, education loans, and affordable destinations within your budget."
+	},
+	{
+		question: "Does TESCA help with education loans and financial support?",
+		answer: "Yes. TESCA provides complete education finance support, including loan assistance through trusted banking partners like SBI, HDFC, Avanse, and Credila. We also guide you on blocked accounts, sponsor declarations, and scholarship opportunities that can significantly reduce your study abroad costs."
+	},
+	{
+		question: "What IELTS score is required to study abroad?",
+		answer: "Most universities require an IELTS score of 6.0–6.5 for undergraduate programs and 6.5–7.0 for postgraduate programs. Some countries like the USA may accept alternative tests like TOEFL or PTE. TESCA offers structured IELTS, PTE, and TOEFL coaching with experienced trainers, mock tests, and targeted improvement strategies to help you achieve your required score."
+	},
+	{
+		question: "Is the first counselling session at TESCA free?",
+		answer: "Yes, the first counselling session at TESCA is completely free. We assess your academic background, career goals, and budget to recommend suitable countries, courses, and universities — with no obligation. You only discuss fees once you decide to proceed with specific services."
+	},
+	{
+		question: "How long does the study abroad process take?",
+		answer: "The full process typically takes 4–9 months, depending on the destination and intake. University applications take 2–8 weeks for a decision, followed by visa processing (2–8 weeks). TESCA recommends starting 6–12 months before your intended intake. We track deadlines, handle documentation, and ensure everything is submitted on time."
+	},
+	{
+		question: "Does TESCA provide support after I reach my destination?",
+		answer: "Yes. TESCA offers comprehensive pre-departure and post-arrival support including airport pick-up coordination, accommodation assistance, banking setup guidance, and orientation to your new city. We ensure a smooth transition so you can focus on your studies from day one."
+	}
+];
 const SVG = {
   Compass: `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-6 h-6"><circle cx="12" cy="12" r="10"/><polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76"/></svg>`,
   Landmark: `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-6 h-6"><line x1="3" x2="21" y1="22" y2="22"/><line x1="6" x2="6" y1="18" y2="22"/><line x1="10" x2="10" y1="18" y2="22"/><line x1="14" x2="14" y1="18" y2="22"/><line x1="18" x2="18" y1="18" y2="22"/><polygon points="12 2 20 7 4 7"/></svg>`,
@@ -695,6 +732,9 @@ Expert guidance, top universities, and visa success—everything you need to tak
       </div>
     </div>
   </section>
+
+  {/* ==================== FAQ SECTION (AEO) ==================== */}
+  <FAQ items={homeFaqItems} />
 
   <!-- Client floating chatbot -->
   <AICounsellor client:only="react" />
