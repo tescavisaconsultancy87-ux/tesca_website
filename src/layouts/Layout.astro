@@ -24,13 +24,21 @@ interface Props {
 	title?: string;
 	description?: string;
 	showNavFooter?: boolean;
+	noindex?: boolean;
+	image?: string;
 }
 
 const {
 	title = "TESCA | Premium Study Abroad & Visa Consultancy",
 	description = "Premium admissions evaluation, financial analysis tools, and visa compliance checking by TESCA Visa Consultancy.",
 	showNavFooter = true,
+	noindex = false,
+	image = "/images/Tesca_logo.png",
 } = Astro.props;
+
+// Canonical URL is always the apex host, regardless of how the request arrived.
+const canonicalURL = new URL(Astro.url.pathname, "https://tescavisa.com").href;
+const ogImage = new URL(image, "https://tescavisa.com").href;
 
 let announcements = [];
 
@@ -61,15 +69,39 @@ try {
 			gtag('config', 'G-2HW0JXMF2Y');
 		</script>
 		<meta charset="UTF-8" />
-		<meta name="viewport" content="width=device-width" />
+		<meta name="viewport" content="width=device-width, initial-scale=1" />
 		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
 		<link rel="icon" type="image/png" href="/favicon.png" />
 		<link rel="shortcut icon" href="/favicon.ico" />
+		<link rel="apple-touch-icon" href="/favicon.png" />
 		<meta name="generator" content={Astro.generator} />
-		<meta name="description" content={description} />
 
 		<!-- SEO Meta Tags -->
 		<title>{title}</title>
+		<meta name="description" content={description} />
+		<link rel="canonical" href={canonicalURL} />
+		{noindex && <meta name="robots" content="noindex, nofollow" />}
+
+		<!-- Performance: warm up third-party origins -->
+		<link rel="preconnect" href="https://zlsauoosumpnbyouhdfk.supabase.co" crossorigin />
+		<link rel="preconnect" href="https://api.fontshare.com" crossorigin />
+		<link rel="dns-prefetch" href="https://flagcdn.com" />
+
+		<!-- OpenGraph -->
+		<meta property="og:type" content="website" />
+		<meta property="og:site_name" content="TESCA Visa Consultancy" />
+		<meta property="og:title" content={title} />
+		<meta property="og:description" content={description} />
+		<meta property="og:url" content={canonicalURL} />
+		<meta property="og:image" content={ogImage} />
+		<meta property="og:locale" content="en_US" />
+
+		<!-- Twitter -->
+		<meta name="twitter:card" content="summary_large_image" />
+		<meta name="twitter:title" content={title} />
+		<meta name="twitter:description" content={description} />
+		<meta name="twitter:image" content={ogImage} />
+
 		<ClientRouter />
 		<style is:global>
 			/* Custom Premium Toast Styles */
