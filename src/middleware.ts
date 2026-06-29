@@ -28,6 +28,53 @@ export const onRequest = defineMiddleware(async (context, next) => {
     // Fallback/ignore during local development or build time
   }
 
+  // --- Redirect legacy apex admin URLs to the dedicated admin subdomain ---
+  // The admin panel now lives on admin.tescavisa.com. Permanently (301) redirect
+  // tescavisa.com/admin and /admin/* — preserving the full path and query string —
+  // so existing URLs keep working unchanged (e.g. /admin/dashboard ->
+  // admin.tescavisa.com/admin/dashboard). Scoped to the production apex host only:
+  // the admin subdomain itself (no loop), local dev (localhost), and preview hosts
+  // (*.pages.dev) are intentionally left alone so admin development still works there.
+  const { hostname, pathname: reqPath, search } = context.url;
+  const isApexHost = hostname === "tescavisa.com" || hostname === "www.tescavisa.com";
+  const isAdminPath = reqPath === "/admin" || reqPath.startsWith("/admin/");
+  if (isApexHost && isAdminPath) {
+    return Response.redirect(`https://admin.tescavisa.com${reqPath}${search}`, 301);
+  }
+
+  // --- Harden the admin subdomain: serve ONLY admin pages + required admin APIs ---
+  // admin.tescavisa.com must not expose public content. Allowed surface:
+  //   - /admin and /admin/*            (the admin pages)
+  //   - /api/set-session               (recovery flow establishes session cookies)
+  //   - /api/forgot-password           (login page "forgot password")
+  //   - /api/leads-count               (AdminHeader unread-leads badge)
+  // The bare root is sent to the admin entry point; any other on-demand route is
+  // permanently redirected to the same path on the public apex host.
+  // NOTE: this governs SSR/on-demand routes only. Prerendered pages and static
+  // assets are served by Cloudflare's asset layer *before* this middleware runs,
+  // so a Cloudflare Redirect Rule (see Phase 5 notes) is required to fully fence
+  // those off the admin subdomain.
+  const isAdminHost = hostname === "admin.tescavisa.com";
+  const ADMIN_APIS = new Set(["/api/set-session", "/api/forgot-password", "/api/leads-count"]);
+  // Static assets must ALWAYS be served (never redirected) so the admin UI loads:
+  // hashed build output (/_astro/*), images, fonts, and any file with an extension
+  // (favicon.ico, robots.txt, manifest.*, sitemap.xml, *.css, *.js, ...). Real pages
+  // are extensionless, so the extension test only ever matches assets.
+  const isStaticAsset =
+    reqPath.startsWith("/_astro/") ||
+    reqPath.startsWith("/images/") ||
+    reqPath.startsWith("/fonts/") ||
+    reqPath.startsWith("/bank/") ||
+    reqPath.startsWith("/material/") ||
+    /\.[a-zA-Z0-9]+$/.test(reqPath);
+  const isAllowedOnAdminHost = isAdminPath || ADMIN_APIS.has(reqPath) || isStaticAsset;
+  if (isAdminHost && !isAllowedOnAdminHost) {
+    if (reqPath === "/") {
+      return Response.redirect("https://admin.tescavisa.com/admin", 301);
+    }
+    return Response.redirect(`https://tescavisa.com${reqPath}${search}`, 301);
+  }
+
   const response = await next();
   const { pathname } = context.url;
   const isAdmin = pathname.startsWith("/admin");
