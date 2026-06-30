@@ -74,38 +74,261 @@ const SVG = {
       </div>
     </div>
 
-    <!-- Detailed Policy Sections -->
-    <div class="space-y-12 max-w-4xl">
-      <div class="space-y-4">
-        <h2 class="text-2xl lg:text-3xl font-bold text-slate-800 font-display tracking-tight flex items-center gap-2">
-          <span set:html={SVG.Award} class="w-6 h-6 text-accent-blue flex items-center justify-center shrink-0" /> 1. Eligibility Criteria for Success Guarantee
-        </h2>
-        <p class="text-sm md:text-base text-slate-600 font-sans leading-relaxed">
-          To qualify for the TESCA Visa Success SLA, applicants must complete our baseline verification audit. This includes submitting certified bank statements proving liquid funding thresholds, meeting regional language standards (IELTS Band 6.0+ or equivalent), and presenting valid, uncompromised academic credentials.
-        </p>
+    <!-- Detailed Policies & Checkup Tool Layout -->
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start mb-16">
+      
+      <!-- Detailed Policy Sections (7 cols) -->
+      <div class="lg:col-span-7 space-y-12 font-sans">
+        <div class="space-y-4">
+          <h2 class="text-2xl lg:text-3xl font-bold text-slate-800 font-display tracking-tight flex items-center gap-2">
+            <span set:html={SVG.Award} class="w-6 h-6 text-accent-blue flex items-center justify-center shrink-0" /> 1. Eligibility Criteria for Success Guarantee
+          </h2>
+          <p class="text-sm md:text-base text-slate-600 font-sans leading-relaxed">
+            To qualify for the TESCA Visa Success SLA, applicants must complete our baseline verification audit. This includes submitting certified bank statements proving liquid funding thresholds, meeting regional language standards (IELTS Band 6.0+ or equivalent), and presenting valid, uncompromised academic credentials.
+          </p>
+        </div>
+
+        <div class="space-y-4">
+          <h2 class="text-2xl lg:text-3xl font-bold text-slate-800 font-display tracking-tight flex items-center gap-2">
+            <span set:html={SVG.CheckCircle} class="w-6 h-6 text-accent-blue flex items-center justify-center shrink-0" /> 2. Refund Guidelines & Structural Integrity
+          </h2>
+          <p class="text-sm md:text-base text-slate-600 font-sans leading-relaxed font-normal">
+            If an embassy refuses a visa due to formatting, documentation, or compliance failures in the filing compiled by TESCA, the candidate will be eligible for a refund of up to 50% of the advisory service fee. 
+          </p>
+          <p class="text-sm text-slate-500 font-sans leading-relaxed italic bg-slate-50 border border-slate-200/50 p-4 rounded-2xl">
+            Note: Refusals resulting from biometric failures, medical issues, criminal history, or failure to attend scheduled interviews are outside the scope of this SLA.
+          </p>
+        </div>
+
+        <div class="space-y-4">
+          <h2 class="text-2xl lg:text-3xl font-bold text-slate-800 font-display tracking-tight flex items-center gap-2">
+            <span set:html={SVG.TrendingUp} class="w-6 h-6 text-accent-blue flex items-center justify-center shrink-0" /> 3. Appeal & Re-filing Policy
+          </h2>
+          <p class="text-sm md:text-base text-slate-600 font-sans leading-relaxed">
+            In case of a refusal, our senior compliance team conducts a diagnostic audit within 7 business days. If we determine that a refiling has a high success rating, TESCA will bear all refiling coordination costs, providing a free second attempt.
+          </p>
+        </div>
       </div>
 
-      <div class="space-y-4">
-        <h2 class="text-2xl lg:text-3xl font-bold text-slate-800 font-display tracking-tight flex items-center gap-2">
-          <span set:html={SVG.CheckCircle} class="w-6 h-6 text-accent-blue flex items-center justify-center shrink-0" /> 2. Refund Guidelines & Structural Integrity
-        </h2>
-        <p class="text-sm md:text-base text-slate-600 font-sans leading-relaxed font-normal">
-          If an embassy refuses a visa due to formatting, documentation, or compliance failures in the filing compiled by TESCA, the candidate will be eligible for a refund of up to 50% of the advisory service fee. 
-        </p>
-        <p class="text-sm text-slate-500 font-sans leading-relaxed italic bg-slate-50 border border-slate-200/50 p-4 rounded-2xl">
-          Note: Refusals resulting from biometric failures, medical issues, criminal history, or failure to attend scheduled interviews are outside the scope of this SLA.
-        </p>
+      <!-- SLA Predictive Checkup & Refund Estimator (5 cols) -->
+      <div class="lg:col-span-5 p-6 md:p-8 rounded-3xl border border-slate-200/80 bg-white shadow-md space-y-6 font-sans">
+        <div>
+          <h2 class="text-xl font-bold font-display text-slate-850">SLA Eligibility & Refund Estimator</h2>
+          <p class="text-xs text-slate-500 mt-1">Pre-evaluate your profile compatibility under our Service Level Agreement.</p>
+        </div>
+
+        <form id="sla-form" class="space-y-4 text-sm text-slate-700">
+          
+          <!-- Target Country -->
+          <div class="space-y-1.5">
+            <label class="block font-bold text-slate-800">Target Destination</label>
+            <select id="sla-country" class="w-full bg-white border border-slate-200 rounded-xl px-4 py-2.5 focus:outline-none focus:border-accent-blue cursor-pointer">
+              <option value="ca">Canada</option>
+              <option value="uk">United Kingdom</option>
+              <option value="usa">United States</option>
+              <option value="au">Australia</option>
+              <option value="de">Germany</option>
+            </select>
+          </div>
+
+          <!-- Academic Score -->
+          <div class="space-y-1.5">
+            <label class="block font-bold text-slate-800">Academic Score (CGPA / %)</label>
+            <select id="sla-academics" class="w-full bg-white border border-slate-200 rounded-xl px-4 py-2.5 focus:outline-none focus:border-accent-blue cursor-pointer">
+              <option value="high">8.0+ CGPA / 80%+</option>
+              <option value="med-high" selected>7.0 - 7.9 CGPA / 70% - 79%</option>
+              <option value="med">6.0 - 6.9 CGPA / 60% - 69%</option>
+              <option value="low">Below 6.0 CGPA / 60%</option>
+            </select>
+          </div>
+
+          <!-- Language Score -->
+          <div class="space-y-1.5">
+            <label class="block font-bold text-slate-800">English Test Score (IELTS equivalent)</label>
+            <select id="sla-language" class="w-full bg-white border border-slate-200 rounded-xl px-4 py-2.5 focus:outline-none focus:border-accent-blue cursor-pointer">
+              <option value="high">7.5+ overall (no band less than 6.5)</option>
+              <option value="med-high" selected>6.5 - 7.0 overall (no band less than 6.0)</option>
+              <option value="med">6.0 overall (no band less than 5.5)</option>
+              <option value="low">Below 6.0 or No Test</option>
+            </select>
+          </div>
+
+          <!-- Funding Status -->
+          <div class="space-y-1.5">
+            <label class="block font-bold text-slate-800">Financial Proof Seasoning</label>
+            <select id="sla-funding" class="w-full bg-white border border-slate-200 rounded-xl px-4 py-2.5 focus:outline-none focus:border-accent-blue cursor-pointer">
+              <option value="verified" selected>Fully Verified Funds (held for 6+ months)</option>
+              <option value="partial">Partially Prepared / Under 6 months</option>
+              <option value="none">No proof / Cash deposits only</option>
+            </select>
+          </div>
+
+          <!-- Prior Refusals -->
+          <div class="space-y-1.5">
+            <label class="block font-bold text-slate-800">Prior Visa Refusals</label>
+            <select id="sla-refusals" class="w-full bg-white border border-slate-200 rounded-xl px-4 py-2.5 focus:outline-none focus:border-accent-blue cursor-pointer">
+              <option value="0" selected>None</option>
+              <option value="1">1 Refusal</option>
+              <option value="2">2+ Refusals</option>
+            </select>
+          </div>
+
+          <!-- Academic Gap -->
+          <div class="space-y-1.5">
+            <label class="block font-bold text-slate-800">Academic Gap</label>
+            <select id="sla-gap" class="w-full bg-white border border-slate-200 rounded-xl px-4 py-2.5 focus:outline-none focus:border-accent-blue cursor-pointer">
+              <option value="none" selected>No gap / Under 2 years</option>
+              <option value="some">2 to 5 years (with work/experience proof)</option>
+              <option value="long">Over 5 years</option>
+            </select>
+          </div>
+
+          <!-- Result box -->
+          <div class="p-6 rounded-2xl bg-slate-50 border border-slate-150/80 space-y-4">
+            <div class="flex items-center justify-between">
+              <div>
+                <span class="text-[10px] font-bold text-slate-400 uppercase tracking-widest block">Success Rating</span>
+                <span id="sla-rating-display" class="text-3xl font-extrabold font-display text-accent-blue">97%</span>
+              </div>
+              <div class="text-right">
+                <span id="sla-status-display" class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-emerald-100 border border-emerald-200 text-emerald-800">
+                  Full SLA Guarantee
+                </span>
+              </div>
+            </div>
+            
+            <div class="border-t border-slate-200/60 pt-3">
+              <span class="text-[10px] font-bold text-slate-400 uppercase tracking-widest block mb-1">SLA Refund Scope</span>
+              <p id="sla-refund-display" class="text-sm font-semibold text-slate-850">Eligible for up to 50% Refund Guarantee</p>
+            </div>
+
+            <!-- Dynamic Tips / Recommendations -->
+            <div id="sla-tips-box" class="hidden text-xs bg-amber-50 border border-amber-100 text-amber-800 p-4 rounded-xl space-y-2">
+              <strong class="block font-bold">Optimization Steps Required:</strong>
+              <ul id="sla-tips-list" class="list-disc pl-4 space-y-1 font-normal text-[11px] leading-relaxed">
+              </ul>
+            </div>
+          </div>
+
+          <button 
+            type="button" 
+            onclick="window.dispatchEvent(new CustomEvent('open-counsellor-form'))"
+            class="w-full py-3 bg-accent-blue hover:bg-accent-indigo text-white font-bold text-sm rounded-xl shadow-md transition-all duration-200 text-center cursor-pointer tracking-wide block"
+          >
+            Start Free Profile Audit
+          </button>
+        </form>
       </div>
 
-      <div class="space-y-4">
-        <h2 class="text-2xl lg:text-3xl font-bold text-slate-800 font-display tracking-tight flex items-center gap-2">
-          <span set:html={SVG.TrendingUp} class="w-6 h-6 text-accent-blue flex items-center justify-center shrink-0" /> 3. Appeal & Re-filing Policy
-        </h2>
-        <p class="text-sm md:text-base text-slate-600 font-sans leading-relaxed">
-          In case of a refusal, our senior compliance team conducts a diagnostic audit within 7 business days. If we determine that a refiling has a high success rating, TESCA will bear all refiling coordination costs, providing a free second attempt.
-        </p>
-      </div>
     </div>
+
+    <!-- Client-side script for SLA Checker logic -->
+    <script is:inline>
+      function calculateSla() {
+        const country = document.getElementById('sla-country').value;
+        const academics = document.getElementById('sla-academics').value;
+        const language = document.getElementById('sla-language').value;
+        const funding = document.getElementById('sla-funding').value;
+        const refusals = document.getElementById('sla-refusals').value;
+        const gap = document.getElementById('sla-gap').value;
+
+        let rating = 97;
+        const tips = [];
+
+        // Academics penalties
+        if (academics === 'med') {
+          rating -= 8;
+          tips.push('Your CGPA/percentage falls in the medium range. Consider stronger statement of purpose (SOP) focus.');
+        } else if (academics === 'low') {
+          rating -= 15;
+          tips.push('Academics below 60% require backing with exceptional work experience or vocational qualifications.');
+        }
+
+        // Language penalties
+        if (language === 'med') {
+          rating -= 7;
+          tips.push('An IELTS band of 6.0 is low for top-tier admissions. Aim for 6.5+ overall to boost approval rating.');
+        } else if (language === 'low') {
+          rating -= 18;
+          tips.push('No official language scores or a score below 6.0 limits university selection and increases refusal risks.');
+        }
+
+        // Funding penalties
+        if (funding === 'partial') {
+          rating -= 10;
+          tips.push('Embassies require funding seasoned for 3-6 months. We recommend starting bank deposit preparation immediately.');
+        } else if (funding === 'none') {
+          rating -= 25;
+          tips.push('Lack of verified seasoned funding is a major refusal trigger. Structured sponsorships or loan dossiers are required.');
+        }
+
+        // Refusals penalties
+        if (refusals === '1') {
+          rating -= 15;
+          tips.push('A prior refusal requires requesting GCMS/CAIPS notes to address specific objections in the next SOP.');
+        } else if (refusals === '2') {
+          rating -= 30;
+          tips.push('Multiple refusals require active profile rehabilitation and senior compliance reviews before re-filing.');
+        }
+
+        // Gap penalties
+        if (gap === 'some') {
+          rating -= 5;
+          tips.push('Ensure 2-5 year gaps are fully covered with detailed work references and salary statements.');
+        } else if (gap === 'long') {
+          rating -= 15;
+          tips.push('Academic gaps over 5 years need strong professional justification and career progression mappings.');
+        }
+
+        // Cap rating between 40% and 97%
+        rating = Math.max(40, Math.min(97, rating));
+
+        const ratingEl = document.getElementById('sla-rating-display');
+        const statusEl = document.getElementById('sla-status-display');
+        const refundEl = document.getElementById('sla-refund-display');
+        const tipsBox = document.getElementById('sla-tips-box');
+        const tipsList = document.getElementById('sla-tips-list');
+
+        if (ratingEl) ratingEl.textContent = rating + '%';
+
+        if (statusEl && refundEl) {
+          if (rating >= 90) {
+            statusEl.textContent = "Full SLA Guarantee";
+            statusEl.className = "inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-emerald-100 border border-emerald-200 text-emerald-800";
+            refundEl.textContent = "Eligible for 50% Advisory Fee Refund Guarantee";
+          } else if (rating >= 75) {
+            statusEl.textContent = "Conditional SLA";
+            statusEl.className = "inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-amber-100 border border-amber-200 text-amber-800";
+            refundEl.textContent = "Eligible for 25% Advisory Fee Refund Guarantee";
+          } else {
+            statusEl.textContent = "Requires Profile Audit";
+            statusEl.className = "inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-red-100 border border-red-200 text-red-800";
+            refundEl.textContent = "Standard Filing (No Refund Coverage)";
+          }
+        }
+
+        if (tipsBox && tipsList) {
+          if (tips.length > 0) {
+            tipsBox.classList.remove('hidden');
+            tipsList.innerHTML = tips.map(tip => `<li>${tip}</li>`).join('');
+          } else {
+            tipsBox.classList.add('hidden');
+            tipsList.innerHTML = '';
+          }
+        }
+      }
+
+      function initSlaCalculator() {
+        const form = document.getElementById('sla-form');
+        if (form) {
+          form.addEventListener('change', calculateSla);
+          calculateSla();
+        }
+      }
+
+      document.addEventListener('DOMContentLoaded', initSlaCalculator);
+      document.addEventListener('astro:page-load', initSlaCalculator);
+    </script>
 
   </section>
 

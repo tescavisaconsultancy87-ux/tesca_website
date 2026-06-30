@@ -101,22 +101,160 @@ const SVG = {
 
       <div class="space-y-6 sticky top-28 font-sans">
         <div class="glass-card rounded-[2rem] p-6 bg-gradient-to-br from-indigo-50/50 to-white border border-indigo-100 shadow-md space-y-6">
-          <div class="space-y-2">
+          <div class="space-y-1">
             <h3 class="text-xl font-bold text-slate-800 font-display tracking-tight">Re-apply with Confidence</h3>
-            <p class="text-xs text-slate-500 leading-relaxed">
-              Book a case audit with our senior visa rehabilitation officers to review your refusal profile.
+            <p class="text-xs text-slate-500 leading-relaxed font-normal">
+              Analyze your refusal letter dynamically to estimate your re-application path viability.
             </p>
           </div>
-          
-          <button 
-            type="button" 
-            onclick="window.dispatchEvent(new CustomEvent('open-counsellor-form'))"
-            class="w-full py-3 bg-accent-blue hover:bg-accent-indigo text-white font-bold text-sm rounded-xl shadow-md transition-all duration-200 text-center cursor-pointer tracking-wide block"
-          >
-            Start Refusal Consultation
-          </button>
+
+          <form id="refusal-form" class="space-y-4 text-xs text-slate-700">
+            <!-- Country of Refusal -->
+            <div class="space-y-1.5">
+              <label class="block font-semibold text-slate-800">Refused Destination</label>
+              <select id="ref-country" class="w-full bg-white border border-slate-200 rounded-lg px-3 py-2 focus:outline-none focus:border-accent-blue cursor-pointer">
+                <option value="ca">Canada</option>
+                <option value="usa">United States</option>
+                <option value="uk">United Kingdom</option>
+                <option value="au">Australia</option>
+                <option value="schengen">Schengen</option>
+                <option value="other">Other Country</option>
+              </select>
+            </div>
+
+            <!-- Refusal Reason -->
+            <div class="space-y-1.5">
+              <label class="block font-semibold text-slate-800">Primary Refusal Reason</label>
+              <select id="ref-reason" class="w-full bg-white border border-slate-200 rounded-lg px-3 py-2 focus:outline-none focus:border-accent-blue cursor-pointer">
+                <option value="ties" selected>Home Ties / Purpose of Visit (e.g. 214b / 216b)</option>
+                <option value="funds">Inadequate Funds / Financial Credibility</option>
+                <option value="study">Study Plan / Course Misalignment</option>
+                <option value="docs">Missing / Incomplete Documentation</option>
+                <option value="history">Immigration History / Overstay Concerns</option>
+              </select>
+            </div>
+
+            <!-- GCMS Notes Status -->
+            <div class="space-y-1.5">
+              <label class="block font-semibold text-slate-800">Do you have CAIPS/GCMS Notes?</label>
+              <div class="flex gap-4">
+                <label class="flex items-center gap-1.5 cursor-pointer">
+                  <input type="radio" name="ref-notes" value="yes" class="w-3.5 h-3.5 text-accent-blue" />
+                  <span>Yes</span>
+                </label>
+                <label class="flex items-center gap-1.5 cursor-pointer">
+                  <input type="radio" name="ref-notes" value="no" checked class="w-3.5 h-3.5 text-accent-blue" />
+                  <span>No</span>
+                </label>
+              </div>
+            </div>
+
+            <!-- Prior Rejections -->
+            <div class="space-y-1.5">
+              <label class="block font-semibold text-slate-800">Prior Rejections</label>
+              <select id="ref-count" class="w-full bg-white border border-slate-200 rounded-lg px-3 py-2 focus:outline-none focus:border-accent-blue cursor-pointer">
+                <option value="1" selected>1 Refusal</option>
+                <option value="2">2 Refusals</option>
+                <option value="3">3 or more Refusals</option>
+              </select>
+            </div>
+
+            <!-- Result Box -->
+            <div class="p-4 rounded-xl bg-slate-50 border border-slate-150/80 space-y-3">
+              <div>
+                <span class="text-[9px] font-bold text-slate-400 uppercase tracking-widest block">Re-filing Feasibility</span>
+                <span id="ref-status-display" class="text-base font-bold text-slate-850 mt-1 block">Moderate Success probability</span>
+              </div>
+              
+              <!-- Dynamic Actions -->
+              <div id="ref-actions-box" class="text-[10px] bg-amber-50 border border-amber-100 text-amber-800 p-2.5 rounded-lg space-y-1">
+                <strong class="block font-semibold">Recommended Remedy:</strong>
+                <p id="ref-remedy-text" class="leading-relaxed font-normal">Order GCMS Notes first to understand specific concerns before re-filing.</p>
+              </div>
+            </div>
+
+            <button 
+              type="button" 
+              onclick="window.dispatchEvent(new CustomEvent('open-counsellor-form'))"
+              class="w-full py-2.5 bg-accent-blue hover:bg-accent-indigo text-white font-bold text-xs rounded-xl shadow-md transition-all duration-200 text-center cursor-pointer tracking-wide block"
+            >
+              Start Refusal Consultation
+            </button>
+          </form>
         </div>
       </div>
+
+      <!-- Script for Refusal Diagnostic -->
+      <script is:inline>
+        function runRefusalDiagnostic() {
+          const country = document.getElementById('ref-country').value;
+          const reason = document.getElementById('ref-reason').value;
+          const count = document.getElementById('ref-count').value;
+          
+          const notesRadio = document.querySelector('input[name="ref-notes"]:checked');
+          const hasNotes = notesRadio ? notesRadio.value === 'yes' : false;
+
+          const statusEl = document.getElementById('ref-status-display');
+          const remedyEl = document.getElementById('ref-remedy-text');
+          const actionsBox = document.getElementById('ref-actions-box');
+
+          let feasibility = "Moderate Success Probability";
+          let remedy = "Detailed profile review needed. We suggest compiling previous files.";
+
+          if (count === '3') {
+            feasibility = "Complex Profile (Requires Audit)";
+            remedy = "Multiple refusals require active profile rehabilitation and senior counselor case review before re-filing.";
+          } else if (count === '2') {
+            feasibility = "Moderate Risk (Needs Preparation)";
+            remedy = "Requires restructuring SOP from scratch and gathering stronger ties or seasoned funds.";
+          } else {
+            // 1 refusal cases
+            if (reason === 'ties') {
+              feasibility = "Good Re-filing Viability (75%+)";
+              remedy = "Requires a fortified statement of purpose (SOP) explaining home ties, career goals, and assets in India.";
+            } else if (reason === 'funds') {
+              feasibility = "Good Re-filing Viability (80%+)";
+              remedy = "Requires seasoning funds for 3-6 months or securing an education loan sanction letter to prove credibility.";
+            } else if (reason === 'study') {
+              feasibility = "Moderate Viability (65%+)";
+              remedy = "Requires course progression justification. An explanation letter should link the new course to past studies.";
+            } else if (reason === 'docs') {
+              feasibility = "High Success Probability (90%+)";
+              remedy = "Simply re-file by compiling correct documents matching embassy checklist guidelines.";
+            }
+          }
+
+          // Override for Canada/USA if no GCMS notes
+          if ((country === 'ca' || country === 'usa') && !hasNotes && count !== '3') {
+            feasibility = "Order Notes First";
+            remedy = "For " + (country === 'ca' ? 'Canada' : 'USA') + " files, we recommend ordering GCMS/CAIPS notes first to see exact officer concerns.";
+          }
+
+          if (statusEl) statusEl.textContent = feasibility;
+          if (remedyEl) remedyEl.textContent = remedy;
+
+          if (actionsBox) {
+            if (feasibility.includes("High") || feasibility.includes("Good")) {
+              actionsBox.className = "text-[10px] bg-emerald-50 border border-emerald-100 text-emerald-800 p-2.5 rounded-lg space-y-1";
+            } else if (feasibility.includes("Risky") || feasibility.includes("Complex") || feasibility.includes("Order")) {
+              actionsBox.className = "text-[10px] bg-red-50 border border-red-100 text-red-800 p-2.5 rounded-lg space-y-1";
+            } else {
+              actionsBox.className = "text-[10px] bg-amber-50 border border-amber-100 text-amber-800 p-2.5 rounded-lg space-y-1";
+            }
+          }
+        }
+
+        function initRefusalDiagnostic() {
+          const form = document.getElementById('refusal-form');
+          if (form) {
+            form.addEventListener('change', runRefusalDiagnostic);
+            runRefusalDiagnostic();
+          }
+        }
+
+        document.addEventListener('DOMContentLoaded', initRefusalDiagnostic);
+        document.addEventListener('astro:page-load', initRefusalDiagnostic);
+      </script>
 
     </div>
 

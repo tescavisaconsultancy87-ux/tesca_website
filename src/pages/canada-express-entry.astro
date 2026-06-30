@@ -101,22 +101,146 @@ const SVG = {
 
       <div class="space-y-6 sticky top-28 font-sans">
         <div class="glass-card rounded-[2rem] p-6 bg-gradient-to-br from-indigo-50/50 to-white border border-indigo-100 shadow-md space-y-6">
-          <div class="space-y-2">
+          <div class="space-y-1">
             <h3 class="text-xl font-bold text-slate-800 font-display tracking-tight">Want to check your CRS Score?</h3>
-            <p class="text-xs text-slate-500 leading-relaxed">
-              Book a consultation to evaluate your profile points, NOC classification, and Provincial Nominee (PNP) opportunities.
+            <p class="text-xs text-slate-500 leading-relaxed font-normal">
+              Simulate your Comprehensive Ranking System (CRS) score for Canada PR. Max score: <strong>1,200 points</strong>.
             </p>
           </div>
-          
-          <button 
-            type="button" 
-            onclick="window.dispatchEvent(new CustomEvent('open-counsellor-form'))"
-            class="w-full py-3 bg-accent-blue hover:bg-accent-indigo text-white font-bold text-sm rounded-xl shadow-md transition-all duration-200 text-center cursor-pointer tracking-wide block"
-          >
-            Calculate CRS & Consult
-          </button>
+
+          <form id="crs-form" class="space-y-4 text-xs text-slate-700">
+            <!-- Age Bracket -->
+            <div class="space-y-1.5">
+              <label class="block font-semibold text-slate-800">Age Bracket</label>
+              <select id="crs-age" class="w-full bg-white border border-slate-200 rounded-lg px-3 py-2 focus:outline-none focus:border-accent-blue cursor-pointer">
+                <option value="110" selected>20 to 29 years (+110 pts)</option>
+                <option value="95">30 years (+95 pts)</option>
+                <option value="75">31 to 35 years (+75 pts)</option>
+                <option value="50">36 to 39 years (+50 pts)</option>
+                <option value="15">40 to 44 years (+15 pts)</option>
+                <option value="0">45 years and over (+0 pts)</option>
+              </select>
+            </div>
+
+            <!-- Education Level -->
+            <div class="space-y-1.5">
+              <label class="block font-semibold text-slate-800">Education Level</label>
+              <select id="crs-education" class="w-full bg-white border border-slate-200 rounded-lg px-3 py-2 focus:outline-none focus:border-accent-blue cursor-pointer">
+                <option value="150">Doctorate / PhD (+150 pts)</option>
+                <option value="135" selected>Master's or Professional Degree (+135 pts)</option>
+                <option value="128">Two or more Post-Secondary Credentials (+128 pts)</option>
+                <option value="120">Bachelor's Degree (3+ years) (+120 pts)</option>
+                <option value="90">Post-Secondary Diploma (1-2 years) (+90 pts)</option>
+                <option value="30">Secondary School / High school (+30 pts)</option>
+              </select>
+            </div>
+
+            <!-- Language Proficiency -->
+            <div class="space-y-1.5">
+              <label class="block font-semibold text-slate-800">Language Level (IELTS CLB)</label>
+              <select id="crs-language" class="w-full bg-white border border-slate-200 rounded-lg px-3 py-2 focus:outline-none focus:border-accent-blue cursor-pointer">
+                <option value="136" selected>CLB 9+ (IELTS Listening 8.0, others 7.0+) (+136 pts)</option>
+                <option value="120">CLB 8 (IELTS Listening 7.5, others 6.5) (+120 pts)</option>
+                <option value="68">CLB 7 (IELTS 6.0 in all bands) (+68 pts)</option>
+                <option value="0">CLB 6 or lower / No Test (+0 pts)</option>
+              </select>
+            </div>
+
+            <!-- Skilled Experience -->
+            <div class="space-y-1.5">
+              <label class="block font-semibold text-slate-800">Foreign Work Experience</label>
+              <select id="crs-experience" class="w-full bg-white border border-slate-200 rounded-lg px-3 py-2 focus:outline-none focus:border-accent-blue cursor-pointer">
+                <option value="50" selected>3 or more years (+50 pts)</option>
+                <option value="25">1 to 2 years (+25 pts)</option>
+                <option value="0">None (+0 pts)</option>
+              </select>
+            </div>
+
+            <!-- Provincial Nomination -->
+            <div class="space-y-1.5">
+              <label class="block font-semibold text-slate-800">Provincial Nomination (PNP)</label>
+              <div class="flex gap-4">
+                <label class="flex items-center gap-1.5 cursor-pointer">
+                  <input type="radio" name="crs-pnp" value="600" class="w-3.5 h-3.5 text-accent-blue" />
+                  <span>Yes (+600 pts)</span>
+                </label>
+                <label class="flex items-center gap-1.5 cursor-pointer">
+                  <input type="radio" name="crs-pnp" value="0" checked class="w-3.5 h-3.5 text-accent-blue" />
+                  <span>No (+0 pts)</span>
+                </label>
+              </div>
+            </div>
+
+            <!-- Result Box -->
+            <div class="p-4 rounded-xl bg-slate-50 border border-slate-150/80 flex items-center justify-between">
+              <div>
+                <span class="text-[9px] font-bold text-slate-400 uppercase tracking-widest block">Estimated CRS Score</span>
+                <span id="crs-score-display" class="text-2xl font-extrabold font-display text-accent-blue">431</span>
+              </div>
+              <div class="text-right">
+                <span id="crs-status-display" class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-amber-100 border border-amber-200 text-amber-800">
+                  Target PNP
+                </span>
+              </div>
+            </div>
+
+            <button 
+              type="button" 
+              onclick="window.dispatchEvent(new CustomEvent('open-counsellor-form'))"
+              class="w-full py-2.5 bg-accent-blue hover:bg-accent-indigo text-white font-bold text-xs rounded-xl shadow-md transition-all duration-200 text-center cursor-pointer tracking-wide block"
+            >
+              Calculate CRS & Consult
+            </button>
+          </form>
         </div>
       </div>
+
+      <!-- Script for Canada CRS Calculator -->
+      <script is:inline>
+        function calculateCrsScore() {
+          const age = Number(document.getElementById('crs-age').value) || 0;
+          const education = Number(document.getElementById('crs-education').value) || 0;
+          const language = Number(document.getElementById('crs-language').value) || 0;
+          const experience = Number(document.getElementById('crs-experience').value) || 0;
+          
+          const pnpRadio = document.querySelector('input[name="crs-pnp"]:checked');
+          const pnp = pnpRadio ? Number(pnpRadio.value) : 0;
+
+          const total = age + education + language + experience + pnp;
+
+          const scoreEl = document.getElementById('crs-score-display');
+          const statusEl = document.getElementById('crs-status-display');
+
+          if (scoreEl) scoreEl.textContent = total;
+
+          if (statusEl) {
+            if (total >= 1000) {
+              statusEl.textContent = "Guaranteed ITA";
+              statusEl.className = "inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-100 border border-emerald-200 text-emerald-800";
+            } else if (total >= 480) {
+              statusEl.textContent = "High Draw Chance";
+              statusEl.className = "inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-100 border border-emerald-200 text-emerald-800";
+            } else if (total >= 430) {
+              statusEl.textContent = "Target PNP Stream";
+              statusEl.className = "inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-amber-100 border border-amber-200 text-amber-800";
+            } else {
+              statusEl.textContent = "Optimize Profile";
+              statusEl.className = "inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-red-100 border border-red-200 text-red-800";
+            }
+          }
+        }
+
+        function initCrsCalculator() {
+          const form = document.getElementById('crs-form');
+          if (form) {
+            form.addEventListener('change', calculateCrsScore);
+            calculateCrsScore();
+          }
+        }
+
+        document.addEventListener('DOMContentLoaded', initCrsCalculator);
+        document.addEventListener('astro:page-load', initCrsCalculator);
+      </script>
 
     </div>
 
