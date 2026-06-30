@@ -300,7 +300,7 @@ export default function EligibilityForm() {
 
   const handleEnglishSelect = (type: 'MOI' | 'IELTS') => {
     setEnglishType(type);
-    setTimeout(() => setStep(5), 250);
+    setTimeout(() => setStep(4), 250);
   };
 
   const handleBack = () => {
@@ -319,7 +319,7 @@ export default function EligibilityForm() {
       if (isNaN(engVal) || engVal <= 0) return;
     }
     
-    setStep(6);
+    setStep(5);
   };
 
   const handleSubmitLead = async (e: React.FormEvent) => {
@@ -411,20 +411,9 @@ export default function EligibilityForm() {
         (window as any).trackLeadEvent("eligibility");
       }
 
-      // Auto-trigger WhatsApp prefilled message
-      try {
-        const flagMap: Record<string, string> = { us: "🇺🇸", uk: "🇬🇧", ca: "🇨🇦", au: "🇦🇺", de: "🇩🇪", nz: "🇳🇿", ie: "🇮🇪", sg: "🇸🇬", ch: "🇨🇭", my: "🇲🇾", ae: "🇦🇪", eu: "🇪🇺" };
-        const flag = flagMap[selectedCountry || ""] || "🌍";
-        const message = `Hello TESCA, I just completed the eligibility evaluation for study in ${selectedCountry?.toUpperCase() || ""} ${flag}. Please send my matched university list PDF to this WhatsApp number!`;
-        const encodedMsg = encodeURIComponent(message);
-        window.open(`https://wa.me/919824152731?text=${encodedMsg}`, '_blank');
-      } catch (waErr) {
-        console.warn("WhatsApp redirect failed:", waErr);
-      }
-
       setMatchingUnis(directMatches);
       setReachUnis(reachMatches);
-      setStep(7);
+      setStep(6);
 
     } catch (err: any) {
       console.error(err);
@@ -566,100 +555,10 @@ export default function EligibilityForm() {
           </motion.div>
         )}
 
-        {/* STEP 3 [NEW]: SOFT PHONE MICRO-CAPTURE */}
+        {/* STEP 3: ENGLISH PROFICIENCY WAIVER OR EXAM */}
         {step === 3 && (
           <motion.div
-            key="step3-micro"
-            initial={{ opacity: 0, y: 15 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -15 }}
-            transition={{ duration: 0.3 }}
-            className="glass-card rounded-[2.5rem] p-8 md:p-12 border border-slate-200/80 bg-white shadow-xl text-left max-w-xl mx-auto"
-          >
-            <div className="flex items-center gap-3 mb-6">
-              <button onClick={handleBack} className="p-2 -ml-2 rounded-full hover:bg-slate-50 text-slate-400 hover:text-slate-600 transition-colors">
-                <ArrowLeft className="w-5 h-5" />
-              </button>
-              <div>
-                <span className="text-[10px] font-bold text-accent-blue uppercase tracking-widest font-sans">Save Progress</span>
-                <h2 className="text-2xl font-extrabold font-display text-slate-800 tracking-tight leading-tight font-sans">Save Your Progress</h2>
-              </div>
-            </div>
-
-            <p className="text-sm text-slate-500 font-sans mb-8">
-              Enter your mobile number to lock in your eligibility search and get matches delivered to your device.
-            </p>
-
-            <form
-              onSubmit={async (e) => {
-                e.preventDefault();
-                const digitsOnly = phone.replace(/[^\d]/g, "");
-                if (digitsOnly.length < 8 || digitsOnly.length > 15) {
-                  alert("Please enter a valid phone number (between 8 and 15 digits).");
-                  return;
-                }
-                
-                try {
-                  fetch("/api/micro-capture", {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({
-                      phone: phone,
-                      country: selectedCountry,
-                      level: selectedLevel
-                    })
-                  });
-                } catch (err) {
-                  console.error("Micro capture error:", err);
-                }
-
-                setStep(4);
-              }}
-              className="space-y-6"
-            >
-              <div className="space-y-1.5 text-left">
-                <label htmlFor="micro-phone" className="text-xs font-bold text-slate-700 uppercase tracking-wider font-sans">Mobile Number *</label>
-                <div className="relative">
-                  <Phone className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
-                  <input
-                    id="micro-phone"
-                    type="tel"
-                    required
-                    maxLength={15}
-                    placeholder="Enter mobile number"
-                    value={phone}
-                    onChange={(e) => setPhone(e.target.value.replace(/[^\d]/g, "").slice(0, 15))}
-                    className="w-full bg-white border border-slate-200 rounded-xl pl-10 pr-4 py-3 text-sm text-slate-800 placeholder-slate-400 focus:outline-none focus:border-accent-blue focus:ring-1 focus:ring-accent-blue transition-all font-sans"
-                  />
-                </div>
-              </div>
-
-              <div className="flex gap-4 pt-4 border-t border-slate-100">
-                <button
-                  type="button"
-                  onClick={handleBack}
-                  className="w-1/3 py-3 rounded-full border border-slate-200 bg-white text-slate-600 font-semibold text-sm hover:bg-slate-50 transition-all cursor-pointer font-sans flex items-center justify-center gap-1.5"
-                >
-                  <ArrowLeft className="w-4 h-4" />
-                  <span>Back</span>
-                </button>
-                
-                <button
-                  type="submit"
-                  className="flex-grow py-3 bg-[#F08A00] hover:bg-[#C06E00] text-white font-bold text-sm rounded-full shadow-md hover:scale-[1.01] transition-all flex items-center justify-center gap-2 cursor-pointer font-sans tracking-wide"
-                >
-                  <span>Save & Continue</span>
-                  <ArrowRight className="w-4 h-4" />
-                </button>
-              </div>
-            </form>
-          </motion.div>
-        )}
-
-        {/* STEP 4: ENGLISH PROFICIENCY WAIVER OR EXAM */}
-        {step === 4 && (
-          <motion.div
-            key="step4"
+            key="step3"
             initial={{ opacity: 0, y: 15 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -15 }}
@@ -671,7 +570,7 @@ export default function EligibilityForm() {
                 <ArrowLeft className="w-5 h-5" />
               </button>
               <div>
-                <span className="text-[10px] font-bold text-accent-blue uppercase tracking-widest font-sans">Step 4 of 6</span>
+                <span className="text-[10px] font-bold text-accent-blue uppercase tracking-widest font-sans">Step 3 of 5</span>
                 <h2 className="text-2xl font-extrabold font-display text-slate-800 tracking-tight leading-tight">English Proficiency Option</h2>
               </div>
             </div>
@@ -720,10 +619,10 @@ export default function EligibilityForm() {
           </motion.div>
         )}
 
-        {/* STEP 5: ENTER SCORES */}
-        {step === 5 && (
+        {/* STEP 4: ENTER SCORES */}
+        {step === 4 && (
           <motion.div
-            key="step5"
+            key="step4"
             initial={{ opacity: 0, y: 15 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -15 }}
@@ -735,7 +634,7 @@ export default function EligibilityForm() {
                 <ArrowLeft className="w-5 h-5" />
               </button>
               <div>
-                <span className="text-[10px] font-bold text-accent-blue uppercase tracking-widest font-sans">Step 5 of 6</span>
+                <span className="text-[10px] font-bold text-accent-blue uppercase tracking-widest font-sans">Step 4 of 5</span>
                 <h2 className="text-2xl font-extrabold font-display text-slate-800 tracking-tight leading-tight">Enter Your Scores</h2>
               </div>
             </div>
@@ -848,10 +747,10 @@ export default function EligibilityForm() {
           </motion.div>
         )}
 
-        {/* STEP 6: CAPTURE LEAD AND MATCH */}
-        {step === 6 && (
+        {/* STEP 5: CAPTURE LEAD AND MATCH */}
+        {step === 5 && (
           <motion.div
-            key="step6-matches"
+            key="step5"
             initial={{ opacity: 0, y: 15 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -15 }}
@@ -863,8 +762,8 @@ export default function EligibilityForm() {
                 <ArrowLeft className="w-5 h-5" />
               </button>
               <div>
-                <span className="text-[10px] font-bold text-accent-blue uppercase tracking-widest font-sans">Step 6 of 6</span>
-                <h2 className="text-2xl font-extrabold font-display text-slate-800 tracking-tight leading-tight">Get your matches on WhatsApp</h2>
+                <span className="text-[10px] font-bold text-accent-blue uppercase tracking-widest font-sans">Step 5 of 5</span>
+                <h2 className="text-2xl font-extrabold font-display text-slate-800 tracking-tight leading-tight">Where should we send your matches?</h2>
               </div>
             </div>
 
@@ -936,7 +835,7 @@ export default function EligibilityForm() {
                 <button
                   type="submit"
                   disabled={isSubmitting}
-                  className="flex-grow py-3 bg-[#25D366] hover:bg-[#1ea855] disabled:bg-[#25D366]/60 disabled:cursor-not-allowed text-white font-bold text-sm rounded-full shadow-md hover:scale-[1.01] transition-all flex items-center justify-center gap-2 cursor-pointer font-sans tracking-wide"
+                  className="flex-grow py-3 bg-[#F08A00] hover:bg-[#C06E00] disabled:bg-[#F08A00]/60 disabled:cursor-not-allowed text-white font-bold text-sm rounded-full shadow-md hover:scale-[1.01] transition-all flex items-center justify-center gap-2 cursor-pointer font-sans tracking-wide"
                 >
                   {isSubmitting ? (
                     <>
@@ -945,10 +844,7 @@ export default function EligibilityForm() {
                     </>
                   ) : (
                     <>
-                      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" className="w-4 h-4 fill-white flex-shrink-0" aria-hidden="true">
-                        <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 0C5.373 0 0 5.373 0 12c0 2.128.559 4.122 1.532 5.859L.057 23.5l5.784-1.518A11.932 11.932 0 0012 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 22c-1.846 0-3.573-.492-5.063-1.35L2.5 21.869l1.244-4.287A10 10 0 012 12C2 6.477 6.477 2 12 2s10 4.477 10 10-4.477 10-10 10z"/>
-                      </svg>
-                      <span>Get My Matches on WhatsApp</span>
+                      <span>Find Eligible Universities</span>
                       <ArrowRight className="w-4 h-4" />
                     </>
                   )}
@@ -959,10 +855,10 @@ export default function EligibilityForm() {
           </motion.div>
         )}
 
-        {/* STEP 7: MATCH RESULTS DASHBOARD */}
-        {step === 7 && (
+        {/* STEP 6: MATCH RESULTS DASHBOARD */}
+        {step === 6 && (
           <motion.div
-            key="step7"
+            key="step6"
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
             exit={{ opacity: 0, scale: 0.95 }}
