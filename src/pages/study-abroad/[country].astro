@@ -10,6 +10,13 @@ export async function getStaticPaths() {
     { params: { country: 'australia' } },
     { params: { country: 'germany' } },
     { params: { country: 'usa' } },
+    { params: { country: 'new-zealand' } },
+    { params: { country: 'ireland' } },
+    { params: { country: 'europe' } },
+    { params: { country: 'singapore' } },
+    { params: { country: 'dubai' } },
+    { params: { country: 'malaysia' } },
+    { params: { country: 'switzerland' } },
   ];
 }
 
@@ -176,6 +183,209 @@ const countryData: Record<string, CountryContent> = {
       { q: "What is the F-1 Visa?", a: "The F-1 Visa is the official non-immigrant student visa required to study at US accredited schools." },
       { q: "What is STEM OPT?", a: "OPT allows graduates to work for 12 months. STEM degree graduates can extend this by an additional 24 months (3 years total)." }
     ]
+  },
+  'new-zealand': {
+    name: "New Zealand",
+    title: "Study in New Zealand | Universities, Fees & Visa Guide",
+    description: "Complete guide to study in New Zealand: tuition fees, top universities, student visa timeline, and post-study work rights.",
+    heroTitle: "Study in New Zealand",
+    flag: "nz",
+    intro: "New Zealand is widely famous for its high-quality education, safe lifestyle, and excellent post-study work opportunities.",
+    tuitionFees: "NZD 22,000 to NZD 35,000 per year",
+    livingCosts: "NZD 20,000 per year (standard required threshold)",
+    intakes: [
+      { name: "Semester 1", detail: "February (Primary intake, application deadline October)" },
+      { name: "Semester 2", detail: "July (Secondary intake, application deadline March)" }
+    ],
+    timeline: [
+      "Shortlist institutions and complete online application dossier (6 months prior)",
+      "Receive Offer Letter and pay the first-year tuition fee",
+      "Submit visa application and undergo medical examinations",
+      "Get Visa Approval in Principle (AIP) and complete fee payment validation"
+    ],
+    requirements: [
+      { name: "Undergraduate Study", value: "Minimum 60% in 12th Grade" },
+      { name: "Postgraduate Study", value: "Minimum 55% - 60% in Bachelor's degree" },
+      { name: "Language Standard", value: "IELTS 6.0/6.5 overall (PTE equivalent)" }
+    ],
+    faqs: [
+      { q: "Can I work in New Zealand while studying?", a: "Yes, student visa holders can work up to 20 hours per week during term and full-time during breaks." },
+      { q: "What are post-study work rights in NZ?", a: "Graduates are eligible for an open work visa for 1 to 3 years depending on the level of qualification." }
+    ]
+  },
+  ireland: {
+    name: "Ireland",
+    title: "Study in Ireland | Top Universities, Fees & Visa Guide",
+    description: "Comprehensive guide to study in Ireland. Learn about top colleges, fees, living costs, and the 2-year post-study work visa.",
+    heroTitle: "Study in Ireland",
+    flag: "ie",
+    intro: "Ireland is a major technology and business hub in Europe, offering world-class universities and a highly welcoming culture.",
+    tuitionFees: "€10,000 to €25,000 per year",
+    livingCosts: "€10,000 per year (standard living proof)",
+    intakes: [
+      { name: "Autumn Intake", detail: "September (Primary intake for all majors)" },
+      { name: "Spring Intake", detail: "January (Secondary intake for selected courses)" }
+    ],
+    timeline: [
+      "Select programs and apply to Irish universities (8-9 months prior)",
+      "Get Offer Letter and pay tuition deposit to secure seat",
+      "Prepare proof of funds and submit student visa dossier online",
+      "Attend visa center for biometrics and passport submission"
+    ],
+    requirements: [
+      { name: "Undergraduate Study", value: "Minimum 60% - 65% in 12th Grade" },
+      { name: "Postgraduate Study", value: "Minimum 55% - 60% in Bachelor's degree" },
+      { name: "Language Standard", value: "IELTS 6.0/6.5 overall (PTE equivalent)" }
+    ],
+    faqs: [
+      { q: "Can I work in Ireland while studying?", a: "Yes, you can work up to 20 hours per week during semesters and up to 40 hours per week during holidays." },
+      { q: "What is the Irish Third Level Graduate Scheme?", a: "It allows master's and PhD graduates to stay and work in Ireland for 2 years (1 year for Bachelor's)." }
+    ]
+  },
+  europe: {
+    name: "Europe",
+    title: "Study in Europe | Top Universities, English Programs & Visas",
+    description: "Explore study options across Europe. Learn about low tuition fees, Schengen visas, and English-taught programs in European hubs.",
+    heroTitle: "Study in Europe",
+    flag: "eu",
+    intro: "Europe offers rich academic heritage, diverse cultural experiences, and highly affordable tuition fees across multiple EU member states.",
+    tuitionFees: "€2,000 to €15,000 per year",
+    livingCosts: "€9,000 to €12,000 per year (country dependent)",
+    intakes: [
+      { name: "Winter Semester", detail: "September/October (Primary intake across Europe)" },
+      { name: "Summer Semester", detail: "February/March (Secondary intake for selected courses)" }
+    ],
+    timeline: [
+      "Research European public universities and select courses",
+      "Get Acceptance Letter and arrange student accommodation",
+      "Purchase Schengen-compliant health insurance and prove financial means",
+      "Apply for National D-Visa at your local European embassy"
+    ],
+    requirements: [
+      { name: "Undergraduate Study", value: "Minimum 60% in high school (12 years of education)" },
+      { name: "Postgraduate Study", value: "Bachelor's degree in matching relevant field" },
+      { name: "Language Standard", value: "IELTS 6.0/6.5 (or MOI waiver where applicable)" }
+    ],
+    faqs: [
+      { q: "Can I travel to other European countries while studying?", a: "Yes, a National D-Visa allows you to travel freely throughout all Schengen member states." },
+      { q: "Are programs taught in English?", a: "Yes, thousands of programs across Germany, France, Netherlands, and Italy are taught entirely in English." }
+    ]
+  },
+  singapore: {
+    name: "Singapore",
+    title: "Study in Singapore | Global Universities & Visa Guide",
+    description: "Guide to studying in Singapore. Find top universities, tuition fees, visa processes, and career opportunities in Asia's financial hub.",
+    heroTitle: "Study in Singapore",
+    flag: "sg",
+    intro: "Singapore is a leading global hub of education and technology, offering world-class universities and strong corporate connections.",
+    tuitionFees: "SGD 25,000 to SGD 45,000 per year",
+    livingCosts: "SGD 12,000 to SGD 18,000 per year",
+    intakes: [
+      { name: "August Intake", detail: "Primary intake for all major universities" },
+      { name: "January Intake", detail: "Secondary intake for private colleges & selected courses" }
+    ],
+    timeline: [
+      "Select Singaporean institutions and submit applications (6-8 months prior)",
+      "Secure offer letter and apply for Student's Pass online via SOLAR system",
+      "Pay registration fees and complete medical examinations (if required)",
+      "Retrieve In-Principle Approval (IPA) letter for entry to Singapore"
+    ],
+    requirements: [
+      { name: "Undergraduate Study", value: "Minimum 65% - 70% in 12th Grade" },
+      { name: "Postgraduate Study", value: "Minimum 60% in Bachelor's degree" },
+      { name: "Language Standard", value: "IELTS 6.0/6.5 (PTE/TOEFL accepted)" }
+    ],
+    faqs: [
+      { q: "Is part-time work allowed in Singapore?", a: "Part-time work is allowed (up to 16 hours/week) only for students enrolled in public universities." },
+      { q: "What is a Student's Pass?", a: "It is the student visa required for international students to study full-time in Singapore." }
+    ]
+  },
+  dubai: {
+    name: "Dubai",
+    title: "Study in Dubai | Universities, Student Visa & Careers",
+    description: "Complete guide to study in Dubai. Fees, international university branch campuses, and student visa application processes.",
+    heroTitle: "Study in Dubai",
+    flag: "ae",
+    intro: "Dubai offers premium global university campuses, excellent modern infrastructure, and rapid professional growth pathways.",
+    tuitionFees: "AED 40,000 to AED 80,000 per year",
+    livingCosts: "AED 30,000 to AED 45,000 per year",
+    intakes: [
+      { name: "September Intake", detail: "Primary intake for all branch campuses" },
+      { name: "January Intake", detail: "Secondary intake for major courses" }
+    ],
+    timeline: [
+      "Apply to international university campuses in Academic City / Knowledge Park",
+      "Receive offer letter and submit visa sponsorship documents to the university",
+      "Undergo medical checks in UAE and secure student residency visa",
+      "Apply for local Emirates ID card"
+    ],
+    requirements: [
+      { name: "Undergraduate Study", value: "Minimum 55% - 60% in 12th Grade" },
+      { name: "Postgraduate Study", value: "Minimum 50% - 55% in Bachelor's degree" },
+      { name: "Language Standard", value: "IELTS 5.5/6.0 (MOI waiver accepted by select institutes)" }
+    ],
+    faqs: [
+      { q: "Can I work in Dubai while studying?", a: "Yes, Dubai permits part-time work for international students holding valid student residency permits." },
+      { q: "Are degrees from Dubai recognized globally?", a: "Yes, branch campuses in Dubai award the exact same degree credentials as their home campuses (e.g. UK, Australia, USA)." }
+    ]
+  },
+  malaysia: {
+    name: "Malaysia",
+    title: "Study in Malaysia | Affordable Universities & Visa Guide",
+    description: "Your guide to studying in Malaysia. Highly affordable tuition fees, foreign campus branches, and simple visa processes.",
+    heroTitle: "Study in Malaysia",
+    flag: "my",
+    intro: "Malaysia offers cost-effective, high-quality international degrees, low living expenses, and a vibrant multicultural society.",
+    tuitionFees: "MYR 15,000 to MYR 30,000 per year",
+    livingCosts: "MYR 12,000 to MYR 18,000 per year",
+    intakes: [
+      { name: "February Intake", detail: "Early intake for selected programs" },
+      { name: "September Intake", detail: "Main intake for all courses" }
+    ],
+    timeline: [
+      "Select university and apply online to receive offer letter",
+      "Submit student visa approval letter (VAL) request via EMGS portal",
+      "Receive Single Entry Visa (SEV) from local Malaysian embassy",
+      "Arrive in Malaysia, complete medical screening, and get student pass sticker"
+    ],
+    requirements: [
+      { name: "Undergraduate Study", value: "Minimum 50% - 55% in 12th Grade" },
+      { name: "Postgraduate Study", value: "Minimum 50% - 55% in Bachelor's degree" },
+      { name: "Language Standard", value: "IELTS 5.5/6.0 overall" }
+    ],
+    faqs: [
+      { q: "Can I transfer to UK/Australia from Malaysia?", a: "Yes, many branch campuses allow student transfers to home campuses in UK or Australia after 1-2 years of study." },
+      { q: "Is the cost of living low in Malaysia?", a: "Yes, Malaysia offers one of the lowest living costs in Southeast Asia for international students." }
+    ]
+  },
+  switzerland: {
+    name: "Switzerland",
+    title: "Study in Switzerland | Hospitality & Top Universities Guide",
+    description: "Complete guide to study in Switzerland. Discover world-leading hospitality management schools, fees, and student visas.",
+    heroTitle: "Study in Switzerland",
+    flag: "ch",
+    intro: "Switzerland is the world's premier destination for hospitality, finance, and advanced technology programs, combining academic excellence with scenic living.",
+    tuitionFees: "CHF 15,000 to CHF 40,000 per year",
+    livingCosts: "CHF 18,000 to CHF 24,000 per year",
+    intakes: [
+      { name: "Autumn Semester", detail: "September (Primary intake for all courses)" },
+      { name: "Spring Semester", detail: "February (Secondary intake for selected programs)" }
+    ],
+    timeline: [
+      "Apply to Swiss public or private hospitality universities (6-8 months prior)",
+      "Receive confirmation of enrollment and pay initial tuition deposit",
+      "Open visa application with Swiss VFS center with comprehensive financial proofs",
+      "Wait for local canton authorities approval and receive D-Visa stamp"
+    ],
+    requirements: [
+      { name: "Undergraduate Study", value: "Minimum 60% in 12th Grade" },
+      { name: "Postgraduate Study", value: "Bachelor's degree in matching relevant area" },
+      { name: "Language Standard", value: "IELTS 6.0/6.5 overall" }
+    ],
+    faqs: [
+      { q: "Do Swiss hospitality degrees include internships?", a: "Yes, hospitality programs in Switzerland include mandatory paid internships (earning CHF 2,200+/month)." },
+      { q: "What is the visa processing duration for Switzerland?", a: "Swiss student visa processing typically takes 8 to 12 weeks as it requires regional canton approvals." }
+    ]
   }
 };
 
@@ -219,8 +429,8 @@ const SVG = {
     <div class="glass-card rounded-[2.5rem] overflow-hidden bg-slate-50/80 border border-slate-200/60 shadow-lg p-8 md:p-12 relative mb-12">
       <div class="aurora-bg w-[300px] h-[300px] bg-accent-blue/5 -top-12 -left-12 rounded-full blur-[80px]"></div>
       
-      <div class="max-w-3xl space-y-6 relative z-10">
-        <span class="inline-flex items-center gap-2 text-xs font-semibold tracking-wider text-slate-800 bg-accent-blue/10 px-4 py-1.5 rounded-full border border-accent-blue/20 font-sans uppercase">
+      <div class="max-w-3xl space-y-6 relative z-10 font-sans">
+        <span class="inline-flex items-center gap-2 text-xs font-semibold tracking-wider text-slate-800 bg-accent-blue/10 px-4 py-1.5 rounded-full border border-accent-blue/20 uppercase">
           <img
             src={`https://flagcdn.com/w20/${data.flag}.png`}
             alt={`${data.name} Flag`}
@@ -231,7 +441,7 @@ const SVG = {
         <h1 class="text-[36px] sm:text-[48px] lg:text-[56px] font-extrabold font-display text-support-white tracking-tight leading-none">
           {data.heroTitle}
         </h1>
-        <p class="text-base md:text-[18px] text-support-gray font-sans font-normal leading-relaxed">
+        <p class="text-base md:text-[18px] text-support-gray font-normal leading-relaxed">
           {data.intro} Get end-to-end guidance from university shortlisting to visa success with our senior counsellors.
         </p>
       </div>

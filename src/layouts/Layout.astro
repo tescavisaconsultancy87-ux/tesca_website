@@ -377,7 +377,7 @@ const gaId = import.meta.env.PUBLIC_GA4_ID || "G-2HW0JXMF2Y";
 					<li>
 						<a
 							href="/"
-							class="nav-link px-3.5 py-2 rounded-lg text-support-slate hover:bg-accent-blue hover:text-white transition-all duration-200 font-sans text-sm font-medium"
+							class="nav-link px-2 lg:px-3.5 py-1.5 lg:py-2 rounded-lg text-support-slate hover:bg-accent-blue hover:text-white transition-all duration-200 font-sans text-xs lg:text-sm font-medium whitespace-nowrap no-underline"
 							>Home</a
 						>
 					</li>
@@ -386,7 +386,7 @@ const gaId = import.meta.env.PUBLIC_GA4_ID || "G-2HW0JXMF2Y";
 					<li class="relative group">
 						<a
 							href="/countries"
-							class="nav-link px-3.5 py-2 rounded-lg text-support-slate hover:bg-accent-blue hover:text-white transition-all duration-200 flex items-center gap-1.5 cursor-pointer font-sans text-sm font-medium outline-none no-underline"
+							class="nav-link px-2 lg:px-3.5 py-1.5 lg:py-2 rounded-lg text-support-slate hover:bg-accent-blue hover:text-white transition-all duration-200 flex items-center gap-1.5 cursor-pointer font-sans text-xs lg:text-sm font-medium outline-none no-underline whitespace-nowrap"
 						>
 							Study Destinations</a
 						>
@@ -466,11 +466,18 @@ const gaId = import.meta.env.PUBLIC_GA4_ID || "G-2HW0JXMF2Y";
 											<a
 												href={
 													c.id === "us" ? "/study-abroad/usa" :
-													c.id === "uk" ? "/study-abroad/uk" :
+													c.id === "nz" ? "/study-abroad/new-zealand" :
 													c.id === "ca" ? "/study-abroad/canada" :
 													c.id === "au" ? "/study-abroad/australia" :
 													c.id === "de" ? "/study-abroad/germany" :
-													`/countries#${c.id}`
+													c.id === "uk" ? "/study-abroad/uk" :
+													c.id === "ie" ? "/study-abroad/ireland" :
+													c.id === "eu" ? "/study-abroad/europe" :
+													c.id === "sg" ? "/study-abroad/singapore" :
+													c.id === "ae" ? "/study-abroad/dubai" :
+													c.id === "my" ? "/study-abroad/malaysia" :
+													c.id === "ch" ? "/study-abroad/switzerland" :
+													`/study-abroad/${c.id}`
 												}
 												class="flex items-center gap-3 p-2.5 rounded-xl border border-slate-100 bg-slate-50/50 hover:bg-accent-blue/5 hover:border-accent-blue/20 hover:text-accent-indigo transition-all duration-200 group/cell"
 											>
@@ -516,20 +523,24 @@ const gaId = import.meta.env.PUBLIC_GA4_ID || "G-2HW0JXMF2Y";
 					<li class="relative group">
 						<a
 							href="/services"
-							class="nav-link px-3.5 py-2 rounded-lg text-support-slate hover:bg-accent-blue hover:text-white transition-all duration-200 flex items-center gap-1.5 cursor-pointer font-sans text-sm font-medium outline-none no-underline"
+							class="nav-link px-2 lg:px-3.5 py-1.5 lg:py-2 rounded-lg text-support-slate hover:bg-accent-blue hover:text-white transition-all duration-200 flex items-center gap-1.5 cursor-pointer font-sans text-xs lg:text-sm font-medium outline-none no-underline whitespace-nowrap"
 						>
 							Services</a
 						>
 
 						{/* Mega Menu Dropdown */}
 						<div
-							class="absolute left-1/2 top-full pt-3 hidden group-hover:block w-[780px] z-50 animate-dropdown"
+							class="absolute left-1/2 top-full pt-3 hidden group-hover:block w-[960px] -translate-x-[40%] z-50 animate-dropdown"
 						>
 							<div
-								class="shadow-2xl rounded-2xl p-6 bg-white border border-slate-100 flex flex-col gap-6 text-slate-800"
+								class="shadow-2xl rounded-2xl p-6 bg-white border border-slate-100 grid grid-cols-12 gap-6 text-slate-800"
 							>
-								{/* Services Grid (3 columns) */}
-								<div class="grid grid-cols-3 gap-3">
+								{/* Left Section: Core Student Services (col-span-7) */}
+								<div class="col-span-7 space-y-4">
+									<h4 class="text-xs font-bold uppercase tracking-wider text-slate-400 font-sans pb-2 border-b border-slate-100">
+										Academic & Placement Services
+									</h4>
+									<div class="grid grid-cols-2 gap-2">
 										{
 											[
 												{ name: "Expert Counselling", iconSvg: NavIcons.User, id: "counselling", color: "bg-blue-100 text-blue-600" },
@@ -545,28 +556,77 @@ const gaId = import.meta.env.PUBLIC_GA4_ID || "G-2HW0JXMF2Y";
 											].map((srv) => (
 												<a
 													href={srv.id === 'testprep' ? '/services/testprep' : `/services#${srv.id}`}
-													class="flex items-center gap-3.5 p-3 rounded-xl border border-slate-100 bg-slate-50/50 hover:bg-accent-blue/5 hover:border-accent-blue/20 hover:text-accent-indigo transition-all duration-200"
+													class="flex items-center gap-3 p-2 rounded-xl border border-slate-50 bg-slate-50/50 hover:bg-accent-blue/5 hover:border-accent-blue/20 hover:text-accent-indigo transition-all duration-200"
 												>
-													<div class={"p-2 rounded-lg shrink-0 " + srv.color}>
+													<div class={"p-1.5 rounded-lg shrink-0 " + srv.color}>
 														<span set:html={srv.iconSvg} />
 													</div>
-													<span class="text-xs font-semibold font-sans tracking-wide leading-tight">{srv.name}</span>
+													<span class="text-[11px] font-bold font-sans tracking-wide leading-tight">{srv.name}</span>
 												</a>
 											))
 										}
+									</div>
 								</div>
 
-								{/* Bottom Button "View All ->" (Centered) */}
-								<div
-									class="border-t border-slate-100 pt-4 flex justify-center"
-								>
-									<a
-										href="/services"
-										class="flex items-center gap-1.5 px-6 py-2 rounded-full border border-slate-200 bg-slate-50 hover:bg-accent-blue hover:text-white transition-all duration-200 text-xs font-bold font-sans tracking-wide cursor-pointer"
-									>
-										<span>View All Services</span>
-										<span set:html={NavIcons.ArrowRight} />
-									</a>
+								{/* Right Section: Visa Services & Program Guides (col-span-5) */}
+								<div class="col-span-5 border-l border-slate-100 pl-6 flex flex-col gap-6">
+									<div class="space-y-3">
+										<h4 class="text-xs font-bold uppercase tracking-wider text-slate-400 font-sans pb-2 border-b border-slate-100">
+											Visa & PR Immigration
+										</h4>
+										<div class="grid grid-cols-1 gap-1.5 font-sans text-xs">
+											<a href="/visitor-visa" class="hover:text-accent-blue font-bold text-slate-700 transition-colors flex items-center gap-1.5">
+												<span class="w-1 h-1 bg-accent-blue rounded-full"></span>
+												Visitor & Business Visas
+											</a>
+											<a href="/tourist-visa-schengen" class="hover:text-accent-blue font-bold text-slate-700 transition-colors flex items-center gap-1.5">
+												<span class="w-1 h-1 bg-accent-blue rounded-full"></span>
+												Schengen Tourist Visa
+											</a>
+											<a href="/canada-pr" class="hover:text-accent-blue font-bold text-slate-700 transition-colors flex items-center gap-1.5">
+												<span class="w-1 h-1 bg-accent-blue rounded-full"></span>
+												Canada PR Pathways
+											</a>
+											<a href="/australia-pr" class="hover:text-accent-blue font-bold text-slate-700 transition-colors flex items-center gap-1.5">
+												<span class="w-1 h-1 bg-accent-blue rounded-full"></span>
+												Australia Skilled Migration
+											</a>
+											<a href="/work-permit" class="hover:text-accent-blue font-bold text-slate-700 transition-colors flex items-center gap-1.5">
+												<span class="w-1 h-1 bg-accent-blue rounded-full"></span>
+												Work Permits & Extensions
+											</a>
+											<a href="/dependent-visa" class="hover:text-accent-blue font-bold text-slate-700 transition-colors flex items-center gap-1.5">
+												<span class="w-1 h-1 bg-accent-blue rounded-full"></span>
+												Dependent & Family Visas
+											</a>
+											<a href="/visa-refusal-help" class="hover:text-accent-blue font-bold text-slate-700 transition-colors flex items-center gap-1.5">
+												<span class="w-1 h-1 bg-accent-blue rounded-full"></span>
+												Visa Refusal Help & Re-filing
+											</a>
+										</div>
+									</div>
+
+									<div class="space-y-3">
+										<h4 class="text-xs font-bold uppercase tracking-wider text-slate-400 font-sans pb-2 border-b border-slate-100">
+											Program Calculators & Guides
+										</h4>
+										<div class="grid grid-cols-1 gap-1.5 font-sans text-xs">
+											<a href="/germany-opportunity-card" class="hover:text-accent-blue font-bold text-slate-700 transition-colors flex items-center gap-2">
+												<span class="w-1.5 h-1.5 bg-accent-cyan rounded-full"></span>
+												Germany Opportunity Card
+												<span class="px-1.5 py-0.2 bg-emerald-100 text-emerald-800 text-[9px] font-bold rounded">Calculator</span>
+											</a>
+											<a href="/uk-graduate-route" class="hover:text-accent-blue font-bold text-slate-700 transition-colors flex items-center gap-2">
+												<span class="w-1.5 h-1.5 bg-accent-cyan rounded-full"></span>
+												UK Graduate Route (PSW)
+											</a>
+											<a href="/canada-express-entry" class="hover:text-accent-blue font-bold text-slate-700 transition-colors flex items-center gap-2">
+												<span class="w-1.5 h-1.5 bg-accent-cyan rounded-full"></span>
+												Canada Express Entry
+												<span class="px-1.5 py-0.2 bg-emerald-50 text-emerald-800 text-[9px] font-bold rounded">CRS Guide</span>
+											</a>
+										</div>
+									</div>
 								</div>
 							</div>
 						</div>
@@ -575,7 +635,7 @@ const gaId = import.meta.env.PUBLIC_GA4_ID || "G-2HW0JXMF2Y";
 					<li>
 						<a
 							href="/gallery"
-							class="nav-link px-3.5 py-2 rounded-lg text-support-slate hover:bg-accent-blue hover:text-white transition-all duration-200 font-sans text-sm font-medium"
+							class="nav-link px-2 lg:px-3.5 py-1.5 lg:py-2 rounded-lg text-support-slate hover:bg-accent-blue hover:text-white transition-all duration-200 font-sans text-xs lg:text-sm font-medium whitespace-nowrap no-underline"
 							>Gallery</a
 						>
 					</li>
@@ -583,7 +643,7 @@ const gaId = import.meta.env.PUBLIC_GA4_ID || "G-2HW0JXMF2Y";
 					<li>
 						<a
 							href="/calculators"
-							class="nav-link px-3.5 py-2 rounded-lg text-support-slate hover:bg-accent-blue hover:text-white transition-all duration-200 font-sans text-sm font-medium"
+							class="nav-link px-2 lg:px-3.5 py-1.5 lg:py-2 rounded-lg text-support-slate hover:bg-accent-blue hover:text-white transition-all duration-200 font-sans text-xs lg:text-sm font-medium whitespace-nowrap no-underline"
 							>Study Calculator</a
 						>
 					</li>
@@ -591,7 +651,7 @@ const gaId = import.meta.env.PUBLIC_GA4_ID || "G-2HW0JXMF2Y";
 					<li>
 						<a
 							href="/eligibility"
-							class="nav-link px-3.5 py-2 rounded-lg text-support-slate hover:bg-accent-blue hover:text-white transition-all duration-200 font-sans text-sm font-medium"
+							class="nav-link px-2 lg:px-3.5 py-1.5 lg:py-2 rounded-lg text-support-slate hover:bg-accent-blue hover:text-white transition-all duration-200 font-sans text-xs lg:text-sm font-medium whitespace-nowrap no-underline"
 							>Check Eligibility</a
 						>
 					</li>
@@ -599,7 +659,7 @@ const gaId = import.meta.env.PUBLIC_GA4_ID || "G-2HW0JXMF2Y";
 					<li>
 						<a
 							href="/blog"
-							class="nav-link px-3.5 py-2 rounded-lg text-support-slate hover:bg-accent-blue hover:text-white transition-all duration-200 font-sans text-sm font-medium"
+							class="nav-link px-2 lg:px-3.5 py-1.5 lg:py-2 rounded-lg text-support-slate hover:bg-accent-blue hover:text-white transition-all duration-200 font-sans text-xs lg:text-sm font-medium whitespace-nowrap no-underline"
 							>Blog</a
 						>
 					</li>
@@ -646,15 +706,50 @@ const gaId = import.meta.env.PUBLIC_GA4_ID || "G-2HW0JXMF2Y";
 							<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="w-5 h-5"><line x1="18" x2="6" y1="6" y2="18"/><line x1="6" x2="18" y1="6" y2="18"/></svg>
 						</button>
 					</div>
-					<ul class="space-y-3.5 text-sm font-semibold text-slate-800 text-left font-sans">
-						<li><a href="/" class="block py-2.5 px-3.5 rounded-xl hover:bg-accent-blue/5 hover:text-accent-blue transition-all no-underline">Home</a></li>
-						<li><a href="/countries" class="block py-2.5 px-3.5 rounded-xl hover:bg-accent-blue/5 hover:text-accent-blue transition-all no-underline">Study Destinations</a></li>
-						<li><a href="/universities" class="block py-2.5 px-3.5 rounded-xl hover:bg-accent-blue/5 hover:text-accent-blue transition-all no-underline">Explore Universities</a></li>
-						<li><a href="/services" class="block py-2.5 px-3.5 rounded-xl hover:bg-accent-blue/5 hover:text-accent-blue transition-all no-underline">Our Services</a></li>
-						<li><a href="/gallery" class="block py-2.5 px-3.5 rounded-xl hover:bg-accent-blue/5 hover:text-accent-blue transition-all no-underline">Gallery</a></li>
-						<li><a href="/calculators" class="block py-2.5 px-3.5 rounded-xl hover:bg-accent-blue/5 hover:text-accent-blue transition-all no-underline">Study Calculator</a></li>
-						<li><a href="/eligibility" class="block py-2.5 px-3.5 rounded-xl hover:bg-accent-blue/5 hover:text-accent-blue transition-all no-underline">Check Eligibility</a></li>
-						<li><a href="/blog" class="block py-2.5 px-3.5 rounded-xl hover:bg-accent-blue/5 hover:text-accent-blue transition-all no-underline">Blog & Resources</a></li>
+					<ul class="space-y-3 text-sm font-semibold text-slate-800 text-left font-sans">
+						<li><a href="/" class="block py-2 px-3 rounded-xl hover:bg-accent-blue/5 hover:text-accent-blue transition-all no-underline">Home</a></li>
+						<li><a href="/countries" class="block py-2 px-3 rounded-xl hover:bg-accent-blue/5 hover:text-accent-blue transition-all no-underline">Study Destinations</a></li>
+						<li><a href="/universities" class="block py-2 px-3 rounded-xl hover:bg-accent-blue/5 hover:text-accent-blue transition-all no-underline">Explore Universities</a></li>
+						
+						<!-- Collapsible Services & Visas -->
+						<li class="border-y border-slate-100 py-1">
+							<details class="group">
+								<summary class="flex items-center justify-between py-2 px-3 rounded-xl hover:bg-accent-blue/5 hover:text-accent-blue cursor-pointer list-none">
+									<span>Services & Visas</span>
+									<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="group-open:rotate-180 transition-transform"><path d="m6 9 6 6 6-6"/></svg>
+								</summary>
+								<div class="pl-4 pr-2 py-2 flex flex-col gap-2.5 text-xs text-slate-600">
+									<a href="/services" class="hover:text-accent-blue py-1 no-underline font-semibold block">All Placement Services</a>
+									<a href="/visitor-visa" class="hover:text-accent-blue py-1 no-underline font-semibold block">Visitor & Business Visas</a>
+									<a href="/tourist-visa-schengen" class="hover:text-accent-blue py-1 no-underline font-semibold block">Schengen Europe Tourist</a>
+									<a href="/canada-pr" class="hover:text-accent-blue py-1 no-underline font-semibold block">Canada PR Pathways</a>
+									<a href="/australia-pr" class="hover:text-accent-blue py-1 no-underline font-semibold block">Australia Skilled Migration</a>
+									<a href="/work-permit" class="hover:text-accent-blue py-1 no-underline font-semibold block">Work Permits & Extensions</a>
+									<a href="/dependent-visa" class="hover:text-accent-blue py-1 no-underline font-semibold block">Dependent & Family Visas</a>
+									<a href="/visa-refusal-help" class="hover:text-accent-blue py-1 no-underline font-semibold block">Visa Refusal Assistance</a>
+								</div>
+							</details>
+						</li>
+
+						<!-- Collapsible Program Guides -->
+						<li class="border-b border-slate-100 pb-1">
+							<details class="group">
+								<summary class="flex items-center justify-between py-2 px-3 rounded-xl hover:bg-accent-blue/5 hover:text-accent-blue cursor-pointer list-none">
+									<span>Program Guides</span>
+									<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="group-open:rotate-180 transition-transform"><path d="m6 9 6 6 6-6"/></svg>
+								</summary>
+								<div class="pl-4 pr-2 py-2 flex flex-col gap-2.5 text-xs text-slate-600">
+									<a href="/germany-opportunity-card" class="hover:text-accent-blue py-1 no-underline font-semibold block">Germany Opportunity Card</a>
+									<a href="/uk-graduate-route" class="hover:text-accent-blue py-1 no-underline font-semibold block">UK Graduate Route (PSW)</a>
+									<a href="/canada-express-entry" class="hover:text-accent-blue py-1 no-underline font-semibold block">Canada Express Entry (CRS)</a>
+								</div>
+							</details>
+						</li>
+
+						<li><a href="/gallery" class="block py-2 px-3 rounded-xl hover:bg-accent-blue/5 hover:text-accent-blue transition-all no-underline">Gallery</a></li>
+						<li><a href="/calculators" class="block py-2 px-3 rounded-xl hover:bg-accent-blue/5 hover:text-accent-blue transition-all no-underline">Study Calculator</a></li>
+						<li><a href="/eligibility" class="block py-2 px-3 rounded-xl hover:bg-accent-blue/5 hover:text-accent-blue transition-all no-underline">Check Eligibility</a></li>
+						<li><a href="/blog" class="block py-2 px-3 rounded-xl hover:bg-accent-blue/5 hover:text-accent-blue transition-all no-underline">Blog & Resources</a></li>
 					</ul>
 				</div>
 				<div class="pt-6 border-t border-slate-100 space-y-4">
