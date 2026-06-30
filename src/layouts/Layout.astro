@@ -351,7 +351,7 @@ const gaId = import.meta.env.PUBLIC_GA4_ID || "G-2HW0JXMF2Y";
 			</div>
 
 			<nav
-				class="w-full max-w-7xl mx-auto px-4 lg:px-6 py-2 flex items-center justify-between transition-all duration-500 relative"
+				class="w-full max-w-7xl mx-auto px-4 lg:px-6 py-1.5 md:py-2 flex items-center justify-between transition-all duration-500 relative"
 				id="main-nav"
 				aria-label="Global navigation"
 			>
@@ -364,7 +364,7 @@ const gaId = import.meta.env.PUBLIC_GA4_ID || "G-2HW0JXMF2Y";
 					<img
 						src="/images/Tesca_logo.png"
 						alt="TESCA"
-						class="h-11 w-auto"
+						class="h-8 md:h-9 w-auto"
 						id="nav-logo-icon"
 					/>
 				</a>
@@ -520,7 +520,7 @@ const gaId = import.meta.env.PUBLIC_GA4_ID || "G-2HW0JXMF2Y";
 					</li>
 
 					{/* Services Dropdown */}
-					<li class="relative group">
+					<li class="group">
 						<a
 							href="/services"
 							class="nav-link px-2 lg:px-3.5 py-1.5 lg:py-2 rounded-lg text-support-slate hover:bg-accent-blue hover:text-white transition-all duration-200 flex items-center gap-1.5 cursor-pointer font-sans text-xs lg:text-sm font-medium outline-none no-underline whitespace-nowrap"
@@ -675,13 +675,6 @@ const gaId = import.meta.env.PUBLIC_GA4_ID || "G-2HW0JXMF2Y";
 						<span set:html={NavIcons.Phone} />
 						Speak to Our Counsellor
 					</button>
-					<a
-						href="tel:9824152731"
-						class="hidden md:flex text-[11px] font-semibold text-support-slate hover:text-accent-blue transition-colors items-center gap-1 no-underline"
-						id="nav-phone-link"
-					>
-						<span class="font-sans font-bold text-[11px] sm:text-xs">9824152731</span>
-					</a>
 					
 					<!-- Hamburger button for mobile -->
 					<button 
@@ -765,7 +758,7 @@ const gaId = import.meta.env.PUBLIC_GA4_ID || "G-2HW0JXMF2Y";
 		)}
 
 		<!-- Main Page Content -->
-		<main id="main-content" class={showNavFooter ? "flex-grow pt-[96px] md:pt-[100px]" : "flex-grow pt-0"}>
+		<main id="main-content" class={showNavFooter ? "flex-grow pt-[68px] md:pt-[76px]" : "flex-grow pt-0"}>
 			<slot />
 		</main>
 
@@ -1071,8 +1064,8 @@ const gaId = import.meta.env.PUBLIC_GA4_ID || "G-2HW0JXMF2Y";
 							"border-slate-200/60",
 							"shadow-sm",
 						);
-						nav?.classList.remove("py-3.5");
-						nav?.classList.add("py-2.5");
+						nav?.classList.remove("py-1.5", "md:py-2");
+						nav?.classList.add("py-0.5", "md:py-1");
 
 					} else {
 						// Expand announcement bar
@@ -1092,8 +1085,8 @@ const gaId = import.meta.env.PUBLIC_GA4_ID || "G-2HW0JXMF2Y";
 							"border-slate-200/60",
 							"shadow-sm",
 						);
-						nav?.classList.remove("py-2.5");
-						nav?.classList.add("py-3.5");
+						nav?.classList.remove("py-0.5", "md:py-1");
+						nav?.classList.add("py-1.5", "md:py-2");
 					}
 				};
 
@@ -1110,8 +1103,8 @@ const gaId = import.meta.env.PUBLIC_GA4_ID || "G-2HW0JXMF2Y";
 				// No announcements → remove the bar and reclaim its reserved top padding.
 				const collapseAnnBar = () => {
 					annBarEl?.remove();
-					mainContentEl?.classList.remove("pt-[96px]", "md:pt-[100px]");
-					mainContentEl?.classList.add("pt-[64px]", "md:pt-[68px]");
+					mainContentEl?.classList.remove("pt-[68px]", "md:pt-[76px]");
+					mainContentEl?.classList.add("pt-[48px]", "md:pt-[56px]");
 				};
 
 				if (annTextEl) {
