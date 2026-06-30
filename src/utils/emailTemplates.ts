@@ -222,6 +222,7 @@ export function counsellorBookingEmail({
   email,
   mode,
   destination,
+  visaType,
 }: {
   firstName: string;
   lastName: string;
@@ -229,6 +230,7 @@ export function counsellorBookingEmail({
   email: string;
   mode?: string;
   destination?: string;
+  visaType?: string;
 }) {
   const fullName = `${firstName} ${lastName}`;
 
@@ -258,6 +260,7 @@ export function counsellorBookingEmail({
           ['Phone / WhatsApp', phone],
           ['Email', email],
           ['Mode of Counselling', mode || 'Not specified'],
+          ['Visa Type Interest', visaType || 'Not specified'],
           ['Preferred Destination', destination || 'Flexible'],
         ].map(([label, value], i) => `
         <tr style="background:${i % 2 === 0 ? '#f8fafc' : '#ffffff'};">

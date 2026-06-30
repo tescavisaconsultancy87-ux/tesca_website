@@ -21,7 +21,7 @@ export const POST: APIRoute = async ({ request }) => {
   let body: any = {};
   try {
     body = await request.json();
-    const { firstName, lastName, email, phone, mode, destination } = body;
+    const { firstName, lastName, email, phone, mode, destination, visaType } = body;
 
     // 1. Basic check for presence
     if (!firstName || !lastName || !phone) {
@@ -60,9 +60,10 @@ export const POST: APIRoute = async ({ request }) => {
     const cleanPhone = sanitizeText(phone, 20);
     const cleanMode = mode ? sanitizeText(mode, 50) : "";
     const cleanDestination = destination ? sanitizeText(destination, 50) : "";
+    const cleanVisaType = visaType ? sanitizeText(visaType, 50) : "";
 
     const fullName = `${cleanFirstName} ${cleanLastName}`;
-    const detailsStr = JSON.stringify({ mode: cleanMode, destination: cleanDestination });
+    const detailsStr = JSON.stringify({ mode: cleanMode, destination: cleanDestination, visaType: cleanVisaType });
 
     const { data: insertedData, error } = await supabase
       .from('leads')
@@ -95,8 +96,9 @@ export const POST: APIRoute = async ({ request }) => {
           phone: cleanPhone,
           subject: `New Student Enquiry - ${fullName}`,
           counselling_mode: cleanMode,
+          visa_type: cleanVisaType,
           destination: cleanDestination || "Not specified",
-          message: `New enquiry from ${fullName}. Phone: ${cleanPhone}. Preferred Mode: ${cleanMode}. Destination: ${cleanDestination || "Not specified"}.`,
+          message: `New enquiry from ${fullName}. Phone: ${cleanPhone}. Preferred Mode: ${cleanMode}. Visa Type: ${cleanVisaType}. Destination: ${cleanDestination || "Not specified"}.`,
           source: "Main Enquiry Form",
         })
       }).catch(err => console.error("Web3Forms counsellor post failed:", err));
@@ -108,8 +110,9 @@ export const POST: APIRoute = async ({ request }) => {
         "Email": cleanEmail || "Not provided",
         "Mobile Number": cleanPhone,
         "Counselling Mode": cleanMode,
+        "Visa Type": cleanVisaType,
         "Preferred Countries": cleanDestination || "Not specified",
-        "Comments": `Preferred Mode: ${cleanMode}. Destination: ${cleanDestination || "Not specified"}.`,
+        "Comments": `Preferred Mode: ${cleanMode}. Visa Type: ${cleanVisaType}. Destination: ${cleanDestination || "Not specified"}.`,
         "Lead Source": "Main Enquiry Form",
       });
       fetch(`${googleSheetUrl}?${params.toString()}`, { method: "GET" })
@@ -126,6 +129,7 @@ export const POST: APIRoute = async ({ request }) => {
           email: cleanEmail,
           mode: cleanMode,
           destination: cleanDestination,
+          visaType: cleanVisaType,
         });
         await sendMail({ to: cleanEmail, subject, html });
       } catch (mailErr) {

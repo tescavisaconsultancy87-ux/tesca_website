@@ -167,6 +167,19 @@ a, a:hover, a:focus, a:active {
   animation: dropdownFade 0.4s cubic-bezier(0.16, 1, 0.3, 1) 0.1s both;
 }
 
+/* Centered mega-menu variant — for panels already centered via
+   left-0/right-0 + mx-auto. Applies NO horizontal shift, otherwise the
+   translate(-50%) from `animate-dropdown` would push the panel off-center
+   and clip its left column. Used by the Services mega-menu. */
+@keyframes dropdownFadeCenter {
+  from { opacity: 0; transform: translateY(12px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@utility animate-dropdown-center {
+  animation: dropdownFadeCenter 0.4s cubic-bezier(0.16, 1, 0.3, 1) 0.1s both;
+}
+
 /* Button Spinner Animation */
 @keyframes btn-spin {
   to { transform: rotate(360deg); }

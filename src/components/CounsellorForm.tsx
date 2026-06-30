@@ -54,6 +54,7 @@ const PHONE_COUNTRIES = [
 ];
 
 const MODES = ["Video Call", "Phone Call", "In-Person Meeting", "Email"];
+const VISA_TYPES = ["Student Visa", "Tourist Visa", "Business Visa", "Dependent Visa"];
 
 export default function CounsellorForm() {
   const [isOpen, setIsOpen] = useState(false);
@@ -66,6 +67,7 @@ export default function CounsellorForm() {
   const [countrySearch, setCountrySearch] = useState("");
   const countryDropdownRef = useRef<HTMLDivElement>(null);
   const [mode, setMode] = useState("");
+  const [visaType, setVisaType] = useState("");
   const [destination, setDestination] = useState("");
   const [status, setStatus] = useState<"idle" | "sending" | "success" | "failed">("idle");
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -162,6 +164,7 @@ export default function CounsellorForm() {
       errs.phone = `Phone number must be at most ${selectedPhoneCountry.maxDigits} digits for ${selectedPhoneCountry.name}`;
     }
     if (!mode) errs.mode = "Please select a counselling mode";
+    if (!visaType) errs.visaType = "Please select a visa type";
     setErrors(errs);
     return Object.keys(errs).length === 0;
   };
@@ -187,6 +190,7 @@ export default function CounsellorForm() {
           subject: `New Student Enquiry - ${firstName} ${lastName} 🚀`,
           mode,
           destination,
+          visaType,
         }),
       });
 
@@ -210,6 +214,7 @@ export default function CounsellorForm() {
       setPhoneCountry("IN");
       setMode("");
       setDestination("");
+      setVisaType("");
       setErrors({});
     }
   };
@@ -380,7 +385,8 @@ export default function CounsellorForm() {
                         
                         const dates = getAvailableDates();
                         const formattedDate = dates.find(d => d.value === selectedDate)?.label || selectedDate;
-                        const message = `Hello TESCA, I have booked a consultation slot for ${formattedDate} at ${selectedTime}. Please confirm my slot!`;
+                        const visaPart = visaType ? ` for ${visaType}` : "";
+                        const message = `Hello TESCA, I have booked a consultation slot${visaPart} for ${formattedDate} at ${selectedTime}. Please confirm my slot!`;
                         const encodedMsg = encodeURIComponent(message);
                         
                         // Auto redirect to WhatsApp
@@ -395,6 +401,7 @@ export default function CounsellorForm() {
                         setPhoneCountry("IN");
                         setMode("");
                         setDestination("");
+                        setVisaType("");
                         setErrors({});
                         setIsOpen(false);
                       }}
@@ -638,6 +645,29 @@ export default function CounsellorForm() {
                         ))}
                       </div>
                       {errors.mode && <p className="text-[10px] text-red-500 font-sans font-medium mt-0.5">{errors.mode}</p>}
+                    </div>
+
+                    <div className="space-y-1">
+                      <label className={labelClass}>
+                        Visa Type Interested <span className="text-red-500">*</span>
+                      </label>
+                      <div className="grid grid-cols-2 gap-2">
+                        {VISA_TYPES.map(vt => (
+                          <button
+                            key={vt}
+                            type="button"
+                            onClick={() => setVisaType(vt)}
+                            className={`px-3 py-2.5 rounded-xl border text-[13px] font-medium font-sans transition-all duration-200 cursor-pointer text-left ${
+                              visaType === vt
+                                ? "bg-accent-blue/10 border-accent-blue text-accent-blue font-semibold"
+                                : "bg-white border-slate-200 text-slate-600 hover:border-slate-300 hover:bg-slate-50"
+                            }`}
+                          >
+                            {vt}
+                          </button>
+                        ))}
+                      </div>
+                      {errors.visaType && <p className="text-[10px] text-red-500 font-sans font-medium mt-0.5">{errors.visaType}</p>}
                     </div>
 
                     <div className="space-y-1">
