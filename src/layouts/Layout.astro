@@ -176,7 +176,29 @@ const gaId = import.meta.env.PUBLIC_GA4_ID || "G-2HW0JXMF2Y";
 			}, { passive: true });
 
 			// Client router transition tracking
+			let loaderTimeout: number;
+			document.addEventListener('astro:before-preparation', () => {
+				clearTimeout(loaderTimeout);
+				loaderTimeout = window.setTimeout(() => {
+					const loader = document.getElementById('global-page-loader');
+					if (loader) {
+						loader.classList.remove('opacity-0', 'pointer-events-none');
+					}
+				}, 150); // Delay showing the loader to prevent flashing on fast page loads
+			});
+
+			const hideLoader = () => {
+				clearTimeout(loaderTimeout);
+				const loader = document.getElementById('global-page-loader');
+				if (loader) {
+					loader.classList.add('opacity-0', 'pointer-events-none');
+				}
+			};
+
+			document.addEventListener('astro:after-swap', hideLoader);
+
 			document.addEventListener('astro:page-load', () => {
+				hideLoader();
 				if (window.gtag) {
 					window.gtag('event', 'page_view', {
 						page_path: window.location.pathname
@@ -1583,6 +1605,20 @@ const gaId = import.meta.env.PUBLIC_GA4_ID || "G-2HW0JXMF2Y";
 				</div>
 			</div>
 		)}
+
+		<!-- Beautiful, premium global page loading spinner (matching website brand colors) -->
+		<div id="global-page-loader" class="fixed inset-0 z-[99999] flex items-center justify-center bg-slate-950/15 backdrop-blur-[2px] opacity-0 pointer-events-none transition-all duration-200">
+			<div class="flex flex-col items-center gap-3">
+				<div class="relative">
+					<!-- Radial Pulse Glow matching brand accent -->
+					<div class="absolute inset-0 rounded-full bg-[#0A7880]/20 blur-md animate-pulse"></div>
+					<svg class="animate-spin w-10 h-10 text-[#0A7880] relative z-10" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+						<circle class="opacity-20" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="3.5"></circle>
+						<path class="opacity-90" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+					</svg>
+				</div>
+			</div>
+		</div>
 
 	</body>
 </html>
