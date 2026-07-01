@@ -180,7 +180,7 @@ export function eligibilityResultEmail({
         <table cellpadding="0" cellspacing="0" border="0" style="margin:0 auto;">
           <tr>
             <td style="padding-right:10px;">
-              <a href="https://tescavisaconsultancy.com/eligibility" style="display:inline-block; background:#ffffff; color:${BRAND_BLUE}; font-size:14px; font-weight:800; padding:13px 28px; border-radius:50px; letter-spacing:0.5px;">View Your Matches →</a>
+              <a href="https://tescavisa.com/eligibility/" style="display:inline-block; background:#ffffff; color:${BRAND_BLUE}; font-size:14px; font-weight:800; padding:13px 28px; border-radius:50px; letter-spacing:0.5px;">View Your Matches →</a>
             </td>
             <td>
               <a href="https://wa.me/919824152731" style="display:inline-block; background:${BRAND_AMBER}; color:#ffffff; font-size:14px; font-weight:800; padding:13px 28px; border-radius:50px; letter-spacing:0.5px;">💬 WhatsApp Us</a>
