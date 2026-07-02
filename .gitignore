@@ -32,3 +32,4 @@ preview.*.log
 .wrangler/
 .vscode/
 .claude/
+.antigravity/
