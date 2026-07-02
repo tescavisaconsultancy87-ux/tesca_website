@@ -1,0 +1,280 @@
+---
+export const prerender = true;
+import Layout from "../layouts/Layout.astro";
+import PartnerForm from "../components/PartnerForm";
+
+const partnershipModels = [
+  {
+    title: "Franchise Partner",
+    desc: "Ideal for entrepreneurs who want to operate a complete visa consultancy and language training center under our brand.",
+    benefits: [
+      "Authorized use of the TESCA brand name",
+      "Complete center business setup & branding layouts",
+      "Comprehensive staff & counselor training",
+      "Marketing campaigns & digital lead support",
+      "CRM portal, documentation audit, & admissions support",
+      "Ongoing operational guidance & partner manager",
+    ],
+  },
+  {
+    title: "Sub-Agent Program",
+    desc: "Perfect for education consultants, travel agents, freelancers, and local business professionals looking to expand their portfolio.",
+    benefits: [
+      "Simply refer student and visa leads to our expert team",
+      "Earn highly attractive commission payouts upon visa success",
+      "No setup cost or dedicated office space required",
+      "Suitable for travel agencies, IELTS trainers, and career advisors",
+      "Full backend documentation & application tracking handled by TESCA",
+      "Promotional support materials provided",
+    ],
+  },
+];
+
+const services = [
+  { category: "Visa Services", items: ["Student Visa", "Visitor Visa", "Tourist Visa", "Business Visa", "PR Consultation"] },
+  { category: "Language Training", items: ["Spoken English", "IELTS Coaching", "PTE Coaching", "Personality Development", "Interview Preparation"] }
+];
+
+const reasonsToPartner = [
+  { title: "Experienced Visa Experts", desc: "Access 20+ years of operational expertise in global admissions and visa file preparation." },
+  { title: "Transparent Process", desc: "No hidden charges or false promises. Transparent documentation checking at every stage." },
+  { title: "High Visa Success Rate", desc: "Our industry-leading success rates ensure high customer satisfaction and referral business." },
+  { title: "Attractive Commission", desc: "Generous commission models for sub-agents and high ROI templates for franchise owners." },
+  { title: "Quick Response Team", desc: "A dedicated query desk to solve admissions, university matches, and documentation questions fast." },
+  { title: "Marketing Support", desc: "Digital assets, banners, pamphlets, and local marketing support to drive walk-ins." },
+  { title: "Training & Guidance", desc: "Regular webinars, training sessions, and updates on country visa regulations." },
+  { title: "Dedicated Partner Manager", desc: "One point of contact for all your submissions, status tracking, and payouts." },
+];
+
+const faqs = [
+  { q: "Do I need prior experience in visa consulting?", a: "No. We provide complete operational and technical training covering country rules, intake selection, documentation checklists, and CRM software usage." },
+  { q: "Can I operate this partnership from home?", a: "Yes. Our Sub-Agent program is perfectly designed for freelancers, teachers, and home-based consultants. You can simply refer clients online and we handle the rest." },
+  { q: "Is there any financial investment required?", a: "Franchise partners require an initial setup and licensing investment to construct a branch. The Sub-Agent program requires zero setup investment." },
+  { q: "What kind of marketing support will I receive?", a: "We provide complete brand guidelines, seasonal graphics, social media posts, banner mockups, print-ready pamphlets, and digital campaign support." }
+];
+---
+
+<Layout
+  title="Partner With Us | Business Opportunities — TESCA"
+  description="Become a franchise partner or authorized sub-agent with TESCA Visa Consultancy. Expand your business with expert study abroad, visa, and IELTS coaching support."
+>
+  <!-- Hero Section -->
+  <section class="max-w-7xl mx-auto px-4 sm:px-6 md:px-8 py-8 sm:py-12">
+    <div class="glass-card rounded-[2rem] overflow-hidden bg-gradient-to-br from-slate-50 to-blue-50/20 border border-slate-200/60 shadow-lg grid grid-cols-1 md:grid-cols-12 gap-8 items-center p-6 sm:p-8 md:p-12 relative mb-12 sm:mb-16">
+      <div class="aurora-bg w-[300px] h-[300px] bg-accent-blue/5 -top-12 -left-12 rounded-full blur-[80px]"></div>
+      
+      <div class="md:col-span-7 space-y-6 relative z-10 text-left">
+        <span class="inline-block text-xs font-bold tracking-wider text-accent-indigo bg-accent-blue/10 px-4 py-1.5 rounded-full border border-accent-blue/20 font-sans uppercase">
+          TESCA Partnership Program
+        </span>
+        <h1 class="text-[32px] sm:text-[44px] lg:text-[52px] font-extrabold font-display text-slate-800 tracking-tight leading-tight">
+          Grow Your Business with Our Trusted Visa & Training Network
+        </h1>
+        <p class="text-sm sm:text-base md:text-lg text-slate-600 font-sans font-normal leading-relaxed max-w-2xl">
+          Become our Franchise Partner or Authorized Sub-Agent and offer visa consultancy, study abroad services, and spoken language courses under our guidance. We invite entrepreneurs, consultants, trainers, and travel agents to join our growing brand.
+        </p>
+        <div class="pt-2">
+          <a 
+            href="#partner-form-section" 
+            class="inline-flex bg-[#F08A00] hover:bg-[#C06E00] text-white text-sm font-bold py-3 px-8 rounded-full shadow-lg hover:shadow-xl transition-all duration-200 uppercase tracking-wider no-underline font-sans"
+          >
+            Become a Partner
+          </a>
+        </div>
+      </div>
+      
+      <div class="md:col-span-5 relative flex justify-center md:justify-end self-stretch items-center">
+        <div class="relative w-full max-w-[380px] md:max-w-[450px] aspect-[4/3] rounded-2xl overflow-hidden shadow-lg border border-accent-blue/15 bg-white">
+          <img 
+            src="/images/partner with us.png" 
+            alt="TESCA Partner Program" 
+            class="w-full h-full object-cover"
+            loading="eager"
+          />
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Network Overview Message -->
+  <section class="max-w-4xl mx-auto text-center px-6 mb-16 sm:mb-24">
+    <h2 class="text-2xl md:text-3xl font-extrabold text-slate-800 mb-4 font-sans">
+      Why Start a Visa Partnership in 2026?
+    </h2>
+    <p class="text-base text-slate-600 leading-relaxed font-sans mb-6">
+      We invite entrepreneurs, education consultants, travel agents, immigration consultants, coaching institutes, and business professionals to join our growing network. Whether you are looking to start your own visa consultancy or expand your existing business, we provide complete support, training, and guidance to help you succeed.
+    </p>
+    <div class="w-16 h-1 bg-[#0F4C81] mx-auto rounded-full"></div>
+  </section>
+
+  <!-- Partnership Models -->
+  <section class="max-w-7xl mx-auto px-4 sm:px-6 md:px-8 mb-20 sm:mb-28">
+    <div class="text-center mb-12">
+      <h2 class="text-2xl md:text-3xl font-extrabold text-slate-800 mb-3 font-sans">
+        Choose Your Partnership Model
+      </h2>
+      <p class="text-slate-500 font-sans text-sm md:text-base max-w-xl mx-auto">
+        Select a pathway that suits your business footprint, experience level, and investment interest.
+      </p>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-8 lg:gap-12">
+      {partnershipModels.map((model, idx) => (
+        <div class="bg-white border border-slate-200/80 hover:border-[#0F4C81]/30 rounded-3xl p-8 shadow-md hover:shadow-xl transition-all duration-300 flex flex-col justify-between relative group">
+          <div class="absolute top-0 left-0 w-full h-1.5 bg-[#0F4C81] rounded-t-3xl scale-x-0 group-hover:scale-x-100 transition-transform duration-300 origin-left"></div>
+          <div>
+            <div class="flex items-center gap-3 mb-4">
+              <div class="w-12 h-12 bg-sky-50 text-[#0F4C81] flex items-center justify-center rounded-2xl text-xl font-bold font-sans">
+                {idx + 1}
+              </div>
+              <h3 class="text-xl font-extrabold text-slate-800 font-sans">{model.title}</h3>
+            </div>
+            <p class="text-sm text-slate-600 font-sans leading-relaxed mb-6">
+              {model.desc}
+            </p>
+            <div class="border-t border-slate-100 pt-6 mb-6">
+              <p class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-4 font-sans">What You Receive / Benefits</p>
+              <ul class="space-y-3">
+                {model.benefits.map(benefit => (
+                  <li class="flex items-start gap-2 text-sm text-slate-700 font-sans">
+                    <span class="text-emerald-500 font-bold shrink-0 mt-0.5">✓</span>
+                    <span>{benefit}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </div>
+          <a
+            href="#partner-form-section"
+            class="w-full text-center text-sm font-bold border-2 border-[#0F4C81] text-[#0F4C81] hover:bg-[#0F4C81] hover:text-white py-3 rounded-xl transition-all duration-200 no-underline font-sans"
+          >
+            Apply for {model.title}
+          </a>
+        </div>
+      ))}
+    </div>
+  </section>
+
+  <!-- Services Offered Banner -->
+  <section class="bg-slate-50 border-y border-slate-200/60 py-16 sm:py-20 mb-20 sm:mb-28">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 md:px-8">
+      <div class="text-center mb-12">
+        <h2 class="text-2xl md:text-3xl font-extrabold text-slate-800 mb-3 font-sans">
+          Services You Can Offer
+        </h2>
+        <p class="text-slate-500 font-sans text-sm md:text-base max-w-xl mx-auto">
+          Leverage our backend processing to offer full visa pathways and international test preparations.
+        </p>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl mx-auto">
+        {services.map(srv => (
+          <div class="bg-white rounded-3xl border border-slate-100 p-6 md:p-8 shadow-sm">
+            <h3 class="text-lg font-extrabold text-slate-800 mb-4 border-b border-slate-100 pb-3 font-sans uppercase tracking-wider text-[#0F4C81]">
+              {srv.category}
+            </h3>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              {srv.items.map(item => (
+                <div class="flex items-center gap-2 bg-slate-50 border border-slate-100 rounded-xl px-3 py-2 text-sm text-slate-700 font-medium font-sans">
+                  <span class="w-1.5 h-1.5 bg-[#F08A00] rounded-full shrink-0"></span>
+                  <span>{item}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  </section>
+
+  <!-- Why Partner Section -->
+  <section class="max-w-7xl mx-auto px-4 sm:px-6 md:px-8 mb-20 sm:mb-28">
+    <div class="text-center mb-12">
+      <h2 class="text-2xl md:text-3xl font-extrabold text-slate-800 mb-3 font-sans">
+        Why Partner With TESCA?
+      </h2>
+      <p class="text-slate-500 font-sans text-sm md:text-base max-w-xl mx-auto">
+        We ensure our partners are fully equipped to build a successful and highly profitable business.
+      </p>
+    </div>
+
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+      {reasonsToPartner.map(reason => (
+        <div class="bg-white border border-slate-100 rounded-2xl p-6 shadow-sm hover:shadow-md transition-shadow">
+          <div class="text-2xl mb-3">✅</div>
+          <h4 class="text-base font-bold text-slate-800 mb-2 font-sans">{reason.title}</h4>
+          <p class="text-xs text-slate-500 leading-relaxed font-sans">{reason.desc}</p>
+        </div>
+      ))}
+    </div>
+  </section>
+
+  <!-- Process Steps (How It Works) -->
+  <section class="max-w-7xl mx-auto px-4 sm:px-6 md:px-8 mb-20 sm:mb-28">
+    <div class="text-center mb-12">
+      <h2 class="text-2xl md:text-3xl font-extrabold text-slate-800 mb-3 font-sans">
+        How It Works
+      </h2>
+      <p class="text-slate-500 font-sans text-sm md:text-base max-w-xl mx-auto">
+        Getting started is easy and takes just a few steps.
+      </p>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-5 gap-6 relative">
+      {[
+        { step: "01", title: "Submit Form", desc: "Fill out our partnership registration form online." },
+        { step: "02", title: "Discovery Call", desc: "Our network team schedules a verification call." },
+        { step: "03", title: "Discussion", desc: "Verify credentials, business models, and territorial fit." },
+        { step: "04", title: "Agreement", desc: "Sign the official memorandum and partner contract." },
+        { step: "05", title: "Start Launch", desc: "Receive CRM credentials, training logs, and start building." },
+      ].map((item, idx) => (
+        <div class="relative flex flex-col items-center text-center p-4 bg-slate-50 rounded-2xl border border-slate-100">
+          <div class="w-10 h-10 rounded-full bg-[#0F4C81] text-white flex items-center justify-center text-xs font-extrabold font-sans mb-3 shadow-md shadow-[#0F4C81]/15">
+            {item.step}
+          </div>
+          <h4 class="text-sm font-extrabold text-slate-800 mb-1 font-sans">{item.title}</h4>
+          <p class="text-[11px] text-slate-500 leading-relaxed font-sans">{item.desc}</p>
+        </div>
+      ))}
+    </div>
+  </section>
+
+  <!-- FAQs Section -->
+  <section class="max-w-3xl mx-auto px-6 mb-20 sm:mb-28">
+    <div class="text-center mb-10">
+      <h2 class="text-2xl font-extrabold text-slate-800 mb-2 font-sans">Frequently Asked Questions</h2>
+      <p class="text-slate-500 font-sans text-sm">Common inquiries about our network and licensing.</p>
+    </div>
+
+    <div class="space-y-4">
+      {faqs.map(faq => (
+        <details class="group bg-white border border-slate-200/80 rounded-2xl overflow-hidden transition-all duration-300">
+          <summary class="flex items-center justify-between p-5 text-sm md:text-base font-extrabold text-slate-800 cursor-pointer list-none select-none hover:bg-slate-50">
+            <span class="font-sans pr-4">{faq.q}</span>
+            <span class="transition-transform duration-300 group-open:rotate-180 text-slate-400 shrink-0">
+              ▼
+            </span>
+          </summary>
+          <div class="px-5 pb-5 pt-1 border-t border-slate-100 text-xs md:text-sm text-slate-600 font-sans leading-relaxed">
+            {faq.a}
+          </div>
+        </details>
+      ))}
+    </div>
+  </section>
+
+  <!-- Bottom CTA & Form Section -->
+  <section class="max-w-7xl mx-auto px-4 sm:px-6 md:px-8 mb-16">
+    <div class="bg-gradient-to-br from-[#0F4C81] to-[#1e3a5f] rounded-[2rem] p-8 md:p-12 text-center text-white mb-12 shadow-xl relative overflow-hidden">
+      <div class="absolute top-0 right-0 w-64 h-64 bg-white/5 rounded-full blur-3xl -translate-y-12 translate-x-12"></div>
+      <h2 class="text-2xl md:text-4xl font-extrabold font-display mb-4 relative z-10">
+        Become Our Business Partner Today
+      </h2>
+      <p class="text-sm md:text-base text-white/80 max-w-2xl mx-auto mb-6 relative z-10 leading-relaxed font-sans">
+        Join our growing network and build a successful visa consultancy and language training business with expert support. Fill out the application form below to start.
+      </p>
+    </div>
+
+    <PartnerForm client:only="react" />
+  </section>
+</Layout>

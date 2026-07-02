@@ -76,6 +76,10 @@ export default function CounsellorForm() {
   const [showSlotPicker, setShowSlotPicker] = useState(false);
   const [selectedDate, setSelectedDate] = useState("");
   const [selectedTime, setSelectedTime] = useState("");
+  const [leadId, setLeadId] = useState("");
+  const [availableSlots, setAvailableSlots] = useState<string[]>([]);
+  const [loadingSlots, setLoadingSlots] = useState(false);
+  const [bookingStatus, setBookingStatus] = useState<"idle" | "booking" | "success" | "failed">("idle");
 
   const selectedPhoneCountry = PHONE_COUNTRIES.find(c => c.code === phoneCountry) || PHONE_COUNTRIES[0];
 
@@ -125,6 +129,9 @@ export default function CounsellorForm() {
       setShowSlotPicker(false);
       setSelectedDate("");
       setSelectedTime("");
+      setLeadId("");
+      setAvailableSlots([]);
+      setBookingStatus("idle");
       setIsOpen(true);
     };
     window.addEventListener("open-counsellor-form", handleOpen);
@@ -132,6 +139,31 @@ export default function CounsellorForm() {
       window.removeEventListener("open-counsellor-form", handleOpen);
     };
   }, []);
+
+  useEffect(() => {
+    if (!selectedDate) return;
+
+    const fetchSlots = async () => {
+      setLoadingSlots(true);
+      setSelectedTime("");
+      try {
+        const res = await fetch(`/api/slots?date=${selectedDate}`);
+        const data = await res.json();
+        if (res.ok && data.success) {
+          setAvailableSlots(data.availableSlots || []);
+        } else {
+          setAvailableSlots(TIME_SLOTS);
+        }
+      } catch (err) {
+        console.error("Failed to fetch slots:", err);
+        setAvailableSlots(TIME_SLOTS);
+      } finally {
+        setLoadingSlots(false);
+      }
+    };
+
+    fetchSlots();
+  }, [selectedDate]);
 
   useEffect(() => {
     if (isOpen) {
@@ -200,8 +232,15 @@ export default function CounsellorForm() {
         throw new Error(data.error || data.message || `HTTP error! status: ${response.status}`);
       }
 
+      setLeadId(data.leadId || "");
+
       if (typeof window !== "undefined" && (window as any).trackLeadEvent) {
         (window as any).trackLeadEvent("counsellor");
+      }
+      
+      const dates = getAvailableDates();
+      if (dates.length > 0) {
+        setSelectedDate(dates[0].value);
       }
       setShowSlotPicker(true);
     } catch (err: any) {
@@ -352,22 +391,36 @@ export default function CounsellorForm() {
                       {/* Time Slots Grid */}
                       <div className="space-y-3 mb-6">
                         <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider font-sans">2. Select Time (IST)</label>
-                        <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
-                          {TIME_SLOTS.map((t) => (
-                            <button
-                              key={t}
-                              type="button"
-                              onClick={() => setSelectedTime(t)}
-                              className={`py-2.5 rounded-xl border text-xs font-semibold font-sans transition-all cursor-pointer text-center ${
-                                selectedTime === t
-                                  ? "bg-accent-blue/10 border-accent-blue text-accent-blue font-bold shadow-sm"
-                                  : "bg-white border-slate-200 text-slate-600 hover:border-slate-300 hover:bg-slate-50"
-                              }`}
-                            >
-                              {t}
-                            </button>
-                          ))}
-                        </div>
+                        {loadingSlots ? (
+                          <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 animate-pulse">
+                            {[1, 2, 3, 4, 5, 6].map((i) => (
+                              <div key={i} className="h-10 bg-slate-100 rounded-xl border border-slate-100"></div>
+                            ))}
+                          </div>
+                        ) : (
+                          <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                            {TIME_SLOTS.map((t) => {
+                              const isAvailable = availableSlots.includes(t);
+                              return (
+                                <button
+                                  key={t}
+                                  type="button"
+                                  disabled={!isAvailable}
+                                  onClick={() => setSelectedTime(t)}
+                                  className={`py-2.5 rounded-xl border text-xs font-semibold font-sans transition-all text-center ${
+                                    !isAvailable
+                                      ? "bg-slate-50 border-slate-100 text-slate-300 cursor-not-allowed line-through"
+                                      : selectedTime === t
+                                        ? "bg-accent-blue/10 border-accent-blue text-accent-blue font-bold shadow-sm cursor-pointer"
+                                        : "bg-white border-slate-200 text-slate-600 hover:border-slate-300 hover:bg-slate-50 cursor-pointer"
+                                  }`}
+                                >
+                                  {t}
+                                </button>
+                              );
+                            })}
+                          </div>
+                        )}
                       </div>
 
                       {/* Interim notice */}
@@ -378,40 +431,74 @@ export default function CounsellorForm() {
 
                     <button
                       type="button"
-                      onClick={() => {
+                      disabled={bookingStatus === "booking" || !selectedDate || !selectedTime}
+                      onClick={async () => {
                         if (!selectedDate || !selectedTime) {
                           alert("Please select a date and time slot!");
                           return;
                         }
                         
-                        const dates = getAvailableDates();
-                        const formattedDate = dates.find(d => d.value === selectedDate)?.label || selectedDate;
-                        const visaPart = visaType ? ` for ${visaType}` : "";
-                        const message = `Hello TESCA, I have booked a consultation slot${visaPart} for ${formattedDate} at ${selectedTime}. Please confirm my slot!`;
-                        const encodedMsg = encodeURIComponent(message);
-                        
-                        // Auto redirect to WhatsApp
-                        window.open(`https://wa.me/919824152731?text=${encodedMsg}`, '_blank');
-                        
-                        // Reset form and close
-                        setShowSlotPicker(false);
-                        setFirstName("");
-                        setLastName("");
-                        setEmail("");
-                        setPhone("");
-                        setPhoneCountry("IN");
-                        setMode("");
-                        setDestination("");
-                        setVisaType("");
-                        setErrors({});
-                        setIsOpen(false);
+                        setBookingStatus("booking");
+                        try {
+                          const res = await fetch("/api/counsellor", {
+                            method: "POST",
+                            headers: { "Content-Type": "application/json" },
+                            body: JSON.stringify({
+                              action: "book",
+                              leadId,
+                              selectedDate,
+                              selectedTime
+                            })
+                          });
+                          
+                          const data = await res.json();
+                          if (!res.ok || !data.success) {
+                            throw new Error(data.error || "Failed to book slot.");
+                          }
+
+                          const dates = getAvailableDates();
+                          const formattedDate = dates.find(d => d.value === selectedDate)?.label || selectedDate;
+                          const visaPart = visaType ? ` for ${visaType}` : "";
+                          const message = `Hello TESCA, I have booked a consultation slot${visaPart} for ${formattedDate} at ${selectedTime}. Please confirm my slot!`;
+                          const encodedMsg = encodeURIComponent(message);
+                          
+                          // Auto redirect to WhatsApp
+                          window.open(`https://wa.me/919824152731?text=${encodedMsg}`, '_blank');
+                          
+                          // Reset form and close
+                          setShowSlotPicker(false);
+                          setFirstName("");
+                          setLastName("");
+                          setEmail("");
+                          setPhone("");
+                          setPhoneCountry("IN");
+                          setMode("");
+                          setDestination("");
+                          setVisaType("");
+                          setErrors({});
+                          setIsOpen(false);
+                        } catch (err: any) {
+                          console.error("Booking failed:", err);
+                          alert(err.message || "Failed to book slot on Google Calendar. Please try again.");
+                        } finally {
+                          setBookingStatus("idle");
+                        }
                       }}
-                      className="w-full py-3 bg-[#25D366] hover:bg-[#1ea855] text-white font-bold text-sm rounded-xl shadow-md transition-all duration-200 flex items-center justify-center gap-2 cursor-pointer font-sans tracking-wide"
+                      className="w-full py-3 bg-[#25D366] hover:bg-[#1ea855] disabled:bg-[#25D366]/60 disabled:cursor-not-allowed text-white font-bold text-sm rounded-xl shadow-md transition-all duration-200 flex items-center justify-center gap-2 cursor-pointer font-sans tracking-wide"
                     >
-                      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" className="w-5 h-5 fill-white flex-shrink-0" aria-hidden="true">
-                        <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 0C5.373 0 0 5.373 0 12c0 2.128.559 4.122 1.532 5.859L.057 23.5l5.784-1.518A11.932 11.932 0 0012 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 22c-1.846 0-3.573-.492-5.063-1.35L2.5 21.869l1.244-4.287A10 10 0 012 12C2 6.477 6.477 2 12 2s10 4.477 10 10-4.477 10-10 10z"/>
-                      </svg>
-                      Confirm Slot & Chat on WhatsApp
+                      {bookingStatus === "booking" ? (
+                        <>
+                          <Loader2 className="w-4.5 h-4.5 animate-spin text-white shrink-0" />
+                          Booking Slot...
+                        </>
+                      ) : (
+                        <>
+                          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" className="w-5 h-5 fill-white flex-shrink-0" aria-hidden="true">
+                            <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 0C5.373 0 0 5.373 0 12c0 2.128.559 4.122 1.532 5.859L.057 23.5l5.784-1.518A11.932 11.932 0 0012 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 22c-1.846 0-3.573-.492-5.063-1.35L2.5 21.869l1.244-4.287A10 10 0 012 12C2 6.477 6.477 2 12 2s10 4.477 10 10-4.477 10-10 10z"/>
+                          </svg>
+                          Confirm Slot & Chat on WhatsApp
+                        </>
+                      )}
                     </button>
                   </div>
                 ) : status === "success" ? (

@@ -223,6 +223,8 @@ export function counsellorBookingEmail({
   mode,
   destination,
   visaType,
+  bookingDate,
+  bookingTime,
 }: {
   firstName: string;
   lastName: string;
@@ -231,8 +233,48 @@ export function counsellorBookingEmail({
   mode?: string;
   destination?: string;
   visaType?: string;
+  bookingDate?: string;
+  bookingTime?: string;
 }) {
   const fullName = `${firstName} ${lastName}`;
+  const hasBookingDetails = !!(bookingDate && bookingTime);
+
+  let formattedDate = bookingDate || '';
+  if (bookingDate) {
+    try {
+      const dateParts = bookingDate.split('-');
+      if (dateParts.length === 3) {
+        const year = parseInt(dateParts[0], 10);
+        const month = parseInt(dateParts[1], 10) - 1;
+        const day = parseInt(dateParts[2], 10);
+        const dateObj = new Date(year, month, day);
+        formattedDate = dateObj.toLocaleDateString('en-US', {
+          weekday: 'long',
+          year: 'numeric',
+          month: 'long',
+          day: 'numeric'
+        });
+      }
+    } catch (e) {
+      formattedDate = bookingDate;
+    }
+  }
+
+  const heroTitle = hasBookingDetails 
+    ? `Counselling Session Confirmed!`
+    : `You're All Set, ${firstName}!`;
+
+  const heroSubtitle = hasBookingDetails
+    ? `Hi ${firstName}, your calendar slot has been successfully scheduled. A calendar invitation has been sent to your email.`
+    : `Your counselling request has been received. A TESCA senior counselor will reach out to you within <strong style="color:#fbbf24;">24 hours</strong>.`;
+
+  const subject = hasBookingDetails
+    ? `✅ Counselling Session Confirmed: ${formattedDate} at ${bookingTime} — TESCA`
+    : `✅ Counselling Request Confirmed — TESCA Visa Consultancy`;
+
+  const previewText = hasBookingDetails
+    ? `Hi ${firstName}, your counselling session on ${formattedDate} at ${bookingTime} is confirmed!`
+    : `Hi ${firstName}, your counselling session request is confirmed! We will contact you within 24 hours.`;
 
   const content = `
   ${header()}
@@ -243,12 +285,25 @@ export function counsellorBookingEmail({
       <div style="display:inline-block; background:rgba(240,138,0,0.18); border:1px solid rgba(240,138,0,0.5); border-radius:30px; padding:5px 16px; margin-bottom:16px;">
         <span style="font-size:11px; font-weight:700; color:#fbbf24; letter-spacing:1.5px; text-transform:uppercase;">✅ Booking Confirmed</span>
       </div>
-      <h1 style="font-size:28px; font-weight:800; color:#ffffff; margin:0 0 10px; line-height:1.25;">You're All Set, ${firstName}!</h1>
+      <h1 style="font-size:28px; font-weight:800; color:#ffffff; margin:0 0 10px; line-height:1.25;">${heroTitle}</h1>
       <p style="font-size:15px; color:rgba(255,255,255,0.78); margin:0; line-height:1.65;">
-        Your counselling request has been received. A TESCA senior counselor will reach out to you within <strong style="color:#fbbf24;">24 hours</strong>.
+        ${heroSubtitle}
       </p>
     </td>
   </tr>
+
+  <!-- Booking Date/Time Highlight -->
+  ${hasBookingDetails ? `
+  <tr>
+    <td style="padding: 32px 40px 0;">
+      <div style="background: #f0fdf4; border: 1.5px solid #bbf7d0; border-radius: 16px; padding: 24px; text-align: center;">
+        <p style="font-size: 13px; font-weight: 700; color: #166534; letter-spacing: 1.2px; text-transform: uppercase; margin: 0 0 8px;">Scheduled Date & Time</p>
+        <h2 style="font-size: 20px; font-weight: 800; color: ${BRAND_BLUE}; margin: 0 0 4px;">${formattedDate}</h2>
+        <p style="font-size: 18px; font-weight: 700; color: ${BRAND_DARK}; margin: 0;">⏱️ ${bookingTime}</p>
+      </div>
+    </td>
+  </tr>
+  ` : ''}
 
   <!-- Booking Summary -->
   <tr>
@@ -259,6 +314,8 @@ export function counsellorBookingEmail({
           ['Full Name', fullName],
           ['Phone / WhatsApp', phone],
           ['Email', email],
+          ...(bookingDate ? [['Scheduled Date', formattedDate]] : []),
+          ...(bookingTime ? [['Scheduled Time', bookingTime]] : []),
           ['Mode of Counselling', mode || 'Not specified'],
           ['Visa Type Interest', visaType || 'Not specified'],
           ['Preferred Destination', destination || 'Flexible'],
@@ -321,8 +378,8 @@ export function counsellorBookingEmail({
   </tr>`;
 
   return {
-    subject: `✅ Counselling Request Confirmed — TESCA Visa Consultancy`,
-    html: baseWrapper(content, `Hi ${firstName}, your counselling session request is confirmed! We will contact you within 24 hours.`),
+    subject,
+    html: baseWrapper(content, previewText),
   };
 }
 
@@ -445,5 +502,176 @@ export function inquiryConfirmationEmail({
   return {
     subject: `📋 Inquiry Registered — TESCA Visa Consultancy`,
     html: baseWrapper(content, `Hi ${name}, your inquiry has been received! We'll contact you within 24 hours.`),
+  };
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// 4. PARTNER WITH US CONFIRMATION EMAIL (USER)
+// ─────────────────────────────────────────────────────────────────────────────
+export function partnerConfirmationEmail({
+  name,
+  email,
+  phone,
+  experience,
+  partnershipModel,
+  city,
+  comments,
+}: {
+  name: string;
+  email: string;
+  phone: string;
+  experience: string;
+  partnershipModel: string;
+  city: string;
+  comments?: string;
+}) {
+  const content = `
+  ${header()}
+
+  <!-- Hero -->
+  <tr>
+    <td style="background: linear-gradient(135deg, ${BRAND_BLUE} 0%, #1e3a5f 100%); padding: 44px 40px 36px; text-align:left;" class="hero-section">
+      <div style="display:inline-block; background:rgba(240,138,0,0.18); border:1px solid rgba(240,138,0,0.5); border-radius:30px; padding:5px 16px; margin-bottom:16px;">
+        <span style="font-size:11px; font-weight:700; color:#fbbf24; letter-spacing:1.5px; text-transform:uppercase;">🤝 Partnership Request</span>
+      </div>
+      <h1 style="font-size:28px; font-weight:800; color:#ffffff; margin:0 0 10px; line-height:1.25;">Let's Grow Together, ${name}!</h1>
+      <p style="font-size:15px; color:rgba(255,255,255,0.78); margin:0; line-height:1.65;">
+        Thank you for your interest in partnering with TESCA Visa Consultancy. Our partnership coordinator will review your profile and reach out to you within <strong style="color:#fbbf24;">48 hours</strong> to discuss the next steps.
+      </p>
+    </td>
+  </tr>
+
+  <!-- Partner Request Summary -->
+  <tr>
+    <td style="padding:32px 40px 0;" class="email-card">
+      <p style="font-size:13px; font-weight:700; color:#64748b; letter-spacing:1.2px; text-transform:uppercase; margin-bottom:20px;">Your Request Summary</p>
+      <table width="100%" cellpadding="0" cellspacing="0" style="border:1.5px solid #e2e8f0; border-radius:14px; overflow:hidden;">
+        ${[
+          ['Full Name', name],
+          ['Email', email],
+          ['Phone Number', phone],
+          ['Partnership Model', partnershipModel],
+          ['Experience', experience],
+          ['City / State', city],
+          ['Comments', comments || 'None'],
+        ].map(([label, value], i) => `
+        <tr style="background:${i % 2 === 0 ? '#f8fafc' : '#ffffff'};">
+          <td style="padding:14px 20px; font-size:13px; font-weight:600; color:#475569; width:45%; border-bottom:1px solid #f1f5f9;">${label}</td>
+          <td style="padding:14px 20px; font-size:13px; font-weight:700; color:${BRAND_DARK}; border-bottom:1px solid #f1f5f9;">${value}</td>
+        </tr>`).join('')}
+      </table>
+    </td>
+  </tr>
+
+  <!-- Next Steps -->
+  <tr>
+    <td style="padding:28px 40px 0;" class="email-card">
+      <p style="font-size:13px; font-weight:700; color:#64748b; letter-spacing:1.2px; text-transform:uppercase; margin-bottom:16px;">What's Next?</p>
+      <table width="100%" cellpadding="0" cellspacing="0">
+        ${[
+          { step: '1', title: 'Profile Review', desc: 'Our Business Development team reviews your credentials and geographic market.' },
+          { step: '2', title: 'Discovery Call', desc: 'We will call you to discuss setup details, commission structures, and models.' },
+          { step: '3', title: 'Agreement & Launch', desc: 'Sign the partner contract, receive your marketing toolkit & training portals, and start generating revenue.' },
+        ].map(item => `
+        <tr>
+          <td style="vertical-align:top; padding:0 0 18px;">
+            <table width="100%" cellpadding="0" cellspacing="0">
+              <tr>
+                <td style="width:46px; vertical-align:top; padding-right:14px;">
+                  <div style="width:36px; height:36px; background:#eff6ff; border-radius:50%; text-align:center; line-height:36px; font-size:14px; font-weight:800; color:${BRAND_BLUE}; border: 1.5px solid ${BRAND_BLUE}30;">${item.step}</div>
+                </td>
+                <td style="vertical-align:top;">
+                  <p style="font-size:14px; font-weight:700; color:${BRAND_DARK}; margin:0 0 4px;">${item.title}</p>
+                  <p style="font-size:12px; color:#64748b; margin:0; line-height:1.55;">${item.desc}</p>
+                </td>
+              </tr>
+            </table>
+          </td>
+        </tr>`).join('')}
+      </table>
+    </td>
+  </tr>
+
+  <!-- Trust Footer -->
+  <tr>
+    <td style="background:#f8fafc; border-top:1px solid #e2e8f0; padding:16px 40px; text-align:center;">
+      <span style="font-size:12px; color:#94a3b8; margin:0 10px;">🤝 Global Network</span>
+      <span style="font-size:12px; color:#94a3b8; margin:0 10px;">📈 Complete Support</span>
+      <span style="font-size:12px; color:#94a3b8; margin:0 10px;">💰 High Commissions</span>
+    </td>
+  </tr>`;
+
+  return {
+    subject: `🤝 Partnership Request Received — TESCA Visa Consultancy`,
+    html: baseWrapper(content, `Hi ${name}, thank you for your partnership inquiry. Our team will contact you within 48 hours.`),
+  };
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// 5. PARTNER WITH US NOTIFICATION EMAIL (ADMIN)
+// ─────────────────────────────────────────────────────────────────────────────
+export function partnerNotificationEmail({
+  name,
+  email,
+  phone,
+  experience,
+  partnershipModel,
+  city,
+  comments,
+  leadId,
+}: {
+  name: string;
+  email: string;
+  phone: string;
+  experience: string;
+  partnershipModel: string;
+  city: string;
+  comments?: string;
+  leadId?: string;
+}) {
+  const content = `
+  ${header()}
+
+  <!-- Hero -->
+  <tr>
+    <td style="background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%); padding: 44px 40px 36px; text-align:left;" class="hero-section">
+      <div style="display:inline-block; background:rgba(240,138,0,0.18); border:1px solid rgba(240,138,0,0.5); border-radius:30px; padding:5px 16px; margin-bottom:16px;">
+        <span style="font-size:11px; font-weight:700; color:#fbbf24; letter-spacing:1.5px; text-transform:uppercase;">🚨 New Lead Notification</span>
+      </div>
+      <h1 style="font-size:28px; font-weight:800; color:#ffffff; margin:0 0 10px; line-height:1.25;">New Partner Inquiry!</h1>
+      <p style="font-size:15px; color:rgba(255,255,255,0.78); margin:0; line-height:1.65;">
+        A new partner registration has been submitted from the TESCA website. Please review the details below.
+      </p>
+      ${leadId ? `<div style="margin-top:12px; display:inline-block; background:rgba(255,255,255,0.1); border:1px solid rgba(255,255,255,0.2); border-radius:8px; padding:6px 14px;">
+        <span style="font-size:11px; font-weight:700; color:rgba(255,255,255,0.6);">Lead Database ID:</span>
+        <span style="font-size:12px; font-weight:800; color:#ffffff; font-family:monospace;">${leadId}</span>
+      </div>` : ''}
+    </td>
+  </tr>
+
+  <!-- Partner Details Table -->
+  <tr>
+    <td style="padding:32px 40px;" class="email-card">
+      <table width="100%" cellpadding="0" cellspacing="0" style="border:1.5px solid #e2e8f0; border-radius:14px; overflow:hidden;">
+        ${[
+          ['Partner Name', name],
+          ['Email Address', email],
+          ['Mobile Number', phone],
+          ['Partnership Model', partnershipModel],
+          ['Experience Details', experience],
+          ['Location (City/State)', city],
+          ['Message / Comments', comments || 'None'],
+        ].map(([label, value], i) => `
+        <tr style="background:${i % 2 === 0 ? '#f8fafc' : '#ffffff'};">
+          <td style="padding:14px 20px; font-size:13px; font-weight:600; color:#475569; width:40%; border-bottom:1px solid #f1f5f9;">${label}</td>
+          <td style="padding:14px 20px; font-size:13px; font-weight:700; color:${BRAND_DARK}; border-bottom:1px solid #f1f5f9;">${value}</td>
+        </tr>`).join('')}
+      </table>
+    </td>
+  </tr>`;
+
+  return {
+    subject: `🚨 NEW PARTNER INQUIRY: ${name} (${partnershipModel})`,
+    html: baseWrapper(content, `New partner registration from ${name} for the ${partnershipModel} program.`),
   };
 }

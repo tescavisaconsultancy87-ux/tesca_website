@@ -101,14 +101,15 @@ const faqSchema = {
 				});
 
 				// Toggle current
+				const svg = chevron?.querySelector('svg');
 				if (isOpen) {
 					toggle.setAttribute('aria-expanded', 'false');
 					answer.style.maxHeight = '0';
-					if (chevron) (chevron.querySelector('svg') as HTMLElement).style.transform = 'rotate(0deg)';
+					if (svg) (svg as any).style.transform = 'rotate(0deg)';
 				} else {
 					toggle.setAttribute('aria-expanded', 'true');
 					answer.style.maxHeight = answer.scrollHeight + 'px';
-					if (chevron) (chevron.querySelector('svg') as HTMLElement).style.transform = 'rotate(180deg)';
+					if (svg) (svg as any).style.transform = 'rotate(180deg)';
 				}
 			});
 		});

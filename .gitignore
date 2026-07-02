@@ -31,3 +31,4 @@ preview.*.log
 .something
 .wrangler/
 .vscode/
+.claude/

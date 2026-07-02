@@ -21,6 +21,130 @@ export const POST: APIRoute = async ({ request }) => {
   let body: any = {};
   try {
     body = await request.json();
+
+    // 0. Handle Google Calendar Slot Booking action
+    if (body.action === 'book') {
+      const { leadId, selectedDate, selectedTime } = body;
+      if (!leadId || !selectedDate || !selectedTime) {
+        return new Response(JSON.stringify({ error: "Missing required fields (leadId, selectedDate, selectedTime)." }), {
+          status: 400,
+          headers: { "Content-Type": "application/json" }
+        });
+      }
+
+      // Fetch the existing lead from Supabase
+      const { data: lead, error: fetchError } = await supabase
+        .from('leads')
+        .select('*')
+        .eq('id', leadId)
+        .single();
+
+      if (fetchError || !lead) {
+        return new Response(JSON.stringify({ error: "Lead not found or database query failed." }), {
+          status: 404,
+          headers: { "Content-Type": "application/json" }
+        });
+      }
+
+      let details: any = {};
+      try {
+        details = typeof lead.details === 'string' ? JSON.parse(lead.details) : lead.details || {};
+      } catch (e) {
+        details = {};
+      }
+
+      const googleSheetUrl = getEnv('GOOGLE_SHEET_URL') || getEnv('PUBLIC_GOOGLE_SHEET_URL') || import.meta.env.GOOGLE_SHEET_URL || (import.meta.env as any).PUBLIC_GOOGLE_SHEET_URL;
+
+      if (googleSheetUrl) {
+        // Build URL parameters for the Apps Script Web App
+        const params = new URLSearchParams({
+          action: "bookSlot",
+          date: selectedDate,
+          time: selectedTime,
+          "Full Name": lead.name || "Counselling Session",
+          Email: lead.email || "Not provided",
+          "Mobile Number": lead.phone || "Not provided",
+          "Counselling Mode": details.mode || "Not specified",
+          "Visa Type": details.visaType || "Not specified",
+          "Preferred Countries": details.destination || "Not specified",
+          Comments: `BOOKED SLOT: ${selectedDate} at ${selectedTime}. Preferred Mode: ${details.mode || "Not specified"}. Visa Type: ${details.visaType || "Not specified"}. Destination: ${details.destination || "Not specified"}.`,
+          "Lead Source": "Main Enquiry Form"
+        });
+
+        const gasRes = await fetch(`${googleSheetUrl}?${params.toString()}`);
+        if (!gasRes.ok) {
+          throw new Error(`Google Apps Script booking returned status ${gasRes.status}`);
+        }
+
+        const gasText = await gasRes.text();
+        let gasData: any;
+        try {
+          gasData = JSON.parse(gasText);
+        } catch (parseErr) {
+          console.error("[counsellor-booking] Expected JSON from Google Apps Script, but got HTML/Text. Response preview:\n", gasText.slice(0, 500));
+          return new Response(JSON.stringify({ error: "Google Apps Script returned an invalid HTML page instead of JSON. Ensure the script is deployed as 'Anyone' and permissions are authorized." }), {
+            status: 400,
+            headers: { "Content-Type": "application/json" }
+          });
+        }
+
+        if (!gasData.success) {
+          return new Response(JSON.stringify({ error: gasData.error || "Failed to book slot on calendar." }), {
+            status: 400,
+            headers: { "Content-Type": "application/json" }
+          });
+        }
+      }
+
+      // Update lead in Supabase with booked status and selected slot details
+      const updatedDetails = {
+        ...details,
+        selectedDate,
+        selectedTime
+      };
+
+      const { error: updateError } = await supabase
+        .from('leads')
+        .update({
+          status: 'booked',
+          details: JSON.stringify(updatedDetails)
+        })
+        .eq('id', leadId);
+
+      if (updateError) {
+        throw updateError;
+      }
+
+      // Send confirmation email to user if email is provided
+      if (lead.email) {
+        try {
+          const nameParts = (lead.name || '').trim().split(/\s+/);
+          const firstName = nameParts[0] || 'Student';
+          const lastName = nameParts.slice(1).join(' ') || '';
+
+          const { subject, html } = counsellorBookingEmail({
+            firstName,
+            lastName,
+            phone: lead.phone || '',
+            email: lead.email,
+            mode: details.mode,
+            destination: details.destination,
+            visaType: details.visaType,
+            bookingDate: selectedDate,
+            bookingTime: selectedTime,
+          });
+          await sendMail({ to: lead.email, subject, html });
+        } catch (mailErr) {
+          console.error('Counsellor booking email send failed:', mailErr);
+        }
+      }
+
+      return jsonResponse({
+        success: true,
+        message: "Slot booked successfully on Google Calendar and updated in database."
+      });
+    }
+
     const { firstName, lastName, email, phone, mode, destination, visaType } = body;
 
     // 1. Basic check for presence
@@ -117,24 +241,6 @@ export const POST: APIRoute = async ({ request }) => {
       });
       fetch(`${googleSheetUrl}?${params.toString()}`, { method: "GET" })
         .catch(err => console.error("Google Sheets counsellor GET failed:", err));
-    }
-
-    // Send confirmation email to user if email provided
-    if (cleanEmail) {
-      try {
-        const { subject, html } = counsellorBookingEmail({
-          firstName: cleanFirstName,
-          lastName: cleanLastName,
-          phone: cleanPhone,
-          email: cleanEmail,
-          mode: cleanMode,
-          destination: cleanDestination,
-          visaType: cleanVisaType,
-        });
-        await sendMail({ to: cleanEmail, subject, html });
-      } catch (mailErr) {
-        console.error('Counsellor email send failed:', mailErr);
-      }
     }
 
     return jsonResponse({
