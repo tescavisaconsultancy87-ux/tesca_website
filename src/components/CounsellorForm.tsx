@@ -12,6 +12,7 @@ const COUNTRIES = [
   { value: "USA", label: "USA", flag: "us" },
   { value: "Canada", label: "Canada", flag: "ca" },
   { value: "Singapore", label: "Singapore", flag: "sg" },
+  { value: "Japan", label: "Japan", flag: "jp" },
   { value: "Dubai", label: "Dubai", flag: "ae" },
   { value: "Malaysia", label: "Malaysia", flag: "my" },
   { value: "Switzerland", label: "Switzerland", flag: "ch" },
@@ -54,7 +55,7 @@ const PHONE_COUNTRIES = [
 ];
 
 const MODES = ["Video Call", "Phone Call", "In-Person Meeting", "Email"];
-const VISA_TYPES = ["Student Visa", "Tourist Visa", "Business Visa", "Dependent Visa"];
+const VISA_TYPES = ["Student Visa", "Tourist Visa", "PR", "Dependent Visa"];
 
 export default function CounsellorForm() {
   const [isOpen, setIsOpen] = useState(false);

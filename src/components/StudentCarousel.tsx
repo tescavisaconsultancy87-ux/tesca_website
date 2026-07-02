@@ -24,6 +24,7 @@ const countryToCode = (country: string) => {
     ireland: "ie",
     "new zealand": "nz",
     singapore: "sg",
+    japan: "jp",
     dubai: "ae",
     uae: "ae",
     malaysia: "my",
