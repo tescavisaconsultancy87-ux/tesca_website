@@ -31,31 +31,31 @@ try {
 const classroomPhotos = (hasDbImages && dbClassroomImages.length > 0) 
   ? dbClassroomImages.map(img => ({ title: img.title, desc: img.description || "", img: img.image_url }))
   : [
-      { title: "Personal Career Counselling", desc: "One-on-one guidance to help students choose the right country, university, and career pathway.", img: "/images/consultation_gallery.webp" },
-      { title: "Student Departure Support", desc: "Comprehensive assistance for travel planning, documentation checks, and departure readiness.", img: "/images/student_abroad_new.webp" },
-      { title: "Pre-Visa Preparation", desc: "Expert guidance on visa requirements, documentation, and interview preparation.", img: "/images/services_hero_gallery.webp" },
-      { title: "Academic Profile Evaluation", desc: "Detailed assessment of academic records and eligibility for study abroad opportunities.", img: "/images/consultation_new.webp" },
-      { title: "IELTS Practice & Assessment", desc: "Real exam-style mock tests designed to improve language proficiency and exam readiness.", img: "/images/testprep_hero_new.webp" },
-      { title: "University Admission Support", desc: "Professional assistance with university selection, applications, and admission processes.", img: "/images/university_support.webp" },
-      { title: "Visa Documentation Support", desc: "Step-by-step help with SOPs, financial documents, and visa application requirements.", img: "/images/visa_support.webp" },
-      { title: "Scholarship Guidance Services", desc: "Helping students identify and apply for scholarships to reduce study costs.", img: "/images/scholarship_new.webp" },
-      { title: "Study Abroad Workshops", desc: "Informative seminars covering admissions, visas, scholarships, and student life abroad.", img: "/images/workshop_new.webp" },
-      { title: "Career Planning Sessions", desc: "Personalized advice to align education choices with long-term career goals.", img: "/images/consultation.webp" }
+      { title: "Personal Career Counselling", desc: "One-on-one guidance to help students choose the right country, university, and career pathway.", img: "/images/consultation_gallery.png" },
+      { title: "Student Departure Support", desc: "Comprehensive assistance for travel planning, documentation checks, and departure readiness.", img: "/images/student_abroad_new.png" },
+      { title: "Pre-Visa Preparation", desc: "Expert guidance on visa requirements, documentation, and interview preparation.", img: "/images/services_hero_gallery.png" },
+      { title: "Academic Profile Evaluation", desc: "Detailed assessment of academic records and eligibility for study abroad opportunities.", img: "/images/consultation_new.png" },
+      { title: "IELTS Practice & Assessment", desc: "Real exam-style mock tests designed to improve language proficiency and exam readiness.", img: "/images/testprep_hero_new.png" },
+      { title: "University Admission Support", desc: "Professional assistance with university selection, applications, and admission processes.", img: "/images/university_support.png" },
+      { title: "Visa Documentation Support", desc: "Step-by-step help with SOPs, financial documents, and visa application requirements.", img: "/images/visa_support.png" },
+      { title: "Scholarship Guidance Services", desc: "Helping students identify and apply for scholarships to reduce study costs.", img: "/images/scholarship_new.png" },
+      { title: "Study Abroad Workshops", desc: "Informative seminars covering admissions, visas, scholarships, and student life abroad.", img: "/images/workshop_new.png" },
+      { title: "Career Planning Sessions", desc: "Personalized advice to align education choices with long-term career goals.", img: "/images/consultation.png" }
     ];
 
 const campusPhotos = (hasDbImages && dbCampusImages.length > 0)
   ? dbCampusImages.map(img => ({ title: img.title, desc: img.description || "", img: img.image_url }))
   : [
-      { title: "Successful Student Placements", desc: "Celebrating students who achieved admissions and visa approvals for their dream destinations.", img: "/images/graduating_students_new.webp" },
-      { title: "Global Education Opportunities", desc: "Exploring international study destinations and future career possibilities worldwide.", img: "/images/global_new.webp" },
-      { title: "Pre-Departure Orientation", desc: "Preparing students for life abroad through practical guidance and support sessions.", img: "/images/pre_new.webp" },
-      { title: "Admission Success Milestones", desc: "Supporting students from application submission to receiving university offer letters.", img: "/images/milestone_new.webp" },
-      { title: "International Student Network", desc: "Connecting aspiring students with alumni and current international students for guidance.", img: "/images/mock_new.webp" },
-      { title: "Application Review Support", desc: "Ensuring applications are complete, accurate, and ready for university submission.", img: "/images/support_new.webp" },
-      { title: "English Language Training", desc: "Expert coaching for IELTS, PTE, TOEFL, and Spoken English improvement.", img: "/images/training_new.webp" },
-      { title: "Visa Interview Coaching", desc: "Mock interviews and confidence-building sessions for successful visa outcomes.", img: "/images/coaching_new.webp" },
-      { title: "Student Success Community", desc: "A supportive environment where students share experiences and achievements.", img: "/images/community_new.webp" },
-      { title: "Global Study Pathways", desc: "Guiding students toward internationally recognized qualifications and career growth.", img: "/images/pathways_new.webp" }
+      { title: "Successful Student Placements", desc: "Celebrating students who achieved admissions and visa approvals for their dream destinations.", img: "/images/graduating_students_new.png" },
+      { title: "Global Education Opportunities", desc: "Exploring international study destinations and future career possibilities worldwide.", img: "/images/global_new.png" },
+      { title: "Pre-Departure Orientation", desc: "Preparing students for life abroad through practical guidance and support sessions.", img: "/images/pre_new.png" },
+      { title: "Admission Success Milestones", desc: "Supporting students from application submission to receiving university offer letters.", img: "/images/milestone_new.png" },
+      { title: "International Student Network", desc: "Connecting aspiring students with alumni and current international students for guidance.", img: "/images/mock_new.png" },
+      { title: "Application Review Support", desc: "Ensuring applications are complete, accurate, and ready for university submission.", img: "/images/support_new.png" },
+      { title: "English Language Training", desc: "Expert coaching for IELTS, PTE, TOEFL, and Spoken English improvement.", img: "/images/training_new.png" },
+      { title: "Visa Interview Coaching", desc: "Mock interviews and confidence-building sessions for successful visa outcomes.", img: "/images/coaching_new.png" },
+      { title: "Student Success Community", desc: "A supportive environment where students share experiences and achievements.", img: "/images/community_new.png" },
+      { title: "Global Study Pathways", desc: "Guiding students toward internationally recognized qualifications and career growth.", img: "/images/pathways_new.png" }
     ];
 ---
 
@@ -88,7 +88,7 @@ const campusPhotos = (hasDbImages && dbCampusImages.length > 0)
       <div class="md:col-span-5 relative flex justify-center md:justify-end self-stretch items-center">
         <div class="relative w-full max-w-[320px] md:max-w-[400px] flex items-center aspect-[4/3] rounded-2xl overflow-hidden shadow-md border border-accent-blue/15">
           <img 
-            src="/images/gallery_hero.webp" 
+            src="/images/gallery_hero.png" 
             alt="Institute and student life gallery" 
             class="object-cover w-full h-full select-none"
           />
@@ -99,6 +99,32 @@ const campusPhotos = (hasDbImages && dbCampusImages.length > 0)
   </section>
 
   <section class="max-w-7xl mx-auto px-6 md:px-8 py-12">
+    {/* Virtual Office Tour Video Section */}
+    <div class="mb-20">
+      <div class="flex items-center gap-3 mb-10">
+        <div class="p-3 rounded-xl bg-accent-blue/10 text-accent-blue flex items-center justify-center">
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-6 h-6"><path d="m22 8-6 4 6 4V8Z"/><rect width="14" height="12" x="2" y="6" rx="2" ry="2"/></svg>
+        </div>
+        <div>
+          <h2 class="text-[28px] sm:text-[32px] font-bold text-slate-800 font-display tracking-tight">Virtual Office Tour</h2>
+          <p class="text-sm text-slate-500 font-sans font-normal">Step inside our premium consultancy space in Surat</p>
+        </div>
+      </div>
+
+      <div class="max-w-4xl mx-auto">
+        <div class="relative aspect-[16/9] rounded-[2rem] overflow-hidden bg-slate-900 border border-slate-200/60 shadow-xl group">
+          <video 
+            src="/VIDEO/Tesca%20Office%20Reel.mp4" 
+            poster="/images/office_photo.jpg"
+            preload="none" 
+            controls 
+            playsinline 
+            class="w-full h-full object-cover select-none"
+          ></video>
+        </div>
+      </div>
+    </div>
+
     {/* Class Photos Section */}
     <div class="mb-20">
       <div class="flex items-center gap-3 mb-10">
