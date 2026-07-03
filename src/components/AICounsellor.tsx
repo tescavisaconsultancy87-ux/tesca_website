@@ -340,7 +340,7 @@ export default function AICounsellor() {
             target="_blank"
             rel="noopener noreferrer"
             aria-label="Chat on WhatsApp"
-            className="relative group p-3.5 rounded-full bg-[#25D366] text-white shadow-lg hover:scale-105 transition-all duration-300 flex items-center justify-center"
+            className="relative group p-3.5 rounded-full bg-[#25D366] text-white shadow-lg hover:scale-105 transition-all duration-300 hidden md:flex items-center justify-center"
             title="Chat on WhatsApp"
           >
             <span className="absolute inset-0 rounded-full bg-[#25D366]/30 animate-ping opacity-60 group-hover:opacity-100" style={{ animationDuration: '3.5s' }}></span>
