@@ -775,7 +775,7 @@ export default function CounsellorForm() {
 
                     <button
                       type="submit"
-                      disabled={status === "sending"}
+                      disabled={status === "sending" || !firstName.trim() || !lastName.trim() || !email.trim() || !phone.trim() || !mode || !visaType}
                       className="w-full py-3 bg-[#F08A00] hover:bg-[#C06E00] disabled:bg-[#F08A00]/60 disabled:cursor-not-allowed text-white font-semibold text-sm rounded-xl shadow-md hover:scale-[1.01] disabled:scale-100 transition-all duration-200 cursor-pointer font-sans tracking-wide mt-2 flex items-center justify-center gap-2"
                     >
                       {status === "sending" ? (
