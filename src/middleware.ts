@@ -55,7 +55,7 @@ export const onRequest = defineMiddleware(async (context, next) => {
   // so a Cloudflare Redirect Rule (see Phase 5 notes) is required to fully fence
   // those off the admin subdomain.
   const isAdminHost = hostname === "admin.tescavisa.com";
-  const ADMIN_APIS = new Set(["/api/set-session", "/api/forgot-password", "/api/leads-count"]);
+  const ADMIN_APIS = new Set(["/api/set-session", "/api/forgot-password", "/api/leads-count", "/api/announcements"]);
   // Static assets must ALWAYS be served (never redirected) so the admin UI loads:
   // hashed build output (/_astro/*), images, fonts, and any file with an extension
   // (favicon.ico, robots.txt, manifest.*, sitemap.xml, *.css, *.js, ...). Real pages
