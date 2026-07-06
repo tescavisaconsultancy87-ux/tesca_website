@@ -281,60 +281,16 @@ try {
             </div>
 
             <div class="space-y-1.5">
-              <div class="flex justify-between items-center">
-                <label for="blog-editor" class="text-[10px] text-slate-500 uppercase tracking-wide">Article Content *</label>
-                <div class="flex items-center gap-1 bg-slate-50 border border-slate-200 rounded-lg p-0.5 select-none">
-                  <button 
-                    type="button" 
-                    id="btn-bold" 
-                    class="w-7 h-7 flex items-center justify-center bg-white hover:bg-slate-100 border border-slate-200/50 rounded-md text-xs font-bold text-slate-700 hover:text-slate-900 transition-all cursor-pointer shadow-sm active:scale-95"
-                    title="Bold"
-                  >
-                    B
-                  </button>
-                  <button 
-                    type="button" 
-                    id="btn-italic" 
-                    class="w-7 h-7 flex items-center justify-center bg-white hover:bg-slate-100 border border-slate-200/50 rounded-md text-xs italic font-serif text-slate-700 hover:text-slate-900 transition-all cursor-pointer shadow-sm active:scale-95"
-                    title="Italic"
-                  >
-                    I
-                  </button>
-                  <div class="w-[1px] h-4 bg-slate-200 mx-1"></div>
-                  <button 
-                    type="button" 
-                    id="btn-h2" 
-                    class="px-1.5 h-7 flex items-center justify-center bg-white hover:bg-slate-100 border border-slate-200/50 rounded-md text-[10px] font-extrabold text-slate-700 hover:text-slate-900 transition-all cursor-pointer shadow-sm active:scale-95"
-                    title="Heading 2"
-                  >
-                    H2
-                  </button>
-                  <button 
-                    type="button" 
-                    id="btn-h3" 
-                    class="px-1.5 h-7 flex items-center justify-center bg-white hover:bg-slate-100 border border-slate-200/50 rounded-md text-[10px] font-extrabold text-slate-700 hover:text-slate-900 transition-all cursor-pointer shadow-sm active:scale-95"
-                    title="Heading 3"
-                  >
-                    H3
-                  </button>
-                  <button 
-                    type="button" 
-                    id="btn-p" 
-                    class="px-1.5 h-7 flex items-center justify-center bg-white hover:bg-slate-100 border border-slate-200/50 rounded-md text-[10px] font-normal text-slate-700 hover:text-slate-900 transition-all cursor-pointer shadow-sm active:scale-95"
-                    title="Paragraph"
-                  >
-                    P
-                  </button>
+              <label for="blog-editor" class="text-[10px] text-slate-500 uppercase tracking-wide">Article Content *</label>
+              <link href="https://cdn.jsdelivr.net/npm/quill@2.0.2/dist/quill.snow.css" rel="stylesheet" />
+              <script src="https://cdn.jsdelivr.net/npm/quill@2.0.2/dist/quill.js" is:inline></script>
+
+              <input type="hidden" name="content" id="blog-content" value={editingPost?.content || ""} />
+              <div class="border border-slate-200 rounded-xl overflow-hidden bg-slate-50">
+                <div id="blog-editor" class="min-h-[300px] text-slate-800 text-xs font-sans font-normal text-left">
+                  <div set:html={editingPost?.content || ""} />
                 </div>
               </div>
-              <input type="hidden" name="content" id="blog-content" value={editingPost?.content || ""} />
-              <div 
-                id="blog-editor"
-                contenteditable="true"
-                data-placeholder="Write your blog post content here... Highlight text to apply formatting."
-                class="w-full px-3.5 py-3 rounded-lg border border-slate-200 bg-slate-50 text-slate-800 focus:outline-none focus:ring-1 focus:ring-indigo-500 font-sans font-normal text-xs leading-relaxed min-h-[320px] overflow-y-auto max-h-[500px] prose prose-slate text-left"
-                set:html={editingPost?.content || ""}
-              />
             </div>
 
             {/* FAQ Section */}
@@ -493,44 +449,39 @@ try {
   }
 
   function setupBlogAdmin() {
-    // Text formatting controls (Bold, Italic, Headings, Paragraph)
-    const editor = document.getElementById('blog-editor') as HTMLDivElement | null;
-    const btnBold = document.getElementById('btn-bold');
-    const btnItalic = document.getElementById('btn-italic');
-    const btnH2 = document.getElementById('btn-h2');
-    const btnH3 = document.getElementById('btn-h3');
-    const btnP = document.getElementById('btn-p');
+    // Initialize Quill Editor
+    const editorEl = document.getElementById('blog-editor');
+    const hiddenInput = document.getElementById('blog-content') as HTMLInputElement;
 
-    if (editor) {
-      // Force paragraphs on enter press
-      try {
-        document.execCommand('defaultParagraphSeparator', false, 'p');
-      } catch (e) {}
+    if (editorEl && typeof (window as any).Quill !== 'undefined') {
+      // Clear any previous Quill toolbar to prevent duplicate renders across transitions
+      const toolbarEl = editorEl.previousElementSibling;
+      if (toolbarEl && toolbarEl.classList.contains('ql-toolbar')) {
+        toolbarEl.remove();
+      }
 
-      const executeFormat = (command: string, value: string = '') => {
-        editor.focus();
-        document.execCommand(command, false, value);
-      };
+      const quill = new (window as any).Quill(editorEl, {
+        theme: 'snow',
+        placeholder: 'Write your blog post content here... Highlight text to apply bold, italic, headings, or lists.',
+        modules: {
+          toolbar: [
+            ['bold', 'italic'],
+            [{ 'header': 2 }, { 'header': 3 }],
+            [{ 'list': 'ordered'}, { 'list': 'bullet' }],
+            ['clean']
+          ]
+        }
+      });
 
-      const bindButton = (btn: HTMLElement | null, command: string, value: string = '') => {
-        if (!btn) return;
-        
-        btn.addEventListener('mousedown', (e) => {
-          e.preventDefault();
-          executeFormat(command, value);
-        });
+      // Save initial value
+      if (hiddenInput && hiddenInput.value) {
+        quill.root.innerHTML = hiddenInput.value;
+      }
 
-        btn.addEventListener('click', (e) => {
-          e.preventDefault();
-          executeFormat(command, value);
-        });
-      };
-
-      bindButton(btnBold, 'bold');
-      bindButton(btnItalic, 'italic');
-      bindButton(btnH2, 'formatBlock', '<h2>');
-      bindButton(btnH3, 'formatBlock', '<h3>');
-      bindButton(btnP, 'formatBlock', '<p>');
+      // Sync content back to hidden field on change
+      quill.on('text-change', () => {
+        hiddenInput.value = quill.root.innerHTML;
+      });
     }
 
     // Auto-generate slug from title
@@ -646,16 +597,16 @@ try {
 
         // Ensure FAQ hidden and content editor values are updated
         updateFaqHidden();
-        const editor = document.getElementById('blog-editor');
+        const editorEl = document.getElementById('blog-editor');
         const hiddenInput = document.getElementById('blog-content') as HTMLInputElement;
-        if (editor && hiddenInput) {
-          hiddenInput.value = editor.innerHTML.trim();
+        const qlEditor = editorEl?.querySelector('.ql-editor');
+        if (qlEditor && hiddenInput) {
+          hiddenInput.value = qlEditor.innerHTML.trim();
         }
 
         // Validate that editor has some content
-        const textContent = editor ? editor.textContent?.trim() : '';
-        const htmlContent = editor ? editor.innerHTML.trim() : '';
-        if (!textContent && !htmlContent.includes('<img') && !htmlContent.includes('<iframe')) {
+        const textContent = qlEditor ? qlEditor.textContent?.trim() : '';
+        if (!textContent && (!qlEditor || !qlEditor.querySelector('img, iframe'))) {
           alert("Article Content is required.");
           if (submitBtn) {
             submitBtn.disabled = false;
@@ -757,10 +708,34 @@ try {
 </script>
 
 <style is:global>
-  #blog-editor[contenteditable="true"]:empty::before {
-    content: attr(data-placeholder);
-    color: #94a3b8; /* slate-400 */
-    font-style: italic;
-    cursor: text;
+  /* Quill border overrides to match our design system */
+  .ql-toolbar.ql-snow {
+    border: 1px solid #e2e8f0 !important; /* border-slate-200 */
+    border-top-left-radius: 12px !important;
+    border-top-right-radius: 12px !important;
+    background-color: #ffffff !important;
+    padding: 6px 12px !important;
+  }
+  .ql-container.ql-snow {
+    border: 1px solid #e2e8f0 !important; /* border-slate-200 */
+    border-top: none !important;
+    border-bottom-left-radius: 12px !important;
+    border-bottom-right-radius: 12px !important;
+    background-color: #f8fafc !important; /* bg-slate-50 */
+    font-family: inherit !important;
+    font-size: 0.75rem !important; /* text-xs */
+  }
+  .ql-editor {
+    min-height: 300px !important;
+    max-height: 500px !important;
+    overflow-y: auto !important;
+    line-height: 1.625 !important;
+    color: #1e293b !important; /* text-slate-800 */
+  }
+  .ql-editor.ql-blank::before {
+    font-style: italic !important;
+    color: #94a3b8 !important; /* text-slate-400 */
+    font-size: 0.75rem !important;
+    left: 15px !important;
   }
 </style>
