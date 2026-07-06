@@ -1,0 +1,655 @@
+---
+import Layout from "../../layouts/Layout.astro";
+import AdminHeader from "../../components/AdminHeader.astro";
+import { checkAdminAuth } from "../../utils/adminAuth";
+import { supabase } from "../../utils/supabase";
+
+// Inline SVG helpers — no lucide-react in .astro (SSR hook errors)
+const _s = (d: string) => `<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${d}</svg>`;
+const SVG = {
+  Trash2: _s('<path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/><line x1="10" x2="10" y1="11" y2="17"/><line x1="14" x2="14" y1="11" y2="17"/>'),
+  Plus: _s('<path d="M12 5v14"/><path d="M5 12h14"/>'),
+  Edit: _s('<path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/>'),
+  ShieldAlert: _s('<path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="M12 8v4"/><path d="M12 16h.01"/>'),
+  Eye: _s('<path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>'),
+  EyeOff: _s('<path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/>'),
+};
+
+// Check session
+const isAuthenticated = await checkAdminAuth(Astro.cookies);
+if (!isAuthenticated) {
+  return Astro.redirect("/admin");
+}
+
+let blogPosts: any[] = [];
+let successMessage = "";
+let errorMessage = "";
+let editingPost: any = null;
+
+// Handle server actions (Add / Edit / Delete / Toggle)
+if (Astro.request.method === "POST") {
+  try {
+    const formData = await Astro.request.formData();
+    const action = formData.get("action");
+
+    if (action === "delete-blog") {
+      const id = parseInt(formData.get("id")?.toString() || "0");
+      const { error } = await supabase
+        .from('blog_posts')
+        .delete()
+        .eq('id', id);
+
+      if (error) throw error;
+      successMessage = "Blog post deleted successfully.";
+
+    } else if (action === "toggle-publish") {
+      const id = parseInt(formData.get("id")?.toString() || "0");
+      const currentStatus = formData.get("current_status")?.toString() === "true";
+      const { error } = await supabase
+        .from('blog_posts')
+        .update({ is_published: !currentStatus })
+        .eq('id', id);
+
+      if (error) throw error;
+      successMessage = `Blog post ${!currentStatus ? 'published' : 'unpublished'} successfully.`;
+
+    } else if (action === "add-blog" || action === "edit-blog") {
+      const title = formData.get("title")?.toString().trim();
+      const slug = formData.get("slug")?.toString().trim();
+      const description = formData.get("description")?.toString().trim();
+      const date = formData.get("date")?.toString().trim();
+      const tag = formData.get("tag")?.toString().trim();
+      const tagColor = formData.get("tag_color")?.toString().trim();
+      const content = formData.get("content")?.toString().trim();
+      const faqJson = formData.get("faq")?.toString().trim();
+      const isPublished = formData.get("is_published") === "on";
+
+      if (title && slug && description && date && tag && tagColor && content) {
+        // Build tag_bg classes
+        let tagBg = "bg-blue-50 border-blue-100 text-blue-700";
+        const colorMap: Record<string, string> = {
+          blue: "bg-blue-50 border-blue-100 text-blue-700",
+          purple: "bg-purple-50 border-purple-100 text-purple-700",
+          emerald: "bg-emerald-50 border-emerald-100 text-emerald-700",
+          red: "bg-red-50 border-red-100 text-red-700",
+          indigo: "bg-indigo-50 border-indigo-100 text-indigo-700",
+          amber: "bg-amber-50 border-amber-100 text-amber-700",
+          rose: "bg-rose-50 border-rose-100 text-rose-700",
+          cyan: "bg-cyan-50 border-cyan-100 text-cyan-700",
+        };
+        tagBg = colorMap[tagColor] || tagBg;
+
+        // Parse FAQ
+        let faq: any[] = [];
+        if (faqJson) {
+          try {
+            faq = JSON.parse(faqJson);
+          } catch { faq = []; }
+        }
+
+        const postData = {
+          slug,
+          title,
+          description,
+          date,
+          tag,
+          tag_bg: tagBg,
+          content,
+          faq,
+          is_published: isPublished,
+        };
+
+        if (action === "edit-blog") {
+          const id = parseInt(formData.get("id")?.toString() || "0");
+          const { error } = await supabase
+            .from('blog_posts')
+            .update(postData)
+            .eq('id', id);
+
+          if (error) throw error;
+          successMessage = "Blog post updated successfully.";
+        } else {
+          const { error } = await supabase
+            .from('blog_posts')
+            .insert(postData);
+
+          if (error) throw error;
+          successMessage = "Blog post created successfully.";
+        }
+      } else {
+        errorMessage = "Please fill in all required blog post fields.";
+      }
+    }
+  } catch (err: any) {
+    console.error("Action error on blogs page:", err);
+    errorMessage = `Action failed: ${err.message || "Unknown error"}`;
+  }
+}
+
+// Check if editing
+const editId = Astro.url.searchParams.get("edit");
+if (editId) {
+  const { data } = await supabase
+    .from('blog_posts')
+    .select('*')
+    .eq('id', parseInt(editId))
+    .maybeSingle();
+  if (data) editingPost = data;
+}
+
+// Fetch all blog posts
+try {
+  const { data, error } = await supabase
+    .from('blog_posts')
+    .select('*')
+    .order('id', { ascending: false });
+
+  if (error) throw error;
+  blogPosts = data || [];
+} catch (err) {
+  console.error("Failed to load blog posts:", err);
+  errorMessage = "Failed to load database records.";
+}
+---
+
+<Layout 
+  title="Manage Blog Posts | TESCA Admin"
+  description="Administrative portal to create and manage blog articles."
+  showNavFooter={false}
+>
+  <div class="min-h-screen bg-slate-50 text-slate-800 font-sans flex flex-col lg:flex-row">
+    <AdminHeader activeTab="blogs" />
+
+    <main class="flex-1 px-4 md:px-8 py-10 overflow-y-auto text-left lg:ml-64">
+      
+      {/* Title block */}
+      <div class="mb-10">
+        <h1 class="text-3xl font-extrabold font-display tracking-tight text-slate-800">
+          Blog Post Manager
+        </h1>
+        <p class="text-slate-500 text-xs mt-1">Create, edit, and publish blog articles that appear on the public blog page.</p>
+      </div>
+
+      {/* Messages */}
+      {errorMessage && (
+        <div class="admin-alert-banner p-4 bg-rose-50 border border-rose-200 rounded-2xl text-rose-600 text-xs font-semibold mb-6 flex items-center gap-2">
+          <span set:html={SVG.ShieldAlert} class="shrink-0" />
+          <span>{errorMessage}</span>
+        </div>
+      )}
+      {successMessage && (
+        <div class="admin-alert-banner p-4 bg-emerald-50 border border-emerald-200 rounded-2xl text-emerald-600 text-xs font-semibold mb-6">
+          {successMessage}
+        </div>
+      )}
+
+      <div class="grid grid-cols-1 xl:grid-cols-12 gap-8 items-start">
+        
+        {/* Form panel (5 cols) */}
+        <div class="xl:col-span-5 bg-white border border-slate-200 rounded-3xl p-6 shadow-sm">
+          <h2 class="text-base font-bold text-slate-800 mb-4 flex items-center gap-2">
+            <span set:html={editingPost ? SVG.Edit : SVG.Plus} class="text-indigo-600" />
+            {editingPost ? "Edit Blog Post" : "Create New Blog Post"}
+          </h2>
+          
+          <form method="POST" class="space-y-4 text-xs font-semibold text-slate-600" id="blog-form">
+            <input type="hidden" name="action" value={editingPost ? "edit-blog" : "add-blog"} />
+            {editingPost && <input type="hidden" name="id" value={editingPost.id} />}
+            
+            <div class="space-y-1.5">
+              <label for="blog-title" class="text-[10px] text-slate-500 uppercase tracking-wide">Post Title *</label>
+              <input 
+                type="text" 
+                id="blog-title" 
+                name="title" 
+                required 
+                value={editingPost?.title || ""}
+                class="w-full px-3 py-2.5 rounded-lg border border-slate-200 bg-slate-50 text-slate-800 focus:outline-none focus:ring-1 focus:ring-indigo-500" 
+                placeholder="e.g. How to Score 7.5+ in IELTS" 
+              />
+            </div>
+
+            <div class="space-y-1.5">
+              <label for="blog-slug" class="text-[10px] text-slate-500 uppercase tracking-wide">URL Slug * <span class="text-slate-400 normal-case">(auto-generated from title)</span></label>
+              <input 
+                type="text" 
+                id="blog-slug" 
+                name="slug" 
+                required 
+                value={editingPost?.slug || ""}
+                class="w-full px-3 py-2.5 rounded-lg border border-slate-200 bg-slate-50 text-slate-800 focus:outline-none focus:ring-1 focus:ring-indigo-500 font-mono text-[11px]" 
+                placeholder="how-to-score-seven-point-five-in-ielts" 
+              />
+            </div>
+
+            <div class="space-y-1.5">
+              <label for="blog-desc" class="text-[10px] text-slate-500 uppercase tracking-wide">Short Description *</label>
+              <textarea 
+                id="blog-desc" 
+                name="description" 
+                required 
+                rows="2" 
+                class="w-full px-3 py-2.5 rounded-lg border border-slate-200 bg-slate-50 text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                placeholder="A brief summary shown on blog listing cards..."
+              >{editingPost?.description || ""}</textarea>
+            </div>
+
+            <div class="grid grid-cols-2 gap-3">
+              <div class="space-y-1.5">
+                <label for="blog-date" class="text-[10px] text-slate-500 uppercase tracking-wide">Publish Date *</label>
+                <input 
+                  type="text" 
+                  id="blog-date" 
+                  name="date" 
+                  required 
+                  value={editingPost?.date || ""}
+                  class="w-full px-3 py-2.5 rounded-lg border border-slate-200 bg-slate-50 text-slate-800 focus:outline-none focus:ring-1 focus:ring-indigo-500" 
+                  placeholder="e.g. Jul 06, 2026" 
+                />
+              </div>
+              
+              <div class="space-y-1.5">
+                <label for="blog-tag" class="text-[10px] text-slate-500 uppercase tracking-wide">Tag Label *</label>
+                <input 
+                  type="text" 
+                  id="blog-tag" 
+                  name="tag" 
+                  required 
+                  value={editingPost?.tag || ""}
+                  class="w-full px-3 py-2.5 rounded-lg border border-slate-200 bg-slate-50 text-slate-800 focus:outline-none focus:ring-1 focus:ring-indigo-500" 
+                  placeholder="e.g. STUDY PREP" 
+                />
+              </div>
+            </div>
+
+            <div class="space-y-1.5">
+              <label for="blog-color" class="text-[10px] text-slate-500 uppercase tracking-wide">Tag Color Theme *</label>
+              <select 
+                id="blog-color" 
+                name="tag_color" 
+                class="w-full px-3 py-2.5 rounded-lg border border-slate-200 bg-slate-50 text-slate-800 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+              >
+                <option value="blue" selected={editingPost?.tag_bg?.includes('blue')}>Blue (Study)</option>
+                <option value="purple" selected={editingPost?.tag_bg?.includes('purple')}>Purple (Guides)</option>
+                <option value="emerald" selected={editingPost?.tag_bg?.includes('emerald')}>Emerald (Success)</option>
+                <option value="red" selected={editingPost?.tag_bg?.includes('red')}>Red (Visa)</option>
+                <option value="indigo" selected={editingPost?.tag_bg?.includes('indigo')}>Indigo (Finance)</option>
+                <option value="amber" selected={editingPost?.tag_bg?.includes('amber')}>Amber (Alerts)</option>
+                <option value="rose" selected={editingPost?.tag_bg?.includes('rose')}>Rose (Intake)</option>
+                <option value="cyan" selected={editingPost?.tag_bg?.includes('cyan')}>Cyan (Info)</option>
+              </select>
+            </div>
+
+            <div class="space-y-1.5">
+              <label for="blog-content" class="text-[10px] text-slate-500 uppercase tracking-wide">Article Content (HTML) *</label>
+              <textarea 
+                id="blog-content" 
+                name="content" 
+                required 
+                rows="10" 
+                class="w-full px-3 py-2.5 rounded-lg border border-slate-200 bg-slate-50 text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-1 focus:ring-indigo-500 font-mono text-[11px] leading-relaxed"
+                placeholder="<h2>Your Article Title</h2><p>Article content with HTML formatting...</p>"
+              >{editingPost?.content || ""}</textarea>
+            </div>
+
+            {/* FAQ Section */}
+            <div class="space-y-2">
+              <label class="text-[10px] text-slate-500 uppercase tracking-wide">FAQ Entries (Optional)</label>
+              <div id="faq-container" class="space-y-2">
+                {/* FAQ entries rendered by JS or from editing data */}
+              </div>
+              <input type="hidden" name="faq" id="faq-hidden" value={editingPost?.faq ? JSON.stringify(editingPost.faq) : "[]"} />
+              <button 
+                type="button" 
+                id="add-faq-btn"
+                class="text-[10px] font-bold text-indigo-600 hover:text-indigo-500 transition-colors flex items-center gap-1 cursor-pointer bg-transparent border-none"
+              >
+                <span set:html={SVG.Plus} /> Add FAQ Entry
+              </button>
+            </div>
+
+            {/* Published checkbox */}
+            <div class="flex items-center gap-2 pt-2">
+              <input 
+                type="checkbox" 
+                id="blog-published" 
+                name="is_published" 
+                checked={editingPost ? editingPost.is_published : true}
+                class="w-4 h-4 rounded border-slate-300 text-indigo-600 focus:ring-indigo-500"
+              />
+              <label for="blog-published" class="text-xs text-slate-600 font-semibold">Publish immediately</label>
+            </div>
+
+            <div class="flex gap-3 pt-2">
+              <button type="submit" class="flex-1 py-3 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-xl transition-all cursor-pointer shadow-md hover:scale-[1.01]">
+                {editingPost ? "Update Blog Post" : "Create Blog Post"}
+              </button>
+              {editingPost && (
+                <a href="/admin/blogs" class="py-3 px-5 bg-slate-100 hover:bg-slate-200 text-slate-600 font-bold rounded-xl transition-all text-center text-xs flex items-center">
+                  Cancel
+                </a>
+              )}
+            </div>
+          </form>
+        </div>
+
+        {/* List panel (7 cols) */}
+        <div class="xl:col-span-7 space-y-4">
+          <h2 class="text-base font-bold text-slate-800">
+            All Blog Posts ({blogPosts.length})
+          </h2>
+
+          {blogPosts.length === 0 ? (
+            <div class="bg-white border border-slate-200 rounded-3xl p-10 text-center">
+              <p class="text-xs text-slate-500">No blog posts found in database. Create your first post using the form.</p>
+            </div>
+          ) : (
+            <div class="bg-white border border-slate-200 rounded-3xl overflow-hidden shadow-sm max-h-[75vh] overflow-y-auto">
+              <div class="overflow-x-auto w-full">
+                <table class="w-full min-w-[700px] text-left border-collapse text-xs">
+                  <thead>
+                    <tr class="bg-slate-50 text-slate-500 border-b border-slate-200 font-bold uppercase tracking-wider">
+                      <th class="px-5 py-4 w-[250px]">Title</th>
+                      <th class="px-4 py-4 w-[100px]">Tag</th>
+                      <th class="px-4 py-4 w-[100px]">Date</th>
+                      <th class="px-4 py-4 w-[80px]">Status</th>
+                      <th class="px-4 py-4 text-right w-[130px]">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody class="divide-y divide-slate-100 font-sans text-xs">
+                    {blogPosts.map((post) => (
+                      <tr class="hover:bg-slate-50 transition-colors">
+                        <td class="px-5 py-4 font-semibold text-slate-700">
+                          <div class="truncate max-w-[230px]" title={post.title}>{post.title}</div>
+                          <div class="text-[10px] text-slate-400 font-mono mt-0.5 truncate max-w-[230px]">/{post.slug}</div>
+                        </td>
+                        <td class="px-4 py-4 whitespace-nowrap">
+                          <span class={`text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded border ${post.tag_bg}`}>
+                            {post.tag}
+                          </span>
+                        </td>
+                        <td class="px-4 py-4 text-slate-600 whitespace-nowrap">{post.date}</td>
+                        <td class="px-4 py-4 whitespace-nowrap">
+                          <form method="POST" class="inline toggle-publish-form">
+                            <input type="hidden" name="action" value="toggle-publish" />
+                            <input type="hidden" name="id" value={post.id} />
+                            <input type="hidden" name="current_status" value={String(post.is_published)} />
+                            <button
+                              type="submit"
+                              class={`inline-flex items-center gap-1 px-2 py-1 rounded-lg text-[10px] font-bold transition-all cursor-pointer border ${
+                                post.is_published 
+                                  ? 'bg-emerald-50 text-emerald-700 border-emerald-200 hover:bg-emerald-100' 
+                                  : 'bg-slate-100 text-slate-500 border-slate-200 hover:bg-slate-200'
+                              }`}
+                              title={post.is_published ? "Click to unpublish" : "Click to publish"}
+                            >
+                              <span set:html={post.is_published ? SVG.Eye : SVG.EyeOff} />
+                              {post.is_published ? "Live" : "Draft"}
+                            </button>
+                          </form>
+                        </td>
+                        <td class="px-4 py-4 text-right whitespace-nowrap">
+                          <div class="flex items-center justify-end gap-2">
+                            <a
+                              href={`/admin/blogs?edit=${post.id}`}
+                              class="p-2 text-indigo-500 hover:bg-indigo-50 rounded-lg hover:scale-105 transition-all border border-transparent hover:border-indigo-200"
+                              aria-label="Edit post"
+                            >
+                              <span set:html={SVG.Edit} />
+                            </a>
+                            <form method="POST" class="inline delete-blog-form">
+                              <input type="hidden" name="action" value="delete-blog" />
+                              <input type="hidden" name="id" value={post.id} />
+                              <button
+                                type="submit"
+                                class="p-2 text-rose-500 hover:bg-rose-50 rounded-lg hover:scale-105 transition-all cursor-pointer border border-transparent hover:border-rose-200"
+                                aria-label="Delete post"
+                              >
+                                <span set:html={SVG.Trash2} />
+                              </button>
+                            </form>
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          )}
+        </div>
+
+      </div>
+
+    </main>
+  </div>
+</Layout>
+
+<script>
+  async function handleResponse(res: Response, successMsg: string) {
+    if (res.ok) {
+      const htmlText = await res.text();
+      const parser = new DOMParser();
+      const doc = parser.parseFromString(htmlText, "text/html");
+      const errorBanner = doc.querySelector(".bg-rose-50");
+      if (errorBanner) {
+        alert("Error: " + errorBanner.textContent?.trim());
+        return false;
+      }
+      sessionStorage.setItem("admin_alert", JSON.stringify({
+        type: "success",
+        message: successMsg
+      }));
+      window.location.href = "/admin/blogs";
+      return true;
+    }
+    alert("Request failed. Please try again.");
+    return false;
+  }
+
+  function setupBlogAdmin() {
+    // Auto-generate slug from title
+    const titleInput = document.getElementById('blog-title') as HTMLInputElement;
+    const slugInput = document.getElementById('blog-slug') as HTMLInputElement;
+    
+    if (titleInput && slugInput) {
+      // Only auto-generate slug if not editing (slug is empty)
+      const isEditing = !!document.querySelector('input[name="action"][value="edit-blog"]');
+      
+      if (!isEditing) {
+        titleInput.addEventListener('input', () => {
+          const slug = titleInput.value
+            .toLowerCase()
+            .replace(/[^a-z0-9\s-]/g, '')
+            .replace(/\s+/g, '-')
+            .replace(/-+/g, '-')
+            .replace(/^-|-$/g, '');
+          slugInput.value = slug;
+        });
+      }
+    }
+
+    // FAQ Management
+    const faqContainer = document.getElementById('faq-container');
+    const faqHidden = document.getElementById('faq-hidden') as HTMLInputElement;
+    const addFaqBtn = document.getElementById('add-faq-btn');
+
+    let faqEntries: { q: string; a: string }[] = [];
+
+    // Load existing FAQ data
+    if (faqHidden?.value) {
+      try {
+        faqEntries = JSON.parse(faqHidden.value);
+      } catch { faqEntries = []; }
+    }
+
+    function renderFaqEntries() {
+      if (!faqContainer) return;
+      faqContainer.innerHTML = '';
+      
+      faqEntries.forEach((entry, index) => {
+        const div = document.createElement('div');
+        div.className = 'p-3 bg-slate-50 border border-slate-200 rounded-xl space-y-2';
+        div.innerHTML = `
+          <div class="flex justify-between items-center">
+            <span class="text-[10px] font-bold text-slate-500 uppercase">FAQ #${index + 1}</span>
+            <button type="button" class="text-rose-500 hover:text-rose-700 text-[10px] font-bold cursor-pointer bg-transparent border-none faq-remove-btn" data-index="${index}">Remove</button>
+          </div>
+          <input type="text" placeholder="Question" value="${entry.q.replace(/"/g, '&quot;')}" class="w-full px-2.5 py-2 rounded-lg border border-slate-200 bg-white text-slate-800 text-xs focus:outline-none focus:ring-1 focus:ring-indigo-500 faq-q-input" data-index="${index}" />
+          <input type="text" placeholder="Answer" value="${entry.a.replace(/"/g, '&quot;')}" class="w-full px-2.5 py-2 rounded-lg border border-slate-200 bg-white text-slate-800 text-xs focus:outline-none focus:ring-1 focus:ring-indigo-500 faq-a-input" data-index="${index}" />
+        `;
+        faqContainer.appendChild(div);
+      });
+
+      // Bind remove buttons
+      faqContainer.querySelectorAll('.faq-remove-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const idx = parseInt(btn.getAttribute('data-index') || '0');
+          faqEntries.splice(idx, 1);
+          updateFaqHidden();
+          renderFaqEntries();
+        });
+      });
+
+      // Bind input changes
+      faqContainer.querySelectorAll('.faq-q-input').forEach(input => {
+        input.addEventListener('input', () => {
+          const idx = parseInt(input.getAttribute('data-index') || '0');
+          faqEntries[idx].q = (input as HTMLInputElement).value;
+          updateFaqHidden();
+        });
+      });
+
+      faqContainer.querySelectorAll('.faq-a-input').forEach(input => {
+        input.addEventListener('input', () => {
+          const idx = parseInt(input.getAttribute('data-index') || '0');
+          faqEntries[idx].a = (input as HTMLInputElement).value;
+          updateFaqHidden();
+        });
+      });
+    }
+
+    function updateFaqHidden() {
+      if (faqHidden) {
+        faqHidden.value = JSON.stringify(faqEntries);
+      }
+    }
+
+    if (addFaqBtn) {
+      addFaqBtn.addEventListener('click', () => {
+        faqEntries.push({ q: '', a: '' });
+        updateFaqHidden();
+        renderFaqEntries();
+      });
+    }
+
+    // Initial render
+    renderFaqEntries();
+
+    // Handle the main blog form
+    const blogForm = document.getElementById('blog-form') as HTMLFormElement;
+    if (blogForm && !(blogForm as any)._ajaxBound) {
+      (blogForm as any)._ajaxBound = true;
+      blogForm.addEventListener("submit", async (e) => {
+        e.preventDefault();
+        const submitBtn = blogForm.querySelector('button[type="submit"]') as HTMLButtonElement;
+        const originalText = submitBtn?.textContent || '';
+        if (submitBtn) {
+          submitBtn.disabled = true;
+          submitBtn.textContent = 'Saving...';
+        }
+
+        // Ensure FAQ hidden is updated
+        updateFaqHidden();
+
+        const formData = new FormData(blogForm);
+        try {
+          const res = await fetch(window.location.pathname, {
+            method: "POST",
+            body: formData
+          });
+          const isEdit = formData.get('action') === 'edit-blog';
+          await handleResponse(res, isEdit ? "Blog post updated successfully." : "Blog post created successfully.");
+        } catch (err) {
+          console.error("AJAX error:", err);
+          alert("An error occurred. Please try again.");
+        } finally {
+          if (submitBtn) {
+            submitBtn.disabled = false;
+            submitBtn.textContent = originalText;
+          }
+        }
+      });
+    }
+
+    // Handle delete forms
+    const deleteForms = document.querySelectorAll("form.delete-blog-form");
+    deleteForms.forEach(form => {
+      if ((form as any)._ajaxBound) return;
+      (form as any)._ajaxBound = true;
+
+      form.addEventListener("submit", async (e) => {
+        e.preventDefault();
+        if (!confirm("Are you sure you want to delete this blog post? This cannot be undone.")) return;
+
+        const btn = form.querySelector('button[type="submit"]') as HTMLElement;
+        (window as any).showBtnLoader?.(btn);
+
+        const params = new URLSearchParams();
+        form.querySelectorAll("input[name]").forEach((el) => {
+          const input = el as HTMLInputElement;
+          params.append(input.name, input.value);
+        });
+
+        try {
+          const res = await fetch(window.location.pathname, {
+            method: "POST",
+            headers: { "Content-Type": "application/x-www-form-urlencoded" },
+            body: params
+          });
+          await handleResponse(res, "Blog post deleted successfully.");
+        } catch (err) {
+          console.error("AJAX error:", err);
+          alert("An error occurred. Please try again.");
+        } finally {
+          if (btn) {
+            (window as any).hideBtnLoader?.(btn);
+          }
+        }
+      });
+    });
+
+    // Handle toggle publish forms
+    const toggleForms = document.querySelectorAll("form.toggle-publish-form");
+    toggleForms.forEach(form => {
+      if ((form as any)._ajaxBound) return;
+      (form as any)._ajaxBound = true;
+
+      form.addEventListener("submit", async (e) => {
+        e.preventDefault();
+
+        const params = new URLSearchParams();
+        form.querySelectorAll("input[name]").forEach((el) => {
+          const input = el as HTMLInputElement;
+          params.append(input.name, input.value);
+        });
+
+        try {
+          const res = await fetch(window.location.pathname, {
+            method: "POST",
+            headers: { "Content-Type": "application/x-www-form-urlencoded" },
+            body: params
+          });
+          const currentStatus = params.get('current_status') === 'true';
+          await handleResponse(res, `Blog post ${!currentStatus ? 'published' : 'unpublished'} successfully.`);
+        } catch (err) {
+          console.error("AJAX error:", err);
+          alert("An error occurred. Please try again.");
+        }
+      });
+    });
+  }
+
+  setupBlogAdmin();
+  document.addEventListener("astro:page-load", setupBlogAdmin);
+</script>

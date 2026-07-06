@@ -8,7 +8,33 @@ const SVG = {
   ArrowUpRight: `<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="inline-block"><line x1="7" x2="17" y1="17" y2="7"/><polyline points="7 7 17 7 17 17"/></svg>`
 };
 
-import { blogPosts } from "../data/blog";
+import { blogPosts as staticBlogPosts } from "../data/blog";
+
+// Fetch blog posts from Supabase (with static fallback)
+let blogPosts = staticBlogPosts;
+try {
+  const { data: dbPosts, error: blogError } = await supabase
+    .from('blog_posts')
+    .select('*')
+    .eq('is_published', true)
+    .order('id', { ascending: false });
+
+  if (!blogError && dbPosts && dbPosts.length > 0) {
+    blogPosts = dbPosts.map(p => ({
+      slug: p.slug,
+      title: p.title,
+      desc: p.description,
+      date: p.date,
+      tag: p.tag,
+      tagBg: p.tag_bg,
+      link: `/blog/${p.slug}`,
+      content: p.content,
+      faq: p.faq || [],
+    }));
+  }
+} catch (err) {
+  console.error("Failed to fetch blog posts from Supabase, using static fallback:", err);
+}
 
 let visaUpdates = [];
 try {

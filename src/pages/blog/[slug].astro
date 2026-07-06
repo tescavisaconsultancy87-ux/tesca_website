@@ -1,22 +1,59 @@
 ---
-export const prerender = true;
 import Layout from "../../layouts/Layout.astro";
 import AICounsellor from "../../components/AICounsellor";
-import { blogPosts, type BlogPost } from "../../data/blog";
+import { blogPosts as staticBlogPosts, type BlogPost } from "../../data/blog";
+import { supabase } from "../../utils/supabase";
 
-export async function getStaticPaths() {
-  return blogPosts.map((post) => ({
-    params: { slug: post.slug },
-    props: { post },
-  }));
+const { slug } = Astro.params;
+
+// Try to fetch from Supabase first, then fall back to static data
+let post: BlogPost | null = null;
+
+try {
+  const { data, error } = await supabase
+    .from('blog_posts')
+    .select('*')
+    .eq('slug', slug)
+    .eq('is_published', true)
+    .maybeSingle();
+
+  if (!error && data) {
+    post = {
+      slug: data.slug,
+      title: data.title,
+      desc: data.description,
+      date: data.date,
+      tag: data.tag,
+      tagBg: data.tag_bg,
+      link: `/blog/${data.slug}`,
+      content: data.content,
+      faq: data.faq || [],
+    };
+  }
+} catch (err) {
+  console.error("Failed to fetch blog post from Supabase:", err);
 }
 
-const { post } = Astro.props as { post: BlogPost };
+// Fallback to static data
+if (!post) {
+  const staticPost = staticBlogPosts.find(p => p.slug === slug);
+  if (staticPost) {
+    post = staticPost;
+  }
+}
 
-const faqSchema = post.faq ? {
+// Return 404 if post not found
+if (!post) {
+  return Astro.redirect("/404");
+}
+
+// TypeScript narrowing: post is guaranteed non-null after the redirect above
+const resolvedPost = post as BlogPost;
+
+const faqSchema = resolvedPost.faq && resolvedPost.faq.length > 0 ? {
   "@context": "https://schema.org",
   "@type": "FAQPage",
-  "mainEntity": post.faq.map(item => ({
+  "mainEntity": resolvedPost.faq.map(item => ({
     "@type": "Question",
     "name": item.q,
     "acceptedAnswer": {
@@ -29,9 +66,9 @@ const faqSchema = post.faq ? {
 const articleSchema = {
   "@context": "https://schema.org",
   "@type": "Article",
-  "headline": post.title,
-  "description": post.desc,
-  "datePublished": new Date(post.date).toISOString().split('T')[0],
+  "headline": resolvedPost.title,
+  "description": resolvedPost.desc,
+  "datePublished": new Date(resolvedPost.date).toISOString().split('T')[0],
   "author": {
     "@type": "Organization",
     "name": "TESCA Visa Consultancy"
@@ -54,8 +91,8 @@ const SVG = {
 ---
 
 <Layout
-  title={`${post.title} | TESCA Blog`}
-  description={post.desc}
+  title={`${resolvedPost.title} | TESCA Blog`}
+  description={resolvedPost.desc}
 >
   <script type="application/ld+json" set:html={JSON.stringify(articleSchema)} />
   {faqSchema && <script type="application/ld+json" set:html={JSON.stringify(faqSchema)} />}
@@ -70,25 +107,25 @@ const SVG = {
     <!-- Header Meta Area -->
     <div class="space-y-4 mb-8">
       <div class="flex items-center gap-3">
-        <span class={`text-[10px] font-bold uppercase tracking-wider px-2.5 py-0.5 rounded border ${post.tagBg}`}>
-          {post.tag}
+        <span class={`text-[10px] font-bold uppercase tracking-wider px-2.5 py-0.5 rounded border ${resolvedPost.tagBg}`}>
+          {resolvedPost.tag}
         </span>
         <span class="text-xs text-slate-400 flex items-center">
-          <span set:html={SVG.Calendar} /> {post.date}
+          <span set:html={SVG.Calendar} /> {resolvedPost.date}
         </span>
       </div>
       <h1 class="text-[30px] sm:text-[40px] font-extrabold text-support-white tracking-tight leading-tight">
-        {post.title}
+        {resolvedPost.title}
       </h1>
       <p class="text-base text-support-gray leading-relaxed font-normal italic">
-        {post.desc}
+        {resolvedPost.desc}
       </p>
     </div>
 
     <!-- Article Content Card -->
     <div class="glass-card rounded-[2rem] p-8 md:p-12 bg-white border border-slate-200/80 shadow-md mb-12">
       <article class="prose prose-slate max-w-none prose-sm sm:prose-base font-normal text-slate-650 leading-relaxed space-y-6">
-        <div set:html={post.content} />
+        <div set:html={resolvedPost.content} />
       </article>
     </div>
 
@@ -113,11 +150,11 @@ const SVG = {
     </div>
 
     <!-- FAQs Section -->
-    {post.faq && post.faq.length > 0 && (
+    {resolvedPost.faq && resolvedPost.faq.length > 0 && (
       <div class="space-y-6">
         <h2 class="text-xl font-bold font-display text-slate-800 tracking-tight">Post Q&A Reference</h2>
         <div class="space-y-4">
-          {post.faq.map(item => (
+          {resolvedPost.faq.map(item => (
             <div class="p-6 rounded-2xl bg-slate-50 border border-slate-200/65 shadow-sm font-sans">
               <h4 class="font-bold text-slate-800 text-sm flex items-start gap-2 leading-relaxed">
                 <span class="text-accent-blue font-extrabold font-display">Q:</span>

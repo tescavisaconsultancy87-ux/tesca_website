@@ -29,6 +29,7 @@ let totalAnnouncements = 0;
 let totalUpdates = 0;
 let totalGalleryImages = 0;
 let totalSocialCauses = 0;
+let totalBlogPosts = 0;
 
 try {
   const { count: leadsCount } = await supabase.from('leads').select('*', { count: 'exact', head: true }).neq('lead_type', 'partner');
@@ -56,6 +57,10 @@ try {
   // Query social causes count
   const { count: socialCount } = await supabase.from('social_causes').select('*', { count: 'exact', head: true });
   totalSocialCauses = socialCount || 0;
+
+  // Query blog posts count
+  const { count: blogCount } = await supabase.from('blog_posts').select('*', { count: 'exact', head: true });
+  totalBlogPosts = blogCount || 0;
 } catch (err) {
   console.error("Dashboard overview query failed:", err);
 }
@@ -140,6 +145,16 @@ const cards = [
     iconSvg: SVG.FileText,
     iconColor: "text-red-600 bg-red-50",
     href: "/admin/visa-updates"
+  },
+  {
+    id: "blogs",
+    title: "Blog Posts",
+    desc: "Create and manage blog articles displayed on the public resource center.",
+    count: totalBlogPosts,
+    color: "from-violet-50 to-purple-50 hover:border-purple-300",
+    iconSvg: _s('<path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/>'),
+    iconColor: "text-purple-600 bg-purple-50",
+    href: "/admin/blogs"
   }
 ];
 ---
