@@ -1466,7 +1466,7 @@ const gaId = import.meta.env.PUBLIC_GA4_ID || "G-2HW0JXMF2Y";
 
 			// 5. Auto-dismiss success messages after 2 seconds
 			function dismissSuccessMessages() {
-				document.querySelectorAll('[class*="bg-emerald-50"][class*="text-emerald"]').forEach(el => {
+				document.querySelectorAll('.admin-alert-banner.bg-emerald-50').forEach(el => {
 					setTimeout(() => {
 						el.classList.add("opacity-0", "transition-opacity", "duration-500");
 						setTimeout(() => el.remove(), 500);

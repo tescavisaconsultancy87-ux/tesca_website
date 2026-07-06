@@ -13,6 +13,10 @@ const SVG = {
   AlertCircle: _s('<circle cx="12" cy="12" r="10"/><line x1="12" x2="12" y1="8" y2="12"/><line x1="12" x2="12.01" y1="16" y2="16"/>'),
   FileText: _s('<path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"/><path d="M14 2v4a2 2 0 0 0 2 2h4"/><path d="M10 9H8"/><path d="M16 13H8"/><path d="M16 17H8"/>'),
   ArrowRight: `<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>`,
+  Clock: _s('<circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>'),
+  Activity: _s('<polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>'),
+  PhoneCall: _s('<path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 12 19.79 19.79 0 0 1 1.61 3.4a2 2 0 0 1 2-2.18h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/>'),
+  CheckCircle: _s('<path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/>'),
 };
 
 // Check session
@@ -31,7 +35,11 @@ let totalGalleryImages = 0;
 let totalSocialCauses = 0;
 let totalBlogPosts = 0;
 
+let leadsList: any[] = [];
+let isDemoMode = false;
+
 try {
+  // 1. Fetch counts for other tables
   const { count: leadsCount } = await supabase.from('leads').select('*', { count: 'exact', head: true }).neq('lead_type', 'partner');
   totalLeads = leadsCount || 0;
 
@@ -50,30 +58,113 @@ try {
   const { count: updatesCount } = await supabase.from('visa_updates').select('*', { count: 'exact', head: true });
   totalUpdates = updatesCount || 0;
 
-  // Query gallery images count (catch errors if table not created yet)
   const { count: galleryCount } = await supabase.from('gallery_images').select('*', { count: 'exact', head: true });
   totalGalleryImages = galleryCount || 0;
 
-  // Query social causes count
   const { count: socialCount } = await supabase.from('social_causes').select('*', { count: 'exact', head: true });
   totalSocialCauses = socialCount || 0;
 
-  // Query blog posts count
   const { count: blogCount } = await supabase.from('blog_posts').select('*', { count: 'exact', head: true });
   totalBlogPosts = blogCount || 0;
+
+  // 2. Fetch up to 1000 student leads for detail analysis
+  const { data: leadsData, error: leadsErr } = await supabase
+    .from('leads')
+    .select('id, name, email, phone, lead_type, status, created_at')
+    .neq('lead_type', 'partner')
+    .order('created_at', { ascending: false })
+    .limit(1000);
+
+  if (leadsErr) throw leadsErr;
+  leadsList = leadsData || [];
 } catch (err) {
   console.error("Dashboard overview query failed:", err);
 }
 
+// Fallback to demo data if there are no student leads in the database
+if (leadsList.length === 0) {
+  isDemoMode = true;
+  const now = new Date();
+  leadsList = [
+    { id: 1, name: "Aarav Mehta", email: "aarav.mehta@gmail.com", phone: "+91 98250 12345", lead_type: "counsellor", status: "completed", created_at: new Date(now.getTime() - 0.5 * 24 * 60 * 60 * 1000).toISOString() },
+    { id: 2, name: "Sneha Patel", email: "sneha.patel@yahoo.com", phone: "+91 99041 54321", lead_type: "inquiry", status: "processing", created_at: new Date(now.getTime() - 1.2 * 24 * 60 * 60 * 1000).toISOString() },
+    { id: 3, name: "Rohan Shah", email: "rohan.shah@outlook.com", phone: "+91 98980 99887", lead_type: "eligibility", status: "follow up", created_at: new Date(now.getTime() - 2.5 * 24 * 60 * 60 * 1000).toISOString() },
+    { id: 4, name: "Priya Desai", email: "priya.desai@gmail.com", phone: "+91 97243 11223", lead_type: "inquiry", status: "pending", created_at: new Date(now.getTime() - 3.1 * 24 * 60 * 60 * 1000).toISOString() },
+    { id: 5, name: "Vikram Rathod", email: "vikram.r@gmail.com", phone: "+91 90999 88776", lead_type: "eligibility", status: "completed", created_at: new Date(now.getTime() - 4.8 * 24 * 60 * 60 * 1000).toISOString() },
+    { id: 6, name: "Neha Joshi", email: "neha.joshi@gmail.com", phone: "+91 96620 44556", lead_type: "counsellor", status: "follow up", created_at: new Date(now.getTime() - 5.2 * 24 * 60 * 60 * 1000).toISOString() },
+    { id: 7, name: "Kabir Verma", email: "kabir.v@hotmail.com", phone: "+91 98790 66778", lead_type: "eligibility", status: "pending", created_at: new Date(now.getTime() - 7.5 * 24 * 60 * 60 * 1000).toISOString() },
+    { id: 8, name: "Ananya Iyer", email: "ananya.iyer@gmail.com", phone: "+91 94280 55667", lead_type: "inquiry", status: "completed", created_at: new Date(now.getTime() - 9.1 * 24 * 60 * 60 * 1000).toISOString() },
+    { id: 9, name: "Devendra Singh", email: "dev.singh@gmail.com", phone: "+91 99240 33445", lead_type: "counsellor", status: "processing", created_at: new Date(now.getTime() - 11.3 * 24 * 60 * 60 * 1000).toISOString() },
+    { id: 10, name: "Meera Nair", email: "meera.nair@gmail.com", phone: "+91 98981 22334", lead_type: "eligibility", status: "completed", created_at: new Date(now.getTime() - 13.0 * 24 * 60 * 60 * 1000).toISOString() }
+  ];
+  totalLeads = leadsList.length;
+}
+
+// Calculate status counts
+let pendingLeads = 0;
+let processingLeads = 0;
+let followupLeads = 0;
+let completedLeads = 0;
+
+leadsList.forEach(l => {
+  const status = (l.status || 'pending').trim().toLowerCase();
+  if (status === 'completed') completedLeads++;
+  else if (status === 'processing') processingLeads++;
+  else if (status === 'follow up' || status === 'followup') followupLeads++;
+  else pendingLeads++;
+});
+
+// Calculate lead counts per day for the last 15 days
+const trendDays: string[] = [];
+const trendCounts: number[] = [];
+const trendCompleted: number[] = [];
+
+for (let i = 14; i >= 0; i--) {
+  const d = new Date();
+  d.setDate(d.getDate() - i);
+  // Format as "DD MMM" e.g., "24 Jun"
+  const dateStr = d.toLocaleDateString('en-US', { day: '2-digit', month: 'short' });
+  trendDays.push(dateStr);
+
+  const startOfDay = new Date(d);
+  startOfDay.setHours(0, 0, 0, 0);
+  const endOfDay = new Date(d);
+  endOfDay.setHours(23, 59, 59, 999);
+
+  const dailyLeads = leadsList.filter(l => {
+    const lDate = new Date(l.created_at);
+    return lDate >= startOfDay && lDate <= endOfDay;
+  });
+
+  trendCounts.push(dailyLeads.length);
+  trendCompleted.push(dailyLeads.filter(l => (l.status || '').trim().toLowerCase() === 'completed').length);
+}
+
+// Group leads by type
+const typeCounts = {
+  eligibility: 0,
+  inquiry: 0,
+  counsellor: 0
+};
+leadsList.forEach(l => {
+  if (l.lead_type === 'inquiry') typeCounts.inquiry++;
+  else if (l.lead_type === 'counsellor') typeCounts.counsellor++;
+  else typeCounts.eligibility++;
+});
+
+// Get top 5 recent leads for activity table
+const recentLeads = leadsList.slice(0, 5);
+
+// Configuration for bottom quick access grid
 const cards = [
   {
     id: "leads",
     title: "Student Leads",
     desc: "View and manage submissions from assessment forms & counselor requests.",
     count: totalLeads,
-    color: "from-blue-50 to-indigo-50 hover:border-indigo-300",
+    color: "from-blue-50/50 to-indigo-50/50 hover:border-indigo-300 hover:shadow-indigo-50/50",
     iconSvg: SVG.Users,
-    iconColor: "text-indigo-600 bg-indigo-50",
+    iconColor: "text-indigo-600 bg-indigo-50 border border-indigo-100",
     href: "/admin/leads"
   },
   {
@@ -81,9 +172,9 @@ const cards = [
     title: "Partnerships",
     desc: "View and manage B2B partnership applications and franchise inquiries.",
     count: totalPartners,
-    color: "from-blue-50 to-cyan-50 hover:border-cyan-300",
+    color: "from-blue-50/50 to-cyan-50/50 hover:border-cyan-300 hover:shadow-cyan-50/50",
     iconSvg: _s('<rect width="20" height="14" x="2" y="7" rx="2" ry="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/>'),
-    iconColor: "text-cyan-600 bg-cyan-50",
+    iconColor: "text-cyan-600 bg-cyan-50 border border-cyan-100",
     href: "/admin/partners"
   },
   {
@@ -91,9 +182,9 @@ const cards = [
     title: "Universities Database",
     desc: "Add new universities and adjust scores/tuition criteria for matching.",
     count: totalUniversities,
-    color: "from-emerald-50 to-teal-50 hover:border-teal-300",
+    color: "from-emerald-50/50 to-teal-50/50 hover:border-teal-300 hover:shadow-teal-50/50",
     iconSvg: SVG.GraduationCap,
-    iconColor: "text-teal-600 bg-teal-50",
+    iconColor: "text-teal-600 bg-teal-50 border border-teal-100",
     href: "/admin/universities"
   },
   {
@@ -101,9 +192,9 @@ const cards = [
     title: "Success Stories",
     desc: "Manage testimonials, student admissions, and flags shown on main page.",
     count: totalStories,
-    color: "from-amber-50 to-orange-50 hover:border-orange-300",
+    color: "from-amber-50/50 to-orange-50/50 hover:border-orange-300 hover:shadow-orange-50/50",
     iconSvg: SVG.MessageSquare,
-    iconColor: "text-orange-600 bg-orange-50",
+    iconColor: "text-orange-600 bg-orange-50 border border-orange-100",
     href: "/admin/success-stories"
   },
   {
@@ -111,9 +202,9 @@ const cards = [
     title: "Gallery Manager",
     desc: "Upload and organize student activity photos and institute events.",
     count: totalGalleryImages,
-    color: "from-sky-50 to-blue-50 hover:border-blue-300",
+    color: "from-sky-50/50 to-blue-50/50 hover:border-blue-300 hover:shadow-blue-50/50",
     iconSvg: _s('<rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/>'),
-    iconColor: "text-blue-600 bg-blue-50",
+    iconColor: "text-blue-600 bg-blue-50 border border-blue-100",
     href: "/admin/gallery"
   },
   {
@@ -121,9 +212,9 @@ const cards = [
     title: "Our Social",
     desc: "Manage YouTube, Instagram, and Facebook posts featured on the home page.",
     count: totalSocialCauses,
-    color: "from-pink-50 to-rose-50 hover:border-rose-300",
+    color: "from-pink-50/50 to-rose-50/50 hover:border-rose-300 hover:shadow-rose-50/50",
     iconSvg: _s('<circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/>'),
-    iconColor: "text-rose-600 bg-rose-50",
+    iconColor: "text-rose-600 bg-rose-50 border border-rose-100",
     href: "/admin/our-social"
   },
   {
@@ -131,9 +222,9 @@ const cards = [
     title: "Alert Banner",
     desc: "Add or delete global alert text rotating at the very top of your site.",
     count: totalAnnouncements,
-    color: "from-purple-50 to-fuchsia-50 hover:border-fuchsia-300",
+    color: "from-purple-50/50 to-fuchsia-50/50 hover:border-fuchsia-300 hover:shadow-fuchsia-50/50",
     iconSvg: SVG.AlertCircle,
-    iconColor: "text-fuchsia-600 bg-fuchsia-50",
+    iconColor: "text-fuchsia-600 bg-fuchsia-50 border border-fuchsia-100",
     href: "/admin/announcements"
   },
   {
@@ -141,9 +232,9 @@ const cards = [
     title: "Visa Bulletins",
     desc: "Publish study abroad news and link them directly to blogs.",
     count: totalUpdates,
-    color: "from-rose-50 to-red-50 hover:border-red-300",
+    color: "from-rose-50/50 to-red-50/50 hover:border-red-300 hover:shadow-red-50/50",
     iconSvg: SVG.FileText,
-    iconColor: "text-red-600 bg-red-50",
+    iconColor: "text-red-600 bg-red-50 border border-red-100",
     href: "/admin/visa-updates"
   },
   {
@@ -151,9 +242,9 @@ const cards = [
     title: "Blog Posts",
     desc: "Create and manage blog articles displayed on the public resource center.",
     count: totalBlogPosts,
-    color: "from-violet-50 to-purple-50 hover:border-purple-300",
+    color: "from-violet-50/50 to-purple-50/50 hover:border-purple-300 hover:shadow-purple-50/50",
     iconSvg: _s('<path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/>'),
-    iconColor: "text-purple-600 bg-purple-50",
+    iconColor: "text-purple-600 bg-purple-50 border border-purple-100",
     href: "/admin/blogs"
   }
 ];
@@ -169,37 +260,250 @@ const cards = [
 
     <main class="flex-1 px-4 md:px-8 py-10 overflow-y-auto text-left lg:ml-64">
       {/* Title block */}
-      <div class="mb-10">
-        <h1 class="text-3xl font-extrabold font-display tracking-tight text-slate-800">
-          Overview Control Panel
-        </h1>
-        <p class="text-slate-500 text-xs mt-1">Quick summary statistics and page management portals.</p>
+      <div class="mb-8 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+        <div>
+          <h1 class="text-3xl font-extrabold font-display tracking-tight text-slate-900">
+            Overview Dashboard
+          </h1>
+          <p class="text-slate-500 text-xs mt-1">Real-time statistics, lead analytics pipeline, and portal control shortcuts.</p>
+        </div>
+        {isDemoMode && (
+          <div class="bg-amber-50 border border-amber-200 text-amber-800 text-[11px] font-bold px-3 py-1.5 rounded-xl shadow-sm flex items-center gap-2">
+            <span class="w-2 h-2 rounded-full bg-amber-500 animate-ping"></span>
+            Demo Mode: Showing sample leads data since the database is empty
+          </div>
+        )}
+      </div>
+
+      {/* 5 KPI Lead Status Cards */}
+      <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 mb-8">
+        <div class="bg-white border border-slate-200 p-5 rounded-2xl shadow-sm flex flex-col justify-between hover:shadow-md transition-shadow">
+          <div class="flex items-center justify-between text-slate-400">
+            <span class="text-xs font-bold text-slate-500 uppercase tracking-wide">Total Leads</span>
+            <div class="w-8 h-8 rounded-lg bg-indigo-50 text-indigo-600 border border-indigo-100 flex items-center justify-center">
+              <span set:html={SVG.Users} class="w-4 h-4" />
+            </div>
+          </div>
+          <div class="mt-4">
+            <span class="text-2xl font-black font-mono text-slate-800">{totalLeads}</span>
+            <span class="block text-[10px] text-slate-400 mt-1">Total student submissions</span>
+          </div>
+        </div>
+
+        <div class="bg-white border border-slate-200 p-5 rounded-2xl shadow-sm flex flex-col justify-between hover:shadow-md transition-shadow">
+          <div class="flex items-center justify-between text-slate-400">
+            <span class="text-xs font-bold text-slate-500 uppercase tracking-wide">Pending</span>
+            <div class="w-8 h-8 rounded-lg bg-amber-50 text-amber-600 border border-amber-100 flex items-center justify-center">
+              <span set:html={SVG.Clock} class="w-4 h-4" />
+            </div>
+          </div>
+          <div class="mt-4">
+            <span class="text-2xl font-black font-mono text-slate-800">{pendingLeads}</span>
+            <span class="block text-[10px] text-slate-400 mt-1">Awaiting initial action</span>
+          </div>
+        </div>
+
+        <div class="bg-white border border-slate-200 p-5 rounded-2xl shadow-sm flex flex-col justify-between hover:shadow-md transition-shadow">
+          <div class="flex items-center justify-between text-slate-400">
+            <span class="text-xs font-bold text-slate-500 uppercase tracking-wide">Processing</span>
+            <div class="w-8 h-8 rounded-lg bg-blue-50 text-blue-600 border border-blue-100 flex items-center justify-center">
+              <span set:html={SVG.Activity} class="w-4 h-4" />
+            </div>
+          </div>
+          <div class="mt-4">
+            <span class="text-2xl font-black font-mono text-slate-800">{processingLeads}</span>
+            <span class="block text-[10px] text-slate-400 mt-1">Active assessments</span>
+          </div>
+        </div>
+
+        <div class="bg-white border border-slate-200 p-5 rounded-2xl shadow-sm flex flex-col justify-between hover:shadow-md transition-shadow">
+          <div class="flex items-center justify-between text-slate-400">
+            <span class="text-xs font-bold text-slate-500 uppercase tracking-wide">Follow Up</span>
+            <div class="w-8 h-8 rounded-lg bg-violet-50 text-violet-600 border border-violet-100 flex items-center justify-center">
+              <span set:html={SVG.PhoneCall} class="w-4 h-4" />
+            </div>
+          </div>
+          <div class="mt-4">
+            <span class="text-2xl font-black font-mono text-slate-800">{followupLeads}</span>
+            <span class="block text-[10px] text-slate-400 mt-1">Requires follow back</span>
+          </div>
+        </div>
+
+        <div class="bg-white border border-slate-200 p-5 rounded-2xl shadow-sm flex flex-col justify-between hover:shadow-md transition-shadow col-span-2 md:col-span-1">
+          <div class="flex items-center justify-between text-slate-400">
+            <span class="text-xs font-bold text-slate-500 uppercase tracking-wide">Completed</span>
+            <div class="w-8 h-8 rounded-lg bg-emerald-50 text-emerald-600 border border-emerald-100 flex items-center justify-center">
+              <span set:html={SVG.CheckCircle} class="w-4 h-4" />
+            </div>
+          </div>
+          <div class="mt-4">
+            <span class="text-2xl font-black font-mono text-slate-800">{completedLeads}</span>
+            <span class="block text-[10px] text-emerald-600 font-semibold mt-1">
+              {totalLeads > 0 ? Math.round((completedLeads / totalLeads) * 100) : 0}% Conversion Rate
+            </span>
+          </div>
+        </div>
+      </div>
+
+      {/* Main Charts Row */}
+      <div class="grid grid-cols-1 xl:grid-cols-3 gap-6 mb-8">
+        {/* Leads Intake Trend Chart (Large Area Chart, takes 2 cols on xl) */}
+        <div class="xl:col-span-2 bg-white border border-slate-200 rounded-3xl p-6 shadow-sm flex flex-col justify-between">
+          <div>
+            <div class="flex justify-between items-center mb-4">
+              <div>
+                <h3 class="text-base font-bold text-slate-800">Leads Acquisition Trend</h3>
+                <p class="text-xs text-slate-500">Daily number of student inquiries received over the last 15 days.</p>
+              </div>
+            </div>
+            <div id="leads-trend-chart" class="w-full min-h-[300px]"></div>
+          </div>
+        </div>
+
+        {/* Status Distribution (Donut Chart, takes 1 col on xl) */}
+        <div class="bg-white border border-slate-200 rounded-3xl p-6 shadow-sm flex flex-col justify-between">
+          <div>
+            <div class="flex justify-between items-center mb-4">
+              <div>
+                <h3 class="text-base font-bold text-slate-800">Lead Status Breakdown</h3>
+                <p class="text-xs text-slate-500">Distribution of leads by current status.</p>
+              </div>
+            </div>
+            <div id="leads-status-chart" class="w-full flex justify-center items-center min-h-[250px]"></div>
+          </div>
+        </div>
+      </div>
+
+      {/* Secondary Dashboard Row: Recent Activity & Leads Type Chart */}
+      <div class="grid grid-cols-1 xl:grid-cols-3 gap-6 mb-8">
+        {/* Recent Leads Activity (takes 2 cols on xl) */}
+        <div class="xl:col-span-2 bg-white border border-slate-200 rounded-3xl p-6 shadow-sm">
+          <div class="flex justify-between items-center mb-6">
+            <div>
+              <h3 class="text-base font-bold text-slate-800">Recent Lead Activity</h3>
+              <p class="text-xs text-slate-500">The most recent student submissions in your pipeline.</p>
+            </div>
+            <a href="/admin/leads" class="text-xs font-bold text-indigo-600 hover:text-indigo-800 flex items-center gap-1">
+              View All Leads <span set:html={SVG.ArrowRight} />
+            </a>
+          </div>
+          
+          <div class="overflow-x-auto">
+            <table class="w-full min-w-[500px] text-left border-collapse text-xs">
+              <thead>
+                <tr class="text-slate-400 border-b border-slate-100 font-bold uppercase tracking-wider">
+                  <th class="pb-3 pr-4">Student</th>
+                  <th class="pb-3 px-4">Type</th>
+                  <th class="pb-3 px-4">Contact</th>
+                  <th class="pb-3 px-4">Status</th>
+                  <th class="pb-3 pl-4 text-right">Actions</th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-slate-100">
+                {recentLeads.map((lead) => {
+                  const formattedDate = new Date(lead.created_at || Date.now()).toLocaleDateString("en-IN", {
+                    day: "numeric",
+                    month: "short"
+                  });
+                  const firstLetter = lead.name ? lead.name[0].toUpperCase() : 'S';
+                  let typeLabel = "Eligibility Finder";
+                  let typeBg = "bg-teal-50 text-teal-700 border-teal-200";
+                  if (lead.lead_type === "inquiry") {
+                    typeLabel = "CRM Inquiry";
+                    typeBg = "bg-indigo-50 text-indigo-700 border-indigo-200";
+                  } else if (lead.lead_type === "counsellor") {
+                    typeLabel = "Counselor Booking";
+                    typeBg = "bg-amber-50 text-amber-700 border-amber-200";
+                  }
+
+                  return (
+                    <tr class="hover:bg-slate-50/50 transition-colors">
+                      <td class="py-3.5 pr-4 flex items-center gap-3">
+                        <div class="w-8 h-8 rounded-full bg-indigo-50 text-indigo-600 font-bold flex items-center justify-center shrink-0">
+                          {firstLetter}
+                        </div>
+                        <div>
+                          <div class="font-bold text-slate-800">{lead.name}</div>
+                          <div class="text-[10px] text-slate-400">{formattedDate}</div>
+                        </div>
+                      </td>
+                      <td class="py-3.5 px-4 whitespace-nowrap">
+                        <span class={`px-2 py-0.5 rounded-full border text-[10px] font-medium ${typeBg}`}>
+                          {typeLabel}
+                        </span>
+                      </td>
+                      <td class="py-3.5 px-4 text-slate-600 whitespace-nowrap">
+                        <div>{lead.phone}</div>
+                        {lead.email && <div class="text-[10px] text-slate-400">{lead.email}</div>}
+                      </td>
+                      <td class="py-3.5 px-4 whitespace-nowrap">
+                        <span class={`px-2 py-0.5 rounded-full border text-[10px] font-bold ` +
+                          (lead.status === 'completed' ? 'bg-emerald-50 text-emerald-700 border-emerald-200' :
+                           lead.status === 'processing' ? 'bg-blue-50 text-blue-700 border-blue-200' :
+                           lead.status === 'follow up' || lead.status === 'followup' ? 'bg-violet-50 text-violet-700 border-violet-200' :
+                           'bg-amber-50 text-amber-700 border-amber-200')}>
+                          {lead.status ? lead.status.charAt(0).toUpperCase() + lead.status.slice(1) : 'Pending'}
+                        </span>
+                      </td>
+                      <td class="py-3.5 pl-4 text-right whitespace-nowrap">
+                        <a href="/admin/leads" class="inline-flex items-center justify-center w-7 h-7 rounded-lg bg-slate-50 hover:bg-slate-100 border border-slate-200 text-slate-500 hover:text-slate-800 transition-colors">
+                          <span set:html={SVG.ArrowRight} />
+                        </a>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        {/* Leads by Type Breakdown Chart (takes 1 col on xl) */}
+        <div class="bg-white border border-slate-200 rounded-3xl p-6 shadow-sm flex flex-col justify-between">
+          <div>
+            <div class="flex justify-between items-center mb-4">
+              <div>
+                <h3 class="text-base font-bold text-slate-800">Lead Sources</h3>
+                <p class="text-xs text-slate-500">Breakdown of leads by submission form type.</p>
+              </div>
+            </div>
+            <div id="leads-type-chart" class="w-full min-h-[220px]"></div>
+          </div>
+        </div>
+      </div>
+
+      {/* System Portals Title */}
+      <div class="border-t border-slate-200 pt-8 mt-10 mb-6">
+        <h3 class="text-lg font-extrabold text-slate-900 font-display tracking-tight">
+          Quick Access Portals
+        </h3>
+        <p class="text-xs text-slate-500 mt-1">Jump to other database panels and manage content sections.</p>
       </div>
 
       {/* Grid of Control Cards */}
-      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
         {cards.map((card) => (
           <a 
             href={card.href}
-            class={`group block p-6 rounded-3xl border border-slate-200 bg-gradient-to-br ${card.color} shadow-sm transition-all duration-300 hover:scale-[1.01]`}
+            class={`group block p-5 rounded-2xl border border-slate-200 bg-white hover:bg-slate-50/50 hover:border-indigo-300 hover:shadow-md hover:shadow-indigo-500/5 hover:-translate-y-0.5 transition-all duration-300`}
           >
             <div class="flex items-start justify-between mb-4">
               <div class={`w-10 h-10 rounded-xl flex items-center justify-center ${card.iconColor}`}>
                 <span set:html={card.iconSvg} />
               </div>
-              <div class="text-2xl font-extrabold font-mono text-slate-700 group-hover:text-indigo-600 transition-colors">
+              <div class="text-2xl font-black font-mono text-slate-600 group-hover:text-indigo-600 transition-colors">
                 {card.count}
               </div>
             </div>
             
-            <h2 class="text-lg font-bold font-display text-slate-800 group-hover:text-indigo-600 transition-colors">
+            <h2 class="text-sm font-bold text-slate-850 group-hover:text-indigo-600 transition-colors">
               {card.title}
             </h2>
-            <p class="text-xs text-slate-500 mt-1.5 leading-relaxed">
+            <p class="text-[11px] text-slate-400 mt-1.5 leading-relaxed line-clamp-2">
               {card.desc}
             </p>
 
-            <div class="mt-6 flex items-center gap-1.5 text-xs font-bold text-slate-500 group-hover:text-indigo-600 transition-colors">
+            <div class="mt-4 flex items-center gap-1.5 text-[10px] font-bold text-slate-500 group-hover:text-indigo-600 transition-colors">
               Open Portal <span set:html={SVG.ArrowRight} class="transition-transform group-hover:translate-x-1" />
             </div>
           </a>
@@ -207,4 +511,242 @@ const cards = [
       </div>
     </main>
   </div>
+
+  {/* Hidden data container to pass server data to ApexCharts client script */}
+  <div 
+    id="analytics-data" 
+    class="hidden" 
+    data-trend-days={JSON.stringify(trendDays)}
+    data-trend-counts={JSON.stringify(trendCounts)}
+    data-trend-completed={JSON.stringify(trendCompleted)}
+    data-status-labels={JSON.stringify(['Pending', 'Processing', 'Follow Up', 'Completed'])}
+    data-status-values={JSON.stringify([pendingLeads, processingLeads, followupLeads, completedLeads])}
+    data-type-labels={JSON.stringify(['Eligibility Finder', 'CRM Inquiry', 'Counselor Booking'])}
+    data-type-values={JSON.stringify([typeCounts.eligibility, typeCounts.inquiry, typeCounts.counsellor])}
+  ></div>
 </Layout>
+
+{/* Load ApexCharts from CDN */}
+<script is:inline src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
+<script>
+  function renderCharts() {
+    const dataEl = document.getElementById('analytics-data');
+    if (!dataEl) return;
+
+    // Retrieve and parse data attributes
+    const trendDays = JSON.parse(dataEl.getAttribute('data-trend-days') || '[]');
+    const trendCounts = JSON.parse(dataEl.getAttribute('data-trend-counts') || '[]');
+    const trendCompleted = JSON.parse(dataEl.getAttribute('data-trend-completed') || '[]');
+    
+    const statusLabels = JSON.parse(dataEl.getAttribute('data-status-labels') || '[]');
+    const statusValues = JSON.parse(dataEl.getAttribute('data-status-values') || '[]');
+    
+    const typeLabels = JSON.parse(dataEl.getAttribute('data-type-labels') || '[]');
+    const typeValues = JSON.parse(dataEl.getAttribute('data-type-values') || '[]');
+
+    // 1. Leads Trend Chart (Area Chart)
+    const trendChartEl = document.getElementById('leads-trend-chart');
+    if (trendChartEl) {
+      trendChartEl.innerHTML = '';
+      const options = {
+        chart: {
+          type: 'area',
+          height: 300,
+          toolbar: { show: false },
+          fontFamily: 'Inter, sans-serif'
+        },
+        series: [
+          {
+            name: 'Total Inquiries',
+            data: trendCounts
+          },
+          {
+            name: 'Completed Leads',
+            data: trendCompleted
+          }
+        ],
+        fill: {
+          type: 'gradient',
+          gradient: {
+            shadeIntensity: 1,
+            opacityFrom: 0.4,
+            opacityTo: 0.05,
+            stops: [0, 90, 100]
+          }
+        },
+        colors: ['#6366f1', '#10b981'], // Indigo, Emerald
+        stroke: {
+          curve: 'smooth',
+          width: 3
+        },
+        xaxis: {
+          categories: trendDays,
+          labels: {
+            style: { colors: '#94a3b8', fontSize: '11px', fontWeight: 500 }
+          },
+          axisBorder: { show: false },
+          axisTicks: { show: false }
+        },
+        yaxis: {
+          labels: {
+            style: { colors: '#94a3b8', fontSize: '11px', fontWeight: 500 }
+          }
+        },
+        grid: {
+          borderColor: '#f1f5f9',
+          strokeDashArray: 4,
+          padding: { left: 10, right: 10 }
+        },
+        legend: {
+          position: 'top',
+          horizontalAlign: 'right',
+          labels: { colors: '#475569', fontSize: '12px' },
+          markers: { radius: 12 }
+        },
+        dataLabels: { enabled: false },
+        tooltip: {
+          theme: 'light',
+          x: { show: true }
+        }
+      };
+      const chart = new ApexCharts(trendChartEl, options);
+      chart.render();
+    }
+
+    // 2. Status Distribution Chart (Donut Chart)
+    const statusChartEl = document.getElementById('leads-status-chart');
+    if (statusChartEl) {
+      statusChartEl.innerHTML = '';
+      const options = {
+        chart: {
+          type: 'donut',
+          height: 250,
+          fontFamily: 'Inter, sans-serif'
+        },
+        series: statusValues,
+        labels: statusLabels,
+        colors: ['#f59e0b', '#3b82f6', '#8b5cf6', '#10b981'], // Amber, Blue, Violet, Emerald
+        legend: {
+          position: 'bottom',
+          fontSize: '11px',
+          labels: { colors: '#475569' },
+          markers: { radius: 12 }
+        },
+        dataLabels: {
+          enabled: true,
+          style: {
+            fontSize: '11px',
+            fontWeight: 'bold',
+            colors: ['#fff']
+          },
+          dropShadow: { enabled: false },
+          formatter: function (val, opts) {
+            return opts.w.config.series[opts.seriesIndex];
+          }
+        },
+        plotOptions: {
+          pie: {
+            donut: {
+              size: '72%',
+              labels: {
+                show: true,
+                total: {
+                  show: true,
+                  label: 'Total Leads',
+                  color: '#94a3b8',
+                  fontSize: '11px',
+                  fontWeight: 600,
+                  formatter: function (w) {
+                    return w.globals.seriesTotals.reduce((a, b) => a + b, 0);
+                  }
+                },
+                value: {
+                  color: '#334155',
+                  fontSize: '22px',
+                  fontWeight: '800',
+                  show: true
+                }
+              }
+            }
+          }
+        },
+        tooltip: {
+          theme: 'light'
+        }
+      };
+      const chart = new ApexCharts(statusChartEl, options);
+      chart.render();
+    }
+
+    // 3. Lead Types Chart (Bar Chart)
+    const typeChartEl = document.getElementById('leads-type-chart');
+    if (typeChartEl) {
+      typeChartEl.innerHTML = '';
+      const options = {
+        chart: {
+          type: 'bar',
+          height: 220,
+          toolbar: { show: false },
+          fontFamily: 'Inter, sans-serif'
+        },
+        plotOptions: {
+          bar: {
+            barHeight: '55%',
+            distributed: true,
+            horizontal: true,
+            borderRadius: 6
+          }
+        },
+        colors: ['#0d9488', '#4f46e5', '#ca8a04'], // Teal, Indigo, Yellow-Gold
+        series: [{
+          name: 'Leads Received',
+          data: typeValues
+        }],
+        xaxis: {
+          categories: typeLabels,
+          labels: {
+            style: { colors: '#94a3b8', fontSize: '11px', fontWeight: 500 }
+          },
+          axisBorder: { show: false },
+          axisTicks: { show: false }
+        },
+        yaxis: {
+          labels: {
+            style: { colors: '#475569', fontSize: '11px', fontWeight: 600 }
+          }
+        },
+        legend: { show: false },
+        grid: {
+          borderColor: '#f1f5f9',
+          strokeDashArray: 4,
+          xaxis: { lines: { show: true } },
+          yaxis: { lines: { show: false } }
+        },
+        dataLabels: {
+          enabled: true,
+          textAnchor: 'start',
+          style: { colors: ['#fff'], fontSize: '11px', fontWeight: 'bold' },
+          formatter: function(val) {
+            return val;
+          },
+          offsetX: 10
+        },
+        tooltip: {
+          theme: 'light'
+        }
+      };
+      const chart = new ApexCharts(typeChartEl, options);
+      chart.render();
+    }
+  }
+
+  // Handle load & page navigation in Astro (with View Transitions)
+  document.addEventListener('astro:page-load', renderCharts);
+  
+  // Initial draw
+  if (document.readyState === 'complete' || document.readyState === 'interactive') {
+    renderCharts();
+  } else {
+    document.addEventListener('DOMContentLoaded', renderCharts);
+  }
+</script>
