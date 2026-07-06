@@ -3,6 +3,7 @@ import Layout from "../../layouts/Layout.astro";
 import AdminHeader from "../../components/AdminHeader.astro";
 import { checkAdminAuth } from "../../utils/adminAuth";
 import { supabase } from "../../utils/supabase";
+
 // Inline SVG helpers — no lucide-react in .astro (SSR hook errors)
 const _s = (d: string) => `<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${d}</svg>`;
 const SVG = {
@@ -13,6 +14,8 @@ const SVG = {
   Phone: _s('<path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 12 19.79 19.79 0 0 1 1.61 3.4a2 2 0 0 1 2-2.18h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/>'),
   Mail: _s('<rect width="20" height="16" x="2" y="4" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/>'),
   X: _s('<path d="M18 6 6 18"/><path d="m6 6 12 12"/>'),
+  MapPin: _s('<path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/>'),
+  Award: _s('<circle cx="12" cy="8" r="7"/><polyline points="8.21 13.89 7 23 12 20 17 23 15.79 13.88"/>'),
 };
 
 // Check session
@@ -21,17 +24,17 @@ if (!isAuthenticated) {
   return Astro.redirect("/admin");
 }
 
-let leads = [];
+let inquiries = [];
 let successMessage = "";
 let errorMessage = "";
 
-// Handle server actions (e.g. delete lead, update status)
+// Handle server actions
 if (Astro.request.method === "POST") {
   try {
     const formData = await Astro.request.formData();
     const action = formData.get("action");
 
-    if (action === "delete-lead") {
+    if (action === "delete-inquiry") {
       const id = parseInt(formData.get("id")?.toString() || "0");
       const { error } = await supabase
         .from('leads')
@@ -39,7 +42,7 @@ if (Astro.request.method === "POST") {
         .eq('id', id);
 
       if (error) throw error;
-      successMessage = "Lead removed successfully.";
+      successMessage = "Partnership inquiry removed successfully.";
     } else if (action === "update-status") {
       const id = parseInt(formData.get("id")?.toString() || "0");
       const status = formData.get("status")?.toString().trim();
@@ -50,47 +53,47 @@ if (Astro.request.method === "POST") {
         .eq('id', id);
 
       if (error) throw error;
-      successMessage = "Lead status updated successfully.";
+      successMessage = "Inquiry status updated successfully.";
     }
   } catch (err: any) {
-    console.error("Failed to process action:", err);
+    console.error("Failed to process partner inquiry action:", err);
     errorMessage = `Failed to complete action: ${err.message || "Unknown error"}`;
   }
 }
 
-// Fetch leads
+// Fetch partner inquiries
 try {
   const { data, error } = await supabase
     .from('leads')
     .select('*')
-    .neq('lead_type', 'partner')
+    .eq('lead_type', 'partner')
     .order('id', { ascending: false });
 
   if (error) throw error;
-  leads = data || [];
+  inquiries = data || [];
 } catch (err) {
-  console.error("Failed to load leads from Supabase:", err);
+  console.error("Failed to load partner inquiries from Supabase:", err);
   errorMessage = "Failed to load database records.";
 }
 ---
 
 <Layout 
-  title="Manage Student Leads | TESCA Admin"
-  description="Administrative dashboard to view student visa and admissions inquiries."
+  title="Partnership Inquiries | TESCA Admin"
+  description="Administrative dashboard to view business partnership and franchise applications."
   showNavFooter={false}
 >
   <div class="min-h-screen bg-slate-50 text-slate-800 font-sans flex flex-col lg:flex-row">
-    <AdminHeader activeTab="leads" />
+    <AdminHeader activeTab="partners" />
 
-    <main class="flex-1 px-4 md:px-8 py-10 overflow-y-auto text-left lg:ml-64" data-total-leads={leads.length}>
+    <main class="flex-1 px-4 md:px-8 py-10 overflow-y-auto text-left lg:ml-64">
       
       {/* Title & Info */}
       <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
         <div>
           <h1 class="text-3xl font-extrabold font-display tracking-tight text-slate-800">
-            Student Leads
+            Partnership Inquiries
           </h1>
-          <p class="text-slate-500 text-xs mt-1">Review student assessments, eligibility finder requests, and counselor forms.</p>
+          <p class="text-slate-500 text-xs mt-1">Review B2B Franchise applications, sub-agent submissions, and proposals.</p>
         </div>
       </div>
 
@@ -107,9 +110,9 @@ try {
       )}
 
       {/* Table */}
-      {leads.length === 0 ? (
+      {inquiries.length === 0 ? (
         <div class="bg-white border border-slate-200 rounded-3xl p-12 text-center">
-          <p class="text-sm text-slate-500">No student leads found in the database.</p>
+          <p class="text-sm text-slate-500">No partnership inquiries found in the database.</p>
         </div>
       ) : (
         <div class="bg-white border border-slate-200 rounded-3xl overflow-hidden shadow-sm">
@@ -118,26 +121,30 @@ try {
               <thead>
                 <tr class="bg-slate-50 text-slate-500 border-b border-slate-200 font-bold uppercase tracking-wider">
                   <th class="px-6 py-4 w-[160px]">Submitted At</th>
-                  <th class="px-6 py-4 w-[140px]">Lead Type</th>
-                  <th class="px-6 py-4 w-[160px]">Student Name</th>
+                  <th class="px-6 py-4 w-[180px]">Partnership Model</th>
+                  <th class="px-6 py-4 w-[160px]">Applicant Name</th>
                   <th class="px-6 py-4 w-[180px]">Contact Info</th>
+                  <th class="px-6 py-4 w-[140px]">City / Location</th>
                   <th class="px-6 py-4 w-[120px]">Status</th>
                   <th class="px-6 py-4 text-right w-[140px]">Actions</th>
                 </tr>
               </thead>
               <tbody class="divide-y divide-slate-100">
-                {leads.map((lead) => {
-                  let typeLabel = "Eligibility Finder";
-                  let typeBg = "bg-teal-50 text-teal-700 border-teal-200";
-                  if (lead.lead_type === "inquiry") {
-                    typeLabel = "CRM Inquiry";
-                    typeBg = "bg-indigo-50 text-indigo-700 border-indigo-200";
-                  } else if (lead.lead_type === "counsellor") {
-                    typeLabel = "Counselor Booking";
-                    typeBg = "bg-amber-50 text-amber-700 border-amber-200";
+                {inquiries.map((inquiry) => {
+                  let details: any = {};
+                  try {
+                    details = JSON.parse(inquiry.details || "{}");
+                  } catch (e) {}
+
+                  const model = details.partnershipModel || "Franchise Partner";
+                  const city = details.city || "Not specified";
+
+                  let modelBg = "bg-sky-50 text-sky-700 border-sky-200";
+                  if (model.toLowerCase().includes("sub-agent")) {
+                    modelBg = "bg-violet-50 text-violet-700 border-violet-200";
                   }
 
-                  const formattedDate = new Date(lead.created_at || Date.now()).toLocaleString("en-IN", {
+                  const formattedDate = new Date(inquiry.created_at || Date.now()).toLocaleString("en-IN", {
                     timeZone: "Asia/Kolkata",
                     dateStyle: "medium",
                     timeStyle: "short"
@@ -152,45 +159,51 @@ try {
                         </span>
                       </td>
                       <td class="px-6 py-4 whitespace-nowrap">
-                        <span class={`px-2.5 py-1 rounded-full border text-[10px] font-bold tracking-wide ${typeBg}`}>
-                          {typeLabel}
+                        <span class={`px-2.5 py-1 rounded-full border text-[10px] font-bold tracking-wide ${modelBg}`}>
+                          {model}
                         </span>
                       </td>
                       <td class="px-6 py-4 font-bold text-slate-800 whitespace-nowrap">
                         <span class="flex items-center gap-1.5">
                           <span class="text-slate-400" set:html={SVG.User} />
-                          {lead.name}
+                          {inquiry.name}
                         </span>
                       </td>
                       <td class="px-6 py-4 space-y-1">
                         <div class="flex items-center gap-1.5 text-slate-600">
                           <span class="text-slate-400" set:html={SVG.Phone} />
-                          <span>{lead.phone}</span>
+                          <span>{inquiry.phone}</span>
                         </div>
-                        {lead.email && (
+                        {inquiry.email && (
                           <div class="flex items-center gap-1.5 text-slate-500">
                             <span class="text-slate-400" set:html={SVG.Mail} />
-                            <span>{lead.email}</span>
+                            <span>{inquiry.email}</span>
                           </div>
                         )}
+                      </td>
+                      <td class="px-6 py-4 text-slate-600 whitespace-nowrap">
+                        <span class="flex items-center gap-1.5">
+                          <span class="text-slate-400" set:html={SVG.MapPin} />
+                          {city}
+                        </span>
                       </td>
                       <td class="px-6 py-4 whitespace-nowrap">
                         <form method="POST" class="inline-block relative status-update-form">
                           <input type="hidden" name="action" value="update-status" />
-                          <input type="hidden" name="id" value={lead.id} />
+                          <input type="hidden" name="id" value={inquiry.id} />
                           <select 
                             name="status" 
                             class={`px-2.5 py-1 pr-6 pl-2.5 rounded-full border text-[10px] font-bold tracking-wide focus:outline-none focus:ring-1 focus:ring-indigo-500 cursor-pointer appearance-none bg-no-repeat bg-[right_0.5rem_center] bg-[length:0.75em] ` +
-                              (lead.status === 'completed' ? 'bg-emerald-50 text-emerald-700 border-emerald-200' :
-                               lead.status === 'processing' ? 'bg-blue-50 text-blue-700 border-blue-200' :
-                               lead.status === 'follow up' ? 'bg-violet-50 text-violet-700 border-violet-200' :
+                              (inquiry.status === 'completed' ? 'bg-emerald-50 text-emerald-700 border-emerald-200' :
+                               inquiry.status === 'processing' ? 'bg-blue-50 text-blue-700 border-blue-200' :
+                               inquiry.status === 'follow up' ? 'bg-violet-50 text-violet-700 border-violet-200' :
                                'bg-amber-50 text-amber-700 border-amber-200')}
                             style="background-image: url('data:image/svg+xml;utf8,<svg xmlns=\'http://www.w3.org/2000/svg\' width=\'12\' height=\'12\' viewBox=\'0 0 24 24\' fill=\'none\' stroke=\'%2364748b\' stroke-width=\'2\' stroke-linecap=\'round\' stroke-linejoin=\'round\'><path d=\'m6 9 6 6 6-6\'/></svg>');"
                           >
-                            <option value="pending" selected={lead.status === 'pending' || !lead.status}>Pending</option>
-                            <option value="processing" selected={lead.status === 'processing'}>Processing</option>
-                            <option value="completed" selected={lead.status === 'completed'}>Completed</option>
-                            <option value="follow up" selected={lead.status === 'follow up'}>Follow Up</option>
+                            <option value="pending" selected={inquiry.status === 'pending' || !inquiry.status}>Pending</option>
+                            <option value="processing" selected={inquiry.status === 'processing'}>Processing</option>
+                            <option value="completed" selected={inquiry.status === 'completed'}>Completed</option>
+                            <option value="follow up" selected={inquiry.status === 'follow up'}>Follow Up</option>
                           </select>
                         </form>
                       </td>
@@ -198,20 +211,20 @@ try {
                         <button
                           type="button"
                           class="view-details-btn px-3 py-1.5 bg-white hover:bg-slate-50 text-slate-600 hover:text-slate-800 rounded-lg transition-all cursor-pointer font-bold inline-flex items-center gap-1 border border-slate-200"
-                          data-details={lead.details}
-                          data-name={lead.name}
-                          data-type={typeLabel}
-                          data-status={lead.status || "pending"}
+                          data-details={inquiry.details}
+                          data-name={inquiry.name}
+                          data-type={model}
+                          data-status={inquiry.status || "pending"}
                         >
                           <span set:html={SVG.Eye} /> View Details
                         </button>
-                        <form method="POST" class="inline delete-lead-form">
-                          <input type="hidden" name="action" value="delete-lead" />
-                          <input type="hidden" name="id" value={lead.id} />
+                        <form method="POST" class="inline delete-inquiry-form">
+                          <input type="hidden" name="action" value="delete-inquiry" />
+                          <input type="hidden" name="id" value={inquiry.id} />
                           <button
                             type="submit"
                             class="p-2 text-rose-500 hover:bg-rose-50 rounded-lg hover:scale-105 transition-all cursor-pointer border border-transparent hover:border-rose-200"
-                            aria-label="Delete lead"
+                            aria-label="Delete inquiry"
                           >
                             <span set:html={SVG.Trash2} />
                           </button>
@@ -228,13 +241,13 @@ try {
 
     </main>
 
-    {/* Lead Details Modal Overlay */}
+    {/* Details Modal Overlay */}
     <div id="details-modal" class="hidden fixed inset-0 z-50 bg-slate-900/40 backdrop-blur-sm flex items-center justify-center p-4">
       <div class="bg-white border border-slate-200 w-full max-w-2xl rounded-3xl shadow-xl overflow-hidden flex flex-col max-h-[85vh] text-left">
         <div class="flex items-center justify-between px-6 py-4 border-b border-slate-200 bg-slate-50">
           <div>
-            <h3 class="text-base font-extrabold text-slate-800" id="modal-title">Lead details</h3>
-            <p class="text-[10px] text-indigo-600 font-bold uppercase tracking-wider mt-0.5" id="modal-subtitle">Type</p>
+            <h3 class="text-base font-extrabold text-slate-800" id="modal-title">Partnership details</h3>
+            <p class="text-[10px] text-indigo-600 font-bold uppercase tracking-wider mt-0.5" id="modal-subtitle">Model</p>
           </div>
           <button id="close-modal-btn" class="p-1.5 hover:bg-slate-100 text-slate-400 hover:text-slate-600 rounded-xl transition-colors cursor-pointer">
             <span set:html={SVG.X} />
@@ -267,8 +280,8 @@ try {
     const closeFooterBtn = document.getElementById("close-modal-footer-btn");
 
     const openModal = (btn: Element) => {
-      const name = btn.getAttribute("data-name") || "Student Details";
-      const type = btn.getAttribute("data-type") || "Lead";
+      const name = btn.getAttribute("data-name") || "Partner Details";
+      const type = btn.getAttribute("data-type") || "Partnership Model";
       const status = btn.getAttribute("data-status") || "pending";
       const detailsRaw = btn.getAttribute("data-details") || "{}";
 
@@ -290,11 +303,11 @@ try {
           const listContainer = document.createElement("div");
           listContainer.className = "grid grid-cols-1 sm:grid-cols-2 gap-4";
 
-          // Lead Status Item
+          // Status Item
           const statusItem = document.createElement("div");
           statusItem.className = "bg-slate-50 border border-slate-200 p-3.5 rounded-2xl space-y-1 col-span-1 sm:col-span-2";
           statusItem.innerHTML = `
-            <span class="block text-[10px] font-bold text-slate-500 uppercase tracking-wider">Lead Status</span>
+            <span class="block text-[10px] font-bold text-slate-500 uppercase tracking-wider">Inquiry Status</span>
             <span class="inline-block px-2.5 py-1 rounded-full border text-[10px] font-bold tracking-wide ${
               status === 'completed' ? 'bg-emerald-50 text-emerald-700 border-emerald-200' :
               status === 'processing' ? 'bg-blue-50 text-blue-700 border-blue-200' :
@@ -335,7 +348,7 @@ try {
 
           modalContent.appendChild(listContainer);
         } catch (e) {
-          modalContent.innerText = "Error parsing lead details.";
+          modalContent.innerText = "Error parsing partnership details.";
         }
       }
 
@@ -348,7 +361,6 @@ try {
       document.body.style.overflow = "";
     };
 
-    // Remove old event listeners if any (though astro runs scripts scoped, it's good practice)
     viewButtons.forEach(btn => {
       btn.addEventListener("click", () => openModal(btn));
     });
@@ -381,10 +393,9 @@ try {
     return false;
   }
 
-  function setupLeadsPage() {
+  function setupPartnersPage() {
     setupModal();
 
-    // AJAX for changing status and deleting lead
     const forms = document.querySelectorAll("form");
     forms.forEach(form => {
       if ((form as any)._ajaxBound) return;
@@ -394,7 +405,6 @@ try {
       const statusSelect = form.querySelector('select[name="status"]') as HTMLSelectElement;
       if (statusSelect) {
         statusSelect.addEventListener("change", async () => {
-          // Immediately update colors for premium feel
           const val = statusSelect.value;
           statusSelect.className = `px-2.5 py-1 pr-6 pl-2.5 rounded-full border text-[10px] font-bold tracking-wide focus:outline-none focus:ring-1 focus:ring-indigo-500 cursor-pointer appearance-none bg-no-repeat bg-[right_0.5rem_center] bg-[length:0.75em] ` +
             (val === 'completed' ? 'bg-emerald-50 text-emerald-700 border-emerald-200' :
@@ -408,7 +418,7 @@ try {
               method: "POST",
               body: formData
             });
-            await handleResponse(res, "Lead status updated successfully.");
+            await handleResponse(res, "Inquiry status updated successfully.");
           } catch (err) {
             console.error("AJAX status update error:", err);
           }
@@ -416,10 +426,10 @@ try {
       }
 
       // Intercept delete submit
-      if (form.classList.contains("delete-lead-form")) {
+      if (form.classList.contains("delete-inquiry-form")) {
         form.addEventListener("submit", async (e) => {
           e.preventDefault();
-          if (!confirm("Are you sure you want to delete this lead?")) return;
+          if (!confirm("Are you sure you want to delete this partnership inquiry?")) return;
 
           const btn = form.querySelector('button[type="submit"]') as HTMLElement;
           (window as any).showBtnLoader?.(btn);
@@ -430,28 +440,16 @@ try {
               method: "POST",
               body: formData
             });
-            await handleResponse(res, "Lead removed successfully.");
+            await handleResponse(res, "Inquiry removed successfully.");
           } catch (err) {
-            console.error("AJAX delete lead error:", err);
+            console.error("AJAX delete inquiry error:", err);
           }
         });
       }
     });
-
-    // Mark leads as read on client
-    const main = document.querySelector("main");
-    if (main) {
-      const total = main.getAttribute("data-total-leads") || "0";
-      localStorage.setItem("lastViewedLeadsCount", total);
-
-      // Hide notification badges immediately
-      document.querySelectorAll(".leads-nav-badge").forEach(badge => {
-        badge.classList.add("hidden");
-      });
-    }
   }
 
   // Bind handlers
-  setupLeadsPage();
-  document.addEventListener("astro:page-load", setupLeadsPage);
+  setupPartnersPage();
+  document.addEventListener("astro:page-load", setupPartnersPage);
 </script>

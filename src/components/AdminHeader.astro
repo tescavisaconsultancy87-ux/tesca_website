@@ -2,7 +2,7 @@
 import { supabase } from "../utils/supabase";
 
 interface Props {
-  activeTab: "dashboard" | "leads" | "universities" | "stories" | "announcements" | "updates" | "admins" | "gallery" | "our-social";
+  activeTab: "dashboard" | "leads" | "universities" | "stories" | "announcements" | "updates" | "admins" | "gallery" | "our-social" | "partners";
 }
 
 const { activeTab } = Astro.props;
@@ -14,6 +14,7 @@ const svgSm = `xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox
 const navItems = [
   { id: "dashboard", label: "Dashboard", href: "/admin/dashboard", iconSvg: `<svg ${svgBase}><rect width="7" height="9" x="3" y="3" rx="1"/><rect width="7" height="5" x="14" y="3" rx="1"/><rect width="7" height="9" x="14" y="12" rx="1"/><rect width="7" height="5" x="3" y="16" rx="1"/></svg>` },
   { id: "leads", label: "Leads Panel", href: "/admin/leads", iconSvg: `<svg ${svgBase}><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>` },
+  { id: "partners", label: "Partnerships", href: "/admin/partners", iconSvg: `<svg ${svgBase}><rect width="20" height="14" x="2" y="7" rx="2" ry="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>` },
   { id: "universities", label: "Universities", href: "/admin/universities", iconSvg: `<svg ${svgBase}><path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/></svg>` },
   { id: "stories", label: "Success Stories", href: "/admin/success-stories", iconSvg: `<svg ${svgBase}><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>` },
   { id: "gallery", label: "Gallery Manager", href: "/admin/gallery", iconSvg: `<svg ${svgBase}><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>` },
@@ -27,7 +28,8 @@ let totalLeadsCount = 0;
 try {
   const { count, error } = await supabase
     .from('leads')
-    .select('*', { count: 'exact', head: true });
+    .select('*', { count: 'exact', head: true })
+    .neq('lead_type', 'partner');
 
   if (error) throw error;
   totalLeadsCount = count || 0;

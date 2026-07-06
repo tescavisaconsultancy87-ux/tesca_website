@@ -22,6 +22,7 @@ if (!isAuthenticated) {
 }
 
 let totalLeads = 0;
+let totalPartners = 0;
 let totalUniversities = 0;
 let totalStories = 0;
 let totalAnnouncements = 0;
@@ -30,8 +31,11 @@ let totalGalleryImages = 0;
 let totalSocialCauses = 0;
 
 try {
-  const { count: leadsCount } = await supabase.from('leads').select('*', { count: 'exact', head: true });
+  const { count: leadsCount } = await supabase.from('leads').select('*', { count: 'exact', head: true }).neq('lead_type', 'partner');
   totalLeads = leadsCount || 0;
+
+  const { count: partnersCount } = await supabase.from('leads').select('*', { count: 'exact', head: true }).eq('lead_type', 'partner');
+  totalPartners = partnersCount || 0;
 
   const { count: uniCount } = await supabase.from('universities').select('*', { count: 'exact', head: true });
   totalUniversities = uniCount || 0;
@@ -66,6 +70,16 @@ const cards = [
     iconSvg: SVG.Users,
     iconColor: "text-indigo-600 bg-indigo-50",
     href: "/admin/leads"
+  },
+  {
+    id: "partners",
+    title: "Partnerships",
+    desc: "View and manage B2B partnership applications and franchise inquiries.",
+    count: totalPartners,
+    color: "from-blue-50 to-cyan-50 hover:border-cyan-300",
+    iconSvg: _s('<rect width="20" height="14" x="2" y="7" rx="2" ry="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/>'),
+    iconColor: "text-cyan-600 bg-cyan-50",
+    href: "/admin/partners"
   },
   {
     id: "universities",

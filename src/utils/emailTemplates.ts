@@ -342,8 +342,14 @@ export function counsellorBookingEmail({
           <td style="vertical-align:top; padding:0 0 18px;">
             <table width="100%" cellpadding="0" cellspacing="0">
               <tr>
-                <td style="width:46px; vertical-align:top; padding-right:14px;">
-                  <div style="width:44px; height:44px; background:${BRAND_BLUE}; border-radius:12px; text-align:center; line-height:44px; font-size:20px;">${step.icon}</div>
+                <td style="width:44px; vertical-align:top; padding-right:16px;">
+                  <table cellpadding="0" cellspacing="0" border="0" style="width:44px; height:44px; background-color:${BRAND_BLUE}; border-radius:12px; border-collapse:collapse;">
+                    <tr>
+                      <td align="center" valign="middle" style="height:44px; width:44px; text-align:center; vertical-align:middle; font-size:22px; line-height:1; font-family: 'Segoe UI Emoji', 'Apple Color Emoji', 'Segoe UI', Arial, sans-serif; color:#ffffff; padding:0;">
+                        ${step.icon}
+                      </td>
+                    </tr>
+                  </table>
                 </td>
                 <td style="vertical-align:top;">
                   <p style="font-size:15px; font-weight:700; color:${BRAND_DARK}; margin:0 0 4px;">${step.title}</p>
@@ -461,10 +467,14 @@ export function inquiryConfirmationEmail({
           <td style="padding:0 0 16px;" valign="top">
             <table width="100%" cellpadding="0" cellspacing="0">
               <tr>
-                <td style="width:48px; vertical-align:top; padding-right:14px;">
-                  <div style="width:44px; height:44px; background:${step.bg}; border:2px solid ${step.color}30; border-radius:12px; text-align:center; line-height:44px;">
-                    <span style="font-size:13px; font-weight:800; color:${step.color};">${step.step}</span>
-                  </div>
+                <td style="width:44px; vertical-align:top; padding-right:18px;">
+                  <table cellpadding="0" cellspacing="0" border="0" style="width:44px; height:44px; background-color:${step.bg}; border:2px solid ${step.color}30; border-radius:12px; border-collapse:collapse;">
+                    <tr>
+                      <td align="center" valign="middle" style="height:44px; width:44px; text-align:center; vertical-align:middle; padding:0;">
+                        <span style="font-size:13px; font-weight:800; color:${step.color}; line-height:1; font-family: 'Segoe UI', Arial, sans-serif;">${step.step}</span>
+                      </td>
+                    </tr>
+                  </table>
                 </td>
                 <td valign="top">
                   <p style="font-size:14px; font-weight:700; color:${BRAND_DARK}; margin:0 0 3px;">${step.title}</p>
@@ -577,8 +587,14 @@ export function partnerConfirmationEmail({
           <td style="vertical-align:top; padding:0 0 18px;">
             <table width="100%" cellpadding="0" cellspacing="0">
               <tr>
-                <td style="width:46px; vertical-align:top; padding-right:14px;">
-                  <div style="width:36px; height:36px; background:#eff6ff; border-radius:50%; text-align:center; line-height:36px; font-size:14px; font-weight:800; color:${BRAND_BLUE}; border: 1.5px solid ${BRAND_BLUE}30;">${item.step}</div>
+                <td style="width:36px; vertical-align:top; padding-right:24px;">
+                  <table cellpadding="0" cellspacing="0" border="0" style="width:36px; height:36px; background-color:#eff6ff; border-radius:50%; border:1.5px solid ${BRAND_BLUE}30; border-collapse:collapse;">
+                    <tr>
+                      <td align="center" valign="middle" style="height:36px; width:36px; text-align:center; vertical-align:middle; padding:0;">
+                        <span style="font-size:14px; font-weight:800; color:${BRAND_BLUE}; line-height:1; font-family: 'Segoe UI', Arial, sans-serif;">${item.step}</span>
+                      </td>
+                    </tr>
+                  </table>
                 </td>
                 <td style="vertical-align:top;">
                   <p style="font-size:14px; font-weight:700; color:${BRAND_DARK}; margin:0 0 4px;">${item.title}</p>
