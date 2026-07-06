@@ -281,7 +281,27 @@ try {
             </div>
 
             <div class="space-y-1.5">
-              <label for="blog-content" class="text-[10px] text-slate-500 uppercase tracking-wide">Article Content (HTML) *</label>
+              <div class="flex justify-between items-center">
+                <label for="blog-content" class="text-[10px] text-slate-500 uppercase tracking-wide">Article Content (HTML) *</label>
+                <div class="flex items-center gap-1 bg-slate-50 border border-slate-200 rounded-lg p-0.5 select-none">
+                  <button 
+                    type="button" 
+                    id="btn-bold" 
+                    class="w-7 h-7 flex items-center justify-center bg-white hover:bg-slate-100 border border-slate-200/50 rounded-md text-xs font-bold text-slate-700 hover:text-slate-900 transition-all cursor-pointer shadow-sm active:scale-95"
+                    title="Bold (wrap in <strong>)"
+                  >
+                    B
+                  </button>
+                  <button 
+                    type="button" 
+                    id="btn-italic" 
+                    class="w-7 h-7 flex items-center justify-center bg-white hover:bg-slate-100 border border-slate-200/50 rounded-md text-xs italic font-serif text-slate-700 hover:text-slate-900 transition-all cursor-pointer shadow-sm active:scale-95"
+                    title="Italic (wrap in <em>)"
+                  >
+                    I
+                  </button>
+                </div>
+              </div>
               <textarea 
                 id="blog-content" 
                 name="content" 
@@ -448,6 +468,41 @@ try {
   }
 
   function setupBlogAdmin() {
+    // Text formatting controls (Bold & Italic)
+    const contentTextarea = document.getElementById('blog-content') as HTMLTextAreaElement;
+    const btnBold = document.getElementById('btn-bold');
+    const btnItalic = document.getElementById('btn-italic');
+
+    if (contentTextarea) {
+      const wrapSelection = (startTag: string, endTag: string) => {
+        const start = contentTextarea.selectionStart;
+        const end = contentTextarea.selectionEnd;
+        const text = contentTextarea.value;
+        const selectedText = text.substring(start, end);
+        const replacement = startTag + selectedText + endTag;
+        
+        contentTextarea.value = text.substring(0, start) + replacement + text.substring(end);
+        
+        contentTextarea.focus();
+        contentTextarea.setSelectionRange(start + startTag.length, start + startTag.length + selectedText.length);
+        contentTextarea.dispatchEvent(new Event('input', { bubbles: true }));
+      };
+
+      if (btnBold) {
+        btnBold.addEventListener('click', (e) => {
+          e.preventDefault();
+          wrapSelection('<strong>', '</strong>');
+        });
+      }
+
+      if (btnItalic) {
+        btnItalic.addEventListener('click', (e) => {
+          e.preventDefault();
+          wrapSelection('<em>', '</em>');
+        });
+      }
+    }
+
     // Auto-generate slug from title
     const titleInput = document.getElementById('blog-title') as HTMLInputElement;
     const slugInput = document.getElementById('blog-slug') as HTMLInputElement;
