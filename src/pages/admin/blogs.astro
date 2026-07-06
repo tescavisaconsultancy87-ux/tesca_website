@@ -282,13 +282,13 @@ try {
 
             <div class="space-y-1.5">
               <div class="flex justify-between items-center">
-                <label for="blog-content" class="text-[10px] text-slate-500 uppercase tracking-wide">Article Content (HTML) *</label>
+                <label for="blog-editor" class="text-[10px] text-slate-500 uppercase tracking-wide">Article Content *</label>
                 <div class="flex items-center gap-1 bg-slate-50 border border-slate-200 rounded-lg p-0.5 select-none">
                   <button 
                     type="button" 
                     id="btn-bold" 
                     class="w-7 h-7 flex items-center justify-center bg-white hover:bg-slate-100 border border-slate-200/50 rounded-md text-xs font-bold text-slate-700 hover:text-slate-900 transition-all cursor-pointer shadow-sm active:scale-95"
-                    title="Bold (wrap in <strong>)"
+                    title="Bold"
                   >
                     B
                   </button>
@@ -296,20 +296,45 @@ try {
                     type="button" 
                     id="btn-italic" 
                     class="w-7 h-7 flex items-center justify-center bg-white hover:bg-slate-100 border border-slate-200/50 rounded-md text-xs italic font-serif text-slate-700 hover:text-slate-900 transition-all cursor-pointer shadow-sm active:scale-95"
-                    title="Italic (wrap in <em>)"
+                    title="Italic"
                   >
                     I
                   </button>
+                  <div class="w-[1px] h-4 bg-slate-200 mx-1"></div>
+                  <button 
+                    type="button" 
+                    id="btn-h2" 
+                    class="px-1.5 h-7 flex items-center justify-center bg-white hover:bg-slate-100 border border-slate-200/50 rounded-md text-[10px] font-extrabold text-slate-700 hover:text-slate-900 transition-all cursor-pointer shadow-sm active:scale-95"
+                    title="Heading 2"
+                  >
+                    H2
+                  </button>
+                  <button 
+                    type="button" 
+                    id="btn-h3" 
+                    class="px-1.5 h-7 flex items-center justify-center bg-white hover:bg-slate-100 border border-slate-200/50 rounded-md text-[10px] font-extrabold text-slate-700 hover:text-slate-900 transition-all cursor-pointer shadow-sm active:scale-95"
+                    title="Heading 3"
+                  >
+                    H3
+                  </button>
+                  <button 
+                    type="button" 
+                    id="btn-p" 
+                    class="px-1.5 h-7 flex items-center justify-center bg-white hover:bg-slate-100 border border-slate-200/50 rounded-md text-[10px] font-normal text-slate-700 hover:text-slate-900 transition-all cursor-pointer shadow-sm active:scale-95"
+                    title="Paragraph"
+                  >
+                    P
+                  </button>
                 </div>
               </div>
-              <textarea 
-                id="blog-content" 
-                name="content" 
-                required 
-                rows="10" 
-                class="w-full px-3 py-2.5 rounded-lg border border-slate-200 bg-slate-50 text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-1 focus:ring-indigo-500 font-mono text-[11px] leading-relaxed"
-                placeholder="<h2>Your Article Title</h2><p>Article content with HTML formatting...</p>"
-              >{editingPost?.content || ""}</textarea>
+              <input type="hidden" name="content" id="blog-content" value={editingPost?.content || ""} />
+              <div 
+                id="blog-editor"
+                contenteditable="true"
+                data-placeholder="Write your blog post content here... Highlight text to apply formatting."
+                class="w-full px-3.5 py-3 rounded-lg border border-slate-200 bg-slate-50 text-slate-800 focus:outline-none focus:ring-1 focus:ring-indigo-500 font-sans text-xs leading-relaxed min-h-[320px] overflow-y-auto max-h-[500px] prose prose-slate text-left"
+                set:html={editingPost?.content || ""}
+              />
             </div>
 
             {/* FAQ Section */}
@@ -468,37 +493,52 @@ try {
   }
 
   function setupBlogAdmin() {
-    // Text formatting controls (Bold & Italic)
-    const contentTextarea = document.getElementById('blog-content') as HTMLTextAreaElement;
+    // Text formatting controls (Bold, Italic, Headings, Paragraph)
+    const editor = document.getElementById('blog-editor');
     const btnBold = document.getElementById('btn-bold');
     const btnItalic = document.getElementById('btn-italic');
+    const btnH2 = document.getElementById('btn-h2');
+    const btnH3 = document.getElementById('btn-h3');
+    const btnP = document.getElementById('btn-p');
 
-    if (contentTextarea) {
-      const wrapSelection = (startTag: string, endTag: string) => {
-        const start = contentTextarea.selectionStart;
-        const end = contentTextarea.selectionEnd;
-        const text = contentTextarea.value;
-        const selectedText = text.substring(start, end);
-        const replacement = startTag + selectedText + endTag;
-        
-        contentTextarea.value = text.substring(0, start) + replacement + text.substring(end);
-        
-        contentTextarea.focus();
-        contentTextarea.setSelectionRange(start + startTag.length, start + startTag.length + selectedText.length);
-        contentTextarea.dispatchEvent(new Event('input', { bubbles: true }));
-      };
+    if (editor) {
+      // Force paragraphs on enter press
+      try {
+        document.execCommand('defaultParagraphSeparator', false, 'p');
+      } catch (e) {}
 
       if (btnBold) {
-        btnBold.addEventListener('click', (e) => {
+        btnBold.addEventListener('mousedown', (e) => {
           e.preventDefault();
-          wrapSelection('<strong>', '</strong>');
+          document.execCommand('bold', false);
         });
       }
 
       if (btnItalic) {
-        btnItalic.addEventListener('click', (e) => {
+        btnItalic.addEventListener('mousedown', (e) => {
           e.preventDefault();
-          wrapSelection('<em>', '</em>');
+          document.execCommand('italic', false);
+        });
+      }
+
+      if (btnH2) {
+        btnH2.addEventListener('mousedown', (e) => {
+          e.preventDefault();
+          document.execCommand('formatBlock', false, '<h2>');
+        });
+      }
+
+      if (btnH3) {
+        btnH3.addEventListener('mousedown', (e) => {
+          e.preventDefault();
+          document.execCommand('formatBlock', false, '<h3>');
+        });
+      }
+
+      if (btnP) {
+        btnP.addEventListener('mousedown', (e) => {
+          e.preventDefault();
+          document.execCommand('formatBlock', false, '<p>');
         });
       }
     }
@@ -614,8 +654,25 @@ try {
           submitBtn.textContent = 'Saving...';
         }
 
-        // Ensure FAQ hidden is updated
+        // Ensure FAQ hidden and content editor values are updated
         updateFaqHidden();
+        const editor = document.getElementById('blog-editor');
+        const hiddenInput = document.getElementById('blog-content') as HTMLInputElement;
+        if (editor && hiddenInput) {
+          hiddenInput.value = editor.innerHTML.trim();
+        }
+
+        // Validate that editor has some content
+        const textContent = editor ? editor.textContent?.trim() : '';
+        const htmlContent = editor ? editor.innerHTML.trim() : '';
+        if (!textContent && !htmlContent.includes('<img') && !htmlContent.includes('<iframe')) {
+          alert("Article Content is required.");
+          if (submitBtn) {
+            submitBtn.disabled = false;
+            submitBtn.textContent = originalText;
+          }
+          return;
+        }
 
         const formData = new FormData(blogForm);
         try {
@@ -708,3 +765,12 @@ try {
   setupBlogAdmin();
   document.addEventListener("astro:page-load", setupBlogAdmin);
 </script>
+
+<style is:global>
+  #blog-editor[contenteditable="true"]:empty::before {
+    content: attr(data-placeholder);
+    color: #94a3b8; /* slate-400 */
+    font-style: italic;
+    cursor: text;
+  }
+</style>
