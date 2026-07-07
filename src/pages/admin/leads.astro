@@ -117,7 +117,7 @@ try {
     .from('leads')
     .select('*')
     .neq('lead_type', 'partner')
-    .order('id', { ascending: false });
+    .order('created_at', { ascending: false });
 
   if (error) throw error;
   leads = data || [];

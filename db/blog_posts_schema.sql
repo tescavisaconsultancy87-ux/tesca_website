@@ -29,12 +29,8 @@ CREATE POLICY "Allow all actions for allowlisted admins on blog_posts"
 ON public.blog_posts
 FOR ALL
 TO authenticated
-USING (
-  EXISTS (
-    SELECT 1 FROM public.admins a
-    WHERE a.email = auth.jwt()->>'email'
-  )
-);
+USING (public.is_admin())
+WITH CHECK (public.is_admin());
 
 -- Create index on slug for fast lookups
 CREATE INDEX IF NOT EXISTS idx_blog_posts_slug ON public.blog_posts (slug);
