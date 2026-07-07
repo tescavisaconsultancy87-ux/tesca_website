@@ -35,7 +35,7 @@ if (Astro.request.method === "POST") {
     const action = formData.get("action");
 
     if (action === "delete-inquiry") {
-      const id = parseInt(formData.get("id")?.toString() || "0");
+      const id = formData.get("id")?.toString() || "";
       const { error } = await supabase
         .from('leads')
         .delete()
@@ -44,7 +44,7 @@ if (Astro.request.method === "POST") {
       if (error) throw error;
       successMessage = "Partnership inquiry removed successfully.";
     } else if (action === "update-status") {
-      const id = parseInt(formData.get("id")?.toString() || "0");
+      const id = formData.get("id")?.toString() || "";
       const status = formData.get("status")?.toString().trim();
       
       const { error } = await supabase
