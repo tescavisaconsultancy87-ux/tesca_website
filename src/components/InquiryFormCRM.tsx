@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from "react";
 import { 
   Check, ChevronLeft, ChevronRight, User, Phone, 
   Mail, Calendar, MapPin, GraduationCap, Info, Lock, X, 
-  AlertCircle, CheckCircle, Clock, MessageSquare, Shield, Loader2, Globe
+  AlertCircle, CheckCircle, Clock, MessageSquare, Shield, Loader2, Globe, ChevronDown
 } from "lucide-react";
 
 // Types
@@ -126,12 +126,56 @@ const STEPS = [
   "💬 Additional Info"
 ];
 
+// Country calling codes with min/max local digit lengths (excludes country code digits)
+const PHONE_COUNTRIES = [
+  { code: "IN", dialCode: "+91",  flag: "🇮🇳", name: "India",          minDigits: 10, maxDigits: 10 },
+  { code: "US", dialCode: "+1",   flag: "🇺🇸", name: "USA",            minDigits: 10, maxDigits: 10 },
+  { code: "GB", dialCode: "+44",  flag: "🇬🇧", name: "United Kingdom", minDigits: 10, maxDigits: 10 },
+  { code: "CA", dialCode: "+1",   flag: "🇨🇦", name: "Canada",         minDigits: 10, maxDigits: 10 },
+  { code: "AU", dialCode: "+61",  flag: "🇦🇺", name: "Australia",      minDigits: 9,  maxDigits: 9  },
+  { code: "NZ", dialCode: "+64",  flag: "🇳🇿", name: "New Zealand",    minDigits: 8,  maxDigits: 10 },
+  { code: "DE", dialCode: "+49",  flag: "🇩🇪", name: "Germany",        minDigits: 10, maxDigits: 11 },
+  { code: "IE", dialCode: "+353", flag: "🇮🇪", name: "Ireland",        minDigits: 9,  maxDigits: 9  },
+  { code: "SG", dialCode: "+65",  flag: "🇸🇬", name: "Singapore",      minDigits: 8,  maxDigits: 8  },
+  { code: "AE", dialCode: "+971", flag: "🇦🇪", name: "UAE / Dubai",    minDigits: 9,  maxDigits: 9  },
+  { code: "MY", dialCode: "+60",  flag: "🇲🇾", name: "Malaysia",       minDigits: 9,  maxDigits: 10 },
+  { code: "CH", dialCode: "+41",  flag: "🇨🇭", name: "Switzerland",    minDigits: 9,  maxDigits: 9  },
+  { code: "PK", dialCode: "+92",  flag: "🇵🇰", name: "Pakistan",       minDigits: 10, maxDigits: 10 },
+  { code: "BD", dialCode: "+880", flag: "🇧🇩", name: "Bangladesh",     minDigits: 10, maxDigits: 10 },
+  { code: "NP", dialCode: "+977", flag: "🇳🇵", name: "Nepal",          minDigits: 10, maxDigits: 10 },
+  { code: "LK", dialCode: "+94",  flag: "🇱🇰", name: "Sri Lanka",      minDigits: 9,  maxDigits: 9  },
+  { code: "PH", dialCode: "+63",  flag: "🇵🇭", name: "Philippines",    minDigits: 10, maxDigits: 10 },
+  { code: "SA", dialCode: "+966", flag: "🇸🇦", name: "Saudi Arabia",   minDigits: 9,  maxDigits: 9  },
+  { code: "QA", dialCode: "+974", flag: "🇶🇦", name: "Qatar",          minDigits: 8,  maxDigits: 8  },
+  { code: "KW", dialCode: "+965", flag: "🇰🇼", name: "Kuwait",         minDigits: 8,  maxDigits: 8  },
+  { code: "OM", dialCode: "+968", flag: "🇴🇲", name: "Oman",           minDigits: 8,  maxDigits: 8  },
+  { code: "FR", dialCode: "+33",  flag: "🇫🇷", name: "France",         minDigits: 9,  maxDigits: 9  },
+  { code: "IT", dialCode: "+39",  flag: "🇮🇹", name: "Italy",          minDigits: 9,  maxDigits: 10 },
+  { code: "NL", dialCode: "+31",  flag: "🇳🇱", name: "Netherlands",    minDigits: 9,  maxDigits: 9  },
+  { code: "SE", dialCode: "+46",  flag: "🇸🇪", name: "Sweden",         minDigits: 9,  maxDigits: 9  },
+  { code: "FI", dialCode: "+358", flag: "🇫🇮", name: "Finland",        minDigits: 9,  maxDigits: 10 },
+  { code: "JP", dialCode: "+81",  flag: "🇯🇵", name: "Japan",          minDigits: 10, maxDigits: 10 },
+  { code: "KR", dialCode: "+82",  flag: "🇰🇷", name: "South Korea",    minDigits: 10, maxDigits: 11 },
+  { code: "CN", dialCode: "+86",  flag: "🇨🇳", name: "China",          minDigits: 11, maxDigits: 11 },
+  { code: "ZA", dialCode: "+27",  flag: "🇿🇦", name: "South Africa",   minDigits: 9,  maxDigits: 9  },
+  { code: "NG", dialCode: "+234", flag: "🇳🇬", name: "Nigeria",        minDigits: 10, maxDigits: 10 },
+  { code: "KE", dialCode: "+254", flag: "🇰🇪", name: "Kenya",          minDigits: 9,  maxDigits: 9  },
+];
+
 export default function InquiryFormCRM() {
   const [currentStep, setCurrentStep] = useState(1);
   const [formData, setFormData] = useState<FormData>(INITIAL_STATE);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
+
+  // Phone Country Code Selector
+  const [phoneCountry, setPhoneCountry] = useState("IN");
+  const [showCountryDropdown, setShowCountryDropdown] = useState(false);
+  const [countrySearch, setCountrySearch] = useState("");
+  const countryDropdownRef = useRef<HTMLDivElement>(null);
+
+  const selectedPhoneCountry = PHONE_COUNTRIES.find(c => c.code === phoneCountry) || PHONE_COUNTRIES[0];
 
   // Generate Lead ID
   const generateLeadId = () => {
@@ -195,6 +239,20 @@ export default function InquiryFormCRM() {
     });
   };
 
+  // Close country dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (countryDropdownRef.current && !countryDropdownRef.current.contains(e.target as Node)) {
+        setShowCountryDropdown(false);
+        setCountrySearch("");
+      }
+    };
+    if (showCountryDropdown) {
+      document.addEventListener("mousedown", handleClickOutside);
+    }
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, [showCountryDropdown]);
+
   // Validate active step
   const validateStep = (step: number): boolean => {
     const errs: Record<string, string> = {};
@@ -203,8 +261,10 @@ export default function InquiryFormCRM() {
       if (!formData.fullName.trim()) errs.fullName = "Full Name is required";
       if (!formData.mobileNumber.trim()) {
         errs.mobileNumber = "Mobile Number is required";
-      } else if (formData.mobileNumber.replace(/\D/g, "").length < 8 || formData.mobileNumber.replace(/\D/g, "").length > 15) {
-        errs.mobileNumber = "Enter a valid phone number (between 8 and 15 digits)";
+      } else if (formData.mobileNumber.replace(/\D/g, "").length < selectedPhoneCountry.minDigits) {
+        errs.mobileNumber = `Phone number must be at least ${selectedPhoneCountry.minDigits} digits for ${selectedPhoneCountry.name}`;
+      } else if (formData.mobileNumber.replace(/\D/g, "").length > selectedPhoneCountry.maxDigits) {
+        errs.mobileNumber = `Phone number must be at most ${selectedPhoneCountry.maxDigits} digits for ${selectedPhoneCountry.name}`;
       }
       if (formData.email.trim() && !/\S+@\S+\.\S+/.test(formData.email)) {
         errs.email = "Enter a valid email address";
@@ -316,7 +376,7 @@ Comments/Additional Info: ${formData.comments || "None"}`;
       Timestamp:              new Date().toLocaleString("en-IN", { timeZone: "Asia/Kolkata" }),
       "Lead ID":              formData.leadId,
       "Full Name":            formData.fullName,
-      "Mobile Number":        formData.mobileNumber,
+      "Mobile Number":        `${selectedPhoneCountry.dialCode} ${formData.mobileNumber}`,
       Email:                  formData.email || "Not provided",
       Address:                addressStr,
       City:                   formData.city || "Not provided",
@@ -338,6 +398,7 @@ Comments/Additional Info: ${formData.comments || "None"}`;
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           ...formData,
+          mobileNumber: `${selectedPhoneCountry.dialCode} ${formData.mobileNumber}`,
           address: addressStr,
           state: "N/A",
           leadSource,
@@ -536,19 +597,116 @@ Comments/Additional Info: ${formData.comments || "None"}`;
 
                   <div className="space-y-1">
                     <label htmlFor="crm-mobileNumber" className="text-xs font-bold uppercase tracking-wider text-slate-600 font-sans">Mobile Number / Whatsapp Number*</label>
-                    <div className="relative">
-                      <Phone className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
+                    <div className="flex gap-0 relative" ref={countryDropdownRef}>
+                      {/* Country Code Picker Button */}
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setShowCountryDropdown(!showCountryDropdown);
+                          setCountrySearch("");
+                        }}
+                        className={`flex items-center gap-1 px-3 py-2.5 border ${errors.mobileNumber ? "border-red-400" : "border-slate-200"} border-r-0 rounded-l-xl bg-slate-50 hover:bg-slate-100 text-sm font-medium text-slate-700 transition-all duration-200 cursor-pointer shrink-0 font-sans`}
+                      >
+                        <img 
+                          src={`https://flagcdn.com/w20/${selectedPhoneCountry.code.toLowerCase()}.png`} 
+                          alt={selectedPhoneCountry.name} 
+                          className="w-5 h-3.5 object-contain shrink-0 rounded-[2px]" 
+                        />
+                        <span className="text-xs font-semibold text-slate-600">{selectedPhoneCountry.dialCode}</span>
+                        <ChevronDown className={`w-3 h-3 text-slate-400 transition-transform duration-200 ${showCountryDropdown ? "rotate-180" : ""}`} />
+                      </button>
+
+                      {/* Country Dropdown */}
+                      {showCountryDropdown && (
+                        <div className="absolute top-full left-0 mt-1 w-64 max-h-52 bg-white border border-slate-200 rounded-xl shadow-xl z-50 overflow-hidden">
+                          <div className="sticky top-0 bg-white border-b border-slate-100 p-2">
+                            <input
+                              type="text"
+                              value={countrySearch}
+                              onChange={e => setCountrySearch(e.target.value)}
+                              placeholder="Search country..."
+                              autoFocus
+                              className="w-full px-3 py-1.5 text-xs border border-slate-200 rounded-lg bg-slate-50 placeholder-slate-400 focus:outline-none focus:border-accent-blue font-sans"
+                            />
+                          </div>
+                          <div className="overflow-y-auto max-h-40">
+                            {PHONE_COUNTRIES.filter(c => 
+                              c.name.toLowerCase().includes(countrySearch.toLowerCase()) ||
+                              c.dialCode.includes(countrySearch) ||
+                              c.code.toLowerCase().includes(countrySearch.toLowerCase())
+                            ).map(c => (
+                              <button
+                                key={c.code}
+                                type="button"
+                                onClick={() => {
+                                  setPhoneCountry(c.code);
+                                  updateField({ mobileNumber: "" });
+                                  setShowCountryDropdown(false);
+                                  setCountrySearch("");
+                                }}
+                                className={`w-full flex items-center gap-2.5 px-3 py-2 text-left text-xs hover:bg-slate-50 transition-colors cursor-pointer font-sans ${
+                                  c.code === phoneCountry ? "bg-[#0F4C81]/5 text-[#0F4C81] font-bold" : "text-slate-700"
+                                }`}
+                              >
+                                <img 
+                                  src={`https://flagcdn.com/w20/${c.code.toLowerCase()}.png`} 
+                                  alt={c.name} 
+                                  className="w-5 h-3.5 object-contain shrink-0 rounded-[2px]" 
+                                />
+                                <span className="flex-1 font-medium truncate">{c.name}</span>
+                                <span className="text-slate-400 font-semibold shrink-0">{c.dialCode}</span>
+                              </button>
+                            ))}
+                            {PHONE_COUNTRIES.filter(c => 
+                              c.name.toLowerCase().includes(countrySearch.toLowerCase()) ||
+                              c.dialCode.includes(countrySearch) ||
+                              c.code.toLowerCase().includes(countrySearch.toLowerCase())
+                            ).length === 0 && (
+                              <p className="px-3 py-4 text-xs text-slate-400 text-center font-sans">No country found</p>
+                            )}
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Phone Number Input */}
                       <input 
                         id="crm-mobileNumber"
                         type="tel" 
                         value={formData.mobileNumber} 
-                        onChange={e => updateField({ mobileNumber: e.target.value.replace(/\D/g, "").slice(0, 15) })}
-                        placeholder="Mobile or WhatsApp number" 
-                        maxLength={15}
-                        className={`w-full pl-10 pr-4 py-2.5 bg-white border ${errors.mobileNumber ? 'border-red-400' : 'border-slate-200 focus:border-[#0F4C81] focus:ring-[#0F4C81]/15'} rounded-xl text-sm placeholder-slate-400 focus:outline-none focus:ring-2 transition-all font-sans`}
+                        onChange={e => {
+                          const digits = e.target.value.replace(/\D/g, "").slice(0, selectedPhoneCountry.maxDigits);
+                          updateField({ mobileNumber: digits });
+                        }}
+                        placeholder={selectedPhoneCountry.minDigits === selectedPhoneCountry.maxDigits
+                          ? `${"0".repeat(selectedPhoneCountry.minDigits).replace(/0{4}$/, "XXXX")}`
+                          : `${selectedPhoneCountry.minDigits}–${selectedPhoneCountry.maxDigits} digits`
+                        }
+                        maxLength={selectedPhoneCountry.maxDigits}
+                        className={`flex-1 min-w-0 pl-3 pr-4 py-2.5 bg-white border ${errors.mobileNumber ? 'border-red-400' : 'border-slate-200 focus:border-[#0F4C81] focus:ring-[#0F4C81]/15'} border-l-0 rounded-r-xl text-sm placeholder-slate-400 focus:outline-none focus:ring-1 transition-all font-sans`}
                       />
                     </div>
-                    {errors.mobileNumber && <p className="text-[10px] text-red-500 font-sans font-medium mt-0.5">{errors.mobileNumber}</p>}
+
+                    {/* Digit counter hint */}
+                    <div className="flex items-center justify-between">
+                      {errors.mobileNumber
+                        ? <p className="text-[10px] text-red-500 font-sans font-medium mt-0.5">{errors.mobileNumber}</p>
+                        : <span className="text-[10px] text-slate-400 font-sans mt-0.5">
+                            {selectedPhoneCountry.minDigits === selectedPhoneCountry.maxDigits
+                              ? `Exactly ${selectedPhoneCountry.minDigits} digits required`
+                              : `${selectedPhoneCountry.minDigits}–${selectedPhoneCountry.maxDigits} digits required`
+                            }
+                          </span>
+                      }
+                      <span className={`text-[10px] font-mono font-semibold mt-0.5 ${
+                        formData.mobileNumber.length >= selectedPhoneCountry.minDigits && formData.mobileNumber.length <= selectedPhoneCountry.maxDigits
+                          ? "text-green-500"
+                          : formData.mobileNumber.length > 0
+                            ? "text-amber-500"
+                            : "text-slate-300"
+                      }`}>
+                        {formData.mobileNumber.length}/{selectedPhoneCountry.maxDigits}
+                      </span>
+                    </div>
                   </div>
 
                   <div className="space-y-1">
@@ -1164,7 +1322,16 @@ Comments/Additional Info: ${formData.comments || "None"}`;
             <button
               type="button"
               onClick={handleNext}
-              className="px-6 py-2.5 bg-[#0F4C81] hover:bg-[#0c3c66] text-white font-semibold text-xs rounded-full flex items-center gap-1.5 transition-all cursor-pointer shadow-md text-center"
+              disabled={
+                currentStep === 1 && (
+                  !formData.fullName.trim() || 
+                  !formData.mobileNumber.trim() || 
+                  formData.mobileNumber.replace(/\D/g, "").length < selectedPhoneCountry.minDigits || 
+                  formData.mobileNumber.replace(/\D/g, "").length > selectedPhoneCountry.maxDigits ||
+                  (formData.email.trim() && !/\S+@\S+\.\S+/.test(formData.email))
+                )
+              }
+              className="px-6 py-2.5 bg-[#0F4C81] hover:bg-[#0c3c66] text-white font-semibold text-xs rounded-full flex items-center gap-1.5 transition-all cursor-pointer shadow-md text-center disabled:opacity-50 disabled:cursor-not-allowed"
             >
               Next <ChevronRight className="w-3.5 h-3.5" />
             </button>
