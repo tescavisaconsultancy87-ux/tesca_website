@@ -48,7 +48,7 @@ export const POST: APIRoute = async ({ request, cookies }) => {
       httpOnly: true,
       secure: true,
       sameSite: "strict",
-      maxAge: expires_in || 3600,
+      maxAge: 60 * 60 * 24 * 30, // 30 days — outlives the short-lived access token
     });
 
     return jsonResponse({ success: true });

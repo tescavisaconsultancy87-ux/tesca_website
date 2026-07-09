@@ -37,8 +37,6 @@
 # Sitemap / robots — short cache so updates propagate.
 /sitemap.xml
   Cache-Control: public, max-age=3600
-/sitemap-index.xml
-  Cache-Control: public, max-age=3600
 /robots.txt
   Cache-Control: public, max-age=3600
 

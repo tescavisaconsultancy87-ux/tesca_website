@@ -54,52 +54,44 @@ const SVG = {
 let stories = [];
 let visaUpdates = [];
 let combinedCarouselItems = [];
-
-try {
-  const { data, error } = await supabase
-    .from('success_stories')
-    .select('*')
-    .order('id', { ascending: false });
-
-  if (error) throw error;
-  stories = data || [];
-} catch (err) {
-  console.error("Failed to fetch success stories from Supabase:", err);
-}
-
-// Fetch carousel videos
 let videos: any[] = [];
-try {
-  const { data, error } = await supabase
-    .from('carousel_videos')
-    .select('*')
-    .order('id', { ascending: false });
+let socialCauses = [];
 
-  if (!error && data) {
-    videos = data.map(v => ({
-      id: v.id,
-      name: v.title,
-      photo: v.thumbnail_url,
-      type: "Video",
-      score: "Watch Video",
-      country: null,
-      video_url: v.video_url,
-      is_video: true
-    }));
-  }
-} catch (err) {
-  console.error("Failed to fetch carousel videos from Supabase:", err);
+// 1. Initiate database fetches concurrently
+const [storiesRes, videosRes, updatesRes, causesRes] = await Promise.all([
+  supabase.from('success_stories').select('*').order('id', { ascending: false }).then(res => res, err => ({ data: [], error: err })),
+  supabase.from('carousel_videos').select('*').order('id', { ascending: false }).then(res => res, err => ({ data: [], error: err })),
+  supabase.from('visa_updates').select('*').then(res => res, err => ({ data: [], error: err })),
+  supabase.from('social_causes').select('*').order('id', { ascending: false }).then(res => res, err => ({ data: [], error: err }))
+]);
+
+// 2. Perform transformations and error handling
+if (storiesRes.error) {
+  console.error("Failed to fetch success stories from Supabase:", storiesRes.error);
+} else {
+  stories = storiesRes.data || [];
 }
 
 combinedCarouselItems = [...stories];
 
-try {
-  const { data, error } = await supabase
-    .from('visa_updates')
-    .select('*');
+if (videosRes.error) {
+  console.error("Failed to fetch carousel videos from Supabase:", videosRes.error);
+} else if (videosRes.data) {
+  videos = videosRes.data.map(v => ({
+    id: v.id,
+    name: v.title,
+    photo: v.thumbnail_url,
+    type: "Video",
+    score: "Watch Video",
+    country: null,
+    video_url: v.video_url,
+    is_video: true
+  }));
+}
 
-  if (error) throw error;
-
+if (updatesRes.error) {
+  console.error("Failed to fetch visa updates from Supabase:", updatesRes.error);
+} else if (updatesRes.data) {
   const parseUpdateDate = (dateStr: string) => {
     const normalized = (dateStr || '').trim();
     if (/^\d{4}$/.test(normalized)) {
@@ -124,7 +116,7 @@ try {
     };
   };
 
-  const mapped = (data || []).map(u => {
+  const mapped = updatesRes.data.map(u => {
     const parsed = parseUpdateDate(u.date);
     return {
       ...u,
@@ -135,26 +127,16 @@ try {
   });
 
   visaUpdates = mapped.sort((a, b) => b._timestamp - a._timestamp);
-} catch (err) {
-  console.error("Failed to fetch visa updates from Supabase:", err);
 }
 
 const uniqueYears = Array.from(new Set(visaUpdates.map(u => u._year)))
   .filter(y => y !== "Unknown")
   .sort((a, b) => b.localeCompare(a));
 
-let socialCauses = [];
-try {
-  const { data, error } = await supabase
-    .from('social_causes')
-    .select('*')
-    .order('id', { ascending: false });
-
-  if (!error && data) {
-    socialCauses = data;
-  }
-} catch (err) {
-  console.error("Failed to fetch social causes from Supabase:", err);
+if (causesRes.error) {
+  console.error("Failed to fetch social causes from Supabase:", causesRes.error);
+} else if (causesRes.data) {
+  socialCauses = causesRes.data;
 }
 
 
@@ -170,10 +152,10 @@ try {
     
     <!-- Hero Slider Background Images -->
     <div class="absolute inset-0 z-0">
-      <img src="/images/Hero/main.webp" alt="TESCA Visa Consultancy background 1" class="hero-slide absolute inset-0 w-full h-full object-cover opacity-100" fetchpriority="high" />
-      <img src="/images/Hero/main2.webp" alt="TESCA Visa Consultancy background 2" class="hero-slide absolute inset-0 w-full h-full object-cover opacity-0" />
-      <img src="/images/Hero/main3.webp" alt="TESCA Visa Consultancy background 3" class="hero-slide absolute inset-0 w-full h-full object-cover opacity-0" />
-      <img src="/images/Hero/main4.webp" alt="TESCA Visa Consultancy background 4" class="hero-slide absolute inset-0 w-full h-full object-cover opacity-0" />
+      <img src="/images/Hero/main.webp" alt="TESCA Visa Consultancy background 1" class="hero-slide absolute inset-0 w-full h-full object-cover opacity-100" fetchpriority="high" decoding="async" width="1920" height="1080" />
+      <img src="/images/Hero/main2.webp" alt="TESCA Visa Consultancy background 2" class="hero-slide absolute inset-0 w-full h-full object-cover opacity-0" decoding="async" width="1920" height="1080" />
+      <img src="/images/Hero/main3.webp" alt="TESCA Visa Consultancy background 3" class="hero-slide absolute inset-0 w-full h-full object-cover opacity-0" decoding="async" width="1920" height="1080" />
+      <img src="/images/Hero/main4.webp" alt="TESCA Visa Consultancy background 4" class="hero-slide absolute inset-0 w-full h-full object-cover opacity-0" decoding="async" width="1920" height="1080" />
       
       <!-- Premium dark linear gradient overlay: lighter to make background images more visible -->
       <div class="absolute inset-0 bg-gradient-to-r from-slate-950/80 via-slate-950/45 to-transparent z-10"></div>
@@ -325,6 +307,10 @@ try {
               src="/images/graduating_students.png" 
               alt="Classmates celebrating in gowns" 
               class="w-full h-[320px] object-cover" 
+              loading="lazy"
+              decoding="async"
+              width="1024"
+              height="1024"
             />
           </div>
           
@@ -363,6 +349,10 @@ try {
               src="/images/caps_in_air.png" 
               alt="Graduates throwing caps in air" 
               class="w-full h-[320px] object-cover" 
+              loading="lazy"
+              decoding="async"
+              width="1024"
+              height="1024"
             />
           </div>
         </div>
@@ -428,6 +418,7 @@ try {
                     alt={cause.title} 
                     class="w-full h-full object-cover group-hover:scale-[1.03] transition-transform duration-550 select-none" 
                     loading="lazy" 
+                    decoding="async" 
                   />
                   
                   {/* Platform Badge overlay on Top Right */}
@@ -492,9 +483,13 @@ try {
       {/* Video Banner: Section Heading General Sans */}
       <div class="relative rounded-3xl overflow-hidden shadow-lg border border-slate-200 mb-16 group">
         <img 
-          src="/images/consultation.png" 
+          src="/images/consultation.webp" 
           alt="voices from community advisory panel" 
           class="w-full h-[300px] md:h-[380px] object-cover" 
+          loading="lazy"
+          decoding="async"
+          width="1254"
+          height="1254"
         />
         <div class="absolute inset-0 bg-black/40 flex flex-col justify-end p-8 text-white">
           <span class="text-[14px] font-medium font-sans tracking-widest text-accent-cyan uppercase">Student Testimonials</span>
@@ -768,6 +763,10 @@ try {
             src="/images/red_brick.png" 
             alt="Classic red brick university hall" 
             class="w-full h-full min-h-[300px] object-cover rounded-xl" 
+            loading="lazy"
+            decoding="async"
+            width="1024"
+            height="1024"
           />
         </div>
 
@@ -849,6 +848,9 @@ Expert guidance, top universities, and visa success—everything you need to tak
               alt="TESCA Visa Consultancy Office" 
               class="w-full h-full object-cover select-none"
               loading="lazy"
+              decoding="async"
+              width="680"
+              height="453"
             />
             <div class="absolute bottom-4 left-4 bg-slate-900/70 backdrop-blur-md px-3.5 py-1.5 rounded-full border border-white/10 text-white text-xs font-semibold font-sans">
               Our Premium Office Space in Surat

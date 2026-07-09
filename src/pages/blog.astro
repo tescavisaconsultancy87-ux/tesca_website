@@ -12,38 +12,34 @@ import { blogPosts as staticBlogPosts } from "../data/blog";
 
 // Fetch blog posts from Supabase (with static fallback)
 let blogPosts = staticBlogPosts;
-try {
-  const { data: dbPosts, error: blogError } = await supabase
-    .from('blog_posts')
-    .select('*')
-    .eq('is_published', true)
-    .order('id', { ascending: false });
+let visaUpdates = [];
 
-  if (!blogError && dbPosts && dbPosts.length > 0) {
-    blogPosts = dbPosts.map(p => ({
-      slug: p.slug,
-      title: p.title,
-      desc: p.description,
-      date: p.date,
-      tag: p.tag,
-      tagBg: p.tag_bg,
-      link: `/blog/${p.slug}`,
-      content: p.content,
-      faq: p.faq || [],
-    }));
-  }
-} catch (err) {
-  console.error("Failed to fetch blog posts from Supabase, using static fallback:", err);
+// 1. Initiate database fetches concurrently
+const [blogRes, updatesRes] = await Promise.all([
+  supabase.from('blog_posts').select('*').eq('is_published', true).order('id', { ascending: false }).then(res => res, err => ({ data: [], error: err })),
+  supabase.from('visa_updates').select('*').then(res => res, err => ({ data: [], error: err }))
+]);
+
+// 2. Perform transformations and error handling
+if (blogRes.error) {
+  console.error("Failed to fetch blog posts from Supabase, using static fallback:", blogRes.error);
+} else if (blogRes.data && blogRes.data.length > 0) {
+  blogPosts = blogRes.data.map(p => ({
+    slug: p.slug,
+    title: p.title,
+    desc: p.description,
+    date: p.date,
+    tag: p.tag,
+    tagBg: p.tag_bg,
+    link: `/blog/${p.slug}`,
+    content: p.content,
+    faq: p.faq || [],
+  }));
 }
 
-let visaUpdates = [];
-try {
-  const { data, error } = await supabase
-    .from('visa_updates')
-    .select('*');
-
-  if (error) throw error;
-  
+if (updatesRes.error) {
+  console.error("Failed to fetch visa updates in blog page:", updatesRes.error);
+} else if (updatesRes.data) {
   const parseUpdateDate = (dateStr: string) => {
     const normalized = (dateStr || '').trim();
     if (/^\d{4}$/.test(normalized)) {
@@ -68,7 +64,7 @@ try {
     };
   };
 
-  const mapped = (data || []).map(u => {
+  const mapped = updatesRes.data.map(u => {
     const parsed = parseUpdateDate(u.date);
     return {
       ...u,
@@ -80,8 +76,6 @@ try {
   visaUpdates = mapped
     .sort((a, b) => b._timestamp - a._timestamp)
     .slice(0, 3);
-} catch (err) {
-  console.error("Failed to fetch visa updates in blog page:", err);
 }
 ---
 

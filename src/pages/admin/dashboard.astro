@@ -39,44 +39,65 @@ let leadsList: any[] = [];
 let isDemoMode = false;
 
 try {
-  // 1. Fetch counts for other tables
-  const { count: leadsCount } = await supabase.from('leads').select('*', { count: 'exact', head: true }).neq('lead_type', 'partner');
-  totalLeads = leadsCount || 0;
+  // 1. Fetch counts and datasets concurrently
+  const [
+    leadsRes,
+    partnersRes,
+    uniRes,
+    storiesRes,
+    annRes,
+    updatesRes,
+    galleryRes,
+    socialRes,
+    blogRes,
+    leadsDataRes
+  ] = await Promise.all([
+    supabase.from('leads').select('*', { count: 'exact', head: true }).neq('lead_type', 'partner').then(res => res, err => ({ count: 0, error: err })),
+    supabase.from('leads').select('*', { count: 'exact', head: true }).eq('lead_type', 'partner').then(res => res, err => ({ count: 0, error: err })),
+    supabase.from('universities').select('*', { count: 'exact', head: true }).then(res => res, err => ({ count: 0, error: err })),
+    supabase.from('success_stories').select('*', { count: 'exact', head: true }).then(res => res, err => ({ count: 0, error: err })),
+    supabase.from('announcements').select('*', { count: 'exact', head: true }).then(res => res, err => ({ count: 0, error: err })),
+    supabase.from('visa_updates').select('*', { count: 'exact', head: true }).then(res => res, err => ({ count: 0, error: err })),
+    supabase.from('gallery_images').select('*', { count: 'exact', head: true }).then(res => res, err => ({ count: 0, error: err })),
+    supabase.from('social_causes').select('*', { count: 'exact', head: true }).then(res => res, err => ({ count: 0, error: err })),
+    supabase.from('blog_posts').select('*', { count: 'exact', head: true }).then(res => res, err => ({ count: 0, error: err })),
+    supabase.from('leads').select('id, name, email, phone, lead_type, status, created_at').neq('lead_type', 'partner').order('created_at', { ascending: false }).limit(1000).then(res => res, err => ({ data: [], error: err }))
+  ]);
 
-  const { count: partnersCount } = await supabase.from('leads').select('*', { count: 'exact', head: true }).eq('lead_type', 'partner');
-  totalPartners = partnersCount || 0;
+  // 2. Log non-critical query failures and assign counts
+  if (leadsRes.error) console.error("Dashboard overview query failed:", leadsRes.error);
+  totalLeads = leadsRes.count || 0;
 
-  const { count: uniCount } = await supabase.from('universities').select('*', { count: 'exact', head: true });
-  totalUniversities = uniCount || 0;
+  if (partnersRes.error) console.error("Dashboard overview query failed:", partnersRes.error);
+  totalPartners = partnersRes.count || 0;
 
-  const { count: storiesCount } = await supabase.from('success_stories').select('*', { count: 'exact', head: true });
-  totalStories = storiesCount || 0;
+  if (uniRes.error) console.error("Dashboard overview query failed:", uniRes.error);
+  totalUniversities = uniRes.count || 0;
 
-  const { count: annCount } = await supabase.from('announcements').select('*', { count: 'exact', head: true });
-  totalAnnouncements = annCount || 0;
+  if (storiesRes.error) console.error("Dashboard overview query failed:", storiesRes.error);
+  totalStories = storiesRes.count || 0;
 
-  const { count: updatesCount } = await supabase.from('visa_updates').select('*', { count: 'exact', head: true });
-  totalUpdates = updatesCount || 0;
+  if (annRes.error) console.error("Dashboard overview query failed:", annRes.error);
+  totalAnnouncements = annRes.count || 0;
 
-  const { count: galleryCount } = await supabase.from('gallery_images').select('*', { count: 'exact', head: true });
-  totalGalleryImages = galleryCount || 0;
+  if (updatesRes.error) console.error("Dashboard overview query failed:", updatesRes.error);
+  totalUpdates = updatesRes.count || 0;
 
-  const { count: socialCount } = await supabase.from('social_causes').select('*', { count: 'exact', head: true });
-  totalSocialCauses = socialCount || 0;
+  if (galleryRes.error) console.error("Dashboard overview query failed:", galleryRes.error);
+  totalGalleryImages = galleryRes.count || 0;
 
-  const { count: blogCount } = await supabase.from('blog_posts').select('*', { count: 'exact', head: true });
-  totalBlogPosts = blogCount || 0;
+  if (socialRes.error) console.error("Dashboard overview query failed:", socialRes.error);
+  totalSocialCauses = socialRes.count || 0;
 
-  // 2. Fetch up to 1000 student leads for detail analysis
-  const { data: leadsData, error: leadsErr } = await supabase
-    .from('leads')
-    .select('id, name, email, phone, lead_type, status, created_at')
-    .neq('lead_type', 'partner')
-    .order('created_at', { ascending: false })
-    .limit(1000);
+  if (blogRes.error) console.error("Dashboard overview query failed:", blogRes.error);
+  totalBlogPosts = blogRes.count || 0;
 
-  if (leadsErr) throw leadsErr;
-  leadsList = leadsData || [];
+  // 3. Process critical leads dataset
+  if (leadsDataRes.error) {
+    console.error("Dashboard overview query failed:", leadsDataRes.error);
+  } else {
+    leadsList = leadsDataRes.data || [];
+  }
 } catch (err) {
   console.error("Dashboard overview query failed:", err);
 }
@@ -529,6 +550,8 @@ const cards = [
 {/* Load ApexCharts from CDN */}
 <script is:inline src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
 <script>
+  declare const ApexCharts: any;
+
   function renderCharts() {
     const dataEl = document.getElementById('analytics-data');
     if (!dataEl) return;
@@ -640,7 +663,7 @@ const cards = [
             colors: ['#fff']
           },
           dropShadow: { enabled: false },
-          formatter: function (val, opts) {
+          formatter: function (val: any, opts: any) {
             return opts.w.config.series[opts.seriesIndex];
           }
         },
@@ -656,8 +679,8 @@ const cards = [
                   color: '#94a3b8',
                   fontSize: '11px',
                   fontWeight: 600,
-                  formatter: function (w) {
-                    return w.globals.seriesTotals.reduce((a, b) => a + b, 0);
+                  formatter: function (w: any) {
+                    return w.globals.seriesTotals.reduce((a: number, b: number) => a + b, 0);
                   }
                 },
                 value: {
@@ -726,7 +749,7 @@ const cards = [
           enabled: true,
           textAnchor: 'start',
           style: { colors: ['#fff'], fontSize: '11px', fontWeight: 'bold' },
-          formatter: function(val) {
+          formatter: function(val: any) {
             return val;
           },
           offsetX: 10

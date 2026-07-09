@@ -21,7 +21,7 @@ export const GET: APIRoute = async ({ request }) => {
 
     const list = (universities || []).map((u: any) => ({
       ...u,
-      image_url: u.image_url || u.photo || "",
+      image_url: (u.image_url || u.photo || "").replace(/\.(png|jpg|jpeg)$/i, '.webp'),
       ug_tuition_fees: u.ug_tuition_fees || u.ug_fees || u.tuition_fees || "",
       ug_intakes: u.ug_intakes || u.ug_intake || u.intake || "",
       ug_ielts_pte: u.ug_ielts_pte || u.ug_ielts_pte_req || u.ielts_pte_req || "",

@@ -81,10 +81,13 @@ const uniqueYears = Array.from(new Set(visaUpdates.map(u => u._year)))
       <div class="md:col-span-5 relative flex justify-center md:justify-end self-stretch items-center">
         <div class="relative w-full max-w-[320px] md:max-w-[400px] flex items-center aspect-[4/3] rounded-2xl overflow-hidden shadow-md border border-slate-200 bg-white p-2">
           <img 
-            src="/images/visa_updates_banner.png" 
+            src="/images/visa_updates_banner.webp" 
             alt="Visa & Admission Bulletins" 
             class="w-full h-full object-cover rounded-xl"
             loading="eager"
+            decoding="async"
+            width="1920"
+            height="1080"
           />
         </div>
       </div>

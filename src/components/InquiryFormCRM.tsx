@@ -519,10 +519,11 @@ Comments/Additional Info: ${formData.comments || "None"}`;
                 <h3 className="text-lg font-bold text-slate-800 font-display border-b border-slate-100 pb-2">👤 Personal Information</h3>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div className="space-y-1">
-                    <label className="text-xs font-bold uppercase tracking-wider text-slate-600 font-sans">Full Name *</label>
+                    <label htmlFor="crm-fullName" className="text-xs font-bold uppercase tracking-wider text-slate-600 font-sans">Full Name *</label>
                     <div className="relative">
                       <User className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
                       <input 
+                        id="crm-fullName"
                         type="text" 
                         value={formData.fullName} 
                         onChange={e => updateField({ fullName: e.target.value })}
@@ -534,10 +535,11 @@ Comments/Additional Info: ${formData.comments || "None"}`;
                   </div>
 
                   <div className="space-y-1">
-                    <label className="text-xs font-bold uppercase tracking-wider text-slate-600 font-sans">Mobile Number / Whatsapp Number*</label>
+                    <label htmlFor="crm-mobileNumber" className="text-xs font-bold uppercase tracking-wider text-slate-600 font-sans">Mobile Number / Whatsapp Number*</label>
                     <div className="relative">
                       <Phone className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
                       <input 
+                        id="crm-mobileNumber"
                         type="tel" 
                         value={formData.mobileNumber} 
                         onChange={e => updateField({ mobileNumber: e.target.value.replace(/\D/g, "").slice(0, 15) })}
@@ -550,10 +552,11 @@ Comments/Additional Info: ${formData.comments || "None"}`;
                   </div>
 
                   <div className="space-y-1">
-                    <label className="text-xs font-bold uppercase tracking-wider text-slate-600 font-sans">Email Address</label>
+                    <label htmlFor="crm-email" className="text-xs font-bold uppercase tracking-wider text-slate-600 font-sans">Email Address</label>
                     <div className="relative">
                       <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
                       <input 
+                        id="crm-email"
                         type="email" 
                         value={formData.email} 
                         onChange={e => updateField({ email: e.target.value })}
@@ -565,10 +568,11 @@ Comments/Additional Info: ${formData.comments || "None"}`;
                   </div>
 
                   <div className="space-y-1">
-                    <label className="text-xs font-bold uppercase tracking-wider text-slate-600 font-sans">Date of Birth</label>
+                    <label htmlFor="crm-dob" className="text-xs font-bold uppercase tracking-wider text-slate-600 font-sans">Date of Birth</label>
                     <div className="relative">
                       <Calendar className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
                       <input 
+                        id="crm-dob"
                         type="date" 
                         value={formData.dob} 
                         onChange={e => updateField({ dob: e.target.value })}
@@ -578,10 +582,11 @@ Comments/Additional Info: ${formData.comments || "None"}`;
                   </div>
 
                   <div className="space-y-1">
-                    <label className="text-xs font-bold uppercase tracking-wider text-slate-600 font-sans">City Name</label>
+                    <label htmlFor="crm-city" className="text-xs font-bold uppercase tracking-wider text-slate-600 font-sans">City Name</label>
                     <div className="relative">
                       <MapPin className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
                       <input 
+                        id="crm-city"
                         type="text" 
                         value={formData.city} 
                         onChange={e => updateField({ city: e.target.value })}
@@ -600,13 +605,15 @@ Comments/Additional Info: ${formData.comments || "None"}`;
                 <h3 className="text-lg font-bold text-slate-800 font-display border-b border-slate-100 pb-2">🌍 Country Preference</h3>
                 <p className="text-xs text-slate-500 font-sans">Select one or more destination countries you are interested in.</p>
                 
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3" role="group" aria-label="Select preferred countries">
                   {COUNTRIES_LIST.map((c) => {
                     const isSelected = formData.preferredCountries.includes(c.name);
                     return (
                       <button
                         key={c.name}
                         type="button"
+                        role="checkbox"
+                        aria-checked={isSelected}
                         onClick={() => toggleCountry(c.name)}
                         className={`p-3 border rounded-2xl flex items-center gap-2.5 transition-all text-xs font-bold cursor-pointer font-sans ${
                           isSelected 
@@ -636,13 +643,15 @@ Comments/Additional Info: ${formData.comments || "None"}`;
             {currentStep === 3 && (
               <div className="space-y-4 animate-[slideIn_0.35s_ease-out]">
                 <h3 className="text-lg font-bold text-slate-800 font-display border-b border-slate-100 pb-2">📢 How Did You Hear About Us?</h3>
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3" role="radiogroup" aria-label="How did you hear about us">
                   {["Facebook", "Instagram", "Google", "Direct Visit", "Friend", "Existing Student", "Reference"].map((source) => {
                     const isSelected = formData.leadSource === source;
                     return (
                       <button
                         key={source}
                         type="button"
+                        role="radio"
+                        aria-checked={isSelected}
                         onClick={() => updateField({ leadSource: source })}
                         className={`px-3 py-3 border text-xs font-semibold rounded-xl text-left transition-all cursor-pointer font-sans ${
                           isSelected 
@@ -660,8 +669,9 @@ Comments/Additional Info: ${formData.comments || "None"}`;
                 {formData.leadSource === "Reference" && (
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-4 border-t border-slate-100 animate-[fadeIn_0.3s_ease-out]">
                     <div className="space-y-1">
-                      <label className="text-xs font-bold uppercase tracking-wider text-slate-600 font-sans">Reference Name *</label>
+                      <label htmlFor="crm-refName" className="text-xs font-bold uppercase tracking-wider text-slate-600 font-sans">Reference Name *</label>
                       <input 
+                        id="crm-refName"
                         type="text" 
                         value={formData.refName} 
                         onChange={e => updateField({ refName: e.target.value })}
@@ -672,8 +682,9 @@ Comments/Additional Info: ${formData.comments || "None"}`;
                     </div>
 
                     <div className="space-y-1">
-                      <label className="text-xs font-bold uppercase tracking-wider text-slate-600 font-sans">Reference Mobile Number *</label>
+                      <label htmlFor="crm-refMobile" className="text-xs font-bold uppercase tracking-wider text-slate-600 font-sans">Reference Mobile Number *</label>
                       <input 
+                        id="crm-refMobile"
                         type="tel" 
                         value={formData.refMobile} 
                         onChange={e => updateField({ refMobile: e.target.value.replace(/\D/g, "").slice(0, 15) })}
@@ -692,13 +703,15 @@ Comments/Additional Info: ${formData.comments || "None"}`;
             {currentStep === 4 && (
               <div className="space-y-4 animate-[slideIn_0.35s_ease-out]">
                 <h3 className="text-lg font-bold text-slate-800 font-display border-b border-slate-100 pb-2">🎯 Inquiry Type</h3>
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3" role="group" aria-label="Select inquiry types">
                   {["Student Visa", "Visitor Visa", "Dependent Visa", "Business Visa", "PR", "Other"].map((type) => {
                     const isSelected = formData.inquiryType.includes(type);
                     return (
                       <button
                         key={type}
                         type="button"
+                        role="checkbox"
+                        aria-checked={isSelected}
                         onClick={() => toggleInquiryType(type)}
                         className={`px-4 py-3 border text-sm font-semibold rounded-xl text-left transition-all cursor-pointer flex items-center justify-between font-sans ${
                           isSelected 
@@ -726,14 +739,16 @@ Comments/Additional Info: ${formData.comments || "None"}`;
                 <h3 className="text-lg font-bold text-slate-800 font-display border-b border-slate-100 pb-2">❤️ Personal Details</h3>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                   <div className="space-y-2 text-left">
-                    <label className="text-xs font-bold uppercase tracking-wider text-slate-600 font-sans">Marital Status *</label>
-                    <div className="flex gap-3">
+                    <label id="crm-marital-label" className="text-xs font-bold uppercase tracking-wider text-slate-600 font-sans">Marital Status *</label>
+                    <div className="flex gap-3" role="radiogroup" aria-labelledby="crm-marital-label">
                       {["Single", "Married"].map((status) => {
                         const isSel = formData.maritalStatus === status;
                         return (
                           <button
                             key={status}
                             type="button"
+                            role="radio"
+                            aria-checked={isSel}
                             onClick={() => updateField({ maritalStatus: status })}
                             className={`flex-1 px-4 py-2.5 border text-xs font-bold rounded-xl transition-all cursor-pointer font-sans ${
                               isSel 
@@ -750,14 +765,16 @@ Comments/Additional Info: ${formData.comments || "None"}`;
                   </div>
 
                   <div className="space-y-2 text-left">
-                    <label className="text-xs font-bold uppercase tracking-wider text-slate-600 font-sans">Passport Available? *</label>
-                    <div className="flex gap-3">
+                    <label id="crm-passport-label" className="text-xs font-bold uppercase tracking-wider text-slate-600 font-sans">Passport Available? *</label>
+                    <div className="flex gap-3" role="radiogroup" aria-labelledby="crm-passport-label">
                       {["Yes", "No"].map((avail) => {
                         const isSel = formData.passportAvailable === avail;
                         return (
                           <button
                             key={avail}
                             type="button"
+                            role="radio"
+                            aria-checked={isSel}
                             onClick={() => updateField({ passportAvailable: avail })}
                             className={`flex-1 px-4 py-2.5 border text-xs font-bold rounded-xl transition-all cursor-pointer font-sans ${
                               isSel 
@@ -783,14 +800,16 @@ Comments/Additional Info: ${formData.comments || "None"}`;
 
                 {/* 10th Completion Question */}
                 <div className="space-y-2">
-                  <label className="text-xs font-bold uppercase tracking-wider text-slate-600 font-sans">Have you completed 10th (SSC)? *</label>
-                  <div className="flex gap-3 max-w-xs">
+                  <label id="crm-tenth-label" className="text-xs font-bold uppercase tracking-wider text-slate-600 font-sans">Have you completed 10th (SSC)? *</label>
+                  <div className="flex gap-3 max-w-xs" role="radiogroup" aria-labelledby="crm-tenth-label">
                     {["Yes", "No"].map((choice) => {
                       const isSel = formData.completedTenth === choice;
                       return (
                         <button
                           key={choice}
                           type="button"
+                          role="radio"
+                          aria-checked={isSel}
                           onClick={() => updateField({ completedTenth: choice })}
                           className={`flex-1 px-4 py-2.5 border text-xs font-bold rounded-xl transition-all cursor-pointer font-sans ${
                             isSel 
@@ -808,14 +827,16 @@ Comments/Additional Info: ${formData.comments || "None"}`;
 
                 {/* 12th Completion Question */}
                 <div className="space-y-2">
-                  <label className="text-xs font-bold uppercase tracking-wider text-slate-600 font-sans">Have you completed 12th (HSC)? *</label>
-                  <div className="flex gap-3 max-w-xs">
+                  <label id="crm-twelfth-label" className="text-xs font-bold uppercase tracking-wider text-slate-600 font-sans">Have you completed 12th (HSC)? *</label>
+                  <div className="flex gap-3 max-w-xs" role="radiogroup" aria-labelledby="crm-twelfth-label">
                     {["Yes", "No"].map((choice) => {
                       const isSel = formData.completedTwelfth === choice;
                       return (
                         <button
                           key={choice}
                           type="button"
+                          role="radio"
+                          aria-checked={isSel}
                           onClick={() => updateField({ completedTwelfth: choice })}
                           className={`flex-1 px-4 py-2.5 border text-xs font-bold rounded-xl transition-all cursor-pointer font-sans ${
                             isSel 
@@ -839,8 +860,9 @@ Comments/Additional Info: ${formData.comments || "None"}`;
                   </h4>
                   <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
                     <div className="space-y-1">
-                      <label className="text-[10px] font-bold uppercase tracking-wider text-slate-500 font-sans">Passing Year</label>
+                      <label htmlFor="crm-collegeYear" className="text-[10px] font-bold uppercase tracking-wider text-slate-500 font-sans">Passing Year</label>
                       <input 
+                        id="crm-collegeYear"
                         type="text" 
                         inputMode="numeric"
                         pattern="[0-9]*"
@@ -851,8 +873,9 @@ Comments/Additional Info: ${formData.comments || "None"}`;
                       />
                     </div>
                     <div className="space-y-1">
-                      <label className="text-[10px] font-bold uppercase tracking-wider text-slate-500 font-sans">Percentage / GPA</label>
+                      <label htmlFor="crm-collegeGpa" className="text-[10px] font-bold uppercase tracking-wider text-slate-500 font-sans">Percentage / GPA</label>
                       <input 
+                        id="crm-collegeGpa"
                         type="text" 
                         value={formData.collegeGpa} 
                         onChange={e => updateField({ collegeGpa: e.target.value })}
@@ -861,8 +884,9 @@ Comments/Additional Info: ${formData.comments || "None"}`;
                       />
                     </div>
                     <div className="space-y-1 col-span-2">
-                      <label className="text-[10px] font-bold uppercase tracking-wider text-slate-500 font-sans">University / College Name</label>
+                      <label htmlFor="crm-collegeUni" className="text-[10px] font-bold uppercase tracking-wider text-slate-500 font-sans">University / College Name</label>
                       <input 
+                        id="crm-collegeUni"
                         type="text" 
                         value={formData.collegeUni} 
                         onChange={e => updateField({ collegeUni: e.target.value })}
@@ -872,8 +896,9 @@ Comments/Additional Info: ${formData.comments || "None"}`;
                     </div>
                   </div>
                   <div className="space-y-1 pt-1">
-                    <label className="text-[10px] font-bold uppercase tracking-wider text-slate-500 font-sans">Course Name</label>
+                    <label htmlFor="crm-collegeCourse" className="text-[10px] font-bold uppercase tracking-wider text-slate-500 font-sans">Course Name</label>
                     <input 
+                      id="crm-collegeCourse"
                       type="text" 
                       value={formData.collegeCourse} 
                       onChange={e => updateField({ collegeCourse: e.target.value })}
@@ -885,14 +910,16 @@ Comments/Additional Info: ${formData.comments || "None"}`;
 
                 {/* Highest Qualification */}
                 <div className="space-y-2">
-                  <label className="text-xs font-bold uppercase tracking-wider text-slate-600 font-sans">Highest Qualification *</label>
-                  <div className="flex flex-wrap gap-2">
+                  <label id="crm-highest-label" className="text-xs font-bold uppercase tracking-wider text-slate-600 font-sans">Highest Qualification *</label>
+                  <div className="flex flex-wrap gap-2" role="radiogroup" aria-labelledby="crm-highest-label">
                     {["10th", "12th", "Diploma", "Bachelor's", "Master's", "PhD"].map((q) => {
                       const isSel = formData.highest === q;
                       return (
                         <button
                           key={q}
                           type="button"
+                          role="radio"
+                          aria-checked={isSel}
                           onClick={() => updateField({ highest: q })}
                           className={`px-4 py-2 border text-xs font-semibold rounded-full transition-all cursor-pointer font-sans ${
                             isSel 
@@ -916,7 +943,7 @@ Comments/Additional Info: ${formData.comments || "None"}`;
                 <h3 className="text-lg font-bold text-slate-800 font-display border-b border-slate-100 pb-2">📝 Language Test Details</h3>
                 <p className="text-xs text-slate-500 font-sans">Select the language test you have appeared for.</p>
 
-                <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5">
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5" role="radiogroup" aria-label="Language test appeared for">
                   {["IELTS", "PTE", "TOEFL", "Duolingo", "German Language Test", "None"].map((test) => {
                     const isSelected = test === "None"
                       ? formData.languageTestType === "None"
@@ -925,6 +952,8 @@ Comments/Additional Info: ${formData.comments || "None"}`;
                       <button
                         key={test}
                         type="button"
+                        role="radio"
+                        aria-checked={isSelected}
                         onClick={() => {
                           if (test === "None") {
                             updateField({ languageTestType: "None", languageTestScore: "" });
@@ -947,8 +976,9 @@ Comments/Additional Info: ${formData.comments || "None"}`;
 
                 {formData.languageTestType && formData.languageTestType !== "None" && (
                   <div className="max-w-xs space-y-1 animate-[fadeIn_0.3s_ease-out]">
-                    <label className="text-xs font-bold uppercase tracking-wider text-slate-600 font-sans">Exam Score *</label>
+                    <label htmlFor="crm-languageTestScore" className="text-xs font-bold uppercase tracking-wider text-slate-600 font-sans">Exam Score *</label>
                     <input 
+                      id="crm-languageTestScore"
                       type="text"
                       value={formData.languageTestScore}
                       onChange={e => updateField({ languageTestScore: e.target.value })}
@@ -967,14 +997,16 @@ Comments/Additional Info: ${formData.comments || "None"}`;
                 <h3 className="text-lg font-bold text-slate-800 font-display border-b border-slate-100 pb-2">🚫 Visa History</h3>
                 
                 <div className="space-y-2">
-                  <label className="text-xs font-bold uppercase tracking-wider text-slate-600 font-sans">Any Country Refusal? *</label>
-                  <div className="flex gap-3 max-w-xs">
+                  <label id="crm-refusal-label" className="text-xs font-bold uppercase tracking-wider text-slate-600 font-sans">Any Country Refusal? *</label>
+                  <div className="flex gap-3 max-w-xs" role="radiogroup" aria-labelledby="crm-refusal-label">
                     {["Yes", "No"].map((ref) => {
                       const isSel = formData.visaRefusal === ref;
                       return (
                         <button
                           key={ref}
                           type="button"
+                          role="radio"
+                          aria-checked={isSel}
                           onClick={() => {
                             if (ref === "No") {
                               updateField({ visaRefusal: "No", refusalCountry: "", refusalDate: "", refusalReason: "" });
@@ -999,8 +1031,9 @@ Comments/Additional Info: ${formData.comments || "None"}`;
                 {formData.visaRefusal === "Yes" && (
                   <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-4 border-t border-slate-100 animate-[fadeIn_0.3s_ease-out]">
                     <div className="space-y-1">
-                      <label className="text-xs font-bold uppercase tracking-wider text-slate-600 font-sans">Country Name *</label>
+                      <label htmlFor="crm-refusalCountry" className="text-xs font-bold uppercase tracking-wider text-slate-600 font-sans">Country Name *</label>
                       <input 
+                        id="crm-refusalCountry"
                         type="text" 
                         value={formData.refusalCountry}
                         onChange={e => updateField({ refusalCountry: e.target.value })}
@@ -1011,10 +1044,11 @@ Comments/Additional Info: ${formData.comments || "None"}`;
                     </div>
 
                     <div className="space-y-1">
-                      <label className="text-xs font-bold uppercase tracking-wider text-slate-600 font-sans">Refusal Date *</label>
+                      <label htmlFor="crm-refusalDate" className="text-xs font-bold uppercase tracking-wider text-slate-600 font-sans">Refusal Date *</label>
                       <div className="relative">
                         <Calendar className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
                         <input 
+                          id="crm-refusalDate"
                           type="date" 
                           value={formData.refusalDate}
                           onChange={e => updateField({ refusalDate: e.target.value })}
@@ -1025,8 +1059,9 @@ Comments/Additional Info: ${formData.comments || "None"}`;
                     </div>
 
                     <div className="space-y-1">
-                      <label className="text-xs font-bold uppercase tracking-wider text-slate-600 font-sans">Refusal Reason *</label>
+                      <label htmlFor="crm-refusalReason" className="text-xs font-bold uppercase tracking-wider text-slate-600 font-sans">Refusal Reason *</label>
                       <input 
+                        id="crm-refusalReason"
                         type="text" 
                         value={formData.refusalReason}
                         onChange={e => updateField({ refusalReason: e.target.value })}
@@ -1047,14 +1082,16 @@ Comments/Additional Info: ${formData.comments || "None"}`;
                 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <label className="text-xs font-bold uppercase tracking-wider text-slate-600 font-sans">Preferred Contact Method *</label>
-                    <div className="flex gap-2">
+                    <label id="crm-contact-method-label" className="text-xs font-bold uppercase tracking-wider text-slate-600 font-sans">Preferred Contact Method *</label>
+                    <div className="flex gap-2" role="radiogroup" aria-labelledby="crm-contact-method-label">
                       {["Call", "WhatsApp", "Email"].map((method) => {
                         const isSel = formData.contactMethod === method;
                         return (
                           <button
                             key={method}
                             type="button"
+                            role="radio"
+                            aria-checked={isSel}
                             onClick={() => updateField({ contactMethod: method })}
                             className={`flex-1 px-3 py-2 border text-xs font-bold rounded-xl transition-all cursor-pointer font-sans ${
                               isSel 
@@ -1070,14 +1107,16 @@ Comments/Additional Info: ${formData.comments || "None"}`;
                   </div>
 
                   <div className="space-y-2">
-                    <label className="text-xs font-bold uppercase tracking-wider text-slate-600 font-sans">Best Time To Contact *</label>
-                    <div className="flex gap-2">
+                    <label id="crm-contact-time-label" className="text-xs font-bold uppercase tracking-wider text-slate-600 font-sans">Best Time To Contact *</label>
+                    <div className="flex gap-2" role="radiogroup" aria-labelledby="crm-contact-time-label">
                       {["Morning", "Afternoon", "Evening"].map((time) => {
                         const isSel = formData.contactTime === time;
                         return (
                           <button
                             key={time}
                             type="button"
+                            role="radio"
+                            aria-checked={isSel}
                             onClick={() => updateField({ contactTime: time })}
                             className={`flex-1 px-3 py-2 border text-xs font-bold rounded-xl transition-all cursor-pointer font-sans ${
                               isSel 

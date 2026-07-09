@@ -1,7 +1,17 @@
 /**
  * TESCA Gmail Mailer Utility
  * Uses Gmail App Password (not Gmail API OAuth) for reliability.
- * Set GMAIL_USER and GMAIL_APP_PASSWORD in .env
+ * Set GMAIL_USER and GMAIL_APP_PASSWORD in .env / wrangler secrets.
+ *
+ * RUNTIME NOTE — Cloudflare Workers compatibility:
+ * Nodemailer's SMTP transport requires node:net and node:tls for TCP
+ * connections.  These are available on Cloudflare Workers when BOTH of
+ * these conditions are met in wrangler.toml:
+ *   1. compatibility_date >= "2024-09-23"
+ *   2. compatibility_flags includes "nodejs_compat"
+ * The combination activates nodejs_compat_v2 behavior which provides
+ * native Node.js TCP socket support.  If SMTP connections fail at
+ * runtime, verify these settings first.
  */
 import nodemailer from 'nodemailer';
 import { getEnv } from './env';
@@ -44,10 +54,21 @@ export async function sendMail({
         html,
       });
       return; // Success, exit
-    } catch (error) {
+    } catch (error: any) {
       attempts++;
       if (attempts > maxRetries) {
-        console.error(`[Mailer] All ${attempts} attempts failed to send email to ${to}:`, error);
+        // Surface a clear diagnostic when the runtime lacks TCP socket support
+        const isSocketError = error?.code === 'ESOCKET' || error?.code === 'ECONNREFUSED' || error?.message?.includes('connect');
+        if (isSocketError) {
+          console.error(
+            `[Mailer] SMTP socket error after ${attempts} attempts. ` +
+            `If running on Cloudflare Workers, verify wrangler.toml has ` +
+            `compatibility_date >= "2024-09-23" and nodejs_compat flag.`,
+            error
+          );
+        } else {
+          console.error(`[Mailer] All ${attempts} attempts failed to send email to ${to}:`, error);
+        }
         throw error;
       }
       console.warn(`[Mailer] Attempt ${attempts} failed to send email to ${to}. Retrying in 1s... Error:`, error);
@@ -55,3 +76,4 @@ export async function sendMail({
     }
   }
 }
+

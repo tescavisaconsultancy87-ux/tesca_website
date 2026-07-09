@@ -60,11 +60,23 @@ export async function checkRateLimit(key: string, max: number, windowMs: number)
       p_window_seconds: Math.max(1, Math.ceil(windowMs / 1000)),
     });
 
-    if (!error && typeof data === "boolean") {
+    if (error) {
+      console.warn(
+        `[RateLimiter] Supabase RPC check_rate_limit returned an error (code: ${error.code}). ` +
+        `If the function is missing, please deploy it using the SQL migration at db/rate_limit_setup.sql. ` +
+        `Falling back to per-isolate in-memory limiter. Error details:`,
+        error.message
+      );
+    } else if (typeof data === "boolean") {
       return data;
     }
   } catch (err) {
-    console.error("checkRateLimit: Supabase RPC failed, using in-memory fallback:", err);
+    console.error(
+      "[RateLimiter] Supabase RPC request failed with exception. " +
+      "If the function has not been set up, please execute db/rate_limit_setup.sql. " +
+      "Falling back to per-isolate in-memory limiter. Exception:",
+      err
+    );
   }
 
   // Fallback: per-isolate in-memory limiter (best-effort).

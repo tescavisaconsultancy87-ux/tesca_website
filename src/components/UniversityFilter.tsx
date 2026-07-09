@@ -307,6 +307,8 @@ export default function UniversityFilter() {
                   src={`https://flagcdn.com/w20/${c.code === "uk" ? "gb" : c.code}.png`}
                   alt="Flag"
                   className="w-4 h-3 rounded-sm object-cover"
+                  loading="lazy"
+                  decoding="async"
                 />
               )}
               {c.name}
@@ -442,6 +444,8 @@ export default function UniversityFilter() {
                                 src={`https://flagcdn.com/w20/${uni.code === "uk" ? "gb" : uni.code}.png`}
                                 alt="Flag"
                                 className="w-4 h-3 rounded-sm object-cover shadow-sm"
+                                loading="lazy"
+                                decoding="async"
                               />
                               <span className="text-xs text-slate-500 font-sans font-medium">{uni.country}</span>
                               <span className={`text-[9px] font-extrabold uppercase tracking-wider px-2 py-0.5 rounded border ml-1.5 ${
@@ -593,6 +597,8 @@ export default function UniversityFilter() {
                     src={selectedUniversity.image_url || selectedUniversity.photo || ""}
                     alt={selectedUniversity.name}
                     className="w-full h-full object-cover transition-transform duration-700 group-hover/hero:scale-105"
+                    loading="lazy"
+                    decoding="async"
                   />
                 ) : (
                   <div
@@ -628,7 +634,7 @@ export default function UniversityFilter() {
                   </div>
                   <div className="flex-1 min-w-0">
                     <div className="flex flex-wrap items-center gap-2 mb-1.5">
-                      <img src={`https://flagcdn.com/w20/${flagCode}.png`} alt="Flag" className="w-4.5 h-3.5 rounded-sm object-cover shadow-sm" />
+                      <img src={`https://flagcdn.com/w20/${flagCode}.png`} alt="Flag" className="w-4.5 h-3.5 rounded-sm object-cover shadow-sm" loading="lazy" decoding="async" />
                       <span className="text-[10px] text-white/90 font-extrabold uppercase tracking-widest font-sans">{selectedUniversity.country}</span>
                       <span className="text-[9px] bg-[#FFE5CC] text-[#0A7880] px-2 py-0.5 rounded-full font-bold uppercase tracking-wider border border-[#FFE5CC]/25">
                         {selectedUniversity.code.toUpperCase()}

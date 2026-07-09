@@ -6,8 +6,8 @@
     "node": ">=22.12.0"
   },
   "scripts": {
-    "dev": "node scripts/parse-pdf.js && astro dev",
-    "build": "node scripts/parse-pdf.js && astro build && node scripts/remove-kv.js",
+    "dev": "astro dev",
+    "build": "astro build && node scripts/remove-kv.js",
     "preview": "astro preview",
     "astro": "astro"
   },
@@ -25,7 +25,6 @@
     "lenis": "^1.3.23",
     "lucide-react": "^1.17.0",
     "nodemailer": "^9.0.1",
-    "pdf-parse": "^2.4.5",
     "react": "^19.2.7",
     "react-dom": "^19.2.7",
     "react-hook-form": "^7.79.0",
