@@ -191,20 +191,80 @@ try {
                         <form method="POST" class="inline-block relative status-update-form">
                           <input type="hidden" name="action" value="update-status" />
                           <input type="hidden" name="id" value={inquiry.id} />
-                          <select 
-                            name="status" 
-                            class={`px-2.5 py-1 pr-6 pl-2.5 rounded-full border text-[10px] font-bold tracking-wide focus:outline-none focus:ring-1 focus:ring-indigo-500 cursor-pointer appearance-none bg-no-repeat bg-[right_0.5rem_center] bg-[length:0.75em] ` +
-                              (inquiry.status === 'completed' ? 'bg-emerald-50 text-emerald-700 border-emerald-200' :
-                               inquiry.status === 'processing' ? 'bg-blue-50 text-blue-700 border-blue-200' :
-                               inquiry.status === 'follow up' ? 'bg-violet-50 text-violet-700 border-violet-200' :
-                               'bg-amber-50 text-amber-700 border-amber-200')}
-                            style="background-image: url('data:image/svg+xml;utf8,<svg xmlns=\'http://www.w3.org/2000/svg\' width=\'12\' height=\'12\' viewBox=\'0 0 24 24\' fill=\'none\' stroke=\'%2364748b\' stroke-width=\'2\' stroke-linecap=\'round\' stroke-linejoin=\'round\'><path d=\'m6 9 6 6 6-6\'/></svg>');"
-                          >
-                            <option value="pending" selected={inquiry.status === 'pending' || !inquiry.status}>Pending</option>
-                            <option value="processing" selected={inquiry.status === 'processing'}>Processing</option>
-                            <option value="completed" selected={inquiry.status === 'completed'}>Completed</option>
-                            <option value="follow up" selected={inquiry.status === 'follow up'}>Follow Up</option>
-                          </select>
+                          <input type="hidden" name="status" value={inquiry.status || "pending"} />
+                          
+                          <div class="relative inline-block text-left custom-dropdown">
+                            <button
+                              type="button"
+                              class={`status-dropdown-trigger flex items-center gap-1.5 px-2.5 py-1 rounded-full border text-[10px] font-bold tracking-wide focus:outline-none transition-all duration-200 hover:brightness-95 cursor-pointer ` +
+                                (inquiry.status === 'completed' ? 'bg-emerald-50 text-emerald-700 border-emerald-200' :
+                                 inquiry.status === 'not_available' ? 'bg-slate-100 text-slate-600 border-slate-200' :
+                                 inquiry.status === 'follow up' ? 'bg-violet-50 text-violet-700 border-violet-200' :
+                                 'bg-amber-50 text-amber-700 border-amber-200')}
+                              aria-haspopup="true"
+                              aria-expanded="false"
+                            >
+                              <span>
+                                {inquiry.status === 'completed' ? 'Completed' :
+                                 inquiry.status === 'not_available' ? 'Not Available' :
+                                 inquiry.status === 'follow up' ? 'Follow Up' :
+                                 'Pending'}
+                              </span>
+                              <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="transition-transform duration-200 dropdown-arrow"><path d="m6 9 6 6 6-6"/></svg>
+                            </button>
+
+                            <div 
+                              class="dropdown-menu-content absolute left-0 mt-1.5 w-36 rounded-xl border border-slate-200 bg-white shadow-lg p-1 focus:outline-none opacity-0 scale-95 translate-y-[-4px] pointer-events-none transition-all duration-200 ease-out z-30"
+                              role="menu"
+                            >
+                              <div class="text-[8px] font-bold text-slate-400 px-2 py-0.5 uppercase tracking-wider">Change Status</div>
+                              <div class="space-y-0.5">
+                                <button 
+                                  type="button" 
+                                  role="menuitem"
+                                  data-value="pending"
+                                  class={`flex w-full items-center justify-between rounded-lg px-2 py-1 text-[10px] font-bold text-left transition-colors cursor-pointer ` + 
+                                    (inquiry.status === 'pending' || !inquiry.status ? 'bg-amber-50 text-amber-700' : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900')}
+                                >
+                                  Pending
+                                  {(inquiry.status === 'pending' || !inquiry.status) && <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>}
+                                </button>
+
+                                <button 
+                                  type="button" 
+                                  role="menuitem"
+                                  data-value="not_available"
+                                  class={`flex w-full items-center justify-between rounded-lg px-2 py-1 text-[10px] font-bold text-left transition-colors cursor-pointer ` + 
+                                    (inquiry.status === 'not_available' ? 'bg-slate-100 text-slate-700' : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900')}
+                                >
+                                  Not Available
+                                  {inquiry.status === 'not_available' && <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>}
+                                </button>
+
+                                <button 
+                                  type="button" 
+                                  role="menuitem"
+                                  data-value="follow up"
+                                  class={`flex w-full items-center justify-between rounded-lg px-2 py-1 text-[10px] font-bold text-left transition-colors cursor-pointer ` + 
+                                    (inquiry.status === 'follow up' ? 'bg-violet-50 text-violet-700' : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900')}
+                                >
+                                  Follow Up
+                                  {inquiry.status === 'follow up' && <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>}
+                                </button>
+
+                                <button 
+                                  type="button" 
+                                  role="menuitem"
+                                  data-value="completed"
+                                  class={`flex w-full items-center justify-between rounded-lg px-2 py-1 text-[10px] font-bold text-left transition-colors cursor-pointer ` + 
+                                    (inquiry.status === 'completed' ? 'bg-emerald-50 text-emerald-700' : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900')}
+                                >
+                                  Completed
+                                  {inquiry.status === 'completed' && <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>}
+                                </button>
+                              </div>
+                            </div>
+                          </div>
                         </form>
                       </td>
                       <td class="px-6 py-4 text-right whitespace-nowrap space-x-1.5">
@@ -310,10 +370,10 @@ try {
             <span class="block text-[10px] font-bold text-slate-500 uppercase tracking-wider">Inquiry Status</span>
             <span class="inline-block px-2.5 py-1 rounded-full border text-[10px] font-bold tracking-wide ${
               status === 'completed' ? 'bg-emerald-50 text-emerald-700 border-emerald-200' :
-              status === 'processing' ? 'bg-blue-50 text-blue-700 border-blue-200' :
+              status === 'not_available' ? 'bg-slate-100 text-slate-600 border-slate-200' :
               status === 'follow up' ? 'bg-violet-50 text-violet-700 border-violet-200' :
               'bg-amber-50 text-amber-700 border-amber-200'
-            }">${escapeHTML(status.charAt(0).toUpperCase() + status.slice(1))}</span>
+            }">${escapeHTML(status === 'not_available' ? 'Not Available' : status.charAt(0).toUpperCase() + status.slice(1))}</span>
           `;
           listContainer.appendChild(statusItem);
 
@@ -401,27 +461,98 @@ try {
       if ((form as any)._ajaxBound) return;
       (form as any)._ajaxBound = true;
 
-      // Intercept status select change
-      const statusSelect = form.querySelector('select[name="status"]') as HTMLSelectElement;
-      if (statusSelect) {
-        statusSelect.addEventListener("change", async () => {
-          const val = statusSelect.value;
-          statusSelect.className = `px-2.5 py-1 pr-6 pl-2.5 rounded-full border text-[10px] font-bold tracking-wide focus:outline-none focus:ring-1 focus:ring-indigo-500 cursor-pointer appearance-none bg-no-repeat bg-[right_0.5rem_center] bg-[length:0.75em] ` +
-            (val === 'completed' ? 'bg-emerald-50 text-emerald-700 border-emerald-200' :
-             val === 'processing' ? 'bg-blue-50 text-blue-700 border-blue-200' :
-             val === 'follow up' ? 'bg-violet-50 text-violet-700 border-violet-200' :
-             'bg-amber-50 text-amber-700 border-amber-200');
 
-          const formData = new FormData(form);
-          try {
-            const res = await fetch(window.location.href, {
-              method: "POST",
-              body: formData
+
+      // Bind custom dropdown menu interactions
+      const dropdown = form.querySelector('.custom-dropdown');
+      if (dropdown) {
+        const trigger = dropdown.querySelector(".status-dropdown-trigger") as HTMLButtonElement;
+        const statusInput = form.querySelector('input[name="status"]') as HTMLInputElement;
+
+        trigger?.addEventListener("click", (e) => {
+          e.stopPropagation();
+          // Close other dropdowns
+          document.querySelectorAll(".custom-dropdown").forEach(other => {
+            if (other !== dropdown) other.classList.remove("open");
+          });
+          dropdown.classList.toggle("open");
+        });
+
+        const items = dropdown.querySelectorAll("[role='menuitem']");
+        items.forEach(item => {
+          item.addEventListener("click", async (e) => {
+            e.stopPropagation();
+            const val = item.getAttribute("data-value") || "pending";
+            const prevVal = statusInput.value || "pending";
+
+            if (val === prevVal) {
+              dropdown.classList.remove("open");
+              return;
+            }
+
+            // Update UI trigger text and colors
+            const spanText = trigger.querySelector("span");
+            if (spanText) {
+              spanText.textContent = item.textContent?.trim() || "";
+            }
+            trigger.className = `status-dropdown-trigger flex items-center gap-1.5 px-2.5 py-1 rounded-full border text-[10px] font-bold tracking-wide focus:outline-none transition-all duration-200 hover:brightness-95 cursor-pointer ` +
+              (val === 'completed' ? 'bg-emerald-50 text-emerald-700 border-emerald-200' :
+               val === 'not_available' ? 'bg-slate-100 text-slate-600 border-slate-200' :
+               val === 'follow up' ? 'bg-violet-50 text-violet-700 border-violet-200' :
+               'bg-amber-50 text-amber-700 border-amber-200');
+
+            // Apply selected background to items
+            items.forEach(btn => {
+              const bVal = btn.getAttribute("data-value");
+              btn.className = `flex w-full items-center justify-between rounded-lg px-2 py-1 text-[10px] font-bold text-left transition-colors cursor-pointer `;
+              if (bVal === val) {
+                btn.classList.add(
+                  val === 'completed' ? 'bg-emerald-50' :
+                  val === 'not_available' ? 'bg-slate-100' :
+                  val === 'follow up' ? 'bg-violet-50' :
+                  'bg-amber-50'
+                );
+                btn.classList.add(
+                  val === 'completed' ? 'text-emerald-700' :
+                  val === 'not_available' ? 'text-slate-700' :
+                  val === 'follow up' ? 'text-violet-700' :
+                  'text-amber-700'
+                );
+                // Ensure checkmark SVG is there
+                if (!btn.querySelector("svg")) {
+                  const checkSvg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+                  checkSvg.setAttribute("width", "10");
+                  checkSvg.setAttribute("height", "10");
+                  checkSvg.setAttribute("viewBox", "0 0 24 24");
+                  checkSvg.setAttribute("fill", "none");
+                  checkSvg.setAttribute("stroke", "currentColor");
+                  checkSvg.setAttribute("stroke-width", "3");
+                  checkSvg.setAttribute("stroke-linecap", "round");
+                  checkSvg.setAttribute("stroke-linejoin", "round");
+                  checkSvg.innerHTML = '<path d="M20 6 9 17l-5-5"/>';
+                  btn.appendChild(checkSvg);
+                }
+              } else {
+                btn.classList.add('text-slate-600', 'hover:bg-slate-50', 'hover:text-slate-900');
+                const existingCheck = btn.querySelector("svg");
+                if (existingCheck) btn.removeChild(existingCheck);
+              }
             });
-            await handleResponse(res, "Inquiry status updated successfully.");
-          } catch (err) {
-            console.error("AJAX status update error:", err);
-          }
+
+            statusInput.value = val;
+            dropdown.classList.remove("open");
+
+            const formData = new FormData(form);
+            try {
+              const res = await fetch(window.location.href, {
+                method: "POST",
+                body: formData
+              });
+              await handleResponse(res, "Inquiry status updated successfully.");
+            } catch (err) {
+              console.error("AJAX status update error:", err);
+            }
+          });
         });
       }
 
@@ -447,9 +578,34 @@ try {
         });
       }
     });
+    // Close dropdowns on clicking outside
+    document.addEventListener("click", () => {
+      document.querySelectorAll(".custom-dropdown").forEach(dropdown => {
+        dropdown.classList.remove("open");
+      });
+    });
   }
 
   // Bind handlers
   setupPartnersPage();
   document.addEventListener("astro:page-load", setupPartnersPage);
 </script>
+
+<style is:global>
+  /* Custom animated dropdown styling */
+  .custom-dropdown .dropdown-menu-content {
+    opacity: 0;
+    transform: scale(0.95) translateY(-4px);
+    pointer-events: none;
+    transition: opacity 0.2s cubic-bezier(0.16, 1, 0.3, 1), transform 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+    transform-origin: top left;
+  }
+  .custom-dropdown.open .dropdown-menu-content {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+    pointer-events: auto;
+  }
+  .custom-dropdown.open .dropdown-arrow {
+    transform: rotate(180deg);
+  }
+</style>

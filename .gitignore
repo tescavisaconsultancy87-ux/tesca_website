@@ -33,3 +33,7 @@ preview.*.log
 .vscode/
 .claude/
 .antigravity/
+
+# graphify
+graphify-out/
+graph.html

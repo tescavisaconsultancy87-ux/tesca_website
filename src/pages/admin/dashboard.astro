@@ -108,14 +108,14 @@ if (leadsList.length === 0) {
   const now = new Date();
   leadsList = [
     { id: 1, name: "Aarav Mehta", email: "aarav.mehta@gmail.com", phone: "+91 98250 12345", lead_type: "counsellor", status: "completed", created_at: new Date(now.getTime() - 0.5 * 24 * 60 * 60 * 1000).toISOString() },
-    { id: 2, name: "Sneha Patel", email: "sneha.patel@yahoo.com", phone: "+91 99041 54321", lead_type: "inquiry", status: "processing", created_at: new Date(now.getTime() - 1.2 * 24 * 60 * 60 * 1000).toISOString() },
+    { id: 2, name: "Sneha Patel", email: "sneha.patel@yahoo.com", phone: "+91 99041 54321", lead_type: "inquiry", status: "not_available", created_at: new Date(now.getTime() - 1.2 * 24 * 60 * 60 * 1000).toISOString() },
     { id: 3, name: "Rohan Shah", email: "rohan.shah@outlook.com", phone: "+91 98980 99887", lead_type: "eligibility", status: "follow up", created_at: new Date(now.getTime() - 2.5 * 24 * 60 * 60 * 1000).toISOString() },
     { id: 4, name: "Priya Desai", email: "priya.desai@gmail.com", phone: "+91 97243 11223", lead_type: "inquiry", status: "pending", created_at: new Date(now.getTime() - 3.1 * 24 * 60 * 60 * 1000).toISOString() },
     { id: 5, name: "Vikram Rathod", email: "vikram.r@gmail.com", phone: "+91 90999 88776", lead_type: "eligibility", status: "completed", created_at: new Date(now.getTime() - 4.8 * 24 * 60 * 60 * 1000).toISOString() },
     { id: 6, name: "Neha Joshi", email: "neha.joshi@gmail.com", phone: "+91 96620 44556", lead_type: "counsellor", status: "follow up", created_at: new Date(now.getTime() - 5.2 * 24 * 60 * 60 * 1000).toISOString() },
     { id: 7, name: "Kabir Verma", email: "kabir.v@hotmail.com", phone: "+91 98790 66778", lead_type: "eligibility", status: "pending", created_at: new Date(now.getTime() - 7.5 * 24 * 60 * 60 * 1000).toISOString() },
     { id: 8, name: "Ananya Iyer", email: "ananya.iyer@gmail.com", phone: "+91 94280 55667", lead_type: "inquiry", status: "completed", created_at: new Date(now.getTime() - 9.1 * 24 * 60 * 60 * 1000).toISOString() },
-    { id: 9, name: "Devendra Singh", email: "dev.singh@gmail.com", phone: "+91 99240 33445", lead_type: "counsellor", status: "processing", created_at: new Date(now.getTime() - 11.3 * 24 * 60 * 60 * 1000).toISOString() },
+    { id: 9, name: "Devendra Singh", email: "dev.singh@gmail.com", phone: "+91 99240 33445", lead_type: "counsellor", status: "not_available", created_at: new Date(now.getTime() - 11.3 * 24 * 60 * 60 * 1000).toISOString() },
     { id: 10, name: "Meera Nair", email: "meera.nair@gmail.com", phone: "+91 98981 22334", lead_type: "eligibility", status: "completed", created_at: new Date(now.getTime() - 13.0 * 24 * 60 * 60 * 1000).toISOString() }
   ];
   totalLeads = leadsList.length;
@@ -123,14 +123,14 @@ if (leadsList.length === 0) {
 
 // Calculate status counts
 let pendingLeads = 0;
-let processingLeads = 0;
+let notAvailableLeads = 0;
 let followupLeads = 0;
 let completedLeads = 0;
 
 leadsList.forEach(l => {
   const status = (l.status || 'pending').trim().toLowerCase();
   if (status === 'completed') completedLeads++;
-  else if (status === 'processing') processingLeads++;
+  else if (status === 'processing' || status === 'not_available' || status === 'not available') notAvailableLeads++;
   else if (status === 'follow up' || status === 'followup') followupLeads++;
   else pendingLeads++;
 });
@@ -326,14 +326,14 @@ const cards = [
 
         <div class="bg-white border border-slate-200 p-5 rounded-2xl shadow-sm flex flex-col justify-between hover:shadow-md transition-shadow">
           <div class="flex items-center justify-between text-slate-400">
-            <span class="text-xs font-bold text-slate-500 uppercase tracking-wide">Processing</span>
-            <div class="w-8 h-8 rounded-lg bg-blue-50 text-blue-600 border border-blue-100 flex items-center justify-center">
+            <span class="text-xs font-bold text-slate-500 uppercase tracking-wide">Not Available</span>
+            <div class="w-8 h-8 rounded-lg bg-slate-100 text-slate-600 border border-slate-200 flex items-center justify-center">
               <span set:html={SVG.Activity} class="w-4 h-4" />
             </div>
           </div>
           <div class="mt-4">
-            <span class="text-2xl font-black font-mono text-slate-800">{processingLeads}</span>
-            <span class="block text-[10px] text-slate-400 mt-1">Active assessments</span>
+            <span class="text-2xl font-black font-mono text-slate-800">{notAvailableLeads}</span>
+            <span class="block text-[10px] text-slate-400 mt-1">Unavailable status</span>
           </div>
         </div>
 
@@ -460,10 +460,10 @@ const cards = [
                       <td class="py-3.5 px-4 whitespace-nowrap">
                         <span class={`px-2 py-0.5 rounded-full border text-[10px] font-bold ` +
                           (lead.status === 'completed' ? 'bg-emerald-50 text-emerald-700 border-emerald-200' :
-                           lead.status === 'processing' ? 'bg-blue-50 text-blue-700 border-blue-200' :
+                           lead.status === 'processing' || lead.status === 'not_available' || lead.status === 'not available' ? 'bg-slate-100 text-slate-600 border-slate-200' :
                            lead.status === 'follow up' || lead.status === 'followup' ? 'bg-violet-50 text-violet-700 border-violet-200' :
                            'bg-amber-50 text-amber-700 border-amber-200')}>
-                          {lead.status ? lead.status.charAt(0).toUpperCase() + lead.status.slice(1) : 'Pending'}
+                          {lead.status === 'not_available' || lead.status === 'not available' ? 'Not Available' : (lead.status ? lead.status.charAt(0).toUpperCase() + lead.status.slice(1) : 'Pending')}
                         </span>
                       </td>
                       <td class="py-3.5 pl-4 text-right whitespace-nowrap">
@@ -540,8 +540,8 @@ const cards = [
     data-trend-days={JSON.stringify(trendDays)}
     data-trend-counts={JSON.stringify(trendCounts)}
     data-trend-completed={JSON.stringify(trendCompleted)}
-    data-status-labels={JSON.stringify(['Pending', 'Processing', 'Follow Up', 'Completed'])}
-    data-status-values={JSON.stringify([pendingLeads, processingLeads, followupLeads, completedLeads])}
+    data-status-labels={JSON.stringify(['Pending', 'Not Available', 'Follow Up', 'Completed'])}
+    data-status-values={JSON.stringify([pendingLeads, notAvailableLeads, followupLeads, completedLeads])}
     data-type-labels={JSON.stringify(['Eligibility Finder', 'CRM Inquiry', 'Counselor Booking'])}
     data-type-values={JSON.stringify([typeCounts.eligibility, typeCounts.inquiry, typeCounts.counsellor])}
   ></div>
@@ -648,7 +648,7 @@ const cards = [
         },
         series: statusValues,
         labels: statusLabels,
-        colors: ['#f59e0b', '#3b82f6', '#8b5cf6', '#10b981'], // Amber, Blue, Violet, Emerald
+        colors: ['#f59e0b', '#94a3b8', '#8b5cf6', '#10b981'], // Amber, Slate, Violet, Emerald
         legend: {
           position: 'bottom',
           fontSize: '11px',
