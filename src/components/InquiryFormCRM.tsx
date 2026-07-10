@@ -1328,7 +1328,7 @@ Comments/Additional Info: ${formData.comments || "None"}`;
                   !formData.mobileNumber.trim() || 
                   formData.mobileNumber.replace(/\D/g, "").length < selectedPhoneCountry.minDigits || 
                   formData.mobileNumber.replace(/\D/g, "").length > selectedPhoneCountry.maxDigits ||
-                  (formData.email.trim() && !/\S+@\S+\.\S+/.test(formData.email))
+                  (Boolean(formData.email.trim()) && !/\S+@\S+\.\S+/.test(formData.email))
                 )
               }
               className="px-6 py-2.5 bg-[#0F4C81] hover:bg-[#0c3c66] text-white font-semibold text-xs rounded-full flex items-center gap-1.5 transition-all cursor-pointer shadow-md text-center disabled:opacity-50 disabled:cursor-not-allowed"

@@ -1,8 +1,16 @@
 import type { APIRoute } from 'astro';
 import { supabase } from '../../utils/supabase';
-import { genericApiError, jsonResponse } from '../../utils/security';
+import { genericApiError, getClientIP, checkRateLimit, jsonResponse, rateLimitResponse } from '../../utils/security';
+
+const RATE_LIMIT_WINDOW_MS = 60 * 1000;
+const RATE_LIMIT_MAX = 120;
 
 export const GET: APIRoute = async ({ request }) => {
+  const clientIP = getClientIP(request);
+  if (await checkRateLimit(`universities:${clientIP}`, RATE_LIMIT_MAX, RATE_LIMIT_WINDOW_MS)) {
+    return rateLimitResponse();
+  }
+
   const url = new URL(request.url);
   const countryCode = url.searchParams.get("country")?.trim().toLowerCase();
 
@@ -35,7 +43,7 @@ export const GET: APIRoute = async ({ request }) => {
     }));
 
     return jsonResponse(list, 200, {
-        "Cache-Control": "public, max-age=60"
+        "Cache-Control": "public, max-age=900, s-maxage=3600, stale-while-revalidate=86400"
     });
   } catch (err: any) {
     console.error("Failed to query universities:", err);

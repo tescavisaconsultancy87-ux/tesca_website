@@ -5,6 +5,10 @@ interface Env {
   tesca_db: any;
   GOOGLE_SHEET_URL?: string;
   WEB3FORMS_ACCESS_KEY?: string;
+  SUPABASE_SERVICE_ROLE_KEY?: string;
+  GROQ_API_KEY?: string;
+  OWNER_EMAIL?: string;
+  STRICT_RATE_LIMITS?: string;
   PUBLIC_SUPABASE_URL?: string;
   PUBLIC_SUPABASE_ANON_KEY?: string;
   GMAIL_USER?: string;

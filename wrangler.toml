@@ -6,7 +6,11 @@ compatibility_flags = [ "nodejs_compat" ]
 [vars]
 PUBLIC_SUPABASE_URL = "https://zlsauoosumpnbyouhdfk.supabase.co"
 PUBLIC_SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inpsc2F1b29zdW1wbmJ5b3VoZGZrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE3NjA2MDEsImV4cCI6MjA5NzMzNjYwMX0.JV5mmtfIGmPvA83H-vr173GDcqXoLG13gR7BJlXZ-SY"
-PUBLIC_GOOGLE_SHEET_URL = "https://script.google.com/macros/s/AKfycbythk6_ApzwWRIT2Y30xSVA7QD1r297Pr4MgP1_Rhmq0qborMZ_P-fQHv2JxW4_yVNaOw/exec"
 GMAIL_USER = "tescavisaconsultancy87@gmail.com"
-# GMAIL_APP_PASSWORD must be set as a SECRET via Cloudflare dashboard (not hardcoded here)
-# Run: npx wrangler secret put GMAIL_APP_PASSWORD
+# Secrets required in Cloudflare, not hardcoded here:
+#   npx wrangler secret put SUPABASE_SERVICE_ROLE_KEY
+#   npx wrangler secret put GOOGLE_SHEET_URL
+#   npx wrangler secret put GMAIL_APP_PASSWORD
+#   npx wrangler secret put WEB3FORMS_ACCESS_KEY
+#   npx wrangler secret put GROQ_API_KEY
+#   npx wrangler secret put OWNER_EMAIL

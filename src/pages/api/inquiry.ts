@@ -5,11 +5,12 @@ import { reportServerError, getClientIP, checkRateLimit, jsonResponse, rateLimit
 import { getEnv } from '../../utils/env';
 import { sendMail } from '../../utils/mailer';
 import { inquiryConfirmationEmail } from '../../utils/emailTemplates';
+import { runInBackground } from '../../utils/background';
 
 const RATE_LIMIT_WINDOW_MS = 10 * 60 * 1000;
 const RATE_LIMIT_MAX = 8;
 
-export const POST: APIRoute = async ({ request }) => {
+export const POST: APIRoute = async ({ request, locals }) => {
   const oversized = rejectOversizedJson(request);
   if (oversized) return oversized;
 
@@ -99,7 +100,7 @@ export const POST: APIRoute = async ({ request }) => {
       throw error;
     }
 
-    const googleSheetUrl = getEnv('GOOGLE_SHEET_URL') || getEnv('PUBLIC_GOOGLE_SHEET_URL') || import.meta.env.GOOGLE_SHEET_URL || (import.meta.env as any).PUBLIC_GOOGLE_SHEET_URL;
+    const googleSheetUrl = getEnv('GOOGLE_SHEET_URL') || import.meta.env.GOOGLE_SHEET_URL;
     const web3formsAccessKey = getEnv('WEB3FORMS_ACCESS_KEY') || import.meta.env.WEB3FORMS_ACCESS_KEY;
 
     const detailedMessage = [
@@ -116,7 +117,7 @@ export const POST: APIRoute = async ({ request }) => {
     ].join("\n");
 
     if (web3formsAccessKey) {
-      fetch("https://api.web3forms.com/submit", {
+      runInBackground(locals, fetch("https://api.web3forms.com/submit", {
         method: "POST",
         headers: { "Content-Type": "application/json", "Accept": "application/json" },
         body: JSON.stringify({
@@ -127,7 +128,7 @@ export const POST: APIRoute = async ({ request }) => {
           message: detailedMessage,
           source: "CRM Lead Capture Form",
         })
-      }).catch(err => console.error("Web3Forms inquiry post failed:", err));
+      }), "web3forms-inquiry");
     }
 
     if (googleSheetUrl) {
@@ -144,24 +145,19 @@ export const POST: APIRoute = async ({ request }) => {
         "Preferred Countries": cleanPreferredCountries.join(", ") || "None",
         Comments: cleanDetails.comments || "None",
       });
-      fetch(`${googleSheetUrl}?${params.toString()}`, { method: "GET" })
-        .catch(err => console.error("Google Sheets inquiry GET failed:", err));
+      runInBackground(locals, fetch(`${googleSheetUrl}?${params.toString()}`, { method: "GET" }), "google-sheets-inquiry");
     }
 
     // Send confirmation email to user if email provided
     if (cleanEmail) {
-      try {
-        const { subject, html } = inquiryConfirmationEmail({
-          name: cleanFullName,
-          leadId: cleanLeadId,
-          inquiryTypes: Array.isArray(cleanDetails.inquiryType) ? cleanDetails.inquiryType : [],
-          preferredCountries: cleanPreferredCountries,
-          phone: cleanMobile,
-        });
-        await sendMail({ to: cleanEmail, subject, html });
-      } catch (mailErr) {
-        console.error('Inquiry email send failed:', mailErr);
-      }
+      const { subject, html } = inquiryConfirmationEmail({
+        name: cleanFullName,
+        leadId: cleanLeadId,
+        inquiryTypes: Array.isArray(cleanDetails.inquiryType) ? cleanDetails.inquiryType : [],
+        preferredCountries: cleanPreferredCountries,
+        phone: cleanMobile,
+      });
+      runInBackground(locals, sendMail({ to: cleanEmail, subject, html }), "inquiry-confirmation-email");
     }
 
     return jsonResponse({
@@ -170,6 +166,6 @@ export const POST: APIRoute = async ({ request }) => {
     });
 
   } catch (err: any) {
-    return await reportServerError("inquiry", err, body, request);
+    return await reportServerError("inquiry", err, body, request, locals);
   }
 };

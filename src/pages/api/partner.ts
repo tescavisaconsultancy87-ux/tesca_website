@@ -5,11 +5,12 @@ import { getEnv } from '../../utils/env';
 import { reportServerError, getClientIP, checkRateLimit, jsonResponse, rateLimitResponse, rejectOversizedJson } from '../../utils/security';
 import { sendMail } from '../../utils/mailer';
 import { partnerConfirmationEmail, partnerNotificationEmail } from '../../utils/emailTemplates';
+import { runInBackground } from '../../utils/background';
 
 const RATE_LIMIT_WINDOW_MS = 15 * 60 * 1000;
 const RATE_LIMIT_MAX = 5;
 
-export const POST: APIRoute = async ({ request }) => {
+export const POST: APIRoute = async ({ request, locals }) => {
   const oversized = rejectOversizedJson(request);
   if (oversized) return oversized;
 
@@ -88,13 +89,13 @@ export const POST: APIRoute = async ({ request }) => {
     }
 
     const leadId = insertedData?.id || "N/A";
-    const googleSheetUrl = getEnv('GOOGLE_SHEET_URL') || getEnv('PUBLIC_GOOGLE_SHEET_URL') || import.meta.env.GOOGLE_SHEET_URL || (import.meta.env as any).PUBLIC_GOOGLE_SHEET_URL;
+    const googleSheetUrl = getEnv('GOOGLE_SHEET_URL') || import.meta.env.GOOGLE_SHEET_URL;
     const web3formsAccessKey = getEnv('WEB3FORMS_ACCESS_KEY') || import.meta.env.WEB3FORMS_ACCESS_KEY;
     const adminEmail = getEnv('OWNER_EMAIL') || getEnv('GMAIL_USER') || "tescavisaconsultancy87@gmail.com";
 
     // 5. Send Web3Forms fallback submission
     if (web3formsAccessKey) {
-      fetch("https://api.web3forms.com/submit", {
+      runInBackground(locals, fetch("https://api.web3forms.com/submit", {
         method: "POST",
         headers: { "Content-Type": "application/json", "Accept": "application/json" },
         body: JSON.stringify({
@@ -106,7 +107,7 @@ export const POST: APIRoute = async ({ request }) => {
           message: `New partner application. Model: ${cleanModel}. Location: ${cleanCity}. Experience: ${cleanExperience}. Comments: ${cleanComments || 'None'}. Lead ID: ${leadId}`,
           source: "Partner With Us Form",
         })
-      }).catch(err => console.error("Web3Forms partner post failed:", err));
+      }), "web3forms-partner");
     }
 
     // 6. Log to Google Sheet
@@ -121,42 +122,33 @@ export const POST: APIRoute = async ({ request }) => {
         "Comments": `Experience: ${cleanExperience}. Comments: ${cleanComments || 'None'}. Lead ID: ${leadId}`,
         "Lead Source": "Partner With Us Form",
       });
-      fetch(`${googleSheetUrl}?${params.toString()}`, { method: "GET" })
-        .catch(err => console.error("Google Sheets partner GET failed:", err));
+      runInBackground(locals, fetch(`${googleSheetUrl}?${params.toString()}`, { method: "GET" }), "google-sheets-partner");
     }
 
     // 7. Send confirmation email to User
-    try {
-      const { subject, html } = partnerConfirmationEmail({
-        name: cleanFullName,
-        email: cleanEmail,
-        phone: cleanPhone,
-        experience: cleanExperience,
-        partnershipModel: cleanModel,
-        city: cleanCity,
-        comments: cleanComments
-      });
-      await sendMail({ to: cleanEmail, subject, html });
-    } catch (mailErr) {
-      console.error('Partner user confirmation email failed:', mailErr);
-    }
+    const userEmail = partnerConfirmationEmail({
+      name: cleanFullName,
+      email: cleanEmail,
+      phone: cleanPhone,
+      experience: cleanExperience,
+      partnershipModel: cleanModel,
+      city: cleanCity,
+      comments: cleanComments
+    });
+    runInBackground(locals, sendMail({ to: cleanEmail, subject: userEmail.subject, html: userEmail.html }), "partner-confirmation-email");
 
     // 8. Send notification email to Admin (Tesca)
-    try {
-      const { subject, html } = partnerNotificationEmail({
-        name: cleanFullName,
-        email: cleanEmail,
-        phone: cleanPhone,
-        experience: cleanExperience,
-        partnershipModel: cleanModel,
-        city: cleanCity,
-        comments: cleanComments,
-        leadId
-      });
-      await sendMail({ to: adminEmail, subject, html });
-    } catch (mailErr) {
-      console.error('Partner admin notification email failed:', mailErr);
-    }
+    const adminNotification = partnerNotificationEmail({
+      name: cleanFullName,
+      email: cleanEmail,
+      phone: cleanPhone,
+      experience: cleanExperience,
+      partnershipModel: cleanModel,
+      city: cleanCity,
+      comments: cleanComments,
+      leadId
+    });
+    runInBackground(locals, sendMail({ to: adminEmail, subject: adminNotification.subject, html: adminNotification.html }), "partner-admin-email");
 
     return jsonResponse({
       success: true,
@@ -164,6 +156,6 @@ export const POST: APIRoute = async ({ request }) => {
     });
 
   } catch (err: any) {
-    return await reportServerError("partner-api", err, body, request);
+    return await reportServerError("partner-api", err, body, request, locals);
   }
 };

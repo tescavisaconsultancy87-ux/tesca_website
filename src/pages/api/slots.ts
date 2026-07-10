@@ -1,6 +1,9 @@
 import type { APIRoute } from 'astro';
 import { getEnv } from '../../utils/env';
-import { jsonResponse, reportServerError } from '../../utils/security';
+import { getClientIP, checkRateLimit, jsonResponse, rateLimitResponse, reportServerError } from '../../utils/security';
+
+const RATE_LIMIT_WINDOW_MS = 60 * 1000;
+const RATE_LIMIT_MAX = 30;
 
 const isSlotInPastIST = (dateStr: string, slotStr: string): boolean => {
   try {
@@ -45,7 +48,12 @@ const isSlotInPastIST = (dateStr: string, slotStr: string): boolean => {
   }
 };
 
-export const GET: APIRoute = async ({ request }) => {
+export const GET: APIRoute = async ({ request, locals }) => {
+  const clientIP = getClientIP(request);
+  if (await checkRateLimit(`slots:${clientIP}`, RATE_LIMIT_MAX, RATE_LIMIT_WINDOW_MS)) {
+    return rateLimitResponse();
+  }
+
   const url = new URL(request.url);
   const date = url.searchParams.get('date');
 
@@ -57,7 +65,7 @@ export const GET: APIRoute = async ({ request }) => {
   }
 
   try {
-    const googleSheetUrl = getEnv('GOOGLE_SHEET_URL') || getEnv('PUBLIC_GOOGLE_SHEET_URL') || import.meta.env.GOOGLE_SHEET_URL || (import.meta.env as any).PUBLIC_GOOGLE_SHEET_URL;
+    const googleSheetUrl = getEnv('GOOGLE_SHEET_URL') || import.meta.env.GOOGLE_SHEET_URL;
     if (!googleSheetUrl) {
       // Default to all slots being available if not configured
       const defaultSlots = [
@@ -71,6 +79,8 @@ export const GET: APIRoute = async ({ request }) => {
       return jsonResponse({
         success: true,
         availableSlots: defaultSlots.filter(s => !isSlotInPastIST(date, s))
+      }, 200, {
+        "Cache-Control": "public, max-age=30, s-maxage=60, stale-while-revalidate=300"
       });
     }
 
@@ -99,9 +109,11 @@ export const GET: APIRoute = async ({ request }) => {
     return jsonResponse({
       success: true,
       availableSlots: rawSlots.filter(s => !isSlotInPastIST(date, s))
+    }, 200, {
+      "Cache-Control": "public, max-age=30, s-maxage=60, stale-while-revalidate=300"
     });
 
   } catch (err: any) {
-    return await reportServerError("slots-fetch", err, { date }, request);
+    return await reportServerError("slots-fetch", err, { date }, request, locals);
   }
 };

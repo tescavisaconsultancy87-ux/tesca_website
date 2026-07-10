@@ -4,8 +4,8 @@ import { supabase } from "../../utils/supabase";
 export const prerender = false;
 
 // Public announcement strings, fetched client-side so the layout (and therefore
-// every page) can be statically prerendered and edge-cached. Cached 60s at the
-// edge so admin updates appear quickly without hammering the database.
+// every page) can be statically prerendered and edge-cached. Cached for 15 min
+// at the edge to absorb traffic spikes without hammering the database.
 export const GET: APIRoute = async () => {
   try {
     const { data, error } = await supabase
@@ -19,7 +19,7 @@ export const GET: APIRoute = async () => {
     return new Response(JSON.stringify(texts), {
       headers: {
         "Content-Type": "application/json",
-        "Cache-Control": "public, max-age=60, s-maxage=60, stale-while-revalidate=300",
+        "Cache-Control": "public, max-age=300, s-maxage=900, stale-while-revalidate=3600",
       },
     });
   } catch (err) {

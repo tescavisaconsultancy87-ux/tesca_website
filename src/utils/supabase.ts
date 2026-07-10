@@ -21,7 +21,7 @@ export function getSupabase(): SupabaseClient {
 export function getSupabaseAdmin(): SupabaseClient {
   const serviceKey = getEnv('SUPABASE_SERVICE_ROLE_KEY') || import.meta.env.SUPABASE_SERVICE_ROLE_KEY;
   if (!serviceKey) {
-    return getSupabase();
+    throw new Error("Missing Supabase environment variable: SUPABASE_SERVICE_ROLE_KEY. Access blocked.");
   }
 
   if (!_supabaseAdmin) {

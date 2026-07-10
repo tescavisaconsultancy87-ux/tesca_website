@@ -1,5 +1,6 @@
 import { getEnv } from "./env";
 import { getSupabaseAdmin } from "./supabase";
+import { runInBackground } from "./background";
 
 type RateLimitEntry = {
   count: number;
@@ -77,6 +78,10 @@ export async function checkRateLimit(key: string, max: number, windowMs: number)
       "Falling back to per-isolate in-memory limiter. Exception:",
       err
     );
+
+    if (getEnv("STRICT_RATE_LIMITS") === "true") {
+      return true;
+    }
   }
 
   // Fallback: per-isolate in-memory limiter (best-effort).
@@ -124,7 +129,8 @@ export async function reportServerError(
   apiName: string,
   error: any,
   requestPayload: any,
-  request: Request
+  request: Request,
+  locals?: unknown
 ): Promise<Response> {
   // Full diagnostics (stack trace + raw payload) stay in Cloudflare server logs only.
   console.error(`[${apiName}] Server Error:`, error, "Payload:", requestPayload);
@@ -154,7 +160,7 @@ ${JSON.stringify(redactPayload(requestPayload), null, 2)}
 
 Full stack trace and unredacted payload are available in the Cloudflare Workers logs for this timestamp.`;
 
-    fetch("https://api.web3forms.com/submit", {
+    runInBackground(locals, fetch("https://api.web3forms.com/submit", {
       method: "POST",
       headers: { "Content-Type": "application/json", "Accept": "application/json" },
       body: JSON.stringify({
@@ -165,7 +171,7 @@ Full stack trace and unredacted payload are available in the Cloudflare Workers 
         message: detailedMessage,
         source: "System Error Monitor",
       })
-    }).catch(err => console.error("Failed to send error notification email via Web3Forms:", err));
+    }), "error-notification");
   }
 
   return jsonResponse({ error: "Unable to process request. Please try again later." }, 500);

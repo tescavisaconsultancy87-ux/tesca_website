@@ -5,6 +5,7 @@ import { validateEmail, validatePhone, validateName, validateScoreRange, sanitiz
 import { reportServerError, getClientIP, checkRateLimit, jsonResponse, rateLimitResponse, rejectOversizedJson } from '../../utils/security';
 import { sendMail } from '../../utils/mailer';
 import { eligibilityResultEmail } from '../../utils/emailTemplates';
+import { runInBackground } from '../../utils/background';
 
 const RATE_LIMIT_WINDOW_MS = 10 * 60 * 1000;
 const RATE_LIMIT_MAX = 8;
@@ -116,12 +117,12 @@ export const POST: APIRoute = async ({ request, locals }) => {
     }
 
     // Submit lead to Google Sheets & Web3Forms
-    const googleSheetUrl = getEnv('GOOGLE_SHEET_URL') || getEnv('PUBLIC_GOOGLE_SHEET_URL') || import.meta.env.GOOGLE_SHEET_URL || (import.meta.env as any).PUBLIC_GOOGLE_SHEET_URL;
+    const googleSheetUrl = getEnv('GOOGLE_SHEET_URL') || import.meta.env.GOOGLE_SHEET_URL;
     const web3formsAccessKey = getEnv('WEB3FORMS_ACCESS_KEY') || import.meta.env.WEB3FORMS_ACCESS_KEY;
 
     // 1. Submit to Web3Forms
     if (web3formsAccessKey) try {
-      fetch("https://api.web3forms.com/submit", {
+      runInBackground(locals, fetch("https://api.web3forms.com/submit", {
         method: "POST",
         headers: { "Content-Type": "application/json", "Accept": "application/json" },
         body: JSON.stringify({
@@ -133,7 +134,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
           message: `Eligibility profile submitted by ${cleanName}. Phone: ${cleanPhone}. Email: ${cleanEmail}. Academic Score: ${academicScoreNum}%, IELTS: ${ieltsScoreNum}, Budget: ${budgetLakhsNum} Lakhs/yr. Preferred destination: ${cleanDestination}.`,
           source: "Eligibility Finder Form",
         })
-      }).catch(err => console.error("Web3Forms eligibility post failed:", err));
+      }), "web3forms-eligibility");
     } catch (err) {
       console.error("Web3Forms eligibility submission failed:", err);
     }
@@ -150,9 +151,9 @@ export const POST: APIRoute = async ({ request, locals }) => {
           "Comments": `Academic: ${academicScoreNum}%, IELTS: ${ieltsScoreNum}, Budget: ${budgetLakhsNum} Lakhs/yr.`,
           "Lead Source": "Eligibility Finder Form",
         });
-        fetch(`${googleSheetUrl}?${params.toString()}`, {
+        runInBackground(locals, fetch(`${googleSheetUrl}?${params.toString()}`, {
           method: "GET",
-        }).catch(err => console.error("Google Sheets eligibility GET failed:", err));
+        }), "google-sheets-eligibility");
       } catch (err) {
         console.error("Google Sheets eligibility submission failed:", err);
       }
@@ -265,19 +266,15 @@ export const POST: APIRoute = async ({ request, locals }) => {
 
     // Send confirmation email to user if email provided
     if (cleanEmail) {
-      try {
-        const { subject, html } = eligibilityResultEmail({
-          name: cleanName,
-          academicScore: academicScoreNum,
-          ieltsScore: ieltsScoreNum,
-          budget: budgetLakhsNum,
-          destination: cleanDestination,
-          matchCount: matches.length,
-        });
-        await sendMail({ to: cleanEmail, subject, html });
-      } catch (mailErr) {
-        console.error('Eligibility email send failed:', mailErr);
-      }
+      const { subject, html } = eligibilityResultEmail({
+        name: cleanName,
+        academicScore: academicScoreNum,
+        ieltsScore: ieltsScoreNum,
+        budget: budgetLakhsNum,
+        destination: cleanDestination,
+        matchCount: matches.length,
+      });
+      runInBackground(locals, sendMail({ to: cleanEmail, subject, html }), "eligibility-result-email");
     }
 
     return jsonResponse({
@@ -288,6 +285,6 @@ export const POST: APIRoute = async ({ request, locals }) => {
     });
 
   } catch (err: any) {
-    return await reportServerError("eligibility", err, body, request);
+    return await reportServerError("eligibility", err, body, request, locals);
   }
 };

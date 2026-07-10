@@ -93,9 +93,7 @@ export const onRequest = defineMiddleware(async (context, next) => {
   // HSTS: force HTTPS for 1 year incl. subdomains (www now redirects over HTTPS).
   // `preload` intentionally omitted — it's a hard-to-reverse public commitment.
   response.headers.set("Strict-Transport-Security", "max-age=31536000; includeSubDomains");
-  // Rolled out as Report-Only first so we can confirm nothing breaks before
-  // promoting to the enforcing `Content-Security-Policy` header.
-  response.headers.set("Content-Security-Policy-Report-Only", CSP);
+  response.headers.set("Content-Security-Policy", CSP);
 
   // --- Keep the admin panel out of search engines (more reliable than robots.txt) ---
   if (isAdmin) {
@@ -105,8 +103,8 @@ export const onRequest = defineMiddleware(async (context, next) => {
   // --- Edge caching for public HTML pages ---
   // Only cache safe, anonymous GET HTML on public routes. Never cache admin/api,
   // anything that sets a cookie, or non-GET requests. s-maxage lets Cloudflare
-  // serve from the edge for 5 min; stale-while-revalidate keeps it instant while
-  // refreshing in the background, so admin content updates appear within ~5 min.
+  // serve from the edge for 30 min; stale-while-revalidate keeps it instant while
+  // refreshing in the background, so public content updates appear within ~30 min.
   const isGet = context.request.method === "GET";
   const contentType = response.headers.get("content-type") || "";
   const isHtml = contentType.includes("text/html");
@@ -115,7 +113,7 @@ export const onRequest = defineMiddleware(async (context, next) => {
   if (isGet && isHtml && !isAdmin && !isApi && !setsCookie && response.status === 200) {
     response.headers.set(
       "Cache-Control",
-      "public, max-age=0, s-maxage=300, stale-while-revalidate=86400"
+      "public, max-age=0, s-maxage=1800, stale-while-revalidate=86400"
     );
   }
 
