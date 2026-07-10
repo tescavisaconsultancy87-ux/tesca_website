@@ -85,15 +85,23 @@ export default function CounsellorForm() {
 
   const getAvailableDates = () => {
     const dates = [];
-    const options: Intl.DateTimeFormatOptions = { weekday: 'short', month: 'short', day: 'numeric' };
     for (let i = 0; i < 5; i++) {
       const d = new Date();
-      d.setDate(d.getDate() + i);
+      const dInIST = new Date(d.getTime() + i * 24 * 60 * 60 * 1000);
+      const val = new Intl.DateTimeFormat('en-CA', {
+        timeZone: 'Asia/Kolkata',
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit'
+      }).format(dInIST);
+      const label = dInIST.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric', timeZone: 'Asia/Kolkata' });
+      const dayName = dInIST.toLocaleDateString('en-US', { weekday: 'short', timeZone: 'Asia/Kolkata' });
+      const dayNum = parseInt(dInIST.toLocaleDateString('en-US', { day: 'numeric', timeZone: 'Asia/Kolkata' }), 10);
       dates.push({
-        label: d.toLocaleDateString('en-US', options),
-        value: d.toISOString().split('T')[0],
-        dayName: d.toLocaleDateString('en-US', { weekday: 'short' }),
-        dayNum: d.getDate()
+        label,
+        value: val,
+        dayName,
+        dayNum
       });
     }
     return dates;
@@ -107,6 +115,50 @@ export default function CounsellorForm() {
     "05:00 PM",
     "06:30 PM"
   ];
+
+  const isSlotInPast = (dateStr: string, slotStr: string) => {
+    try {
+      const now = new Date();
+      const todayFormatter = new Intl.DateTimeFormat('en-CA', {
+        timeZone: 'Asia/Kolkata',
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit'
+      });
+      const todayIST = todayFormatter.format(now);
+      
+      if (dateStr < todayIST) return true;
+      if (dateStr > todayIST) return false;
+      
+      const timeFormatter = new Intl.DateTimeFormat('en-US', {
+        timeZone: 'Asia/Kolkata',
+        hour: 'numeric',
+        minute: 'numeric',
+        hour12: false
+      });
+      const timeParts = timeFormatter.format(now).split(':');
+      const currentHour = parseInt(timeParts[0], 10);
+      const currentMinute = parseInt(timeParts[1], 10);
+      
+      const match = slotStr.match(/^(\d{2}):(\d{2})\s*(AM|PM)$/i);
+      if (!match) return false;
+      let slotHour = parseInt(match[1], 10);
+      const slotMinute = parseInt(match[2], 10);
+      const ampm = match[3].toUpperCase();
+      if (ampm === "PM" && slotHour !== 12) {
+        slotHour += 12;
+      } else if (ampm === "AM" && slotHour === 12) {
+        slotHour = 0;
+      }
+      
+      if (slotHour < currentHour) return true;
+      if (slotHour === currentHour && slotMinute <= currentMinute) return true;
+      return false;
+    } catch (err) {
+      console.error("Error checking past slot:", err);
+      return false;
+    }
+  };
 
   // Close country dropdown when clicking outside
   useEffect(() => {
@@ -400,7 +452,7 @@ export default function CounsellorForm() {
                         ) : (
                           <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
                             {TIME_SLOTS.map((t) => {
-                              const isAvailable = availableSlots.includes(t);
+                              const isAvailable = availableSlots.includes(t) && !isSlotInPast(selectedDate, t);
                               return (
                                 <button
                                   key={t}

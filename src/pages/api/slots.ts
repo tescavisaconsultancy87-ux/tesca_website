@@ -2,6 +2,49 @@ import type { APIRoute } from 'astro';
 import { getEnv } from '../../utils/env';
 import { jsonResponse, reportServerError } from '../../utils/security';
 
+const isSlotInPastIST = (dateStr: string, slotStr: string): boolean => {
+  try {
+    const now = new Date();
+    const todayIST = new Intl.DateTimeFormat('en-CA', {
+      timeZone: 'Asia/Kolkata',
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit'
+    }).format(now);
+
+    if (dateStr < todayIST) return true;
+    if (dateStr > todayIST) return false;
+
+    // Same day, check time
+    const timeParts = new Intl.DateTimeFormat('en-US', {
+      timeZone: 'Asia/Kolkata',
+      hour: 'numeric',
+      minute: 'numeric',
+      hour12: false
+    }).format(now).split(':');
+    const currentHour = parseInt(timeParts[0], 10);
+    const currentMinute = parseInt(timeParts[1], 10);
+
+    const match = slotStr.match(/^(\d{2}):(\d{2})\s*(AM|PM)$/i);
+    if (!match) return false;
+    let slotHour = parseInt(match[1], 10);
+    const slotMinute = parseInt(match[2], 10);
+    const ampm = match[3].toUpperCase();
+    if (ampm === "PM" && slotHour !== 12) {
+      slotHour += 12;
+    } else if (ampm === "AM" && slotHour === 12) {
+      slotHour = 0;
+    }
+
+    if (slotHour < currentHour) return true;
+    if (slotHour === currentHour && slotMinute <= currentMinute) return true;
+    return false;
+  } catch (err) {
+    console.error("Error checking isSlotInPastIST:", err);
+    return false;
+  }
+};
+
 export const GET: APIRoute = async ({ request }) => {
   const url = new URL(request.url);
   const date = url.searchParams.get('date');
@@ -17,16 +60,17 @@ export const GET: APIRoute = async ({ request }) => {
     const googleSheetUrl = getEnv('GOOGLE_SHEET_URL') || getEnv('PUBLIC_GOOGLE_SHEET_URL') || import.meta.env.GOOGLE_SHEET_URL || (import.meta.env as any).PUBLIC_GOOGLE_SHEET_URL;
     if (!googleSheetUrl) {
       // Default to all slots being available if not configured
+      const defaultSlots = [
+        "10:00 AM",
+        "11:30 AM",
+        "02:00 PM",
+        "03:30 PM",
+        "05:00 PM",
+        "06:30 PM"
+      ];
       return jsonResponse({
         success: true,
-        availableSlots: [
-          "10:00 AM",
-          "11:30 AM",
-          "02:00 PM",
-          "03:30 PM",
-          "05:00 PM",
-          "06:30 PM"
-        ]
+        availableSlots: defaultSlots.filter(s => !isSlotInPastIST(date, s))
       });
     }
 
@@ -51,9 +95,10 @@ export const GET: APIRoute = async ({ request }) => {
       throw new Error(data?.error || "Google Apps Script has not been updated with the new calendar code yet. Please review the setup instructions.");
     }
 
+    const rawSlots: string[] = data.availableSlots || [];
     return jsonResponse({
       success: true,
-      availableSlots: data.availableSlots || []
+      availableSlots: rawSlots.filter(s => !isSlotInPastIST(date, s))
     });
 
   } catch (err: any) {

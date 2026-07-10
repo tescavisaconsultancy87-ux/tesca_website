@@ -9,6 +9,49 @@ import { counsellorBookingEmail } from '../../utils/emailTemplates';
 const RATE_LIMIT_WINDOW_MS = 10 * 60 * 1000;
 const RATE_LIMIT_MAX = 8;
 
+const isSlotInPastIST = (dateStr: string, slotStr: string): boolean => {
+  try {
+    const now = new Date();
+    const todayIST = new Intl.DateTimeFormat('en-CA', {
+      timeZone: 'Asia/Kolkata',
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit'
+    }).format(now);
+
+    if (dateStr < todayIST) return true;
+    if (dateStr > todayIST) return false;
+
+    // Same day, check time
+    const timeParts = new Intl.DateTimeFormat('en-US', {
+      timeZone: 'Asia/Kolkata',
+      hour: 'numeric',
+      minute: 'numeric',
+      hour12: false
+    }).format(now).split(':');
+    const currentHour = parseInt(timeParts[0], 10);
+    const currentMinute = parseInt(timeParts[1], 10);
+
+    const match = slotStr.match(/^(\d{2}):(\d{2})\s*(AM|PM)$/i);
+    if (!match) return false;
+    let slotHour = parseInt(match[1], 10);
+    const slotMinute = parseInt(match[2], 10);
+    const ampm = match[3].toUpperCase();
+    if (ampm === "PM" && slotHour !== 12) {
+      slotHour += 12;
+    } else if (ampm === "AM" && slotHour === 12) {
+      slotHour = 0;
+    }
+
+    if (slotHour < currentHour) return true;
+    if (slotHour === currentHour && slotMinute <= currentMinute) return true;
+    return false;
+  } catch (err) {
+    console.error("Error checking isSlotInPastIST:", err);
+    return false;
+  }
+};
+
 export const POST: APIRoute = async ({ request }) => {
   const oversized = rejectOversizedJson(request);
   if (oversized) return oversized;
@@ -27,6 +70,13 @@ export const POST: APIRoute = async ({ request }) => {
       const { leadId, selectedDate, selectedTime } = body;
       if (!leadId || !selectedDate || !selectedTime) {
         return new Response(JSON.stringify({ error: "Missing required fields (leadId, selectedDate, selectedTime)." }), {
+          status: 400,
+          headers: { "Content-Type": "application/json" }
+        });
+      }
+
+      if (isSlotInPastIST(selectedDate, selectedTime)) {
+        return new Response(JSON.stringify({ error: "The selected date or time slot is in the past and cannot be booked." }), {
           status: 400,
           headers: { "Content-Type": "application/json" }
         });
