@@ -594,7 +594,15 @@ try {
       (df as any)._ajaxBound = true;
       df.addEventListener("submit", async (e) => {
         e.preventDefault();
-        if (!confirm("Are you sure you want to remove this success story?")) return;
+        const confirmed = await (window as any).showConfirmDialog({
+          title: "Are you absolutely sure?",
+          description: "This action cannot be undone. This will permanently remove this success story.",
+          actionText: "Delete",
+          cancelText: "Cancel",
+          variant: "destructive",
+          from: "bottom"
+        });
+        if (!confirmed) return;
 
         const btn = df.querySelector('button[type="submit"]') as HTMLElement;
         (window as any).showBtnLoader?.(btn);

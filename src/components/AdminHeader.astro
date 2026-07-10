@@ -85,7 +85,7 @@ const logoutSvgSm = `<svg ${svgSm}><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-
 
   <!-- Logout at bottom -->
   <div class="px-3 pb-6 shrink-0">
-    <form method="POST" action="/admin" onsubmit="return confirm('Are you sure you want to sign out?');">
+    <form method="POST" action="/admin" class="logout-form">
       <input type="hidden" name="action" value="logout" />
       <button 
         type="submit" 
@@ -110,7 +110,7 @@ const logoutSvgSm = `<svg ${svgSm}><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-
           <span class="leads-nav-badge hidden absolute -top-1 -right-1 w-2 h-2 rounded-full bg-rose-500 ring-2 ring-rose-500/20 animate-pulse"></span>
         </a>
       </div>
-      <form method="POST" action="/admin" class="inline" onsubmit="return confirm('Are you sure you want to sign out?');">
+      <form method="POST" action="/admin" class="inline logout-form">
         <input type="hidden" name="action" value="logout" />
         <button 
           type="submit" 
@@ -229,8 +229,35 @@ const logoutSvgSm = `<svg ${svgSm}><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-
     }
   });
 
+  // Intercept logout forms for custom confirm dialog
+  function setupLogoutConfirm() {
+    const logoutForms = document.querySelectorAll(".logout-form");
+    logoutForms.forEach(form => {
+      if ((form as any)._bound) return;
+      (form as any)._bound = true;
+      form.addEventListener("submit", async (e) => {
+        e.preventDefault();
+        const confirmed = await (window as any).showConfirmDialog({
+          title: "Sign Out?",
+          description: "Are you sure you want to sign out of the administrative session?",
+          actionText: "Sign Out",
+          cancelText: "Cancel",
+          variant: "destructive",
+          from: "bottom"
+        });
+        if (confirmed) {
+          (form as HTMLFormElement).submit();
+        }
+      });
+    });
+  }
+
   checkNewLeads();
-  document.addEventListener("astro:page-load", checkNewLeads);
+  setupLogoutConfirm();
+  document.addEventListener("astro:page-load", () => {
+    checkNewLeads();
+    setupLogoutConfirm();
+  });
 </script>
 
 <style>

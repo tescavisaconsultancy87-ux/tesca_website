@@ -199,3 +199,39 @@ a, a:hover, a:focus, a:active {
   box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.08), 0 1px 3px rgba(0, 0, 0, 0.01);
 }
 
+
+/* Custom Animated Confirm Alert Dialog */
+#custom-alert-dialog {
+  transition: opacity 0.2s ease-out;
+}
+#custom-alert-popup {
+  transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* Hidden states by direction */
+#custom-alert-popup.from-bottom {
+  transform: translateY(24px) scale(0.95);
+  opacity: 0;
+}
+#custom-alert-popup.from-top {
+  transform: translateY(-24px) scale(0.95);
+  opacity: 0;
+}
+#custom-alert-popup.from-left {
+  transform: translateX(-24px) scale(0.95);
+  opacity: 0;
+}
+#custom-alert-popup.from-right {
+  transform: translateX(24px) scale(0.95);
+  opacity: 0;
+}
+
+/* Open state */
+#custom-alert-dialog.open {
+  opacity: 1;
+  pointer-events: auto;
+}
+#custom-alert-dialog.open #custom-alert-popup {
+  transform: translate(0) scale(1) !important;
+  opacity: 1;
+}
