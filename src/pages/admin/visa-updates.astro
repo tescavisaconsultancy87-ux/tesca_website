@@ -290,7 +290,8 @@ try {
   function setupVisaUpdates() {
     // Custom Bulletin Tag Color Dropdown Interactions
     const colorDropdown = document.getElementById('bulletin-color-dropdown');
-    if (colorDropdown) {
+    if (colorDropdown && !(colorDropdown as any)._bound) {
+      (colorDropdown as any)._bound = true;
       const trigger = colorDropdown.querySelector(".status-dropdown-trigger") as HTMLButtonElement;
       const colorInput = colorDropdown.querySelector('input[name="tag_color"]') as HTMLInputElement;
       const items = colorDropdown.querySelectorAll("[role='menuitem']");
