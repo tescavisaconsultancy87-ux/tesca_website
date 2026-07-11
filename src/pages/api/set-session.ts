@@ -1,5 +1,5 @@
 import type { APIRoute } from 'astro';
-import { supabase } from '../../utils/supabase';
+import { getSupabaseAdmin } from '../../utils/supabase';
 import { genericApiError, getClientIP, checkRateLimit, jsonResponse, rateLimitResponse, rejectOversizedJson } from '../../utils/security';
 
 const RATE_LIMIT_WINDOW_MS = 10 * 60 * 1000;
@@ -15,7 +15,8 @@ export const POST: APIRoute = async ({ request, cookies }) => {
   }
 
   try {
-    const { access_token, refresh_token, expires_in } = await request.json();
+    const supabase = getSupabaseAdmin();
+const { access_token, refresh_token, expires_in } = await request.json();
     if (!access_token || !refresh_token) {
       return jsonResponse({ success: false, message: "Missing tokens" }, 400);
     }

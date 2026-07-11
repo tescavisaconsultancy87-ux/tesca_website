@@ -1,5 +1,5 @@
 import type { APIRoute } from 'astro';
-import { supabase } from '../../utils/supabase';
+import { getSupabaseAdmin } from '../../utils/supabase';
 import { getEnv } from '../../utils/env';
 import { validateEmail, validatePhone, validateName, validateScoreRange, sanitizeText } from '../../utils/validation';
 import { reportServerError, getClientIP, checkRateLimit, jsonResponse, rateLimitResponse, rejectOversizedJson } from '../../utils/security';
@@ -21,7 +21,8 @@ export const POST: APIRoute = async ({ request, locals }) => {
 
   let body: any = {};
   try {
-    body = await request.json();
+    const supabase = getSupabaseAdmin();
+body = await request.json();
     const { name, email, phone, score, ielts, budget, destination } = body;
 
     // 1. Basic check for presence
@@ -88,7 +89,8 @@ export const POST: APIRoute = async ({ request, locals }) => {
     // Save lead to database
     let leadId: number | null = null;
     try {
-      const detailsStr = JSON.stringify({
+    const supabase = getSupabaseAdmin();
+const detailsStr = JSON.stringify({
         academic_score: academicScoreNum,
         ielts_score: ieltsScoreNum,
         budget: budgetLakhsNum,
@@ -122,7 +124,8 @@ export const POST: APIRoute = async ({ request, locals }) => {
 
     // 1. Submit to Web3Forms
     if (web3formsAccessKey) try {
-      runInBackground(locals, fetch("https://api.web3forms.com/submit", {
+    const supabase = getSupabaseAdmin();
+runInBackground(locals, fetch("https://api.web3forms.com/submit", {
         method: "POST",
         headers: { "Content-Type": "application/json", "Accept": "application/json" },
         body: JSON.stringify({
@@ -142,7 +145,8 @@ export const POST: APIRoute = async ({ request, locals }) => {
     // 2. Submit to Google Sheets (GET request with query parameters)
     if (googleSheetUrl) {
       try {
-        const params = new URLSearchParams({
+    const supabase = getSupabaseAdmin();
+const params = new URLSearchParams({
           "Full Name": cleanName,
           "Email": cleanEmail,
           "Mobile Number": cleanPhone,

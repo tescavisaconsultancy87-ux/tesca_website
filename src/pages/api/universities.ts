@@ -1,5 +1,5 @@
 import type { APIRoute } from 'astro';
-import { supabase } from '../../utils/supabase';
+import { getSupabaseAdmin } from '../../utils/supabase';
 import { genericApiError, getClientIP, checkRateLimit, jsonResponse, rateLimitResponse } from '../../utils/security';
 
 const RATE_LIMIT_WINDOW_MS = 60 * 1000;
@@ -15,7 +15,8 @@ export const GET: APIRoute = async ({ request }) => {
   const countryCode = url.searchParams.get("country")?.trim().toLowerCase();
 
   try {
-    let query = supabase.from('universities').select('*');
+    const supabase = getSupabaseAdmin();
+let query = supabase.from('universities').select('*');
     
     if (countryCode && countryCode !== "all") {
       query = query.eq('code', countryCode);

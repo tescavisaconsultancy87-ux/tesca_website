@@ -1,11 +1,13 @@
 ---
 import { supabase } from "../utils/supabase";
+import { ensureCsrfToken } from "../utils/csrf";
 
 interface Props {
   activeTab: "dashboard" | "leads" | "universities" | "stories" | "announcements" | "updates" | "admins" | "gallery" | "our-social" | "partners" | "blogs";
 }
 
 const { activeTab } = Astro.props;
+const csrfToken = ensureCsrfToken(Astro.cookies);
 
 // Inline SVG icons - no lucide-react (causes SSR hook errors)
 const svgBase = `xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"`;
@@ -43,7 +45,7 @@ const logoutSvgBase = `<svg ${svgBase}><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 
 const logoutSvgSm = `<svg ${svgSm}><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" x2="9" y1="12" y2="12"/></svg>`;
 ---
 
-<div id="admin-header-data" class="hidden" data-total-leads={totalLeadsCount}></div>
+<div id="admin-header-data" class="hidden" data-total-leads={totalLeadsCount} data-csrf-token={csrfToken}></div>
 
   <!-- Desktop Sidebar -->
 <aside class="hidden lg:flex flex-col w-64 bg-slate-900 border-r border-slate-800 text-white select-none shrink-0 fixed left-0 top-0 bottom-0 z-30">

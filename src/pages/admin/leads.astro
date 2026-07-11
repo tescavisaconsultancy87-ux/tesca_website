@@ -43,6 +43,10 @@ if (Astro.request.method === "POST") {
     } else if (action === "update-status") {
       const id = formData.get("id")?.toString() || "";
       const status = formData.get("status")?.toString().trim();
+      const allowedStatuses = new Set(["pending", "not_available", "follow up", "completed"]);
+      if (!status || !allowedStatuses.has(status)) {
+        throw new Error("Invalid lead status.");
+      }
       const completionReason = formData.get("completion_reason")?.toString().trim();
       
       if (status === "completed" && completionReason) {

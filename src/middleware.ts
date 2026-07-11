@@ -1,5 +1,6 @@
 import { defineMiddleware } from "astro:middleware";
 import { setRuntimeEnv } from "./utils/env";
+import { ensureCsrfToken, validateAdminCsrf } from "./utils/csrf";
 
 // CSP sources reflect what the site actually loads:
 // - scripts: Google Tag Manager / Analytics (+ inline gtag bootstrap)
@@ -38,6 +39,13 @@ export const onRequest = defineMiddleware(async (context, next) => {
   const { hostname, pathname: reqPath, search } = context.url;
   const isApexHost = hostname === "tescavisa.com" || hostname === "www.tescavisa.com";
   const isAdminPath = reqPath === "/admin" || reqPath.startsWith("/admin/");
+  if (isAdminPath) {
+    ensureCsrfToken(context.cookies);
+    if (context.request.method === "POST") {
+      const csrfError = await validateAdminCsrf(context.request, context.cookies);
+      if (csrfError) return csrfError;
+    }
+  }
   if (isApexHost && isAdminPath) {
     return Response.redirect(`https://admin.tescavisa.com${reqPath}${search}`, 301);
   }

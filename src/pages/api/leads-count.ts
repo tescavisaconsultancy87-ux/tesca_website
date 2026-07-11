@@ -1,5 +1,5 @@
 import type { APIRoute } from 'astro';
-import { supabase } from '../../utils/supabase';
+import { getSupabaseAdmin } from '../../utils/supabase';
 import { checkAdminAuth } from "../../utils/adminAuth";
 import { genericApiError, jsonResponse } from '../../utils/security';
 
@@ -10,7 +10,8 @@ export const GET: APIRoute = async ({ cookies }) => {
   }
 
   try {
-    const { count, error } = await supabase
+    const supabase = getSupabaseAdmin();
+const { count, error } = await supabase
       .from('leads')
       .select('*', { count: 'exact', head: true })
       .neq('lead_type', 'partner');

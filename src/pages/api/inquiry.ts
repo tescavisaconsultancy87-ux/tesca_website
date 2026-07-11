@@ -1,5 +1,5 @@
 import type { APIRoute } from 'astro';
-import { supabase } from '../../utils/supabase';
+import { getSupabaseAdmin } from '../../utils/supabase';
 import { validateEmail, validatePhone, validateName, sanitizeText } from '../../utils/validation';
 import { reportServerError, getClientIP, checkRateLimit, jsonResponse, rateLimitResponse, rejectOversizedJson } from '../../utils/security';
 import { getEnv } from '../../utils/env';
@@ -21,7 +21,8 @@ export const POST: APIRoute = async ({ request, locals }) => {
 
   let body: any = {};
   try {
-    body = await request.json();
+    const supabase = getSupabaseAdmin();
+body = await request.json();
     const { fullName, email, mobileNumber, message, subject } = body;
 
     // 1. Basic check for presence

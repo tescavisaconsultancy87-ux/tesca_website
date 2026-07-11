@@ -10,11 +10,13 @@ import { supabase } from "../utils/supabase";
 import { checkAdminAuth } from "../utils/adminAuth";
 import { getEnv } from "../utils/env";
 import { getClientIP, checkRateLimit } from "../utils/security";
+import { ensureCsrfToken } from "../utils/csrf";
 
 const serverSupabaseUrl = getEnv("PUBLIC_SUPABASE_URL") || import.meta.env.PUBLIC_SUPABASE_URL;
 const serverSupabaseKey = getEnv("PUBLIC_SUPABASE_ANON_KEY") || import.meta.env.PUBLIC_SUPABASE_ANON_KEY;
 
 let errorMessage = "";
+const csrfToken = ensureCsrfToken(Astro.cookies);
 
 // Handle Login/Logout request
 if (Astro.request.method === "POST") {
@@ -155,6 +157,7 @@ if (isAuthenticated) {
         {/* Login Form */}
         <form method="POST" class="space-y-5" id="login-form">
           <input type="hidden" name="action" value="login" />
+          <input type="hidden" name="csrf_token" value={csrfToken} />
           
           <div class="space-y-1.5">
             <label for="email" class="text-xs font-bold text-slate-600 uppercase tracking-wider">Email Address</label>

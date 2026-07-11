@@ -77,6 +77,7 @@ export default function CounsellorForm() {
   const [selectedDate, setSelectedDate] = useState("");
   const [selectedTime, setSelectedTime] = useState("");
   const [leadId, setLeadId] = useState("");
+  const [bookingToken, setBookingToken] = useState("");
   const [availableSlots, setAvailableSlots] = useState<string[]>([]);
   const [loadingSlots, setLoadingSlots] = useState(false);
   const [bookingStatus, setBookingStatus] = useState<"idle" | "booking" | "success" | "failed">("idle");
@@ -182,6 +183,7 @@ export default function CounsellorForm() {
       setSelectedDate("");
       setSelectedTime("");
       setLeadId("");
+      setBookingToken("");
       setAvailableSlots([]);
       setBookingStatus("idle");
       setIsOpen(true);
@@ -285,6 +287,7 @@ export default function CounsellorForm() {
       }
 
       setLeadId(data.leadId || "");
+      setBookingToken(data.bookingToken || "");
 
       if (typeof window !== "undefined" && (window as any).trackLeadEvent) {
         (window as any).trackLeadEvent("counsellor");
@@ -483,7 +486,7 @@ export default function CounsellorForm() {
 
                     <button
                       type="button"
-                      disabled={bookingStatus === "booking" || !selectedDate || !selectedTime}
+                      disabled={bookingStatus === "booking" || !selectedDate || !selectedTime || !bookingToken}
                       onClick={async () => {
                         if (!selectedDate || !selectedTime) {
                           alert("Please select a date and time slot!");
@@ -498,6 +501,7 @@ export default function CounsellorForm() {
                             body: JSON.stringify({
                               action: "book",
                               leadId,
+                              bookingToken,
                               selectedDate,
                               selectedTime
                             })

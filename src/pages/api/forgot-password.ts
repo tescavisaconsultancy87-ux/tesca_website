@@ -1,5 +1,5 @@
 import type { APIRoute } from 'astro';
-import { supabase } from '../../utils/supabase';
+import { getSupabaseAdmin } from '../../utils/supabase';
 import { genericApiError, getClientIP, checkRateLimit, jsonResponse, rejectOversizedJson } from '../../utils/security';
 
 const RATE_LIMIT_WINDOW_MS = 15 * 60 * 1000;
@@ -19,7 +19,8 @@ export const POST: APIRoute = async ({ request }) => {
   }
 
   try {
-    const body = await request.json();
+    const supabase = getSupabaseAdmin();
+const body = await request.json();
     const email = body.email?.toString().trim().toLowerCase();
 
     // Validate email format

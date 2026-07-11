@@ -1,5 +1,5 @@
 import type { APIRoute } from "astro";
-import { supabase } from "../../utils/supabase";
+import { getSupabaseAdmin } from "../../utils/supabase";
 
 export const prerender = false;
 
@@ -8,7 +8,8 @@ export const prerender = false;
 // at the edge to absorb traffic spikes without hammering the database.
 export const GET: APIRoute = async () => {
   try {
-    const { data, error } = await supabase
+    const supabase = getSupabaseAdmin();
+const { data, error } = await supabase
       .from("announcements")
       .select("text")
       .order("id", { ascending: true });

@@ -1,5 +1,5 @@
 import type { APIRoute } from 'astro';
-import { supabase } from '../../utils/supabase';
+import { getSupabaseAdmin } from '../../utils/supabase';
 import { validateEmail, validatePhone, validateName, sanitizeText } from '../../utils/validation';
 import { getEnv } from '../../utils/env';
 import { reportServerError, getClientIP, checkRateLimit, jsonResponse, rateLimitResponse, rejectOversizedJson } from '../../utils/security';
@@ -9,6 +9,17 @@ import { runInBackground } from '../../utils/background';
 
 const RATE_LIMIT_WINDOW_MS = 10 * 60 * 1000;
 const RATE_LIMIT_MAX = 8;
+const createBookingToken = (): string => {
+  const bytes = new Uint8Array(32);
+  crypto.getRandomValues(bytes);
+  return Array.from(bytes, (b) => b.toString(16).padStart(2, "0")).join("");
+};
+
+const sha256Hex = async (value: string): Promise<string> => {
+  const data = new TextEncoder().encode(value);
+  const digest = await crypto.subtle.digest("SHA-256", data);
+  return Array.from(new Uint8Array(digest), (b) => b.toString(16).padStart(2, "0")).join("");
+};
 
 const isSlotInPastIST = (dateStr: string, slotStr: string): boolean => {
   try {
@@ -64,13 +75,14 @@ export const POST: APIRoute = async ({ request, locals }) => {
 
   let body: any = {};
   try {
+    const supabase = getSupabaseAdmin();
     body = await request.json();
 
     // 0. Handle Google Calendar Slot Booking action
     if (body.action === 'book') {
-      const { leadId, selectedDate, selectedTime } = body;
-      if (!leadId || !selectedDate || !selectedTime) {
-        return new Response(JSON.stringify({ error: "Missing required fields (leadId, selectedDate, selectedTime)." }), {
+      const { leadId, bookingToken, selectedDate, selectedTime } = body;
+      if (!leadId || !bookingToken || !selectedDate || !selectedTime) {
+        return new Response(JSON.stringify({ error: "Missing required fields (leadId, bookingToken, selectedDate, selectedTime)." }), {
           status: 400,
           headers: { "Content-Type": "application/json" }
         });
@@ -88,6 +100,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
         .from('leads')
         .select('*')
         .eq('id', leadId)
+        .eq('lead_type', 'counsellor')
         .single();
 
       if (fetchError || !lead) {
@@ -102,6 +115,14 @@ export const POST: APIRoute = async ({ request, locals }) => {
         details = typeof lead.details === 'string' ? JSON.parse(lead.details) : lead.details || {};
       } catch (e) {
         details = {};
+      }
+
+      const submittedTokenHash = await sha256Hex(String(bookingToken));
+      if (!details.bookingTokenHash || details.bookingTokenHash !== submittedTokenHash || details.bookingTokenUsedAt) {
+        return new Response(JSON.stringify({ error: "Invalid or expired booking token." }), {
+          status: 403,
+          headers: { "Content-Type": "application/json" }
+        });
       }
 
       const googleSheetUrl = getEnv('GOOGLE_SHEET_URL') || import.meta.env.GOOGLE_SHEET_URL;
@@ -234,7 +255,9 @@ export const POST: APIRoute = async ({ request, locals }) => {
     const cleanVisaType = visaType ? sanitizeText(visaType, 50) : "";
 
     const fullName = `${cleanFirstName} ${cleanLastName}`;
-    const detailsStr = JSON.stringify({ mode: cleanMode, destination: cleanDestination, visaType: cleanVisaType });
+    const bookingToken = createBookingToken();
+    const bookingTokenHash = await sha256Hex(bookingToken);
+    const detailsStr = JSON.stringify({ mode: cleanMode, destination: cleanDestination, visaType: cleanVisaType, bookingTokenHash });
 
     const { data: insertedData, error } = await supabase
       .from('leads')
@@ -291,7 +314,8 @@ export const POST: APIRoute = async ({ request, locals }) => {
 
     return jsonResponse({
       success: true,
-      leadId: insertedData?.id || null
+      leadId: insertedData?.id || null,
+      bookingToken
     });
 
   } catch (err: any) {
