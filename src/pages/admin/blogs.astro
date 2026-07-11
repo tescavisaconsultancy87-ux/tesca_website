@@ -137,6 +137,19 @@ if (editId) {
   if (data) editingPost = data;
 }
 
+let initialColor = "blue";
+let initialColorLabel = "Blue (Study)";
+if (editingPost?.tag_bg) {
+  if (editingPost.tag_bg.includes('blue')) { initialColor = "blue"; initialColorLabel = "Blue (Study)"; }
+  else if (editingPost.tag_bg.includes('purple')) { initialColor = "purple"; initialColorLabel = "Purple (Guides)"; }
+  else if (editingPost.tag_bg.includes('emerald')) { initialColor = "emerald"; initialColorLabel = "Emerald (Success)"; }
+  else if (editingPost.tag_bg.includes('red')) { initialColor = "red"; initialColorLabel = "Red (Visa)"; }
+  else if (editingPost.tag_bg.includes('indigo')) { initialColor = "indigo"; initialColorLabel = "Indigo (Finance)"; }
+  else if (editingPost.tag_bg.includes('amber')) { initialColor = "amber"; initialColorLabel = "Amber (Alerts)"; }
+  else if (editingPost.tag_bg.includes('rose')) { initialColor = "rose"; initialColorLabel = "Rose (Intake)"; }
+  else if (editingPost.tag_bg.includes('cyan')) { initialColor = "cyan"; initialColorLabel = "Cyan (Info)"; }
+}
+
 // Fetch all blog posts
 try {
   const { data, error } = await supabase
@@ -263,21 +276,54 @@ try {
             </div>
 
             <div class="space-y-1.5">
-              <label for="blog-color" class="text-[10px] text-slate-500 uppercase tracking-wide">Tag Color Theme *</label>
-              <select 
-                id="blog-color" 
-                name="tag_color" 
-                class="w-full px-3 py-2.5 rounded-lg border border-slate-200 bg-slate-50 text-slate-800 focus:outline-none focus:ring-1 focus:ring-indigo-500"
-              >
-                <option value="blue" selected={editingPost?.tag_bg?.includes('blue')}>Blue (Study)</option>
-                <option value="purple" selected={editingPost?.tag_bg?.includes('purple')}>Purple (Guides)</option>
-                <option value="emerald" selected={editingPost?.tag_bg?.includes('emerald')}>Emerald (Success)</option>
-                <option value="red" selected={editingPost?.tag_bg?.includes('red')}>Red (Visa)</option>
-                <option value="indigo" selected={editingPost?.tag_bg?.includes('indigo')}>Indigo (Finance)</option>
-                <option value="amber" selected={editingPost?.tag_bg?.includes('amber')}>Amber (Alerts)</option>
-                <option value="rose" selected={editingPost?.tag_bg?.includes('rose')}>Rose (Intake)</option>
-                <option value="cyan" selected={editingPost?.tag_bg?.includes('cyan')}>Cyan (Info)</option>
-              </select>
+              <label for="blog-color-trigger" class="text-[10px] text-slate-500 uppercase tracking-wide">Tag Color Theme *</label>
+              <div class="relative custom-dropdown w-full" id="blog-color-dropdown">
+                <input 
+                  type="hidden" 
+                  id="blog-color" 
+                  name="tag_color" 
+                  value={initialColor} 
+                />
+                <button
+                  type="button"
+                  id="blog-color-trigger"
+                  class="w-full px-3 py-2.5 rounded-lg border border-slate-200 bg-slate-50 text-slate-805 text-left flex justify-between items-center cursor-pointer status-dropdown-trigger focus:outline-none focus:ring-1 focus:ring-indigo-500 font-sans"
+                  aria-haspopup="true"
+                  aria-expanded="false"
+                >
+                  <span class="selected-text font-semibold text-xs text-slate-700">{initialColorLabel}</span>
+                  <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="transition-transform duration-200 dropdown-arrow text-slate-450"><path d="m6 9 6 6 6-6"/></svg>
+                </button>
+
+                <div 
+                  class="dropdown-menu-content absolute left-0 mt-1.5 w-full rounded-xl border border-slate-200 bg-white shadow-lg p-1 focus:outline-none opacity-0 scale-95 translate-y-[-4px] pointer-events-none transition-all duration-200 ease-out z-30"
+                  role="menu"
+                >
+                  <div class="space-y-0.5 max-h-60 overflow-y-auto">
+                    {[
+                      { val: "blue", label: "Blue (Study)" },
+                      { val: "purple", label: "Purple (Guides)" },
+                      { val: "emerald", label: "Emerald (Success)" },
+                      { val: "red", label: "Red (Visa)" },
+                      { val: "indigo", label: "Indigo (Finance)" },
+                      { val: "amber", label: "Amber (Alerts)" },
+                      { val: "rose", label: "Rose (Intake)" },
+                      { val: "cyan", label: "Cyan (Info)" }
+                    ].map((opt) => (
+                      <button 
+                        type="button" 
+                        role="menuitem"
+                        data-value={opt.val}
+                        class={`flex w-full items-center justify-between rounded-lg px-3 py-2 text-xs font-semibold text-left transition-colors cursor-pointer option-item ` + 
+                          (initialColor === opt.val ? 'bg-indigo-50 text-indigo-700 font-semibold' : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900')}
+                      >
+                        {opt.label}
+                        {initialColor === opt.val && <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" class="text-indigo-600"><path d="M20 6 9 17l-5-5"/></svg>}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              </div>
             </div>
 
             <div class="space-y-1.5">
@@ -449,6 +495,72 @@ try {
   }
 
   function setupBlogAdmin() {
+    // Custom Tag Color Dropdown Interactions
+    const colorDropdown = document.getElementById('blog-color-dropdown');
+    if (colorDropdown) {
+      const trigger = colorDropdown.querySelector(".status-dropdown-trigger") as HTMLButtonElement;
+      const colorInput = colorDropdown.querySelector('input[name="tag_color"]') as HTMLInputElement;
+      const items = colorDropdown.querySelectorAll("[role='menuitem']");
+      const selectedText = trigger?.querySelector(".selected-text");
+
+      trigger?.addEventListener("click", (e) => {
+        e.stopPropagation();
+        colorDropdown.classList.toggle("open");
+      });
+
+      items.forEach(item => {
+        item.addEventListener("click", (e) => {
+          e.stopPropagation();
+          const val = item.getAttribute("data-value") || "blue";
+          if (colorInput) {
+            colorInput.value = val;
+          }
+          if (selectedText) {
+            selectedText.textContent = item.textContent?.trim() || "";
+          }
+          
+          // Update active option styles
+          items.forEach(otherItem => {
+            const isSelected = otherItem.getAttribute("data-value") === val;
+            otherItem.className = `flex w-full items-center justify-between rounded-lg px-3 py-2 text-xs font-semibold text-left transition-colors cursor-pointer option-item ` + 
+              (isSelected ? 'bg-indigo-50 text-indigo-700 font-semibold' : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900');
+            
+            // Checkmark SVG handling
+            const existingSvg = otherItem.querySelector('svg');
+            if (isSelected) {
+              if (!existingSvg) {
+                const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+                svg.setAttribute("width", "12");
+                svg.setAttribute("height", "12");
+                svg.setAttribute("viewBox", "0 0 24 24");
+                svg.setAttribute("fill", "none");
+                svg.setAttribute("stroke", "currentColor");
+                svg.setAttribute("stroke-width", "3");
+                svg.setAttribute("stroke-linecap", "round");
+                svg.setAttribute("stroke-linejoin", "round");
+                svg.setAttribute("class", "text-indigo-600");
+                const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
+                path.setAttribute("d", "M20 6 9 17l-5-5");
+                svg.appendChild(path);
+                otherItem.appendChild(svg);
+              }
+            } else {
+              existingSvg?.remove();
+            }
+          });
+
+          colorDropdown.classList.remove("open");
+        });
+      });
+
+      // Close color dropdown on clicking outside
+      document.addEventListener("click", (e) => {
+        if (!colorDropdown.contains(e.target as Node)) {
+          colorDropdown.classList.remove("open");
+        }
+      });
+    }
+
     // Initialize Quill Editor
     const editorEl = document.getElementById('blog-editor');
     const hiddenInput = document.getElementById('blog-content') as HTMLInputElement;
@@ -716,6 +828,23 @@ try {
 </script>
 
 <style is:global>
+  /* Custom animated dropdown styling */
+  .custom-dropdown .dropdown-menu-content {
+    opacity: 0;
+    transform: scale(0.95) translateY(-4px);
+    pointer-events: none;
+    transition: opacity 0.2s cubic-bezier(0.16, 1, 0.3, 1), transform 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+    transform-origin: top left;
+  }
+  .custom-dropdown.open .dropdown-menu-content {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+    pointer-events: auto;
+  }
+  .custom-dropdown.open .dropdown-arrow {
+    transform: rotate(180deg);
+  }
+
   /* Quill border overrides to match our design system */
   .ql-toolbar.ql-snow {
     border: 1px solid #e2e8f0 !important; /* border-slate-200 */
@@ -723,6 +852,9 @@ try {
     border-top-right-radius: 12px !important;
     background-color: #ffffff !important;
     padding: 6px 12px !important;
+  }
+  .ql-toolbar button {
+    cursor: pointer !important;
   }
   .ql-container.ql-snow {
     border: 1px solid #e2e8f0 !important; /* border-slate-200 */
@@ -739,6 +871,7 @@ try {
     overflow-y: auto !important;
     line-height: 1.625 !important;
     color: #1e293b !important; /* text-slate-800 */
+    cursor: text !important;
   }
   .ql-editor.ql-blank::before {
     font-style: italic !important;

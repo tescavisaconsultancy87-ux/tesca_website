@@ -100,7 +100,7 @@ const SVG = {
   <section class="max-w-4xl mx-auto px-6 pt-8 pb-16 text-left font-sans">
     
     <!-- Navigation Back Link -->
-    <a href="/blog" class="inline-flex items-center gap-1.5 text-sm font-semibold text-accent-blue hover:underline mb-8 font-sans">
+    <a href="/blog" class="inline-flex items-center gap-1.5 text-sm font-semibold text-accent-blue hover:underline mb-8 font-sans cursor-pointer">
       <span set:html={SVG.ArrowLeft} /> Back to Blog
     </a>
 
@@ -122,9 +122,8 @@ const SVG = {
       </p>
     </div>
 
-    <!-- Article Content Card -->
     <div class="glass-card rounded-[2rem] p-8 md:p-12 bg-white border border-slate-200/80 shadow-md mb-12">
-      <article class="prose prose-slate max-w-none prose-sm sm:prose-base font-normal text-slate-650 leading-relaxed space-y-6">
+      <article class="prose prose-slate max-w-none prose-sm sm:prose-base font-normal text-slate-700 leading-relaxed space-y-6">
         <div set:html={resolvedPost.content} />
       </article>
     </div>
@@ -176,6 +175,17 @@ const SVG = {
 </Layout>
 
 <style is:global>
+  article {
+    cursor: default !important;
+  }
+  article p, article li, article h2, article h3, article span, article strong, article em, article a {
+    cursor: text !important;
+  }
+  article a {
+    cursor: pointer !important;
+    text-decoration: underline !important;
+    color: var(--color-accent-blue) !important;
+  }
   article h2 {
     font-size: 1.5rem;
     font-weight: 800;

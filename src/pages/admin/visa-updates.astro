@@ -141,14 +141,51 @@ try {
               </div>
               
               <div class="space-y-1.5">
-                <label for="bulletin-color" class="text-[10px] text-slate-500 uppercase tracking-wide">Tag Theme *</label>
-                <select id="bulletin-color" name="tag_color" class="w-full px-3 py-2.5 rounded-lg border border-slate-200 bg-slate-50 text-slate-800 focus:outline-none focus:ring-1 focus:ring-indigo-500">
-                  <option value="amber">Amber (Updates)</option>
-                  <option value="emerald">Emerald (Success)</option>
-                  <option value="purple">Purple (Guides)</option>
-                  <option value="cyan">Cyan (Finance)</option>
-                  <option value="rose">Rose (Intake Alerts)</option>
-                </select>
+                <label for="bulletin-color-trigger" class="text-[10px] text-slate-500 uppercase tracking-wide">Tag Theme *</label>
+                <div class="relative custom-dropdown w-full" id="bulletin-color-dropdown">
+                  <input 
+                    type="hidden" 
+                    id="bulletin-color" 
+                    name="tag_color" 
+                    value="amber" 
+                  />
+                  <button
+                    type="button"
+                    id="bulletin-color-trigger"
+                    class="w-full px-3 py-2.5 rounded-lg border border-slate-200 bg-slate-50 text-slate-805 text-left flex justify-between items-center cursor-pointer status-dropdown-trigger focus:outline-none focus:ring-1 focus:ring-indigo-500 font-sans"
+                    aria-haspopup="true"
+                    aria-expanded="false"
+                  >
+                    <span class="selected-text font-semibold text-xs text-slate-700">Amber (Updates)</span>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="transition-transform duration-200 dropdown-arrow text-slate-450"><path d="m6 9 6 6 6-6"/></svg>
+                  </button>
+
+                  <div 
+                    class="dropdown-menu-content absolute left-0 mt-1.5 w-full rounded-xl border border-slate-200 bg-white shadow-lg p-1 focus:outline-none opacity-0 scale-95 translate-y-[-4px] pointer-events-none transition-all duration-200 ease-out z-30"
+                    role="menu"
+                  >
+                    <div class="space-y-0.5 max-h-60 overflow-y-auto">
+                      {[
+                        { val: "amber", label: "Amber (Updates)" },
+                        { val: "emerald", label: "Emerald (Success)" },
+                        { val: "purple", label: "Purple (Guides)" },
+                        { val: "cyan", label: "Cyan (Finance)" },
+                        { val: "rose", label: "Rose (Intake Alerts)" }
+                      ].map((opt, idx) => (
+                        <button 
+                          type="button" 
+                          role="menuitem"
+                          data-value={opt.val}
+                          class={`flex w-full items-center justify-between rounded-lg px-3 py-2 text-xs font-semibold text-left transition-colors cursor-pointer option-item ` + 
+                            (idx === 0 ? 'bg-indigo-50 text-indigo-700 font-semibold' : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900')}
+                        >
+                          {opt.label}
+                          {idx === 0 && <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" class="text-indigo-600"><path d="M20 6 9 17l-5-5"/></svg>}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
 
@@ -251,6 +288,71 @@ try {
   }
 
   function setupVisaUpdates() {
+    // Custom Bulletin Tag Color Dropdown Interactions
+    const colorDropdown = document.getElementById('bulletin-color-dropdown');
+    if (colorDropdown) {
+      const trigger = colorDropdown.querySelector(".status-dropdown-trigger") as HTMLButtonElement;
+      const colorInput = colorDropdown.querySelector('input[name="tag_color"]') as HTMLInputElement;
+      const items = colorDropdown.querySelectorAll("[role='menuitem']");
+      const selectedText = trigger?.querySelector(".selected-text");
+
+      trigger?.addEventListener("click", (e) => {
+        e.stopPropagation();
+        colorDropdown.classList.toggle("open");
+      });
+
+      items.forEach(item => {
+        item.addEventListener("click", (e) => {
+          e.stopPropagation();
+          const val = item.getAttribute("data-value") || "amber";
+          if (colorInput) {
+            colorInput.value = val;
+          }
+          if (selectedText) {
+            selectedText.textContent = item.textContent?.trim() || "";
+          }
+          
+          // Update active option styles
+          items.forEach(otherItem => {
+            const isSelected = otherItem.getAttribute("data-value") === val;
+            otherItem.className = `flex w-full items-center justify-between rounded-lg px-3 py-2 text-xs font-semibold text-left transition-colors cursor-pointer option-item ` + 
+              (isSelected ? 'bg-indigo-50 text-indigo-700 font-semibold' : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900');
+            
+            // Checkmark SVG handling
+            const existingSvg = otherItem.querySelector('svg');
+            if (isSelected) {
+              if (!existingSvg) {
+                const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+                svg.setAttribute("width", "12");
+                svg.setAttribute("height", "12");
+                svg.setAttribute("viewBox", "0 0 24 24");
+                svg.setAttribute("fill", "none");
+                svg.setAttribute("stroke", "currentColor");
+                svg.setAttribute("stroke-width", "3");
+                svg.setAttribute("stroke-linecap", "round");
+                svg.setAttribute("stroke-linejoin", "round");
+                svg.setAttribute("class", "text-indigo-600");
+                const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
+                path.setAttribute("d", "M20 6 9 17l-5-5");
+                svg.appendChild(path);
+                otherItem.appendChild(svg);
+              }
+            } else {
+              existingSvg?.remove();
+            }
+          });
+
+          colorDropdown.classList.remove("open");
+        });
+      });
+
+      // Close color dropdown on clicking outside
+      document.addEventListener("click", (e) => {
+        if (!colorDropdown.contains(e.target as Node)) {
+          colorDropdown.classList.remove("open");
+        }
+      });
+    }
     // Handle the add form
     const addForm = document.querySelector('form:not(.delete-bulletin-form)') as HTMLFormElement;
     if (addForm && !(addForm as any)._ajaxBound) {
@@ -327,3 +429,22 @@ try {
   setupVisaUpdates();
   document.addEventListener("astro:page-load", setupVisaUpdates);
 </script>
+
+<style is:global>
+  /* Custom animated dropdown styling */
+  .custom-dropdown .dropdown-menu-content {
+    opacity: 0;
+    transform: scale(0.95) translateY(-4px);
+    pointer-events: none;
+    transition: opacity 0.2s cubic-bezier(0.16, 1, 0.3, 1), transform 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+    transform-origin: top left;
+  }
+  .custom-dropdown.open .dropdown-menu-content {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+    pointer-events: auto;
+  }
+  .custom-dropdown.open .dropdown-arrow {
+    transform: rotate(180deg);
+  }
+</style>
