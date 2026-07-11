@@ -2,6 +2,7 @@
 import "../styles/global.css";
 import CounsellorForm from "../components/CounsellorForm";
 import { ClientRouter } from "astro:transitions";
+import { ensureCsrfToken } from "../utils/csrf";
 // Inline SVG helpers — no lucide-react in .astro (SSR hook errors)
 const _svg = (d: string, size = 16) => `<svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${d}</svg>`;
 const NavIcons = {
@@ -80,6 +81,11 @@ const structuredData = {
 // Announcements are loaded client-side from /api/announcements so this layout
 // (and therefore every page) can be statically prerendered and edge-cached.
 const gaId = import.meta.env.PUBLIC_GA4_ID || "G-2HW0JXMF2Y";
+
+let csrfToken = "";
+if (Astro.url.pathname.startsWith("/admin")) {
+	csrfToken = ensureCsrfToken(Astro.cookies);
+}
 ---
 
 <!doctype html>
@@ -244,6 +250,60 @@ const gaId = import.meta.env.PUBLIC_GA4_ID || "G-2HW0JXMF2Y";
 		<script type="application/ld+json" is:inline set:html={JSON.stringify(structuredData)} />
 
 		<ClientRouter />
+		{csrfToken && (
+			<meta name="csrf-token" content={csrfToken} />
+			<script is:inline>
+				(function() {
+					// 1. Intercept standard browser form submits
+					document.addEventListener("submit", function(e) {
+						const form = e.target;
+						if (form && form.method && form.method.toUpperCase() === "POST") {
+							if (!form.querySelector('input[name="csrf_token"]')) {
+								const token = document.querySelector('meta[name="csrf-token"]')?.getAttribute("content");
+								if (token) {
+									const input = document.createElement("input");
+									input.type = "hidden";
+									input.name = "csrf_token";
+									input.value = token;
+									form.appendChild(input);
+								}
+							}
+						}
+					});
+
+					// 2. Intercept fetch API calls
+					const originalFetch = window.fetch;
+					window.fetch = function(input, init) {
+						const isPost = init && init.method && init.method.toUpperCase() === "POST";
+						if (isPost) {
+							const token = document.querySelector('meta[name="csrf-token"]')?.getAttribute("content");
+							if (token) {
+								if (!init.headers) {
+									init.headers = {};
+								}
+								if (init.headers instanceof Headers) {
+									if (!init.headers.has("x-csrf-token")) {
+										init.headers.set("x-csrf-token", token);
+									}
+								} else if (Array.isArray(init.headers)) {
+									const hasCsrf = init.headers.some(function(pair) {
+										return pair[0].toLowerCase() === "x-csrf-token";
+									});
+									if (!hasCsrf) {
+										init.headers.push(["x-csrf-token", token]);
+									}
+								} else {
+									if (!init.headers["x-csrf-token"]) {
+										init.headers["x-csrf-token"] = token;
+									}
+								}
+							}
+						}
+						return originalFetch.call(this, input, init);
+					};
+				})();
+			</script>
+		)}
 		<style is:global>
 			/* Custom Premium Toast Styles */
 			#custom-toast-container {

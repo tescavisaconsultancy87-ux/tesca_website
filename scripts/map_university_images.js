@@ -34,19 +34,19 @@ const universitiesDir = './public/images/universities';
 
 // Known custom mappings for files that don't match names perfectly
 const customMappings = {
-  'Brunel University of London': 'Brunel-University-London-Medical-Doorway.jpg',
-  'University of Toronto': 'Universal_toronto.jpg',
-  'University of Cambridge': 'University-of-Cambridge.jpg',
-  'University of East Anglia': 'University-of-East-Anglia.jpg',
+  'Brunel University of London': 'Brunel-University-London-Medical-Doorway.webp',
+  'University of Toronto': 'Universal_toronto.webp',
+  'University of Cambridge': 'University-of-Cambridge.webp',
+  'University of East Anglia': 'University-of-East-Anglia.webp',
   'University of Waterloo': 'University_of_Waterloo.jpg',
-  'Victoria University of Wellington': 'Victoria-University-of-Wellington-New-Zealand.jpg',
+  'Victoria University of Wellington': 'Victoria-University-of-Wellington-New-Zealand.webp',
   'Aston University': 'aston.jpg',
-  'Australian National University': 'aus_uni.jpg',
+  'Australian National University': 'aus_uni.webp',
   'Birmingham City University': 'birmingham_city.jpg',
   'Edinburgh Napier University': 'edinburgh Napier University.jpg',
   'Khalifa University': 'khalifa university.jpg',
   'McGill University': 'mcgill.jpg',
-  'Monash University': 'monash.jpg',
+  'Monash University': 'monash.webp',
   'Anglia Ruskin University': 'rusking.jpg',
   'Trinity College Dublin': 'trinity college of dublin.jpg',
   'UCL': 'ucl.jpg',
@@ -55,9 +55,9 @@ const customMappings = {
   'University of Malaya': 'university of malaya.jpg',
   'University of York': 'university of york.jpg',
   'University of Zurich': 'university of zurich.jpg',
-  'University of British Columbia': 'university_british_colombia.jpg',
+  'University of British Columbia': 'university_british_colombia.webp',
   'University of Sydney': 'university_sydney.jpg',
-  'UNSW Sydney': 'unsw.jpeg',
+  'UNSW Sydney': 'unsw.webp',
   'University of the West of Scotland': 'uws.jpg'
 };
 
