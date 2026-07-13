@@ -436,6 +436,7 @@ try {
           listContainer.appendChild(statusItem);
 
           Object.entries(details).forEach(([key, val]) => {
+            if (key === "bookingTokenHash") return;
             // Format keys beautifully
             const formattedKey = key
               .replace(/([A-Z])/g, " $1")

@@ -45,19 +45,34 @@ const logoutSvgBase = `<svg ${svgBase}><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 
 const logoutSvgSm = `<svg ${svgSm}><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" x2="9" y1="12" y2="12"/></svg>`;
 ---
 
+<script is:inline>
+  if (localStorage.getItem("admin-sidebar-collapsed") === "true") {
+    document.body.classList.add("admin-sidebar-collapsed");
+  }
+</script>
+
 <div id="admin-header-data" class="hidden" data-total-leads={totalLeadsCount} data-csrf-token={csrfToken}></div>
 
   <!-- Desktop Sidebar -->
 <aside class="hidden lg:flex flex-col w-64 bg-slate-900 border-r border-slate-800 text-white select-none shrink-0 fixed left-0 top-0 bottom-0 z-30">
   <!-- Brand & Bell -->
-  <div class="flex items-center justify-between px-6 h-16 border-b border-slate-800 shrink-0">
-    <a href="/admin/dashboard" class="flex items-center gap-2.5 outline-none">
-      <img src="/images/Tesca_logo.png" alt="TESCA" class="h-8 w-auto object-contain" />
+  <div class="flex items-center justify-between px-6 h-16 border-b border-slate-800 shrink-0 sidebar-header-container">
+    <a href="/admin/dashboard" class="flex items-center gap-2.5 outline-none brand-logo-link">
+      <img src="/images/Tesca_logo.png" alt="TESCA" class="h-8 w-auto object-contain brand-logo-expanded" />
+      <img src="/favicon.svg" alt="T" class="h-8 w-8 object-contain hidden brand-logo-collapsed" />
     </a>
-    <a href="/admin/leads" class="relative text-slate-400 hover:text-white transition-colors" title="View Leads">
-      <span set:html={bellSvg} />
-      <span class="leads-nav-badge hidden absolute -top-1 -right-1 w-2.5 h-2.5 rounded-full bg-rose-500 ring-4 ring-rose-500/20 animate-pulse"></span>
-    </a>
+    <div class="flex items-center gap-3 sidebar-header-actions">
+      <a href="/admin/leads" class="relative text-slate-400 hover:text-white transition-colors sidebar-bell" title="View Leads">
+        <span set:html={bellSvg} />
+        <span class="leads-nav-badge hidden absolute -top-1 -right-1 w-2.5 h-2.5 rounded-full bg-rose-500 ring-4 ring-rose-500/20 animate-pulse"></span>
+      </a>
+      <button type="button" id="sidebar-toggle" class="text-slate-400 hover:text-white transition-colors cursor-pointer focus:outline-none p-1.5 rounded-lg hover:bg-slate-800" title="Collapse Sidebar">
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="sidebar-toggle-icon">
+          <rect width="18" height="18" x="3" y="3" rx="2"/>
+          <path d="M9 3v18"/>
+        </svg>
+      </button>
+    </div>
   </div>
 
   <!-- Navigation (scrollable) -->
@@ -75,7 +90,7 @@ const logoutSvgSm = `<svg ${svgSm}><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-
         >
           <div class="flex items-center gap-3">
             <span set:html={item.iconSvg} class="shrink-0" />
-            {item.label}
+            <span class="sidebar-text-label">{item.label}</span>
           </div>
           {item.id === "leads" && (
             <span class="leads-nav-badge hidden w-2 h-2 rounded-full bg-rose-500 ring-4 ring-rose-500/20 animate-pulse"></span>
@@ -86,14 +101,14 @@ const logoutSvgSm = `<svg ${svgSm}><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-
   </nav>
 
   <!-- Logout at bottom -->
-  <div class="px-3 pb-6 shrink-0">
+  <div class="px-3 pb-6 shrink-0 logout-container">
     <form method="POST" action="/admin" class="logout-form">
       <input type="hidden" name="action" value="logout" />
       <button 
         type="submit" 
-        class="w-full flex items-center gap-3 px-4 py-3 rounded-xl bg-rose-600/10 hover:bg-rose-600/20 text-rose-400 font-bold text-sm transition-all cursor-pointer border border-rose-600/20"
+        class="w-full flex items-center gap-3 px-4 py-3 rounded-xl bg-rose-600/10 hover:bg-rose-600/20 text-rose-400 font-bold text-sm transition-all cursor-pointer border border-rose-600/20 logout-button"
       >
-        <span set:html={logoutSvgBase} /> Sign Out
+        <span set:html={logoutSvgBase} /> <span class="sidebar-text-label">Sign Out</span>
       </button>
     </form>
   </div>
@@ -254,15 +269,144 @@ const logoutSvgSm = `<svg ${svgSm}><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-
     });
   }
 
+  function setupSidebarToggle() {
+    const toggleBtn = document.getElementById("sidebar-toggle");
+    if (!toggleBtn) return;
+
+    if ((toggleBtn as any)._boundToggle) return;
+    (toggleBtn as any)._boundToggle = true;
+
+    const updateToggleUI = () => {
+      const isCollapsed = document.body.classList.contains("admin-sidebar-collapsed");
+      toggleBtn.setAttribute("title", isCollapsed ? "Expand Sidebar" : "Collapse Sidebar");
+      const icon = toggleBtn.querySelector(".sidebar-toggle-icon");
+      if (icon) {
+        if (isCollapsed) {
+          icon.innerHTML = `<rect width="18" height="18" x="3" y="3" rx="2"/><path d="M15 3v18"/>`;
+        } else {
+          icon.innerHTML = `<rect width="18" height="18" x="3" y="3" rx="2"/><path d="M9 3v18"/>`;
+        }
+      }
+    };
+
+    updateToggleUI();
+
+    toggleBtn.addEventListener("click", () => {
+      const isCollapsed = document.body.classList.toggle("admin-sidebar-collapsed");
+      localStorage.setItem("admin-sidebar-collapsed", String(isCollapsed));
+      updateToggleUI();
+    });
+  }
+
+  // Handle sidebar recovery on swap/transitions
+  document.addEventListener("astro:after-swap", () => {
+    if (localStorage.getItem("admin-sidebar-collapsed") === "true") {
+      document.body.classList.add("admin-sidebar-collapsed");
+    }
+  });
+
   checkNewLeads();
   setupLogoutConfirm();
+  setupSidebarToggle();
   document.addEventListener("astro:page-load", () => {
     checkNewLeads();
     setupLogoutConfirm();
+    setupSidebarToggle();
   });
 </script>
 
-<style>
+<style is:global>
   .scrollbar-none::-webkit-scrollbar { display: none; }
   .scrollbar-none { -ms-overflow-style: none; scrollbar-width: none; }
+
+  /* Sidebar Transition and Collapse Override Styles */
+  @media (min-width: 1024px) {
+    aside.hidden.lg\:flex {
+      transition: width 0.25s cubic-bezier(0.4, 0, 0.2, 1) !important;
+    }
+    main.lg\:ml-64 {
+      transition: margin-left 0.25s cubic-bezier(0.4, 0, 0.2, 1) !important;
+    }
+
+    /* Collapsed Sidebar Styles */
+    body.admin-sidebar-collapsed aside.hidden.lg\:flex {
+      width: 5rem !important; /* 80px */
+    }
+    body.admin-sidebar-collapsed main.lg\:ml-64 {
+      margin-left: 5rem !important;
+    }
+
+    /* Header adjustments in collapsed sidebar */
+    body.admin-sidebar-collapsed .brand-logo-expanded {
+      display: none !important;
+    }
+    body.admin-sidebar-collapsed .brand-logo-collapsed {
+      display: block !important;
+    }
+    body.admin-sidebar-collapsed .sidebar-bell {
+      display: none !important;
+    }
+    body.admin-sidebar-collapsed .sidebar-header-container {
+      flex-direction: column !important;
+      justify-content: center !important;
+      align-items: center !important;
+      gap: 0.75rem !important;
+      padding-left: 0.5rem !important;
+      padding-right: 0.5rem !important;
+      height: auto !important;
+      padding-top: 1.25rem !important;
+      padding-bottom: 1.25rem !important;
+    }
+    body.admin-sidebar-collapsed .sidebar-header-actions {
+      flex-direction: column !important;
+      gap: 0.5rem !important;
+    }
+
+    /* Nav items adjustments in collapsed sidebar */
+    body.admin-sidebar-collapsed aside nav {
+      padding-left: 0.5rem !important;
+      padding-right: 0.5rem !important;
+      gap: 0.5rem !important;
+      align-items: center !important;
+    }
+    body.admin-sidebar-collapsed aside nav a {
+      justify-content: center !important;
+      padding-left: 0 !important;
+      padding-right: 0 !important;
+      width: 3.25rem !important;
+      height: 3.25rem !important;
+      border-radius: 0.75rem !important;
+      position: relative !important;
+    }
+    body.admin-sidebar-collapsed aside nav a div {
+      justify-content: center !important;
+      gap: 0 !important;
+    }
+    body.admin-sidebar-collapsed aside nav a .sidebar-text-label {
+      display: none !important;
+    }
+    body.admin-sidebar-collapsed aside nav a .leads-nav-badge {
+      position: absolute !important;
+      top: 0.6rem !important;
+      right: 0.6rem !important;
+      width: 0.5rem !important;
+      height: 0.5rem !important;
+    }
+
+    /* Logout adjustments in collapsed sidebar */
+    body.admin-sidebar-collapsed .logout-container {
+      padding-left: 0.5rem !important;
+      padding-right: 0.5rem !important;
+    }
+    body.admin-sidebar-collapsed .logout-button {
+      justify-content: center !important;
+      padding-left: 0 !important;
+      padding-right: 0 !important;
+      width: 3.25rem !important;
+      height: 3.25rem !important;
+      margin-left: auto !important;
+      margin-right: auto !important;
+      gap: 0 !important;
+    }
+  }
 </style>
