@@ -8,15 +8,14 @@ export const GET: APIRoute = async () => {
     const { data, error } = await supabase
       .from('popup_settings')
       .select('*')
-      .order('id', { ascending: true })
-      .limit(1)
-      .maybeSingle();
+      .eq('is_active', true)
+      .order('id', { ascending: true });
 
     if (error) {
       throw error;
     }
 
-    return jsonResponse(data || { is_active: false });
+    return jsonResponse(data || []);
   } catch (err: any) {
     console.error("Failed to query popup settings:", err);
     return genericApiError();

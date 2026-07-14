@@ -195,6 +195,20 @@ export default function CounsellorForm() {
   }, []);
 
   useEffect(() => {
+    if (!isOpen) {
+      setFirstName("");
+      setLastName("");
+      setEmail("");
+      setPhone("");
+      setPhoneCountry("IN");
+      setMode("");
+      setDestination("");
+      setVisaType("");
+      setErrors({});
+    }
+  }, [isOpen]);
+
+  useEffect(() => {
     if (!selectedDate) return;
 
     const fetchSlots = async () => {
