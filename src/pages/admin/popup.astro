@@ -323,10 +323,13 @@ try {
                 <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
               </span>
 
-              <!-- Image column -->
-              <div class="w-full sm:w-1/2 h-[150px] sm:h-auto bg-slate-100 relative shrink-0">
-                <img id="preview-image" src={settings.image_url || "/images/Hero/main1.webp"} alt="Preview image" class="w-full h-full object-cover min-h-[150px] sm:min-h-[300px]" />
-                <div class="absolute inset-0 bg-gradient-to-t sm:bg-gradient-to-r from-transparent via-transparent to-white/10"></div>
+              <!-- Image column with premium blurred background -->
+              <div class="w-full sm:w-1/2 h-[200px] sm:h-auto relative bg-slate-950 shrink-0 overflow-hidden flex items-center justify-center">
+                <!-- Blurred Background Cover -->
+                <img id="preview-image-blur" src={settings.image_url || "/images/Hero/main1.webp"} alt="" class="absolute inset-0 w-full h-full object-cover blur-xl opacity-50 scale-110 pointer-events-none select-none" />
+                <!-- Sharp Foreground Contain -->
+                <img id="preview-image" src={settings.image_url || "/images/Hero/main1.webp"} alt="Preview image" class="relative z-10 max-w-full max-h-full object-contain pointer-events-none select-none sm:min-h-[300px]" />
+                <div class="absolute inset-0 z-20 bg-gradient-to-t sm:bg-gradient-to-r from-transparent via-transparent to-white/5 pointer-events-none"></div>
               </div>
 
               <!-- Form column -->
@@ -429,6 +432,10 @@ try {
         // Update preview image
         if (previewImg) {
           previewImg.src = img.src;
+        }
+        const previewImgBlur = document.getElementById("preview-image-blur") as HTMLImageElement;
+        if (previewImgBlur) {
+          previewImgBlur.src = img.src;
         }
       };
     });
