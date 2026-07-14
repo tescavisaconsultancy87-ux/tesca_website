@@ -1,6 +1,7 @@
 ---
 import "../styles/global.css";
 import CounsellorForm from "../components/CounsellorForm";
+import PromoPopup from "../components/PromoPopup.astro";
 import { ClientRouter } from "astro:transitions";
 import { ensureCsrfToken } from "../utils/csrf";
 // Inline SVG helpers — no lucide-react in .astro (SSR hook errors)
@@ -1764,5 +1765,6 @@ if (Astro.url.pathname.startsWith("/admin")) {
 			</div>
 		</div>
 
+		<PromoPopup />
 	</body>
 </html>

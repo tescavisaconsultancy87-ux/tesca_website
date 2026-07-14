@@ -1,0 +1,382 @@
+---
+import Layout from "../../layouts/Layout.astro";
+import AdminHeader from "../../components/AdminHeader.astro";
+import { checkAdminAuth } from "../../utils/adminAuth";
+import { supabase } from "../../utils/supabase";
+
+// Inline SVG helpers — no lucide-react in .astro
+const _s = (d: string) => `<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${d}</svg>`;
+const SVG = {
+  Plus: _s('<path d="M12 5v14"/><path d="M5 12h14"/>'),
+  ShieldAlert: _s('<path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="M12 8v4"/><path d="M12 16h.01"/>'),
+  CheckCircle: _s('<path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/>'),
+  Settings: _s('<path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.1a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/>'),
+};
+
+// Check session
+const isAuthenticated = await checkAdminAuth(Astro.cookies);
+if (!isAuthenticated) {
+  return Astro.redirect("/admin");
+}
+
+let settings: any = {
+  is_active: false,
+  image_url: "",
+  title: "Special Update",
+  subtitle: "Sign up to get the latest news and guides.",
+  delay_seconds: 5,
+  button_text: "Get Details",
+  link_url: "",
+};
+let successMessage = "";
+let errorMessage = "";
+
+// Handle update settings action
+if (Astro.request.method === "POST") {
+  try {
+    const formData = await Astro.request.formData();
+    const is_active = formData.get("is_active") === "true";
+    const image_url = formData.get("image_url")?.toString().trim() || "";
+    const title = formData.get("title")?.toString().trim() || "Special Update";
+    const subtitle = formData.get("subtitle")?.toString().trim() || "";
+    const delay_seconds = parseInt(formData.get("delay_seconds")?.toString() || "5");
+    const button_text = formData.get("button_text")?.toString().trim() || "Get Details";
+    const link_url = formData.get("link_url")?.toString().trim() || "";
+
+    if (!image_url) {
+      throw new Error("Popup Photo / Image URL is required.");
+    }
+
+    // Attempt update
+    const { data: currentRows } = await supabase.from('popup_settings').select('id');
+    const firstRowId = currentRows && currentRows.length > 0 ? currentRows[0].id : null;
+
+    if (firstRowId) {
+      const { error } = await supabase
+        .from('popup_settings')
+        .update({
+          is_active,
+          image_url,
+          title,
+          subtitle,
+          delay_seconds,
+          button_text,
+          link_url,
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', firstRowId);
+
+      if (error) throw error;
+    } else {
+      const { error } = await supabase
+        .from('popup_settings')
+        .insert({
+          is_active,
+          image_url,
+          title,
+          subtitle,
+          delay_seconds,
+          button_text,
+          link_url
+        });
+
+      if (error) throw error;
+    }
+
+    successMessage = "Popup promotional settings updated successfully.";
+    
+    // Refresh local settings object
+    settings = {
+      is_active,
+      image_url,
+      title,
+      subtitle,
+      delay_seconds,
+      button_text,
+      link_url
+    };
+
+  } catch (err: any) {
+    console.error("Action error on admin/popup page:", err);
+    errorMessage = `Update failed: ${err.message || "Unknown error"}`;
+  }
+}
+
+// Fetch current popup settings
+try {
+  const { data, error } = await supabase
+    .from('popup_settings')
+    .select('*')
+    .order('id', { ascending: true })
+    .limit(1)
+    .maybeSingle();
+
+  if (error) throw error;
+  if (data) {
+    settings = data;
+  }
+} catch (err) {
+  console.error("Failed to load popup settings:", err);
+  errorMessage = "Failed to load database records.";
+}
+---
+
+<Layout 
+  title="Manage Promotional Popup | TESCA Admin"
+  description="Administrative panel to publish, schedule, and customize promotional/lead-gen home popup."
+  showNavFooter={false}
+>
+  <div class="min-h-screen bg-slate-50 text-slate-800 font-sans flex flex-col lg:flex-row">
+    <AdminHeader activeTab="popup" />
+
+    <main class="flex-1 px-4 md:px-8 py-10 overflow-y-auto text-left lg:ml-64">
+      
+      {/* Title block */}
+      <div class="mb-8">
+        <h1 class="text-3xl font-extrabold font-display tracking-tight text-slate-800">
+          Promotional Popup Manager
+        </h1>
+        <p class="text-slate-500 text-xs mt-1">Configure a lead-capturing square popup shown to website visitors after a short delay.</p>
+      </div>
+
+      {/* Messages */}
+      {errorMessage && (
+        <div class="admin-alert-banner p-4 bg-rose-50 border border-rose-200 rounded-2xl text-rose-600 text-xs font-semibold mb-6 flex items-center gap-2 animate-pulse">
+          <span set:html={SVG.ShieldAlert} class="shrink-0" />
+          <span>{errorMessage}</span>
+        </div>
+      )}
+      {successMessage && (
+        <div class="admin-alert-banner p-4 bg-emerald-50 border border-emerald-200 rounded-2xl text-emerald-600 text-xs font-semibold mb-6">
+          {successMessage}
+        </div>
+      )}
+
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+        
+        {/* Form panel (5 cols) */}
+        <div class="lg:col-span-5 bg-white border border-slate-200 rounded-3xl p-6 shadow-sm">
+          <h2 class="text-base font-bold text-slate-800 mb-4 flex items-center gap-2">
+            <span set:html={SVG.Settings} class="text-indigo-600" /> Popup Configuration
+          </h2>
+          
+          <form method="POST" id="popup-config-form" class="space-y-4 text-xs font-semibold text-slate-600">
+            
+            {/* Active Toggle Switch */}
+            <div class="flex items-center justify-between p-3.5 bg-slate-50 border border-slate-200/65 rounded-xl">
+              <div class="space-y-0.5">
+                <span class="block text-xs font-bold text-slate-700">Enable Promo Popup</span>
+                <span class="block text-[10px] text-slate-450 font-normal">Toggle displaying this popup on the public website.</span>
+              </div>
+              <label class="relative inline-flex items-center cursor-pointer select-none">
+                <input 
+                  type="checkbox" 
+                  id="is_active_toggle" 
+                  class="sr-only peer"
+                  checked={settings.is_active} 
+                />
+                <input 
+                  type="hidden" 
+                  name="is_active" 
+                  id="is_active_value" 
+                  value={settings.is_active ? "true" : "false"} 
+                />
+                <div class="w-10 h-6 bg-slate-200 rounded-full peer peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-0.5 after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-indigo-600"></div>
+              </label>
+            </div>
+
+            {/* Delay Settings */}
+            <div class="space-y-1.5">
+              <label for="delay-sec" class="text-[10px] text-slate-500 uppercase tracking-wide">Display Delay (Seconds) *</label>
+              <input 
+                type="number" 
+                id="delay-sec" 
+                name="delay_seconds" 
+                required 
+                min="1" 
+                max="60" 
+                class="w-full px-3 py-2.5 rounded-lg border border-slate-200 bg-slate-50 text-slate-800 focus:outline-none focus:ring-1 focus:ring-indigo-500 font-sans" 
+                value={settings.delay_seconds} 
+              />
+            </div>
+
+            {/* Image URL */}
+            <div class="space-y-1.5">
+              <label for="img-url" class="text-[10px] text-slate-500 uppercase tracking-wide">Photo / Image URL *</label>
+              <input 
+                type="url" 
+                id="img-url" 
+                name="image_url" 
+                required 
+                class="w-full px-3 py-2.5 rounded-lg border border-slate-200 bg-slate-50 text-slate-805 focus:outline-none focus:ring-1 focus:ring-indigo-500 font-sans" 
+                placeholder="e.g. /images/Hero/main1.webp or external link" 
+                value={settings.image_url} 
+              />
+            </div>
+
+            {/* Title / Description */}
+            <div class="space-y-1.5">
+              <label for="popup-title" class="text-[10px] text-slate-500 uppercase tracking-wide">Popup Headline *</label>
+              <input 
+                type="text" 
+                id="popup-title" 
+                name="title" 
+                required 
+                class="w-full px-3 py-2.5 rounded-lg border border-slate-200 bg-slate-50 text-slate-805 focus:outline-none focus:ring-1 focus:ring-indigo-500" 
+                placeholder="e.g. UK Study Visa 2026 Intake Now Open!" 
+                value={settings.title} 
+              />
+            </div>
+
+            {/* Subtitle / Subtext */}
+            <div class="space-y-1.5">
+              <label for="popup-subtitle" class="text-[10px] text-slate-500 uppercase tracking-wide">Popup Description *</label>
+              <textarea 
+                id="popup-subtitle" 
+                name="subtitle" 
+                required 
+                rows="2" 
+                class="w-full px-3 py-2.5 rounded-lg border border-slate-200 bg-slate-50 text-slate-850 placeholder-slate-400 focus:outline-none focus:ring-1 focus:ring-indigo-500" 
+                placeholder="Submit your assessment request below to secure a callback."
+              >{settings.subtitle}</textarea>
+            </div>
+
+            {/* CTA Button Text */}
+            <div class="space-y-1.5">
+              <label for="btn-txt" class="text-[10px] text-slate-500 uppercase tracking-wide">CTA Button Text *</label>
+              <input 
+                type="text" 
+                id="btn-txt" 
+                name="button_text" 
+                required 
+                class="w-full px-3 py-2.5 rounded-lg border border-slate-200 bg-slate-50 text-slate-805 focus:outline-none focus:ring-1 focus:ring-indigo-500" 
+                placeholder="e.g. Get Callback" 
+                value={settings.button_text} 
+              />
+            </div>
+
+            <button type="submit" class="w-full py-3 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-xl transition-all cursor-pointer shadow-md hover:scale-[1.01] mt-2">
+              Save Configuration
+            </button>
+          </form>
+        </div>
+
+        {/* Preview Panel (7 cols) */}
+        <div class="lg:col-span-7 space-y-4">
+          <div class="flex items-center justify-between">
+            <h2 class="text-base font-bold text-slate-800">
+              Interactive Preview
+            </h2>
+            <span class="text-[10px] font-bold bg-indigo-50 text-indigo-700 px-2 py-0.5 rounded-full border border-indigo-100">Live Client Mockup</span>
+          </div>
+
+          <!-- Preview Frame -->
+          <div class="bg-slate-900 border border-slate-800 rounded-3xl p-10 flex items-center justify-center min-h-[500px] relative shadow-inner overflow-hidden">
+            <div class="absolute inset-0 bg-grid-slate-800 opacity-20 pointer-events-none"></div>
+
+            <!-- Square Popup Preview Container -->
+            <div id="popup-preview-card" class="bg-white w-full max-w-[560px] rounded-2xl overflow-hidden shadow-2xl flex flex-col sm:flex-row relative border border-slate-100 scale-100 transform transition-all duration-300">
+              
+              <!-- Dummy Close button -->
+              <span class="absolute top-3.5 right-3.5 z-10 p-1.5 bg-slate-900/10 rounded-full text-slate-650">
+                <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+              </span>
+
+              <!-- Image column -->
+              <div class="w-full sm:w-1/2 h-[150px] sm:h-auto bg-slate-100 relative shrink-0">
+                <img id="preview-image" src={settings.image_url || "/images/Hero/main1.webp"} alt="Preview image" class="w-full h-full object-cover min-h-[150px] sm:min-h-[300px]" />
+                <div class="absolute inset-0 bg-gradient-to-t sm:bg-gradient-to-r from-transparent via-transparent to-white/10"></div>
+              </div>
+
+              <!-- Form column -->
+              <div class="w-full sm:w-1/2 p-6 flex flex-col justify-center text-left bg-white">
+                <div class="mb-3.5">
+                  <span class="inline-block text-[8px] font-extrabold uppercase tracking-widest text-indigo-600 bg-indigo-50 border border-indigo-100 px-2 py-0.5 rounded-full mb-1">Featured Update</span>
+                  <h4 id="preview-title" class="text-sm font-extrabold tracking-tight text-slate-800 leading-tight">
+                    {settings.title}
+                  </h4>
+                  <p id="preview-subtitle" class="text-[10px] text-slate-400 mt-0.5 leading-normal">
+                    {settings.subtitle}
+                  </p>
+                </div>
+
+                <div class="space-y-2 pointer-events-none opacity-85">
+                  <div class="space-y-0.5">
+                    <label class="block text-[8px] font-bold text-slate-450 uppercase tracking-wide">Full Name *</label>
+                    <div class="w-full px-2.5 py-1.5 rounded-lg border border-slate-200 bg-slate-50 text-[10px] text-slate-400 font-sans">Name Input Field</div>
+                  </div>
+
+                  <div class="space-y-0.5">
+                    <label class="block text-[8px] font-bold text-slate-450 uppercase tracking-wide">Mobile / WhatsApp *</label>
+                    <div class="w-full px-2.5 py-1.5 rounded-lg border border-slate-200 bg-slate-50 text-[10px] text-slate-400 font-sans">Mobile Input Field</div>
+                  </div>
+
+                  <button type="button" id="preview-button-text" class="w-full py-2 bg-indigo-600 text-white font-bold text-[10px] rounded-lg shadow-sm mt-1.5 block text-center font-sans">
+                    {settings.button_text}
+                  </button>
+                </div>
+              </div>
+
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+    </main>
+  </div>
+</Layout>
+
+<script>
+  function setupPopupAdmin() {
+    const is_active_toggle = document.getElementById("is_active_toggle") as HTMLInputElement;
+    const is_active_value = document.getElementById("is_active_value") as HTMLInputElement;
+    
+    // Toggle switch interaction
+    is_active_toggle?.addEventListener("change", () => {
+      if (is_active_value) {
+        is_active_value.value = is_active_toggle.checked ? "true" : "false";
+      }
+    });
+
+    // Realtime preview sync
+    const inputTitle = document.getElementById("popup-title") as HTMLInputElement;
+    const previewTitle = document.getElementById("preview-title");
+    inputTitle?.addEventListener("input", () => {
+      if (previewTitle) previewTitle.innerText = inputTitle.value.trim() || "Special Update";
+    });
+
+    const inputSubtitle = document.getElementById("popup-subtitle") as HTMLTextAreaElement;
+    const previewSubtitle = document.getElementById("preview-subtitle");
+    inputSubtitle?.addEventListener("input", () => {
+      if (previewSubtitle) previewSubtitle.innerText = inputSubtitle.value.trim() || "Sign up to get the latest news and guides.";
+    });
+
+    const inputBtnTxt = document.getElementById("btn-txt") as HTMLInputElement;
+    const previewBtnTxt = document.getElementById("preview-button-text");
+    inputBtnTxt?.addEventListener("input", () => {
+      if (previewBtnTxt) previewBtnTxt.innerText = inputBtnTxt.value.trim() || "Get Details";
+    });
+
+    const inputImgUrl = document.getElementById("img-url") as HTMLInputElement;
+    const previewImg = document.getElementById("preview-image") as HTMLImageElement;
+    inputImgUrl?.addEventListener("input", () => {
+      if (previewImg) {
+        previewImg.src = inputImgUrl.value.trim() || "/images/Hero/main1.webp";
+      }
+    });
+
+    // Form submit AJAX loader integration
+    const configForm = document.getElementById("popup-config-form") as HTMLFormElement;
+    if (configForm && !(configForm as any)._ajaxBound) {
+      (configForm as any)._ajaxBound = true;
+      configForm.addEventListener("submit", () => {
+        const submitBtn = configForm.querySelector('button[type="submit"]') as HTMLButtonElement;
+        (window as any).showBtnLoader?.(submitBtn, "Saving...");
+      });
+    }
+  }
+
+  setupPopupAdmin();
+  document.addEventListener("astro:page-load", setupPopupAdmin);
+</script>
