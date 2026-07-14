@@ -26,40 +26,13 @@
       <div class="mb-4">
         <span class="inline-block text-[9px] font-extrabold uppercase tracking-widest text-indigo-600 bg-indigo-50 border border-indigo-100 px-2.5 py-0.5 rounded-full mb-2">Featured Update</span>
         <h3 id="promo-popup-title" class="text-lg md:text-xl font-extrabold tracking-tight text-slate-800 leading-tight"></h3>
-        <p id="promo-popup-subtitle" class="text-slate-500 text-xs mt-1 leading-relaxed"></p>
+        <p id="promo-popup-subtitle" class="text-slate-500 text-xs mt-1.5 leading-relaxed"></p>
       </div>
 
-      <!-- Lead Capture Form -->
-      <form id="promo-popup-form" class="space-y-3">
-        <div class="space-y-1">
-          <label for="promo-name" class="block text-[10px] font-bold text-slate-500 uppercase tracking-wide">Full Name *</label>
-          <input type="text" id="promo-name" required class="w-full px-3 py-2 rounded-xl border border-slate-200 bg-slate-50 text-xs text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all font-sans" placeholder="e.g. John Doe" />
-        </div>
-
-        <div class="space-y-1">
-          <label for="promo-phone" class="block text-[10px] font-bold text-slate-500 uppercase tracking-wide">Mobile / WhatsApp *</label>
-          <input type="tel" id="promo-phone" required class="w-full px-3 py-2 rounded-xl border border-slate-200 bg-slate-50 text-xs text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all font-sans" placeholder="e.g. +91 98765 43210" />
-        </div>
-
-        <div class="space-y-1">
-          <label for="promo-email" class="block text-[10px] font-bold text-slate-500 uppercase tracking-wide">Email Address (Optional)</label>
-          <input type="email" id="promo-email" class="w-full px-3 py-2 rounded-xl border border-slate-200 bg-slate-50 text-xs text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all font-sans" placeholder="e.g. john@example.com" />
-        </div>
-
-        <button type="submit" id="promo-popup-submit" class="w-full py-2.5 mt-1 bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-700 hover:to-violet-700 text-white font-bold text-xs rounded-xl transition-all cursor-pointer shadow-md hover:scale-[1.01] flex items-center justify-center gap-1.5">
+      <!-- Action Button (Directly opens Counsellor Form instead of asking for info) -->
+      <div class="mt-4">
+        <button type="button" id="promo-popup-action-btn" class="w-full py-3 bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-700 hover:to-violet-700 text-white font-bold text-xs rounded-xl transition-all cursor-pointer shadow-md hover:scale-[1.01] flex items-center justify-center gap-1.5 font-sans">
           Speak to Counsellor
-        </button>
-      </form>
-
-      <!-- Success Content (Hidden by default) -->
-      <div id="promo-popup-success" class="hidden absolute inset-0 bg-white p-6 md:p-8 flex flex-col items-center justify-center text-center">
-        <div class="w-12 h-12 rounded-full bg-emerald-50 text-emerald-600 flex items-center justify-center border border-emerald-100 mb-4 scale-90 animate-bounce">
-          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
-        </div>
-        <h4 class="text-base font-extrabold text-slate-800">Thank You!</h4>
-        <p class="text-slate-500 text-xs mt-1 max-w-[200px] leading-relaxed">Your request has been registered. Our advisors will contact you shortly.</p>
-        <button type="button" id="promo-popup-success-close" class="mt-6 px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs rounded-xl transition-all cursor-pointer">
-          Close Window
         </button>
       </div>
 
@@ -87,7 +60,7 @@
       const image = document.getElementById("promo-popup-image") as HTMLImageElement;
       const title = document.getElementById("promo-popup-title");
       const subtitle = document.getElementById("promo-popup-subtitle");
-      const submitBtn = document.getElementById("promo-popup-submit") as HTMLButtonElement;
+      const actionBtn = document.getElementById("promo-popup-action-btn") as HTMLButtonElement;
 
       if (!overlay || !card || !image || !title || !subtitle) return;
 
@@ -99,8 +72,8 @@
       }
       title.innerText = settings.title || "Special Update";
       subtitle.innerText = settings.subtitle || "";
-      if (settings.button_text && submitBtn) {
-        submitBtn.innerText = settings.button_text;
+      if (settings.button_text && actionBtn) {
+        actionBtn.innerText = settings.button_text;
       }
 
       const delayMs = (settings.delay_seconds || 5) * 1000;
@@ -109,8 +82,7 @@
         if (sessionStorage.getItem("promo_popup_closed") === "true") return;
         
         // Show overlay & card with beautiful bounce transitions
-        overlay.classList.remove("pointer-events-none");
-        overlay.classList.remove("opacity-0");
+        overlay.classList.remove("pointer-events-none", "opacity-0");
         overlay.classList.add("opacity-100");
 
         card.classList.remove("opacity-0", "scale-95", "translate-y-4");
@@ -124,67 +96,19 @@
         card.classList.remove("opacity-100", "scale-100", "translate-y-0");
         card.classList.add("opacity-0", "scale-95", "translate-y-4");
 
-        overlay.classList.add("opacity-0");
-        overlay.classList.add("pointer-events-none");
+        overlay.classList.remove("opacity-100");
+        overlay.classList.add("opacity-0", "pointer-events-none");
       };
 
       document.getElementById("promo-popup-close")?.addEventListener("click", closePopup);
-      document.getElementById("promo-popup-success-close")?.addEventListener("click", closePopup);
       overlay.addEventListener("click", (e) => {
         if (e.target === overlay) closePopup();
       });
 
-      // Handle form submission
-      const form = document.getElementById("promo-popup-form") as HTMLFormElement;
-      form?.addEventListener("submit", async (e) => {
-        e.preventDefault();
-        
-        const nameVal = (document.getElementById("promo-name") as HTMLInputElement).value.trim();
-        const phoneVal = (document.getElementById("promo-phone") as HTMLInputElement).value.trim();
-        const emailVal = (document.getElementById("promo-email") as HTMLInputElement).value.trim();
-
-        if (!nameVal || !phoneVal) return;
-
-        if (submitBtn) {
-          submitBtn.disabled = true;
-          submitBtn.innerText = "Submitting...";
-        }
-
-        try {
-          const res = await fetch("/api/inquiry", {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json"
-            },
-            body: JSON.stringify({
-              fullName: nameVal,
-              mobileNumber: phoneVal,
-              email: emailVal || undefined,
-              leadSource: "Home Page Promo Popup",
-              comments: `Lead generated via Homepage square promo popup: "${settings.title}"`
-            })
-          });
-
-          if (res.ok) {
-            // Hide form and show success animation
-            document.getElementById("promo-popup-form")?.classList.add("hidden");
-            document.getElementById("promo-popup-success")?.classList.remove("hidden");
-          } else {
-            const errData = await res.json();
-            alert("Error: " + (errData.error || "Submission failed. Please try again."));
-            if (submitBtn) {
-              submitBtn.disabled = false;
-              submitBtn.innerText = settings.button_text || "Speak to Counsellor";
-            }
-          }
-        } catch (err) {
-          console.error("Popup lead submission failed:", err);
-          alert("Connection error. Please try again.");
-          if (submitBtn) {
-            submitBtn.disabled = false;
-            submitBtn.innerText = settings.button_text || "Speak to Counsellor";
-          }
-        }
+      // Handle button click to open Counsellor Form
+      actionBtn?.addEventListener("click", () => {
+        closePopup();
+        (window as any).openCounsellorForm?.();
       });
 
     } catch (e) {

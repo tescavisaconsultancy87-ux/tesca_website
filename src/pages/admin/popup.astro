@@ -332,30 +332,20 @@ try {
                 <div class="absolute inset-0 z-20 bg-gradient-to-t sm:bg-gradient-to-r from-transparent via-transparent to-white/5 pointer-events-none"></div>
               </div>
 
-              <!-- Form column -->
+              <!-- Content column -->
               <div class="w-full sm:w-1/2 p-6 flex flex-col justify-center text-left bg-white">
-                <div class="mb-3.5">
+                <div class="mb-4">
                   <span class="inline-block text-[8px] font-extrabold uppercase tracking-widest text-indigo-600 bg-indigo-50 border border-indigo-100 px-2 py-0.5 rounded-full mb-1">Featured Update</span>
                   <h4 id="preview-title" class="text-sm font-extrabold tracking-tight text-slate-800 leading-tight">
                     {settings.title}
                   </h4>
-                  <p id="preview-subtitle" class="text-[10px] text-slate-400 mt-0.5 leading-normal">
+                  <p id="preview-subtitle" class="text-[10px] text-slate-400 mt-1 leading-normal font-sans">
                     {settings.subtitle}
                   </p>
                 </div>
 
-                <div class="space-y-2 pointer-events-none opacity-85">
-                  <div class="space-y-0.5">
-                    <label class="block text-[8px] font-bold text-slate-450 uppercase tracking-wide">Full Name *</label>
-                    <div class="w-full px-2.5 py-1.5 rounded-lg border border-slate-200 bg-slate-50 text-[10px] text-slate-400 font-sans">Name Input Field</div>
-                  </div>
-
-                  <div class="space-y-0.5">
-                    <label class="block text-[8px] font-bold text-slate-450 uppercase tracking-wide">Mobile / WhatsApp *</label>
-                    <div class="w-full px-2.5 py-1.5 rounded-lg border border-slate-200 bg-slate-50 text-[10px] text-slate-400 font-sans">Mobile Input Field</div>
-                  </div>
-
-                  <button type="button" id="preview-button-text" class="w-full py-2 bg-indigo-600 text-white font-bold text-[10px] rounded-lg shadow-sm mt-1.5 block text-center font-sans">
+                <div class="mt-2">
+                  <button type="button" id="preview-button-text" class="w-full py-2 bg-indigo-600 text-white font-bold text-[10px] rounded-lg shadow-sm block text-center font-sans">
                     {settings.button_text}
                   </button>
                 </div>

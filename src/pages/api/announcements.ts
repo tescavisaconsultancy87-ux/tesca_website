@@ -12,7 +12,7 @@ export const GET: APIRoute = async () => {
 const { data, error } = await supabase
       .from("announcements")
       .select("text")
-      .order("id", { ascending: true });
+      .order("id", { ascending: false });
 
     if (error) throw error;
     const texts = (data ?? []).map((r: any) => r.text).filter(Boolean);
