@@ -36,6 +36,21 @@ if (Astro.request.method === "POST") {
 
       if (error) throw error;
       successMessage = "Announcement alert text deleted successfully.";
+    } else if (action === "delete-multiple-announcements") {
+      const idsStr = formData.get("ids")?.toString() || "";
+      const ids = idsStr.split(",").map(id => parseInt(id)).filter(id => !isNaN(id));
+      
+      if (ids.length > 0) {
+        const { error } = await supabase
+          .from('announcements')
+          .delete()
+          .in('id', ids);
+
+        if (error) throw error;
+        successMessage = `${ids.length} announcements deleted successfully.`;
+      } else {
+        errorMessage = "No announcements selected for deletion.";
+      }
     } else if (action === "add-announcement") {
       const text = formData.get("text")?.toString().trim();
       if (text) {
@@ -132,9 +147,28 @@ try {
 
         {/* List panel (7 cols) */}
         <div class="lg:col-span-7 space-y-4">
-          <h2 class="text-base font-bold text-slate-800">
-            Active Rotations ({announcements.length})
-          </h2>
+          <div class="flex items-center justify-between gap-4 mb-2">
+            <h2 class="text-base font-bold text-slate-800">
+              Active Rotations ({announcements.length})
+            </h2>
+            {announcements.length > 0 && (
+              <div class="flex items-center gap-3">
+                <label class="flex items-center gap-1.5 text-[10px] text-slate-500 font-semibold cursor-pointer uppercase tracking-wider">
+                  <input type="checkbox" id="select-all-announcements" class="rounded border-slate-300 text-indigo-600 focus:ring-indigo-500 cursor-pointer" />
+                  Select All
+                </label>
+                <button
+                  type="button"
+                  id="delete-selected-announcements-btn"
+                  disabled
+                  class="flex items-center gap-1.5 px-3 py-1.5 bg-rose-50 hover:bg-rose-100 disabled:opacity-50 disabled:hover:bg-rose-50 text-rose-600 font-bold text-[10px] rounded-lg transition-all cursor-pointer border border-rose-200 disabled:cursor-not-allowed uppercase tracking-wider"
+                >
+                  <span set:html={SVG.Trash2} class="w-3.5 h-3.5" />
+                  Delete Selected
+                </button>
+              </div>
+            )}
+          </div>
 
           {announcements.length === 0 ? (
             <div class="bg-white border border-slate-200 rounded-3xl p-10 text-center">
@@ -144,7 +178,10 @@ try {
             <div class="space-y-3">
               {announcements.map((a) => (
                 <div class="flex items-center justify-between gap-4 p-4 rounded-2xl border border-slate-200 bg-white shadow-sm">
-                  <p class="text-xs text-slate-700 font-sans font-semibold leading-relaxed">{a.text}</p>
+                  <div class="flex items-center gap-3 min-w-0">
+                    <input type="checkbox" class="announcement-checkbox rounded border-slate-300 text-indigo-600 focus:ring-indigo-500 cursor-pointer shrink-0" data-id={a.id} />
+                    <p class="text-xs text-slate-700 font-sans font-semibold leading-relaxed">{a.text}</p>
+                  </div>
                   <form method="POST" class="shrink-0 delete-announcement-form">
                     <input type="hidden" name="action" value="delete-announcement" />
                     <input type="hidden" name="id" value={a.id} />
@@ -263,6 +300,80 @@ try {
         }
       });
     });
+
+    // Select All and Delete Selected Logic
+    const selectAllCheckbox = document.getElementById("select-all-announcements") as HTMLInputElement;
+    const deleteSelectedBtn = document.getElementById("delete-selected-announcements-btn") as HTMLButtonElement;
+    const itemCheckboxes = document.querySelectorAll(".announcement-checkbox") as NodeListOf<HTMLInputElement>;
+
+    function updateDeleteButtonState() {
+      if (!deleteSelectedBtn) return;
+      const checkedCount = Array.from(itemCheckboxes).filter(cb => cb.checked).length;
+      deleteSelectedBtn.disabled = checkedCount === 0;
+      if (checkedCount > 0) {
+        deleteSelectedBtn.innerText = `Delete Selected (${checkedCount})`;
+      } else {
+        deleteSelectedBtn.innerText = "Delete Selected";
+      }
+    }
+
+    if (selectAllCheckbox) {
+      selectAllCheckbox.addEventListener("change", () => {
+        itemCheckboxes.forEach(cb => {
+          cb.checked = selectAllCheckbox.checked;
+        });
+        updateDeleteButtonState();
+      });
+    }
+
+    itemCheckboxes.forEach(cb => {
+      cb.addEventListener("change", () => {
+        if (selectAllCheckbox) {
+          selectAllCheckbox.checked = Array.from(itemCheckboxes).every(c => c.checked);
+        }
+        updateDeleteButtonState();
+      });
+    });
+
+    if (deleteSelectedBtn) {
+      deleteSelectedBtn.addEventListener("click", async () => {
+        const selectedIds = Array.from(itemCheckboxes)
+          .filter(cb => cb.checked)
+          .map(cb => cb.getAttribute("data-id"));
+
+        if (selectedIds.length === 0) return;
+
+        const confirmed = await (window as any).showConfirmDialog({
+          title: "Delete Selected Announcements?",
+          description: `Are you sure you want to permanently delete these ${selectedIds.length} selected announcements? This action cannot be undone.`,
+          actionText: "Delete All",
+          cancelText: "Cancel",
+          variant: "destructive",
+          from: "bottom"
+        });
+        if (!confirmed) return;
+
+        (window as any).showBtnLoader?.(deleteSelectedBtn, "Deleting...");
+
+        const params = new URLSearchParams();
+        params.append("action", "delete-multiple-announcements");
+        params.append("ids", selectedIds.join(","));
+
+        try {
+          const res = await fetch(window.location.href, {
+            method: "POST",
+            headers: { "Content-Type": "application/x-www-form-urlencoded" },
+            body: params
+          });
+          await handleResponse(res, `${selectedIds.length} announcements deleted successfully.`);
+        } catch (err) {
+          console.error("AJAX error:", err);
+          alert("An error occurred. Please try again.");
+        } finally {
+          (window as any).hideBtnLoader?.(deleteSelectedBtn);
+        }
+      });
+    }
   }
 
   setupAnnouncements();
