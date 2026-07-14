@@ -14,7 +14,7 @@ CREATE TABLE IF NOT EXISTS public.popup_settings (
 
 -- Seed with a default row if empty
 INSERT INTO public.popup_settings (is_active, image_url, title, subtitle, delay_seconds, button_text, link_url)
-SELECT false, '', 'Special Update', 'Sign up to get the latest news and guides.', 5, 'Get Details', ''
+SELECT false, '', 'Special Update', 'Sign up to get the latest news and guides.', 5, 'Speak to Counsellor', ''
 WHERE NOT EXISTS (SELECT 1 FROM public.popup_settings);
 
 -- Enable Row Level Security (RLS)

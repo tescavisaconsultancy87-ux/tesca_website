@@ -19,13 +19,32 @@ if (!isAuthenticated) {
   return Astro.redirect("/admin");
 }
 
+const uploadImageToSupabase = async (photoFile: File): Promise<string> => {
+  const sb = supabase;
+  const ext = (photoFile.name.split('.').pop() || 'jpg').toLowerCase();
+  const key = `promo-popup/${crypto.randomUUID()}.${ext}`;
+  const buffer = await photoFile.arrayBuffer();
+
+  const { error } = await sb.storage
+    .from('tesca-assets')
+    .upload(key, buffer, {
+      contentType: photoFile.type,
+      upsert: false,
+    });
+
+  if (error) throw new Error(`Storage upload failed: ${error.message}`);
+
+  const { data } = sb.storage.from('tesca-assets').getPublicUrl(key);
+  return data.publicUrl;
+};
+
 let settings: any = {
   is_active: false,
   image_url: "",
   title: "Special Update",
   subtitle: "Sign up to get the latest news and guides.",
   delay_seconds: 5,
-  button_text: "Get Details",
+  button_text: "Speak to Counsellor",
   link_url: "",
 };
 let successMessage = "";
@@ -36,15 +55,27 @@ if (Astro.request.method === "POST") {
   try {
     const formData = await Astro.request.formData();
     const is_active = formData.get("is_active") === "true";
-    const image_url = formData.get("image_url")?.toString().trim() || "";
     const title = formData.get("title")?.toString().trim() || "Special Update";
     const subtitle = formData.get("subtitle")?.toString().trim() || "";
     const delay_seconds = parseInt(formData.get("delay_seconds")?.toString() || "5");
-    const button_text = formData.get("button_text")?.toString().trim() || "Get Details";
+    const button_text = formData.get("button_text")?.toString().trim() || "Speak to Counsellor";
     const link_url = formData.get("link_url")?.toString().trim() || "";
+    const photoFile = formData.get("photo_file") as File;
+    const photoExisting = formData.get("image_url")?.toString().trim() || "";
 
-    if (!image_url) {
-      throw new Error("Popup Photo / Image URL is required.");
+    let imageUrl = photoExisting;
+    if (photoFile && photoFile.size > 0) {
+      if (photoFile.size > 600 * 1024) {
+        throw new Error("Image size must be less than 600KB.");
+      }
+      if (!["image/jpeg", "image/png", "image/jpg", "image/webp"].includes(photoFile.type)) {
+        throw new Error("Only JPEG, JPG, WEBP and PNG images are allowed.");
+      }
+      imageUrl = await uploadImageToSupabase(photoFile);
+    }
+
+    if (!imageUrl) {
+      throw new Error("Popup Photo / Image is required.");
     }
 
     // Attempt update
@@ -56,7 +87,7 @@ if (Astro.request.method === "POST") {
         .from('popup_settings')
         .update({
           is_active,
-          image_url,
+          image_url: imageUrl,
           title,
           subtitle,
           delay_seconds,
@@ -72,7 +103,7 @@ if (Astro.request.method === "POST") {
         .from('popup_settings')
         .insert({
           is_active,
-          image_url,
+          image_url: imageUrl,
           title,
           subtitle,
           delay_seconds,
@@ -88,7 +119,7 @@ if (Astro.request.method === "POST") {
     // Refresh local settings object
     settings = {
       is_active,
-      image_url,
+      image_url: imageUrl,
       title,
       subtitle,
       delay_seconds,
@@ -123,7 +154,7 @@ try {
 
 <Layout 
   title="Manage Promotional Popup | TESCA Admin"
-  description="Administrative panel to publish, schedule, and customize promotional/lead-gen home popup."
+  description="Administrative panel to publish, customize, and edit promo popups."
   showNavFooter={false}
 >
   <div class="min-h-screen bg-slate-50 text-slate-800 font-sans flex flex-col lg:flex-row">
@@ -160,7 +191,7 @@ try {
             <span set:html={SVG.Settings} class="text-indigo-600" /> Popup Configuration
           </h2>
           
-          <form method="POST" id="popup-config-form" class="space-y-4 text-xs font-semibold text-slate-600">
+          <form method="POST" id="popup-config-form" enctype="multipart/form-data" class="space-y-4 text-xs font-semibold text-slate-600">
             
             {/* Active Toggle Switch */}
             <div class="flex items-center justify-between p-3.5 bg-slate-50 border border-slate-200/65 rounded-xl">
@@ -200,18 +231,28 @@ try {
               />
             </div>
 
-            {/* Image URL */}
+            {/* Image File Upload */}
             <div class="space-y-1.5">
-              <label for="img-url" class="text-[10px] text-slate-500 uppercase tracking-wide">Photo / Image URL *</label>
+              <label for="photo-file" class="text-[10px] text-slate-500 uppercase tracking-wide">Upload Photo (1:1 Square, Max 600KB) *</label>
               <input 
-                type="url" 
-                id="img-url" 
+                type="file" 
+                id="photo-file" 
+                name="photo_file" 
+                accept="image/jpeg,image/png,image/jpg,image/webp"
+                class="w-full px-3 py-2 rounded-lg border border-slate-200 bg-slate-50 text-slate-800 focus:outline-none focus:ring-1 focus:ring-indigo-500 font-sans text-xs" 
+              />
+              <input 
+                type="hidden" 
                 name="image_url" 
-                required 
-                class="w-full px-3 py-2.5 rounded-lg border border-slate-200 bg-slate-50 text-slate-805 focus:outline-none focus:ring-1 focus:ring-indigo-500 font-sans" 
-                placeholder="e.g. /images/Hero/main1.webp or external link" 
+                id="image-url-hidden"
                 value={settings.image_url} 
               />
+              {settings.image_url && (
+                <div class="text-[10px] text-slate-450 font-normal mt-1 flex items-center gap-1.5">
+                  <span>Current photo:</span>
+                  <a href={settings.image_url} target="_blank" class="text-indigo-600 hover:underline truncate max-w-[200px]">{settings.image_url}</a>
+                </div>
+              )}
             </div>
 
             {/* Title / Description */}
@@ -250,7 +291,7 @@ try {
                 name="button_text" 
                 required 
                 class="w-full px-3 py-2.5 rounded-lg border border-slate-200 bg-slate-50 text-slate-805 focus:outline-none focus:ring-1 focus:ring-indigo-500" 
-                placeholder="e.g. Get Callback" 
+                placeholder="e.g. Speak to Counsellor" 
                 value={settings.button_text} 
               />
             </div>
@@ -355,15 +396,41 @@ try {
     const inputBtnTxt = document.getElementById("btn-txt") as HTMLInputElement;
     const previewBtnTxt = document.getElementById("preview-button-text");
     inputBtnTxt?.addEventListener("input", () => {
-      if (previewBtnTxt) previewBtnTxt.innerText = inputBtnTxt.value.trim() || "Get Details";
+      if (previewBtnTxt) previewBtnTxt.innerText = inputBtnTxt.value.trim() || "Speak to Counsellor";
     });
 
-    const inputImgUrl = document.getElementById("img-url") as HTMLInputElement;
+    // File Input Validation and Preview Handler
+    const fileInput = document.getElementById("photo-file") as HTMLInputElement;
     const previewImg = document.getElementById("preview-image") as HTMLImageElement;
-    inputImgUrl?.addEventListener("input", () => {
-      if (previewImg) {
-        previewImg.src = inputImgUrl.value.trim() || "/images/Hero/main1.webp";
+
+    fileInput?.addEventListener("change", () => {
+      const file = fileInput.files?.[0];
+      if (!file) return;
+
+      // 1. Validate File Size (< 600 KB)
+      const maxBytes = 600 * 1024;
+      if (file.size > maxBytes) {
+        alert("Error: File size exceeds the 600KB limit.");
+        fileInput.value = ""; // Clear file input
+        return;
       }
+
+      // 2. Validate Aspect Ratio (1:1)
+      const img = new Image();
+      img.src = URL.createObjectURL(file);
+      img.onload = () => {
+        if (img.width !== img.height) {
+          alert(`Error: Photo must be a 1:1 square. Selected image resolution is ${img.width}x${img.height}.`);
+          fileInput.value = ""; // Clear file input
+          URL.revokeObjectURL(img.src);
+          return;
+        }
+
+        // Update preview image
+        if (previewImg) {
+          previewImg.src = img.src;
+        }
+      };
     });
 
     // Form submit AJAX loader integration
