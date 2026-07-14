@@ -4,7 +4,7 @@
 ---
 
 <div id="promo-popup-overlay" class="fixed inset-0 z-[100] flex items-center justify-center bg-slate-950/60 backdrop-blur-md opacity-0 pointer-events-none transition-opacity duration-300 select-none">
-  <div id="promo-popup-card" class="relative bg-white w-full max-w-[780px] rounded-[2rem] overflow-hidden shadow-2xl border border-slate-100 flex flex-col md:flex-row transform scale-95 translate-y-4 opacity-0 transition-all duration-500 ease-out mx-4 md:min-h-[460px]">
+  <div id="promo-popup-card" class="relative bg-white w-full max-w-[920px] rounded-[2rem] overflow-hidden shadow-2xl border border-slate-100 flex flex-col md:flex-row transform scale-95 translate-y-4 opacity-0 transition-all duration-500 ease-out mx-4 md:min-h-[500px]">
     
     <!-- Close Button -->
     <button type="button" id="promo-popup-close" class="absolute top-4 right-4 z-50 p-2 bg-slate-900/10 hover:bg-slate-900/20 text-slate-700 rounded-full transition-all cursor-pointer hover:scale-105" aria-label="Close popup">
@@ -20,7 +20,7 @@
     </button>
 
     <!-- Slides Container -->
-    <div id="promo-popup-slides-container" class="relative w-full flex flex-col md:flex-row flex-1 md:min-h-[460px]">
+    <div id="promo-popup-slides-container" class="relative w-full flex flex-col md:flex-row flex-1 md:min-h-[500px]">
        <!-- Dynamic slides injected client-side -->
     </div>
 
@@ -94,9 +94,9 @@
         return `
           <div class="promo-slide absolute inset-0 w-full h-full flex flex-col md:flex-row ${activeClasses}" data-index="${idx}">
             <!-- Left Column: Photo -->
-            <div class="w-full md:w-1/2 h-[220px] md:h-auto relative bg-slate-950 shrink-0 overflow-hidden flex items-center justify-center">
+            <div class="w-full md:w-1/2 h-[300px] md:h-auto relative bg-slate-950 shrink-0 overflow-hidden flex items-center justify-center">
               <img src="${p.image_url}" alt="" class="absolute inset-0 w-full h-full object-cover blur-xl opacity-50 scale-110 pointer-events-none select-none" />
-              <img src="${p.image_url}" alt="${p.title}" class="relative z-10 max-w-full max-h-full object-contain pointer-events-none select-none" />
+              <img src="${p.image_url}" alt="${p.title}" class="absolute inset-0 m-auto max-w-full max-h-full object-contain p-2.5 pointer-events-none select-none" />
               <div class="absolute inset-0 z-20 bg-gradient-to-t md:bg-gradient-to-r from-transparent via-transparent to-white/5 pointer-events-none"></div>
             </div>
 
