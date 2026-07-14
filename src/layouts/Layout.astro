@@ -212,6 +212,42 @@ if (Astro.url.pathname.startsWith("/admin")) {
 					});
 				}
 			});
+
+			// Global client-side error reporting to tescavisaconsultancy87@gmail.com
+			window.reportClientError = function(type, error, context = {}) {
+				try {
+					const message = error instanceof Error ? error.message : String(error);
+					const stack = error instanceof Error ? error.stack : undefined;
+					
+					fetch('/api/report-client-error', {
+						method: 'POST',
+						headers: { 'Content-Type': 'application/json' },
+						body: JSON.stringify({
+							type: type,
+							message: message,
+							stack: stack,
+							url: window.location.href,
+							context: context,
+							userAgent: navigator.userAgent
+						})
+					}).catch(err => console.warn('Failed to send error email:', err));
+				} catch (reportingErr) {
+					console.error('Error reporting system failed:', reportingErr);
+				}
+			};
+
+			window.addEventListener('error', (event) => {
+				if (!event.error && !event.message) return;
+				window.reportClientError('Unhandled Runtime Error', event.error || event.message, {
+					filename: event.filename,
+					lineno: event.lineno,
+					colno: event.colno
+				});
+			});
+
+			window.addEventListener('unhandledrejection', (event) => {
+				window.reportClientError('Unhandled Promise Rejection', event.reason);
+			});
 		</script>
 		<meta charset="UTF-8" />
 		<meta name="viewport" content="width=device-width, initial-scale=1" />

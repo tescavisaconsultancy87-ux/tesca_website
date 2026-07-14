@@ -295,9 +295,21 @@ export default function CounsellorForm() {
         }),
       });
 
-      const data = await response.json();
+      let data: any;
+      try {
+        const text = await response.text();
+        try {
+          data = JSON.parse(text);
+        } catch (jsonErr) {
+          console.error("Failed to parse response as JSON. Raw response:", text);
+          throw new Error("The server returned an invalid response. Please try again later or contact us directly via WhatsApp.");
+        }
+      } catch (err: any) {
+        throw new Error(err.message || "Failed to communicate with the server. Please check your connection and try again.");
+      }
+
       if (!response.ok || !data.success) {
-        throw new Error(data.error || data.message || `HTTP error! status: ${response.status}`);
+        throw new Error(data.error || data.message || `Server error (status ${response.status}).`);
       }
 
       setLeadId(data.leadId || "");
@@ -314,7 +326,18 @@ export default function CounsellorForm() {
       setShowSlotPicker(true);
     } catch (err: any) {
       console.error("Enquiry submission failed:", err);
-      setSubmitError(err.message || "Something went wrong. Please try again or reach us directly.");
+      if (typeof window !== "undefined" && (window as any).reportClientError) {
+        (window as any).reportClientError("Counsellor Form Submission", err, {
+          firstName,
+          lastName,
+          email,
+          phone: fullPhoneNumber,
+          mode,
+          destination,
+          visaType
+        });
+      }
+      setSubmitError("Something went wrong while submitting your enquiry. Please check your connection and try again, or connect with us directly via WhatsApp.");
       setStatus("failed");
       setFirstName("");
       setLastName("");
@@ -521,7 +544,19 @@ export default function CounsellorForm() {
                             })
                           });
                           
-                          const data = await res.json();
+                          let data: any;
+                          try {
+                            const text = await res.text();
+                            try {
+                              data = JSON.parse(text);
+                            } catch (jsonErr) {
+                              console.error("Failed to parse booking response as JSON. Raw response:", text);
+                              throw new Error("The server returned an invalid response. Please try again.");
+                            }
+                          } catch (err: any) {
+                            throw new Error(err.message || "Failed to communicate with the server. Please try again.");
+                          }
+                          
                           if (!res.ok || !data.success) {
                             throw new Error(data.error || "Failed to book slot.");
                           }
@@ -549,7 +584,15 @@ export default function CounsellorForm() {
                           setIsOpen(false);
                         } catch (err: any) {
                           console.error("Booking failed:", err);
-                          alert(err.message || "Failed to book slot on Google Calendar. Please try again.");
+                          if (typeof window !== "undefined" && (window as any).reportClientError) {
+                            (window as any).reportClientError("Counsellor Form Booking", err, {
+                              leadId,
+                              bookingToken,
+                              selectedDate,
+                              selectedTime
+                            });
+                          }
+                          alert("Something went wrong while booking your consultation slot. Please try again or reach out to us via WhatsApp.");
                         } finally {
                           setBookingStatus("idle");
                         }

@@ -87,7 +87,19 @@ export default function PartnerForm() {
         }),
       });
 
-      const data = await response.json();
+      let data: any;
+      try {
+        const text = await response.text();
+        try {
+          data = JSON.parse(text);
+        } catch (jsonErr) {
+          console.error("Failed to parse partner response as JSON. Raw response:", text);
+          throw new Error("The server returned an invalid response. Please try again.");
+        }
+      } catch (err: any) {
+        throw new Error(err.message || "Failed to communicate with the server. Please check your connection.");
+      }
+
       if (!response.ok) {
         throw new Error(data.error || "Something went wrong. Please try again.");
       }
@@ -95,7 +107,18 @@ export default function PartnerForm() {
       setStatus("success");
     } catch (err: any) {
       console.error("Partnership submission error:", err);
-      setErrorMessage(err.message || "Failed to submit partnership request.");
+      if (typeof window !== "undefined" && (window as any).reportClientError) {
+        (window as any).reportClientError("Partner Form Submission", err, {
+          fullName,
+          email,
+          phone,
+          partnershipModel,
+          experience,
+          city,
+          comments
+        });
+      }
+      setErrorMessage("Something went wrong while submitting your partnership application. Please check your connection and try again.");
       setStatus("error");
     }
   };

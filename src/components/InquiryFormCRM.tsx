@@ -409,7 +409,19 @@ Comments/Additional Info: ${formData.comments || "None"}`;
         })
       });
 
-      const data = await response.json();
+      let data: any;
+      try {
+        const text = await response.text();
+        try {
+          data = JSON.parse(text);
+        } catch (jsonErr) {
+          console.error("Failed to parse inquiry response as JSON. Raw response:", text);
+          throw new Error("The server returned an invalid response. Please try again.");
+        }
+      } catch (err: any) {
+        throw new Error(err.message || "Failed to communicate with the server. Please check your connection.");
+      }
+
       if (!response.ok || !data.success) {
         throw new Error(data.error || data.message || "Submission failed");
       }
@@ -431,7 +443,12 @@ Comments/Additional Info: ${formData.comments || "None"}`;
       localStorage.removeItem("tesca_crm_inquiry");
     } catch (err: any) {
       console.error("Submission failed:", err);
-      alert(err.message || "Submission encountered an error. We are still attempting to route your inquiry. Please contact us via WhatsApp.");
+      if (typeof window !== "undefined" && (window as any).reportClientError) {
+        (window as any).reportClientError("Inquiry CRM Form Submission", err, {
+          formData
+        });
+      }
+      alert("Something went wrong while submitting your inquiry. Please check your connection and try again, or contact us directly via WhatsApp.");
     } finally {
       setIsSubmitting(false);
     }

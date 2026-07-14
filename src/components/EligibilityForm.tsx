@@ -391,8 +391,19 @@ export default function EligibilityForm() {
     try {
       // 1. Fetch universities for the selected country
       const uniRes = await fetch(`/api/universities?country=${selectedCountry}`);
-      if (!uniRes.ok) throw new Error("Failed to load universities");
-      const universities: University[] = await uniRes.json();
+      if (!uniRes.ok) throw new Error(`Failed to load universities (status ${uniRes.status})`);
+      let universities: University[];
+      try {
+        const text = await uniRes.text();
+        try {
+          universities = JSON.parse(text);
+        } catch (jsonErr) {
+          console.error("Failed to parse universities response as JSON. Raw response:", text);
+          throw new Error("Received an invalid response when loading universities.");
+        }
+      } catch (err: any) {
+        throw new Error(err.message || "Failed to load universities. Please try again.");
+      }
 
       const fullPhoneNumber = `${selectedPhoneCountry.dialCode} ${phone}`;
 
@@ -412,7 +423,19 @@ export default function EligibilityForm() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(leadBody)
       });
-      const elData = await elRes.json();
+      let elData: any;
+      try {
+        const text = await elRes.text();
+        try {
+          elData = JSON.parse(text);
+        } catch (jsonErr) {
+          console.error("Failed to parse eligibility response as JSON. Raw response:", text);
+          throw new Error("Received an invalid response from eligibility service.");
+        }
+      } catch (err: any) {
+        throw new Error(err.message || "Failed to submit eligibility profile. Please check your connection.");
+      }
+
       if (!elRes.ok || !elData.success) {
         throw new Error(elData.error || elData.message || "Failed to submit eligibility profile");
       }
@@ -475,7 +498,20 @@ export default function EligibilityForm() {
 
     } catch (err: any) {
       console.error(err);
-      alert(err.message || "Something went wrong. Please check your network and try again.");
+      if (typeof window !== "undefined" && (window as any).reportClientError) {
+        (window as any).reportClientError("Eligibility Form Submission", err, {
+          selectedCountry,
+          selectedLevel,
+          englishType,
+          englishScore,
+          academicScore,
+          isCgpa,
+          name,
+          email,
+          phone
+        });
+      }
+      alert("Something went wrong while evaluating your eligibility profile. Please check your connection and try again, or contact us directly via WhatsApp.");
     } finally {
       setIsSubmitting(false);
     }

@@ -243,6 +243,9 @@ export default function UniversityFilter() {
         }
       } catch (e) {
         console.error("Error fetching universities:", e);
+        if (typeof window !== "undefined" && (window as any).reportClientError) {
+          (window as any).reportClientError("University Filter Fetch", e, { activeCountry });
+        }
       } finally {
         setIsLoading(false);
       }
