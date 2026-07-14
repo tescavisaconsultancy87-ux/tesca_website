@@ -124,8 +124,7 @@ const detailsStr = JSON.stringify({
 
     // 1. Submit to Web3Forms
     if (web3formsAccessKey) try {
-    const supabase = getSupabaseAdmin();
-runInBackground(locals, fetch("https://api.web3forms.com/submit", {
+      runInBackground(locals, () => fetch("https://api.web3forms.com/submit", {
         method: "POST",
         headers: { "Content-Type": "application/json", "Accept": "application/json" },
         body: JSON.stringify({
@@ -145,8 +144,7 @@ runInBackground(locals, fetch("https://api.web3forms.com/submit", {
     // 2. Submit to Google Sheets (GET request with query parameters)
     if (googleSheetUrl) {
       try {
-    const supabase = getSupabaseAdmin();
-const params = new URLSearchParams({
+        const params = new URLSearchParams({
           "Full Name": cleanName,
           "Email": cleanEmail,
           "Mobile Number": cleanPhone,
@@ -155,7 +153,7 @@ const params = new URLSearchParams({
           "Comments": `Academic: ${academicScoreNum}%, IELTS: ${ieltsScoreNum}, Budget: ${budgetLakhsNum} Lakhs/yr.`,
           "Lead Source": "Eligibility Finder Form",
         });
-        runInBackground(locals, fetch(`${googleSheetUrl}?${params.toString()}`, {
+        runInBackground(locals, () => fetch(`${googleSheetUrl}?${params.toString()}`, {
           method: "GET",
         }), "google-sheets-eligibility");
       } catch (err) {
@@ -278,7 +276,7 @@ const params = new URLSearchParams({
         destination: cleanDestination,
         matchCount: matches.length,
       });
-      runInBackground(locals, sendMail({ to: cleanEmail, subject, html }), "eligibility-result-email");
+      runInBackground(locals, () => sendMail({ to: cleanEmail, subject, html }), "eligibility-result-email");
     }
 
     return jsonResponse({

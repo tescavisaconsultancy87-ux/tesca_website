@@ -204,7 +204,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
           bookingDate: selectedDate,
           bookingTime: selectedTime,
         });
-        runInBackground(locals, sendMail({ to: lead.email, subject, html }), "counsellor-booking-email");
+        runInBackground(locals, () => sendMail({ to: lead.email, subject, html }), "counsellor-booking-email");
       }
 
       return jsonResponse({
@@ -280,7 +280,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
     const web3formsAccessKey = getEnv('WEB3FORMS_ACCESS_KEY') || import.meta.env.WEB3FORMS_ACCESS_KEY;
 
     if (web3formsAccessKey) {
-      runInBackground(locals, fetch("https://api.web3forms.com/submit", {
+      runInBackground(locals, () => fetch("https://api.web3forms.com/submit", {
         method: "POST",
         headers: { "Content-Type": "application/json", "Accept": "application/json" },
         body: JSON.stringify({
@@ -309,7 +309,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
         "Comments": `Preferred Mode: ${cleanMode}. Visa Type: ${cleanVisaType}. Destination: ${cleanDestination || "Not specified"}.`,
         "Lead Source": "Main Enquiry Form",
       });
-      runInBackground(locals, fetch(`${googleSheetUrl}?${params.toString()}`, { method: "GET" }), "google-sheets-counsellor");
+      runInBackground(locals, () => fetch(`${googleSheetUrl}?${params.toString()}`, { method: "GET" }), "google-sheets-counsellor");
     }
 
     return jsonResponse({

@@ -96,7 +96,7 @@ body = await request.json();
 
     // 5. Send Web3Forms fallback submission
     if (web3formsAccessKey) {
-      runInBackground(locals, fetch("https://api.web3forms.com/submit", {
+      runInBackground(locals, () => fetch("https://api.web3forms.com/submit", {
         method: "POST",
         headers: { "Content-Type": "application/json", "Accept": "application/json" },
         body: JSON.stringify({
@@ -123,7 +123,7 @@ body = await request.json();
         "Comments": `Experience: ${cleanExperience}. Comments: ${cleanComments || 'None'}. Lead ID: ${leadId}`,
         "Lead Source": "Partner With Us Form",
       });
-      runInBackground(locals, fetch(`${googleSheetUrl}?${params.toString()}`, { method: "GET" }), "google-sheets-partner");
+      runInBackground(locals, () => fetch(`${googleSheetUrl}?${params.toString()}`, { method: "GET" }), "google-sheets-partner");
     }
 
     // 7. Send confirmation email to User
@@ -136,7 +136,7 @@ body = await request.json();
       city: cleanCity,
       comments: cleanComments
     });
-    runInBackground(locals, sendMail({ to: cleanEmail, subject: userEmail.subject, html: userEmail.html }), "partner-confirmation-email");
+    runInBackground(locals, () => sendMail({ to: cleanEmail, subject: userEmail.subject, html: userEmail.html }), "partner-confirmation-email");
 
     // 8. Send notification email to Admin (Tesca)
     const adminNotification = partnerNotificationEmail({
@@ -149,7 +149,7 @@ body = await request.json();
       comments: cleanComments,
       leadId
     });
-    runInBackground(locals, sendMail({ to: adminEmail, subject: adminNotification.subject, html: adminNotification.html }), "partner-admin-email");
+    runInBackground(locals, () => sendMail({ to: adminEmail, subject: adminNotification.subject, html: adminNotification.html }), "partner-admin-email");
 
     return jsonResponse({
       success: true,

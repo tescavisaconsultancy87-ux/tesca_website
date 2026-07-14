@@ -8,19 +8,24 @@ type RuntimeLocals = {
 
 export function runInBackground(
   locals: unknown,
-  task: Promise<unknown>,
+  task: Promise<unknown> | (() => Promise<unknown>),
   label: string
 ): void {
-  const guardedTask = task.catch((err) => {
-    console.error(`[background:${label}]`, err);
-  });
+  try {
+    const promise = typeof task === "function" ? task() : task;
+    const guardedTask = promise.catch((err) => {
+      console.error(`[background:${label}]`, err);
+    });
 
-  const waitUntil = (locals as RuntimeLocals | undefined)?.runtime?.ctx?.waitUntil;
-  if (typeof waitUntil === "function") {
-    waitUntil(guardedTask);
-    return;
+    const waitUntil = (locals as RuntimeLocals | undefined)?.runtime?.ctx?.waitUntil;
+    if (typeof waitUntil === "function") {
+      waitUntil(guardedTask);
+      return;
+    }
+
+    void guardedTask;
+  } catch (err) {
+    console.error(`[background:${label}] Synchronous error:`, err);
   }
-
-  void guardedTask;
 }
 

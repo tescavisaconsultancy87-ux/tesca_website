@@ -160,7 +160,7 @@ ${JSON.stringify(redactPayload(requestPayload), null, 2)}
 
 Full stack trace and unredacted payload are available in the Cloudflare Workers logs for this timestamp.`;
 
-    runInBackground(locals, fetch("https://api.web3forms.com/submit", {
+    runInBackground(locals, () => fetch("https://api.web3forms.com/submit", {
       method: "POST",
       headers: { "Content-Type": "application/json", "Accept": "application/json" },
       body: JSON.stringify({

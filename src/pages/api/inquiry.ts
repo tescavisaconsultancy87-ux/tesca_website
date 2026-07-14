@@ -118,7 +118,7 @@ body = await request.json();
     ].join("\n");
 
     if (web3formsAccessKey) {
-      runInBackground(locals, fetch("https://api.web3forms.com/submit", {
+      runInBackground(locals, () => fetch("https://api.web3forms.com/submit", {
         method: "POST",
         headers: { "Content-Type": "application/json", "Accept": "application/json" },
         body: JSON.stringify({
@@ -138,15 +138,15 @@ body = await request.json();
         "Lead ID": cleanLeadId || String(insertedData?.id || ""),
         "Full Name": cleanFullName,
         "Mobile Number": cleanMobile,
-        Email: cleanEmail || "Not provided",
-        City: cleanDetails.city || "Not provided",
-        Country: cleanDetails.country || "Not provided",
+        "Email": cleanEmail || "Not provided",
+        "City": cleanDetails.city || "Not provided",
+        "Country": cleanDetails.country || "Not provided",
         "Lead Source": cleanDetails.leadSource || "CRM Lead Capture Form",
         "Inquiry Type": Array.isArray(cleanDetails.inquiryType) ? cleanDetails.inquiryType.join(", ") : "Not provided",
         "Preferred Countries": cleanPreferredCountries.join(", ") || "None",
-        Comments: cleanDetails.comments || "None",
+        "Comments": cleanDetails.comments || "None",
       });
-      runInBackground(locals, fetch(`${googleSheetUrl}?${params.toString()}`, { method: "GET" }), "google-sheets-inquiry");
+      runInBackground(locals, () => fetch(`${googleSheetUrl}?${params.toString()}`, { method: "GET" }), "google-sheets-inquiry");
     }
 
     // Send confirmation email to user if email provided
@@ -158,7 +158,7 @@ body = await request.json();
         preferredCountries: cleanPreferredCountries,
         phone: cleanMobile,
       });
-      runInBackground(locals, sendMail({ to: cleanEmail, subject, html }), "inquiry-confirmation-email");
+      runInBackground(locals, () => sendMail({ to: cleanEmail, subject, html }), "inquiry-confirmation-email");
     }
 
     return jsonResponse({
