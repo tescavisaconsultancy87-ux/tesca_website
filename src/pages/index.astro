@@ -824,6 +824,92 @@ if (causesRes.error) {
     </div>
   </section>
 
+  {/* ==================== PREPARATION CLASSES ADD-ON SECTION ==================== */}
+  <section class="py-20 bg-gradient-to-b from-white to-slate-50 relative overflow-hidden font-sans text-left">
+    {/* Background Glows */}
+    <div class="absolute top-1/2 left-1/4 -translate-y-1/2 w-[350px] h-[350px] bg-accent-blue/5 rounded-full blur-[100px] pointer-events-none"></div>
+    <div class="absolute bottom-0 right-10 w-[250px] h-[250px] bg-indigo-500/5 rounded-full blur-[80px] pointer-events-none"></div>
+
+    <div class="max-w-7xl mx-auto px-6 md:px-8 relative z-10">
+      <div class="glass-card rounded-[2.5rem] bg-white border border-slate-200/80 shadow-xl p-8 md:p-14 lg:p-16 flex flex-col lg:flex-row gap-12 items-center">
+        
+        {/* Left column: Text */}
+        <div class="flex-1 space-y-6">
+          <span class="inline-flex items-center gap-1.5 text-[12px] font-semibold font-sans tracking-wider text-slate-800 bg-accent-blue/10 px-4.5 py-2 rounded-full border border-accent-blue/20 uppercase">
+            🚀 Language & Prep Classes
+          </span>
+          <h2 class="text-[28px] sm:text-[38px] lg:text-[44px] font-extrabold font-display text-slate-850 tracking-tight leading-tight">
+            Meet Your Score Requirements with <span class="text-accent-blue">TESCA Prep Academy</span>
+          </h2>
+          <p class="text-[16px] text-slate-650 leading-relaxed font-sans font-normal">
+            Need to clear IELTS, PTE, or German language requirements for your study visa? Our sister platform <strong>tesca.co</strong> provides top-tier coaching with master tutors, structured learning modules, and unlimited simulated mock test evaluations.
+          </p>
+          
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
+            {[
+              { title: "IELTS Preparation", desc: "Expert tips, mock tests & score guarantees.", color: "border-l-4 border-rose-500 bg-rose-500/5" },
+              { title: "PTE Coaching", desc: "Predictive AI scoring matching real exams.", color: "border-l-4 border-blue-500 bg-blue-500/5" },
+              { title: "German Language", desc: "A1 to B2 levels for public university paths.", color: "border-l-4 border-amber-500 bg-amber-500/5" },
+              { title: "Spoken English", desc: "Daily group interactions to remove hesitation.", color: "border-l-4 border-purple-500 bg-purple-500/5" }
+            ].map(item => (
+              <div class={`p-4 rounded-xl border border-slate-105 ${item.color} space-y-1`}>
+                <h4 class="font-bold text-slate-800 text-sm font-display">{item.title}</h4>
+                <p class="text-xs text-slate-500 font-sans font-normal leading-relaxed">{item.desc}</p>
+              </div>
+            ))}
+          </div>
+
+          <div class="pt-4 flex flex-col sm:flex-row items-center gap-4">
+            <a
+              href="https://tesca.co"
+              target="_blank"
+              rel="noopener noreferrer"
+              class="w-full sm:w-auto px-7 py-3.5 bg-accent-blue hover:bg-accent-indigo text-white font-bold text-sm rounded-full shadow-md text-center hover:scale-[1.02] transition-transform duration-300 cursor-pointer"
+            >
+              Explore Prep Classes on Tesca.co →
+            </a>
+            <span class="text-xs font-semibold text-slate-400 font-sans">Classroom & Online Batches Available</span>
+          </div>
+        </div>
+
+        {/* Right column: Graphic/Stats Card */}
+        <div class="w-full lg:w-[400px] shrink-0">
+          <div class="rounded-3xl p-8 bg-gradient-to-br from-slate-900 to-indigo-950 border border-slate-800 shadow-2xl text-white space-y-6 relative overflow-hidden">
+            {/* Soft decorative blur */}
+            <div class="absolute -right-24 -top-24 w-48 h-48 bg-accent-blue/20 rounded-full blur-[40px]"></div>
+
+            <div class="space-y-1">
+              <h3 class="text-xl font-bold font-display text-white">Why Learn with TESCA?</h3>
+              <p class="text-xs text-slate-400 font-sans font-normal">Our record of teaching excellence speaks for itself</p>
+            </div>
+
+            <div class="space-y-4 pt-2">
+              {[
+                { val: "7.5+", label: "Average IELTS Band Achieved" },
+                { val: "15+ Years", label: "Experienced Cambridge-Certified Trainers" },
+                { val: "20+", label: "Computerized Full Mock Tests Every Saturday" }
+              ].map(stat => (
+                <div class="flex items-center gap-4 p-3.5 bg-white/5 rounded-2xl border border-white/5">
+                  <div class="text-lg sm:text-2xl font-extrabold text-accent-cyan font-display leading-none shrink-0 w-20 text-center border-r border-white/10 pr-2">
+                    {stat.val}
+                  </div>
+                  <div class="text-xs font-medium text-slate-300 font-sans leading-normal">
+                    {stat.label}
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            <div class="p-4 bg-accent-blue/10 border border-accent-blue/20 rounded-2xl text-center text-xs font-semibold text-accent-cyan font-sans">
+              🌟 Special discount for Study Abroad students!
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
   {/* ==================== SECTION 7: CTA BANNER ==================== */}
   <section id="consultation" class="py-12 bg-white relative font-sans">
     <div class="max-w-6xl mx-auto px-6 md:px-8">

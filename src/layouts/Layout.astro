@@ -740,7 +740,9 @@ if (Astro.url.pathname.startsWith("/admin")) {
 												{ name: "Pre & Post Departure Services", iconSvg: NavIcons.Plane, id: "departure", color: "bg-cyan-100 text-cyan-600" },
 											].map((srv) => (
 												<a
-													href={srv.id === 'testprep' ? '/ielts-classes-in-surat' : `/services#${srv.id}`}
+													href={srv.id === 'testprep' ? 'https://tesca.co' : `/services#${srv.id}`}
+													target={srv.id === 'testprep' ? '_blank' : undefined}
+													rel={srv.id === 'testprep' ? 'noopener noreferrer' : undefined}
 													class="flex items-center gap-3 p-2 rounded-xl border border-slate-50 bg-slate-50/50 hover:bg-accent-blue/5 hover:border-accent-blue/20 hover:text-accent-indigo transition-all duration-200"
 												>
 													<div class={"p-1.5 rounded-lg shrink-0 " + srv.color}>
@@ -903,7 +905,7 @@ if (Astro.url.pathname.startsWith("/admin")) {
 								</summary>
 								<div class="pl-4 pr-2 py-2 flex flex-col gap-2.5 text-xs text-slate-600">
 									<a href="/services" class="hover:text-accent-blue py-1 no-underline font-semibold block">All Placement Services</a>
-									<a href="/ielts-classes-in-surat" class="hover:text-accent-blue py-1 no-underline font-semibold block">IELTS Classes in Surat</a>
+									<a href="https://tesca.co" target="_blank" rel="noopener noreferrer" class="hover:text-accent-blue py-1 no-underline font-semibold block">Language Classes (tesca.co)</a>
 									<a href="/visitor-visa" class="hover:text-accent-blue py-1 no-underline font-semibold block">Visitor & Business Visas</a>
 									<a href="/usa-visitor-visa" class="hover:text-accent-blue py-1 no-underline font-semibold pl-3 block">↳ USA Tourist & Visitor</a>
 									<a href="/uk-visitor-visa" class="hover:text-accent-blue py-1 no-underline font-semibold pl-3 block">↳ UK & Schengen Tourist</a>
