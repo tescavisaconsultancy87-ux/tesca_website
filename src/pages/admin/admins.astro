@@ -63,7 +63,8 @@ if (Astro.request.method === "POST") {
         });
 
         if (authError) {
-          throw new Error(`Supabase Auth registration failed: ${authError.message}`);
+          console.error("Admin creation failed at Supabase Auth:", authError.message);
+          throw new Error("Failed to create admin user. The email may already be registered.");
         }
 
         // 2. Add email to the public.admins table
@@ -72,7 +73,8 @@ if (Astro.request.method === "POST") {
           .insert({ email });
 
         if (dbError) {
-          throw dbError;
+          console.error("Admin creation failed at allowlist insert:", dbError.message);
+          throw new Error("Failed to add admin to allowlist. The user may already be an admin.");
         }
 
         successMessage = `Admin user '${email}' created and allowlisted successfully.`;
@@ -94,7 +96,8 @@ if (Astro.request.method === "POST") {
           .eq('email', emailToDelete);
 
         if (dbError) {
-          throw dbError;
+          console.error("Admin removal failed:", dbError.message);
+          throw new Error("Failed to remove admin privileges. Please try again.");
         }
 
         successMessage = `Revoked administrative privileges for '${emailToDelete}'.`;
@@ -102,7 +105,7 @@ if (Astro.request.method === "POST") {
     }
   } catch (err: any) {
     console.error("Action error on manage-admins page:", err);
-    errorMessage = err.message || "An unexpected error occurred.";
+    errorMessage = "An unexpected error occurred. Please try again.";
   }
 }
 

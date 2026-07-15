@@ -59,6 +59,42 @@ body = await request.json();
     const cleanFullName = sanitizeText(fullName, 200);
     const cleanEmail = email ? sanitizeText(email, 254).toLowerCase() : null;
     const cleanMobile = sanitizeText(mobileNumber, 20);
+
+    // Check if there is an active lead with the same email or phone number that is not completed
+    const phoneDigits = cleanMobile.replace(/\D/g, '');
+    const last10Digits = phoneDigits.length >= 10 ? phoneDigits.slice(-10) : phoneDigits;
+
+    const checkQuery = supabase
+      .from('leads')
+      .select('id, status, phone, email')
+      .neq('status', 'completed');
+
+    if (cleanEmail && last10Digits) {
+      checkQuery.or(`phone.eq."${cleanMobile}",email.eq."${cleanEmail}",phone.ilike."%${last10Digits}"`);
+    } else if (cleanEmail) {
+      checkQuery.or(`phone.eq."${cleanMobile}",email.eq."${cleanEmail}"`);
+    } else if (last10Digits) {
+      checkQuery.or(`phone.eq."${cleanMobile}",phone.ilike."%${last10Digits}"`);
+    } else {
+      checkQuery.eq('phone', cleanMobile);
+    }
+
+    const { data: existingLeads, error: checkError } = await checkQuery;
+
+    if (checkError) {
+      console.error("[inquiry] Error checking for existing active leads:", checkError);
+      throw checkError;
+    }
+
+    if (existingLeads && existingLeads.length > 0) {
+      return new Response(JSON.stringify({ 
+        error: "An active booking or inquiry already exists for this email or phone number. Our team is already reviewing your profile and will contact you shortly." 
+      }), {
+        status: 409,
+        headers: { "Content-Type": "application/json" }
+      });
+    }
+
     const cleanLeadId = body.leadId ? sanitizeText(body.leadId, 80) : undefined;
     const cleanPreferredCountries = Array.isArray(body.preferredCountries)
       ? body.preferredCountries.map((country: unknown) => sanitizeText(String(country), 50)).filter(Boolean).slice(0, 12)

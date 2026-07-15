@@ -122,7 +122,7 @@ if (Astro.request.method === "POST") {
     }
   } catch (err: any) {
     console.error("Action error on blogs page:", err);
-    errorMessage = `Action failed: ${err.message || "Unknown error"}`;
+    errorMessage = "Action failed. Please try again.";
   }
 }
 

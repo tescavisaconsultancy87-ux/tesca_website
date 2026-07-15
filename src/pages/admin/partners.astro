@@ -57,7 +57,7 @@ if (Astro.request.method === "POST") {
     }
   } catch (err: any) {
     console.error("Failed to process partner inquiry action:", err);
-    errorMessage = `Failed to complete action: ${err.message || "Unknown error"}`;
+    errorMessage = "Failed to complete action. Please try again.";
   }
 }
 

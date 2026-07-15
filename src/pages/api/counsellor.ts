@@ -60,7 +60,7 @@ const isSlotInPastIST = (dateStr: string, slotStr: string): boolean => {
     return false;
   } catch (err) {
     console.error("Error checking isSlotInPastIST:", err);
-    return false;
+    return true;
   }
 };
 
@@ -110,6 +110,39 @@ export const POST: APIRoute = async ({ request, locals }) => {
         });
       }
 
+      // Check if there is another active lead with the same email or phone number that is not completed
+      const phoneDigits = (lead.phone || '').replace(/\D/g, '');
+      const last10Digits = phoneDigits.length >= 10 ? phoneDigits.slice(-10) : phoneDigits;
+
+      const checkQuery = supabase
+        .from('leads')
+        .select('id, status')
+        .neq('status', 'completed')
+        .neq('id', lead.id);
+
+      if (lead.email && last10Digits) {
+        checkQuery.or(`phone.eq."${lead.phone}",email.eq."${lead.email}",phone.ilike."%${last10Digits}"`);
+      } else if (lead.email) {
+        checkQuery.or(`phone.eq."${lead.phone}",email.eq."${lead.email}"`);
+      } else if (last10Digits) {
+        checkQuery.or(`phone.eq."${lead.phone}",phone.ilike."%${last10Digits}"`);
+      } else if (lead.phone) {
+        checkQuery.eq('phone', lead.phone);
+      }
+
+      const { data: existingLeads, error: checkError } = await checkQuery;
+
+      if (checkError) {
+        console.error("[counsellor-booking] Error checking for other active leads:", checkError);
+      } else if (existingLeads && existingLeads.length > 0) {
+        return new Response(JSON.stringify({ 
+          error: "An active booking or inquiry already exists for this email or phone number. Our team is already reviewing your profile and will contact you shortly." 
+        }), {
+          status: 409,
+          headers: { "Content-Type": "application/json" }
+        });
+      }
+
       let details: any = {};
       try {
         details = typeof lead.details === 'string' ? JSON.parse(lead.details) : lead.details || {};
@@ -154,17 +187,12 @@ export const POST: APIRoute = async ({ request, locals }) => {
           gasData = JSON.parse(gasText);
         } catch (parseErr) {
           console.error("[counsellor-booking] Expected JSON from Google Apps Script, but got HTML/Text. Response preview:\n", gasText.slice(0, 500));
-          return new Response(JSON.stringify({ error: "Google Apps Script returned an invalid HTML page instead of JSON. Ensure the script is deployed as 'Anyone' and permissions are authorized." }), {
-            status: 400,
-            headers: { "Content-Type": "application/json" }
-          });
+          return jsonResponse({ error: "Unable to complete booking. Please try again later." }, 400);
         }
 
         if (!gasData.success) {
-          return new Response(JSON.stringify({ error: gasData.error || "Failed to book slot on calendar." }), {
-            status: 400,
-            headers: { "Content-Type": "application/json" }
-          });
+          console.error("[counsellor-booking] Google Apps Script booking failed:", gasData.error);
+          return jsonResponse({ error: "Unable to book the selected slot. It may already be taken." }, 400);
         }
       }
 
@@ -172,7 +200,8 @@ export const POST: APIRoute = async ({ request, locals }) => {
       const updatedDetails = {
         ...details,
         selectedDate,
-        selectedTime
+        selectedTime,
+        bookingTokenUsedAt: new Date().toISOString()
       };
 
       const { error: updateError } = await supabase
@@ -253,6 +282,41 @@ export const POST: APIRoute = async ({ request, locals }) => {
     const cleanMode = mode ? sanitizeText(mode, 50) : "";
     const cleanDestination = destination ? sanitizeText(destination, 50) : "";
     const cleanVisaType = visaType ? sanitizeText(visaType, 50) : "";
+
+    // Check if there is an active lead with the same email or phone number that is not completed
+    const phoneDigits = cleanPhone.replace(/\D/g, '');
+    const last10Digits = phoneDigits.length >= 10 ? phoneDigits.slice(-10) : phoneDigits;
+
+    const checkQuery = supabase
+      .from('leads')
+      .select('id, status, phone, email')
+      .neq('status', 'completed');
+
+    if (cleanEmail && last10Digits) {
+      checkQuery.or(`phone.eq."${cleanPhone}",email.eq."${cleanEmail}",phone.ilike."%${last10Digits}"`);
+    } else if (cleanEmail) {
+      checkQuery.or(`phone.eq."${cleanPhone}",email.eq."${cleanEmail}"`);
+    } else if (last10Digits) {
+      checkQuery.or(`phone.eq."${cleanPhone}",phone.ilike."%${last10Digits}"`);
+    } else {
+      checkQuery.eq('phone', cleanPhone);
+    }
+
+    const { data: existingLeads, error: checkError } = await checkQuery;
+
+    if (checkError) {
+      console.error("[counsellor] Error checking for existing active leads:", checkError);
+      throw checkError;
+    }
+
+    if (existingLeads && existingLeads.length > 0) {
+      return new Response(JSON.stringify({ 
+        error: "An active counselling booking or inquiry already exists for this email or phone number. Our team is already reviewing your profile and will contact you shortly." 
+      }), {
+        status: 409,
+        headers: { "Content-Type": "application/json" }
+      });
+    }
 
     const fullName = `${cleanFirstName} ${cleanLastName}`;
     const bookingToken = createBookingToken();

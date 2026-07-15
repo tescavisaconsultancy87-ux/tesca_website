@@ -44,7 +44,7 @@ const isSlotInPastIST = (dateStr: string, slotStr: string): boolean => {
     return false;
   } catch (err) {
     console.error("Error checking isSlotInPastIST:", err);
-    return false;
+    return true;
   }
 };
 

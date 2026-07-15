@@ -18,21 +18,45 @@ if (!isAuthenticated) {
   return Astro.redirect("/admin");
 }
 
-// Helper to upload file to Supabase Storage
+const IMAGE_MAGIC_BYTES: Record<string, { magic: number[]; mime: string }> = {
+  jpeg: { magic: [0xFF, 0xD8, 0xFF], mime: 'image/jpeg' },
+  png: { magic: [0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A], mime: 'image/png' },
+  webp: { magic: [0x52, 0x49, 0x46, 0x46], mime: 'image/webp' },
+};
+
+const detectImageType = (buffer: ArrayBuffer): string | null => {
+  const bytes = new Uint8Array(buffer);
+  for (const [ext, sig] of Object.entries(IMAGE_MAGIC_BYTES)) {
+    if (sig.magic.every((b, i) => bytes[i] === b)) {
+      return ext;
+    }
+  }
+  return null;
+};
+
 const uploadImageToSupabase = async (photoFile: File): Promise<string> => {
   const sb = supabase;
-  const ext = (photoFile.name.split('.').pop() || 'jpg').toLowerCase();
-  const key = `universities/${crypto.randomUUID()}.${ext}`;
   const buffer = await photoFile.arrayBuffer();
+
+  const detectedExt = detectImageType(buffer);
+  if (!detectedExt) {
+    throw new Error("Invalid image file. Only JPEG, PNG, and WEBP formats are accepted.");
+  }
+
+  const mime = IMAGE_MAGIC_BYTES[detectedExt].mime;
+  const key = `universities/${crypto.randomUUID()}.${detectedExt}`;
 
   const { error } = await sb.storage
     .from('tesca-assets')
     .upload(key, buffer, {
-      contentType: photoFile.type,
+      contentType: mime,
       upsert: false,
     });
 
-  if (error) throw new Error(`Storage upload failed: ${error.message}`);
+  if (error) {
+    console.error("Storage upload failed:", error.message);
+    throw new Error("Failed to upload image. Please try again.");
+  }
 
   const { data } = sb.storage.from('tesca-assets').getPublicUrl(key);
   return data.publicUrl;
@@ -80,8 +104,8 @@ if (Astro.request.method === "POST") {
       if (photoFile && photoFile.size > 0) {
         if (photoFile.size > 1024 * 1024) {
           errorMessage = "Image size must be less than 1MB.";
-        } else if (!["image/jpeg", "image/png", "image/jpg"].includes(photoFile.type)) {
-          errorMessage = "Only JPEG, JPG, and PNG images are allowed.";
+        } else if (!["image/jpeg", "image/png", "image/jpg", "image/webp"].includes(photoFile.type)) {
+          errorMessage = "Only JPEG, PNG, and WEBP images are allowed.";
         } else {
           imageUrl = await uploadImageToSupabase(photoFile);
         }
@@ -127,8 +151,8 @@ if (Astro.request.method === "POST") {
       if (photoFile && photoFile.size > 0) {
         if (photoFile.size > 1024 * 1024) {
           errorMessage = "Image size must be less than 1MB.";
-        } else if (!["image/jpeg", "image/png", "image/jpg"].includes(photoFile.type)) {
-          errorMessage = "Only JPEG, JPG, and PNG images are allowed.";
+        } else if (!["image/jpeg", "image/png", "image/jpg", "image/webp"].includes(photoFile.type)) {
+          errorMessage = "Only JPEG, PNG, and WEBP images are allowed.";
         } else {
           imageUrl = await uploadImageToSupabase(photoFile);
         }
@@ -153,7 +177,7 @@ if (Astro.request.method === "POST") {
     }
   } catch (err: any) {
     console.error("Action error on universities page:", err);
-    errorMessage = `Action failed: ${err.message || "Unknown error"}`;
+    errorMessage = "Action failed. Please try again.";
   }
 }
 
@@ -254,7 +278,7 @@ try {
 
             <div class="space-y-1.5">
               <label for="uni-photo" class="text-[10px] text-slate-500 uppercase tracking-wide">University Logo/Photo (Max 1MB)</label>
-              <input type="file" id="uni-photo" name="photo_file" accept="image/png, image/jpeg, image/jpg" class="w-full text-slate-500 border border-slate-200 bg-slate-50 rounded-lg file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100" />
+              <input type="file" id="uni-photo" name="photo_file" accept="image/png, image/jpeg, image/jpg, image/webp" class="w-full text-slate-500 border border-slate-200 bg-slate-50 rounded-lg file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100" />
               <div id="photo-preview-container" class="mt-2 hidden flex items-center gap-3">
                 <img id="photo-preview" class="w-16 h-16 object-cover rounded-lg border border-slate-200" src="" />
                 <button type="button" id="remove-photo-btn" class="text-rose-500 hover:text-rose-700 text-[10px] font-bold uppercase tracking-wider cursor-pointer">Remove Photo</button>

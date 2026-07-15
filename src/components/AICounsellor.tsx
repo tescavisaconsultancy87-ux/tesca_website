@@ -151,14 +151,39 @@ const QA_DATABASE = [
   }
 ];
 
-const sanitizeAndFormat = (text: string) => {
-  // Strip any raw HTML tags to prevent XSS
+const renderSafeText = (text: string): React.ReactNode[] => {
   const clean = text.replace(/<[^>]*>/g, "");
-  // Apply markdown formatting
-  return clean
-    .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
-    .replace(/\n/g, '<br />')
-    .replace(/\* (.*?)(?:<br \/>|$)/g, '<li class="ml-2 font-sans font-normal">$1</li>');
+  const lines = clean.split('\n');
+  const parts: React.ReactNode[] = [];
+  lines.forEach((line, i) => {
+    if (i > 0) parts.push(<br key={`br-${i}`} />);
+    if (line.startsWith('* ')) {
+      parts.push(<li key={`li-${i}`} className="ml-2 font-sans font-normal">{renderBold(line.slice(2))}</li>);
+    } else {
+      parts.push(...renderBold(line, `b-${i}`));
+    }
+  });
+  return parts;
+};
+
+const renderBold = (text: string, keyPrefix = "k"): React.ReactNode[] => {
+  const parts: React.ReactNode[] = [];
+  const regex = /\*\*(.*?)\*\*/g;
+  let lastIndex = 0;
+  let match: RegExpExecArray | null;
+  let key = 0;
+  while ((match = regex.exec(text)) !== null) {
+    if (match.index > lastIndex) {
+      parts.push(text.slice(lastIndex, match.index));
+    }
+    parts.push(<strong key={`${keyPrefix}-str-${key}`}>{match[1]}</strong>);
+    lastIndex = match.index + match[0].length;
+    key++;
+  }
+  if (lastIndex < text.length) {
+    parts.push(text.slice(lastIndex));
+  }
+  return parts.length > 0 ? parts : [text];
 };
 
 interface Message {
@@ -409,9 +434,7 @@ export default function AICounsellor() {
                   {m.sender === "user" ? (
                     <div className="space-y-2 font-normal whitespace-pre-wrap">{m.text}</div>
                   ) : (
-                    <div className="space-y-2 font-normal" dangerouslySetInnerHTML={{
-                      __html: sanitizeAndFormat(m.text)
-                    }} />
+                    <div className="space-y-2 font-normal">{renderSafeText(m.text)}</div>
                   )}
                   {m.showFallbackForm && (
                     <div className="mt-2.5">
@@ -469,9 +492,11 @@ export default function AICounsellor() {
           {/* Input control panel */}
           <div className="p-3 border-t border-slate-100 bg-slate-50 flex items-center gap-2 font-sans">
             <button
-              onClick={() => alert("Voice transcription mockup initialized... Speak into your mic.")}
-              aria-label="Speak query"
-              className="p-2.5 rounded-xl bg-white border border-slate-200/80 hover:bg-slate-50 text-support-gray hover:text-accent-blue transition-colors shadow-sm cursor-pointer"
+              onClick={() => {}}
+              aria-label="Voice input not available"
+              title="Voice input not available"
+              disabled
+              className="p-2.5 rounded-xl bg-white border border-slate-200/80 text-support-gray/40 cursor-not-allowed shadow-sm"
             >
               <Mic className="w-4 h-4" />
             </button>

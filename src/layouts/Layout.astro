@@ -219,6 +219,31 @@ if (Astro.url.pathname.startsWith("/admin")) {
 					const message = error instanceof Error ? error.message : String(error);
 					const stack = error instanceof Error ? error.stack : undefined;
 					
+					// Ignore lists for common noisy browser extension/third-party/autofill errors
+					const IGNORED_ERRORS = [
+						'AutofillCallbackHandler',
+						'chrome-extension://',
+						'moz-extension://',
+						'safari-extension://',
+						'safari-web-extension://',
+						'__gaOptOutExtension',
+						'webkitAudioContext',
+						'ResizeObserver loop limit exceeded',
+						'ResizeObserver loop completed with undelivered notifications',
+						'Script error.',
+						'window.webkit.messageHandlers',
+						'Extensions/',
+						'fbq is not defined'
+					];
+					
+					const errorStr = `${message} ${stack || ''}`.toLowerCase();
+					const shouldIgnore = IGNORED_ERRORS.some(pattern => errorStr.includes(pattern.toLowerCase()));
+					
+					if (shouldIgnore) {
+						console.log(`[Error Logger] Ignored noisy/extension error: "${message}"`);
+						return;
+					}
+
 					fetch('/api/report-client-error', {
 						method: 'POST',
 						headers: { 'Content-Type': 'application/json' },

@@ -28,6 +28,30 @@ export const POST: APIRoute = async ({ request }) => {
       return jsonResponse({ error: "Missing error message" }, 400);
     }
 
+    // Ignore list for third-party/browser extension/autofill errors
+    const IGNORED_ERRORS = [
+      'AutofillCallbackHandler',
+      'chrome-extension://',
+      'moz-extension://',
+      'safari-extension://',
+      'safari-web-extension://',
+      '__gaOptOutExtension',
+      'webkitAudioContext',
+      'ResizeObserver loop limit exceeded',
+      'ResizeObserver loop completed with undelivered notifications',
+      'Script error.',
+      'window.webkit.messageHandlers',
+      'Extensions/',
+      'fbq is not defined'
+    ];
+
+    const errorStr = `${message} ${stack || ''}`.toLowerCase();
+    const shouldIgnore = IGNORED_ERRORS.some(pattern => errorStr.includes(pattern.toLowerCase()));
+
+    if (shouldIgnore) {
+      return jsonResponse({ success: true, message: "Ignored noisy/extension error (not reported)." });
+    }
+
     const time = new Date().toLocaleString('en-US', { timeZone: 'Asia/Kolkata' }) + ' (IST)';
     const emailSubject = `⚠️ Client-Side Error: ${type || 'Unhandled Error'}`;
 
