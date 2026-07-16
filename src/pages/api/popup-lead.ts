@@ -24,22 +24,51 @@ export const POST: APIRoute = async ({ request, locals }) => {
 
     const { name, phone, email, popupId, popupTitle } = body;
 
-    // 1. Basic validation
-    if (!name || !phone) {
-      return new Response(JSON.stringify({ error: "Missing required fields (name, phone)." }), {
+    // Fetch required fields settings for this popup
+    let requiredFields = ["name", "phone"];
+    if (popupId) {
+      const { data: popup } = await supabase
+        .from('popup_settings')
+        .select('required_fields')
+        .eq('id', popupId)
+        .single();
+      
+      if (popup && Array.isArray(popup.required_fields)) {
+        requiredFields = popup.required_fields;
+      }
+    }
+
+    // 1. Basic dynamic validation
+    if (requiredFields.includes("name") && !name) {
+      return new Response(JSON.stringify({ error: "Full Name is required." }), {
         status: 400,
         headers: { "Content-Type": "application/json" }
       });
     }
 
-    if (!validateName(name)) {
+    if (requiredFields.includes("phone") && !phone) {
+      return new Response(JSON.stringify({ error: "Mobile Number is required." }), {
+        status: 400,
+        headers: { "Content-Type": "application/json" }
+      });
+    }
+
+    if (requiredFields.includes("email") && !email) {
+      return new Response(JSON.stringify({ error: "Email Address is required." }), {
+        status: 400,
+        headers: { "Content-Type": "application/json" }
+      });
+    }
+
+    // Format validation if values are provided
+    if (name && !validateName(name)) {
       return new Response(JSON.stringify({ error: "Invalid name format or length." }), {
         status: 400,
         headers: { "Content-Type": "application/json" }
       });
     }
 
-    if (!validatePhone(phone)) {
+    if (phone && !validatePhone(phone)) {
       return new Response(JSON.stringify({ error: "Invalid phone number format." }), {
         status: 400,
         headers: { "Content-Type": "application/json" }
@@ -54,37 +83,43 @@ export const POST: APIRoute = async ({ request, locals }) => {
     }
 
     // 2. Sanitization
-    const cleanName = sanitizeText(name, 100);
-    const cleanPhone = sanitizeText(phone, 20);
+    const cleanName = name ? sanitizeText(name, 100) : null;
+    const cleanPhone = phone ? sanitizeText(phone, 20) : null;
     const cleanEmail = email ? sanitizeText(email, 254).toLowerCase() : null;
     const cleanPopupTitle = popupTitle ? sanitizeText(popupTitle, 150) : "Direct Popup Lead";
     const cleanPopupId = popupId ? parseInt(popupId, 10) : null;
 
     // 3. Deduplication (check for active popup lead with same email or phone)
-    const phoneDigits = cleanPhone.replace(/\D/g, '');
-    const last10Digits = phoneDigits.length >= 10 ? phoneDigits.slice(-10) : phoneDigits;
+    let hasExisting = false;
+    if (cleanPhone || cleanEmail) {
+      const phoneDigits = cleanPhone ? cleanPhone.replace(/\D/g, '') : '';
+      const last10Digits = phoneDigits.length >= 10 ? phoneDigits.slice(-10) : phoneDigits;
 
-    const checkQuery = supabase
-      .from('leads')
-      .select('id, status')
-      .eq('lead_type', 'popup')
-      .neq('status', 'completed');
+      const checkQuery = supabase
+        .from('leads')
+        .select('id, status')
+        .eq('lead_type', 'popup')
+        .neq('status', 'completed');
 
-    if (cleanEmail && last10Digits) {
-      checkQuery.or(`phone.eq."${cleanPhone}",email.eq."${cleanEmail}",phone.ilike."%${last10Digits}"`);
-    } else if (cleanEmail) {
-      checkQuery.or(`phone.eq."${cleanPhone}",email.eq."${cleanEmail}"`);
-    } else if (last10Digits) {
-      checkQuery.or(`phone.eq."${cleanPhone}",phone.ilike."%${last10Digits}"`);
-    } else {
-      checkQuery.eq('phone', cleanPhone);
+      if (cleanEmail && last10Digits) {
+        checkQuery.or(`phone.eq."${cleanPhone}",email.eq."${cleanEmail}",phone.ilike."%${last10Digits}"`);
+      } else if (cleanEmail) {
+        checkQuery.or(`email.eq."${cleanEmail}"`);
+      } else if (last10Digits) {
+        checkQuery.or(`phone.eq."${cleanPhone}",phone.ilike."%${last10Digits}"`);
+      } else if (cleanPhone) {
+        checkQuery.eq('phone', cleanPhone);
+      }
+
+      const { data: existingLeads, error: checkError } = await checkQuery;
+      if (checkError) {
+        console.error("[popup-lead] Error checking for existing leads:", checkError);
+      } else if (existingLeads && existingLeads.length > 0) {
+        hasExisting = true;
+      }
     }
 
-    const { data: existingLeads, error: checkError } = await checkQuery;
-
-    if (checkError) {
-      console.error("[popup-lead] Error checking for existing leads:", checkError);
-    } else if (existingLeads && existingLeads.length > 0) {
+    if (hasExisting) {
       return new Response(JSON.stringify({ 
         error: "Our team already has an active request for this contact. We will reach out to you shortly!" 
       }), {
