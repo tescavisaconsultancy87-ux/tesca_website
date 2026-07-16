@@ -92,6 +92,13 @@ if (Astro.request.method === "POST") {
     } else if (action === "add-popup" || action === "edit-popup") {
       const id = formData.get("id")?.toString();
       const is_active = formData.get("is_active") === "true";
+      const lead_capture_enabled = formData.get("lead_capture_enabled") === "true";
+      const required_fields_raw = formData.getAll("required_fields");
+      const final_required_fields = ["name", "phone"];
+      if (required_fields_raw.includes("email")) {
+        final_required_fields.push("email");
+      }
+      const required_fields = final_required_fields;
       const title = formData.get("title")?.toString().trim() || "Special Update";
       const subtitle = formData.get("subtitle")?.toString().trim() || "";
       const delay_seconds = parseInt(formData.get("delay_seconds")?.toString() || "5");
@@ -127,6 +134,8 @@ if (Astro.request.method === "POST") {
             delay_seconds,
             button_text,
             link_url,
+            lead_capture_enabled,
+            required_fields,
             updated_at: new Date().toISOString()
           })
           .eq('id', id);
@@ -142,7 +151,9 @@ if (Astro.request.method === "POST") {
             subtitle,
             delay_seconds,
             button_text,
-            link_url
+            link_url,
+            lead_capture_enabled,
+            required_fields
           });
         if (error) throw error;
         successMessage = "New promo popup published successfully.";
@@ -233,6 +244,47 @@ try {
                 />
                 <div class="w-10 h-6 bg-slate-200 rounded-full peer peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-0.5 after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-indigo-600"></div>
               </label>
+            </div>
+
+            {/* Capture Leads Toggle Switch */}
+            <div class="flex items-center justify-between p-3.5 bg-slate-50 border border-slate-200/65 rounded-xl">
+              <div class="space-y-0.5">
+                <span class="block text-xs font-bold text-slate-700">Capture Leads Directly</span>
+                <span class="block text-[10px] text-slate-450 font-normal">Show inline form inside popup instead of counselor form.</span>
+              </div>
+              <label class="relative inline-flex items-center cursor-pointer select-none">
+                <input 
+                  type="checkbox" 
+                  id="lead_capture_enabled_toggle" 
+                  class="sr-only peer"
+                />
+                <input 
+                  type="hidden" 
+                  name="lead_capture_enabled" 
+                  id="lead_capture_enabled_value" 
+                  value="false" 
+                />
+                <div class="w-10 h-6 bg-slate-200 rounded-full peer peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-0.5 after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-indigo-600"></div>
+              </label>
+            </div>
+
+            {/* Required Fields Section */}
+            <div id="required-fields-container" class="p-3.5 bg-slate-50 border border-slate-200/65 rounded-xl space-y-2 hidden">
+              <span class="block text-[10px] text-slate-500 uppercase tracking-wide">Required Form Fields</span>
+              <div class="flex flex-wrap gap-4 text-[11px] text-slate-700">
+                <label class="flex items-center gap-1.5 cursor-pointer">
+                  <input type="checkbox" name="required_fields" value="name" checked disabled class="accent-indigo-600" />
+                  <span>Name (Always)</span>
+                </label>
+                <label class="flex items-center gap-1.5 cursor-pointer">
+                  <input type="checkbox" name="required_fields" value="phone" checked disabled class="accent-indigo-600" />
+                  <span>Phone (Always)</span>
+                </label>
+                <label class="flex items-center gap-1.5 cursor-pointer">
+                  <input type="checkbox" id="req_field_email" name="required_fields" value="email" class="accent-indigo-600" />
+                  <span>Email</span>
+                </label>
+              </div>
             </div>
 
             {/* Delay Settings */}
@@ -456,6 +508,23 @@ try {
       }
     });
 
+    const leadCaptureToggle = document.getElementById("lead_capture_enabled_toggle") as HTMLInputElement;
+    const leadCaptureValue = document.getElementById("lead_capture_enabled_value") as HTMLInputElement;
+    const requiredFieldsContainer = document.getElementById("required-fields-container");
+    
+    leadCaptureToggle?.addEventListener("change", () => {
+      if (leadCaptureValue) {
+        leadCaptureValue.value = leadCaptureToggle.checked ? "true" : "false";
+      }
+      if (requiredFieldsContainer) {
+        if (leadCaptureToggle.checked) {
+          requiredFieldsContainer.classList.remove("hidden");
+        } else {
+          requiredFieldsContainer.classList.add("hidden");
+        }
+      }
+    });
+
     // Realtime preview sync
     const inputTitle = document.getElementById("popup-title") as HTMLInputElement;
     const previewTitle = document.getElementById("preview-title");
@@ -549,6 +618,18 @@ try {
             is_active_toggle.dispatchEvent(new Event("change"));
           }
           if (is_active_value) is_active_value.value = popup.is_active ? "true" : "false";
+
+          if (leadCaptureToggle) {
+            leadCaptureToggle.checked = !!popup.lead_capture_enabled;
+            leadCaptureToggle.dispatchEvent(new Event("change"));
+          }
+          if (leadCaptureValue) leadCaptureValue.value = popup.lead_capture_enabled ? "true" : "false";
+          
+          const reqEmailCheckbox = document.getElementById("req_field_email") as HTMLInputElement;
+          if (reqEmailCheckbox) {
+            const reqFields = Array.isArray(popup.required_fields) ? popup.required_fields : [];
+            reqEmailCheckbox.checked = reqFields.includes("email");
+          }
           
           const delaySecInput = document.getElementById("delay-sec") as HTMLInputElement;
           if (delaySecInput) delaySecInput.value = popup.delay_seconds.toString();
@@ -608,6 +689,12 @@ try {
         is_active_toggle.checked = false;
         is_active_toggle.dispatchEvent(new Event("change"));
       }
+      if (leadCaptureToggle) {
+        leadCaptureToggle.checked = false;
+        leadCaptureToggle.dispatchEvent(new Event("change"));
+      }
+      const reqEmailCheckbox = document.getElementById("req_field_email") as HTMLInputElement;
+      if (reqEmailCheckbox) reqEmailCheckbox.checked = false;
       if (imageUrlHidden) imageUrlHidden.value = "";
       if (currentPhotoInfo) currentPhotoInfo.classList.add("hidden");
       

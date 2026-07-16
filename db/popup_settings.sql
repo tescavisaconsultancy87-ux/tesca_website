@@ -8,6 +8,8 @@ CREATE TABLE IF NOT EXISTS public.popup_settings (
     delay_seconds INTEGER NOT NULL DEFAULT 5,
     button_text TEXT NOT NULL DEFAULT 'Get Details',
     link_url TEXT NOT NULL DEFAULT '',
+    lead_capture_enabled BOOLEAN NOT NULL DEFAULT false,
+    required_fields JSONB NOT NULL DEFAULT '["name", "phone"]'::jsonb,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL,
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
 );
