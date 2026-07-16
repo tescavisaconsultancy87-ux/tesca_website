@@ -9,7 +9,7 @@ export const GET: APIRoute = async () => {
       .from('popup_settings')
       .select('*')
       .eq('is_active', true)
-      .order('id', { ascending: true });
+      .order('id', { ascending: false });
 
     if (error) {
       throw error;

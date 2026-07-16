@@ -38,7 +38,12 @@ const {
 } = Astro.props;
 
 // Canonical URL is always the apex host, regardless of how the request arrived.
-const canonicalURL = new URL(Astro.url.pathname, "https://tescavisa.com").href;
+// Normalized to lowercase with trailing slashes removed (matching the sitemap) to prevent canonical mismatch indexing issues.
+let normalizedPathname = Astro.url.pathname.toLowerCase();
+if (normalizedPathname.length > 1 && normalizedPathname.endsWith("/")) {
+	normalizedPathname = normalizedPathname.slice(0, -1);
+}
+const canonicalURL = new URL(normalizedPathname, "https://tescavisa.com").href;
 const ogImage = new URL(image, "https://tescavisa.com").href;
 
 // Organization / local-business structured data (helps Google Knowledge Panel

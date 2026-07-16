@@ -4,10 +4,10 @@
 ---
 
 <div id="promo-popup-overlay" class="fixed inset-0 z-[100] flex items-center justify-center bg-slate-950/60 backdrop-blur-md opacity-0 pointer-events-none transition-opacity duration-300 select-none">
-  <div id="promo-popup-card" class="relative bg-white w-full max-w-[920px] rounded-[2rem] overflow-hidden shadow-2xl border border-slate-100 flex flex-col md:flex-row transform scale-95 translate-y-4 opacity-0 transition-all duration-500 ease-out mx-4 md:min-h-[500px]">
+  <div id="promo-popup-card" class="relative bg-white w-full max-w-[920px] rounded-[2rem] overflow-hidden shadow-2xl border border-slate-100 flex flex-col md:flex-row transform scale-95 translate-y-4 opacity-0 transition-all duration-500 ease-out mx-4 min-h-[500px]">
     
     <!-- Close Button -->
-    <button type="button" id="promo-popup-close" class="absolute top-4 right-4 z-50 p-2 bg-slate-900/10 hover:bg-slate-900/20 text-slate-700 rounded-full transition-all cursor-pointer hover:scale-105" aria-label="Close popup">
+    <button type="button" id="promo-popup-close" class="absolute top-4 right-4 z-50 p-2 bg-white/90 hover:bg-white text-slate-800 rounded-full shadow-md transition-all cursor-pointer hover:scale-105 md:bg-slate-900/10 md:hover:bg-slate-900/20 md:text-slate-700 md:shadow-none" aria-label="Close popup">
       <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
     </button>
 
@@ -20,7 +20,7 @@
     </button>
 
     <!-- Slides Container -->
-    <div id="promo-popup-slides-container" class="relative w-full flex flex-col md:flex-row flex-1 md:min-h-[500px]">
+    <div id="promo-popup-slides-container" class="relative w-full flex flex-col md:flex-row flex-1 min-h-[500px]">
        <!-- Dynamic slides injected client-side -->
     </div>
 
@@ -94,22 +94,22 @@
         return `
           <div class="promo-slide absolute inset-0 w-full h-full flex flex-col md:flex-row ${activeClasses}" data-index="${idx}">
             <!-- Left Column: Photo -->
-            <div class="w-full md:w-1/2 h-[300px] md:h-auto relative bg-slate-950 shrink-0 overflow-hidden flex items-center justify-center">
+            <div class="w-full md:w-1/2 h-[220px] md:h-auto relative bg-slate-950 shrink-0 overflow-hidden flex items-center justify-center">
               <img src="${p.image_url}" alt="" class="absolute inset-0 w-full h-full object-cover blur-xl opacity-50 scale-110 pointer-events-none select-none" />
               <img src="${p.image_url}" alt="${p.title}" class="absolute inset-0 m-auto max-w-full max-h-full object-contain p-2.5 pointer-events-none select-none" />
               <div class="absolute inset-0 z-20 bg-gradient-to-t md:bg-gradient-to-r from-transparent via-transparent to-white/5 pointer-events-none"></div>
             </div>
 
             <!-- Right Column: Content -->
-            <div class="w-full md:w-1/2 p-8 md:p-10 flex flex-col justify-center text-left bg-white relative">
+            <div class="w-full md:w-1/2 p-6 md:p-10 flex flex-col justify-center text-left bg-white relative">
               <div class="mb-4">
-                <span class="inline-block text-[9px] font-extrabold uppercase tracking-widest text-indigo-600 bg-indigo-50 border border-indigo-100 px-2.5 py-0.5 rounded-full mb-2.5">Featured Update</span>
-                <h3 class="text-xl md:text-2xl font-extrabold tracking-tight text-slate-800 leading-tight">${p.title || "Special Update"}</h3>
-                <p class="text-slate-500 text-xs mt-2.5 leading-relaxed font-sans font-normal">${p.subtitle || ""}</p>
+                <span class="inline-block text-[9px] font-extrabold uppercase tracking-widest text-indigo-600 bg-indigo-50 border border-indigo-100 px-2.5 py-0.5 rounded-full mb-2">Featured Update</span>
+                <h3 class="text-lg md:text-2xl font-extrabold tracking-tight text-slate-800 leading-tight">${p.title || "Special Update"}</h3>
+                <p class="text-slate-500 text-[11px] md:text-xs mt-2 leading-relaxed font-sans font-normal">${p.subtitle || ""}</p>
               </div>
 
-              <div class="mt-4">
-                <button type="button" class="promo-popup-action-btn w-full py-3 bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-700 hover:to-violet-700 text-white font-bold text-xs rounded-xl transition-all cursor-pointer shadow-md hover:scale-[1.01] flex items-center justify-center gap-1.5 font-sans">
+              <div class="mt-2 md:mt-4">
+                <button type="button" class="promo-popup-action-btn w-full py-2.5 md:py-3 bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-700 hover:to-violet-700 text-white font-bold text-xs rounded-xl transition-all cursor-pointer shadow-md hover:scale-[1.01] flex items-center justify-center gap-1.5 font-sans">
                   ${p.button_text || "Speak to Counsellor"}
                 </button>
               </div>

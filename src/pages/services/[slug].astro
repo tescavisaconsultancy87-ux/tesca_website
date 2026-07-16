@@ -23,7 +23,7 @@ const SVG = {
 export const prerender = true;
 
 export function getStaticPaths() {
-  return SERVICES.map(s => ({
+  return SERVICES.filter(s => s.id !== "testprep").map(s => ({
     params: { slug: s.id },
     props: { service: s }
   }));
