@@ -25,7 +25,7 @@
     </div>
 
     <!-- Slide Indicators -->
-    <div id="promo-popup-indicators" class="absolute bottom-4 right-8 z-40 flex gap-1.5 hidden">
+    <div id="promo-popup-indicators" class="absolute bottom-4 left-1/2 -translate-x-1/2 md:left-auto md:translate-x-0 md:right-8 z-40 flex gap-1.5 hidden">
        <!-- Dynamic dot indicators injected client-side -->
     </div>
 
@@ -94,14 +94,14 @@
         return `
           <div class="promo-slide absolute inset-0 w-full h-full flex flex-col md:flex-row ${activeClasses}" data-index="${idx}">
             <!-- Left Column: Photo -->
-            <div class="w-full md:w-1/2 h-[220px] md:h-auto relative bg-slate-950 shrink-0 overflow-hidden flex items-center justify-center">
+            <div class="promo-popup-action-btn w-full md:w-1/2 h-full md:h-auto relative bg-slate-950 shrink-0 overflow-hidden flex items-center justify-center cursor-pointer">
               <img src="${p.image_url}" alt="" class="absolute inset-0 w-full h-full object-cover blur-xl opacity-50 scale-110 pointer-events-none select-none" />
               <img src="${p.image_url}" alt="${p.title}" class="absolute inset-0 m-auto max-w-full max-h-full object-contain p-2.5 pointer-events-none select-none" />
               <div class="absolute inset-0 z-20 bg-gradient-to-t md:bg-gradient-to-r from-transparent via-transparent to-white/5 pointer-events-none"></div>
             </div>
 
             <!-- Right Column: Content -->
-            <div class="w-full md:w-1/2 p-6 md:p-10 flex flex-col justify-center text-left bg-white relative">
+            <div class="hidden md:flex md:w-1/2 p-6 md:p-10 flex-col justify-center text-left bg-white relative">
               <div class="mb-4">
                 <span class="inline-block text-[9px] font-extrabold uppercase tracking-widest text-indigo-600 bg-indigo-50 border border-indigo-100 px-2.5 py-0.5 rounded-full mb-2">Featured Update</span>
                 <h3 class="text-lg md:text-2xl font-extrabold tracking-tight text-slate-800 leading-tight">${p.title || "Special Update"}</h3>
