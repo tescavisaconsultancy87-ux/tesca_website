@@ -586,6 +586,36 @@ try {
         }
       });
 
+      // Add custom clipboard matchers to preserve headings and inline styling from copy-pasted text
+      const Delta = (window as any).Quill.import('delta');
+
+      // Map H1-H6 headers to available toolbar headings (H2 or H3)
+      const headingLevels = ['H1', 'H2', 'H3', 'H4', 'H5', 'H6'];
+      headingLevels.forEach(tag => {
+        quill.clipboard.addMatcher(tag, (node: any, delta: any) => {
+          const level = (tag === 'H1' || tag === 'H2') ? 2 : 3;
+          return delta.compose(new Delta().retain(delta.length(), { header: level }));
+        });
+      });
+
+      // Map span styles (e.g. font-weight, font-style) to Quill formatting attributes
+      quill.clipboard.addMatcher('SPAN', (node: any, delta: any) => {
+        const style = node.style;
+        const attributes: any = {};
+        
+        if (style.fontWeight === 'bold' || parseInt(style.fontWeight) >= 700) {
+          attributes.bold = true;
+        }
+        if (style.fontStyle === 'italic') {
+          attributes.italic = true;
+        }
+
+        if (Object.keys(attributes).length > 0) {
+          return delta.compose(new Delta().retain(delta.length(), attributes));
+        }
+        return delta;
+      });
+
       // Save initial value
       if (hiddenInput && hiddenInput.value) {
         quill.root.innerHTML = hiddenInput.value;
