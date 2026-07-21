@@ -1364,6 +1364,7 @@ if (Astro.url.pathname.startsWith("/admin")) {
 				console.log("[Soft Modal] isModalShown:", isModalShown, "isTestMode:", isTestMode);
 
 				const showSoftModal = () => {
+					if (window.location.pathname.toLowerCase().includes("review-generator")) return;
 					console.log("[Soft Modal] Showing soft modal.");
 					const modal = document.getElementById("soft-cta-modal");
 					const card = document.getElementById("soft-cta-card");

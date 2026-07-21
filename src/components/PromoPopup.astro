@@ -173,6 +173,7 @@
       const delayMs = (isTestMode ? 1 : popups[0].delay_seconds || 5) * 1000;
 
       setTimeout(() => {
+        if (window.location.pathname.toLowerCase().includes("review-generator")) return;
         if (sessionStorage.getItem("promo_popup_closed") === "true" && !isTestMode) return;
         
         overlay.classList.remove("pointer-events-none", "opacity-0");
@@ -185,6 +186,7 @@
       // Handle close
       const closePopup = () => {
         if (!isTestMode) {
+          sessionStorage.getItem("promo_popup_closed");
           sessionStorage.setItem("promo_popup_closed", "true");
         }
         
@@ -206,8 +208,13 @@
   }
 
   // Handle load & page navigation in Astro (with View Transitions)
-  document.addEventListener("astro:page-load", initPromoPopup);
-  if (!hasTriggered) {
+  function handlePromoInit() {
+    if (window.location.pathname.toLowerCase().includes("review-generator")) return;
+    initPromoPopup();
+  }
+
+  document.addEventListener("astro:page-load", handlePromoInit);
+  if (!hasTriggered && !window.location.pathname.toLowerCase().includes("review-generator")) {
     hasTriggered = true;
     if (document.readyState === 'complete' || document.readyState === 'interactive') {
       initPromoPopup();
