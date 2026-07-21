@@ -42,8 +42,11 @@
   let hasTriggered = false;
 
   async function initPromoPopup() {
+    if (window.location.pathname.toLowerCase().includes("review-generator")) return;
     const urlParams = new URLSearchParams(window.location.search);
     const isTestMode = urlParams.get("test-popup") === "true";
+    if (hasTriggered && !isTestMode) return;
+    hasTriggered = true;
     const isClosedInSession = sessionStorage.getItem("promo_popup_closed");
     
     if (isClosedInSession === "true" && !isTestMode) return;
