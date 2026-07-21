@@ -224,7 +224,6 @@ export default function ConnectLanding() {
             {
               flag: '🇬🇧',
               name: 'United Kingdom',
-              landmark: 'Big Ben & Tower Bridge',
               image: '/images/landmarks/uk.jpg',
               desc: 'Top Russell Group unis & 2-year Graduate Work Route.',
               badge: 'Fast Track Offer',
@@ -233,7 +232,6 @@ export default function ConnectLanding() {
             {
               flag: '🇦🇺',
               name: 'Australia',
-              landmark: 'Sydney Opera House',
               image: '/images/landmarks/australia.jpg',
               desc: 'High PR potential, top quality of life & work rights.',
               badge: 'Popular for PR',
@@ -242,7 +240,6 @@ export default function ConnectLanding() {
             {
               flag: '🇨🇦',
               name: 'Canada',
-              landmark: 'CN Tower & Skyline',
               image: '/images/landmarks/canada.jpg',
               desc: 'Express Entry PR pathways & up to 3 yrs PGWP.',
               badge: 'PGWP Available',
@@ -251,7 +248,6 @@ export default function ConnectLanding() {
             {
               flag: '🇺🇸',
               name: 'United States',
-              landmark: 'Statue of Liberty & NYC',
               image: '/images/landmarks/usa.jpg',
               desc: 'Ivy League excellence & 3-year STEM OPT extension.',
               badge: 'STEM OPT 3Yrs',
@@ -260,7 +256,6 @@ export default function ConnectLanding() {
             {
               flag: '🇳🇿',
               name: 'New Zealand',
-              landmark: 'Auckland Sky Tower',
               image: '/images/landmarks/new-zealand.jpg',
               desc: 'Safe, welcoming environment & post-study work rights.',
               badge: 'Safe & Green',
@@ -269,7 +264,6 @@ export default function ConnectLanding() {
             {
               flag: '🇮🇪',
               name: 'Ireland',
-              landmark: 'Dublin Ha\'penny Bridge',
               image: '/images/landmarks/ireland.jpg',
               desc: 'European Tech Hub with 2-year stay back option.',
               badge: 'Tech Hub',
@@ -278,7 +272,6 @@ export default function ConnectLanding() {
             {
               flag: '🇩🇪',
               name: 'Germany',
-              landmark: 'Brandenburg Gate',
               image: '/images/landmarks/germany.jpg',
               desc: 'Tuition-free public universities & strong engineering job market.',
               badge: 'Free Tuition',
@@ -287,7 +280,6 @@ export default function ConnectLanding() {
             {
               flag: '🇫🇷',
               name: 'Europe (Schengen)',
-              landmark: 'Eiffel Tower Paris',
               image: '/images/landmarks/europe.jpg',
               desc: 'France, Italy, Poland & Spain study opportunities.',
               badge: 'Schengen Access',
@@ -306,7 +298,7 @@ export default function ConnectLanding() {
                 <div className="relative h-44 overflow-hidden bg-slate-100">
                   <img 
                     src={c.image} 
-                    alt={`${c.name} Landmark - ${c.landmark}`}
+                    alt={`${c.name} Landmark`}
                     className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" 
                     loading="lazy"
                   />
@@ -314,10 +306,6 @@ export default function ConnectLanding() {
                   
                   <span className="absolute top-2.5 left-2.5 bg-white/95 backdrop-blur-md text-[#0A2342] text-[11px] font-bold px-2.5 py-1 rounded-full shadow-sm flex items-center gap-1.5">
                     <span className="text-sm">{c.flag}</span> {c.name}
-                  </span>
-
-                  <span className="absolute bottom-2.5 left-2.5 text-white/90 text-[10px] font-medium drop-shadow-md">
-                    📍 {c.landmark}
                   </span>
 
                   <span className="absolute bottom-2.5 right-2.5 bg-[#F97316] text-white text-[10px] font-bold px-2 py-0.5 rounded-md shadow-sm">
@@ -521,10 +509,10 @@ export default function ConnectLanding() {
               {/* Social Links */}
               <div className="flex items-center gap-3 mt-6">
                 {[
-                  { icon: InstagramIcon, href: 'https://instagram.com' },
-                  { icon: FacebookIcon, href: 'https://facebook.com' },
-                  { icon: LinkedinIcon, href: 'https://linkedin.com' },
-                  { icon: YoutubeIcon, href: 'https://youtube.com' }
+                  { icon: InstagramIcon, href: 'https://www.instagram.com/tesca_visaconsultancy' },
+                  { icon: FacebookIcon, href: 'https://www.facebook.com/tescavisaconsultancy' },
+                  { icon: LinkedinIcon, href: 'https://www.linkedin.com/in/tesca-visa-2a3457271' },
+                  { icon: YoutubeIcon, href: 'https://youtube.com/@tescavisaconsultancy' }
                 ].map((s, idx) => (
                   <a
                     key={idx}
