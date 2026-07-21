@@ -17,7 +17,6 @@ import {
   ShieldCheck, 
   Zap, 
   Building2,
-  Users,
   ExternalLink
 } from 'lucide-react';
 
@@ -51,12 +50,29 @@ export default function ConnectLanding() {
     return () => clearInterval(timer);
   }, []);
 
-  const whatsappUrl = `https://wa.me/919824152731?text=${encodeURIComponent('Hi TESCA, I want to study abroad.')}`;
+  // Main site WhatsApp URL (exact message from main site)
+  const whatsappUrl = "https://wa.me/919824152731?text=Hello%20TESCA%20Visa%20Consultancy%2C%20I%20am%20visiting%20your%20website%20and%20would%20like%20to%20consult%20about%20your%20visa%20and%20study%20abroad%20services.%20Please%20guide%20me.";
+
+  // Open the main site's Speak to Counsellor modal popup
+  const handleOpenCounsellor = (e: React.MouseEvent) => {
+    e.preventDefault();
+    if (typeof (window as any).openCounsellorForm === 'function') {
+      (window as any).openCounsellorForm();
+    } else {
+      window.location.href = '/inquiry';
+    }
+  };
+
+  // Image fallback handler
+  const handleImgError = (e: React.SyntheticEvent<HTMLImageElement, Event>, fallbackSrc: string) => {
+    e.currentTarget.onerror = null; // Prevent infinite loop
+    e.currentTarget.src = fallbackSrc;
+  };
 
   return (
     <div className="min-h-screen bg-[#F8FAFC] text-[#1E293B] font-sans antialiased selection:bg-[#F97316] selection:text-white pb-24 md:pb-12">
       
-      {/* BRAND HEADER (Minimal & Elegant with TESCA Logo) */}
+      {/* BRAND HEADER (Minimal & Elegant with Official TESCA Logo) */}
       <header className="bg-[#0A2342] text-white border-b border-white/10 py-4 px-4 shadow-sm">
         <div className="max-w-5xl mx-auto flex items-center justify-between">
           <a href="/" className="flex items-center gap-3">
@@ -64,6 +80,7 @@ export default function ConnectLanding() {
               src="/images/Tesca_logo.png" 
               alt="TESCA Spoken English & Visa Consultancy" 
               className="h-10 sm:h-12 w-auto object-contain"
+              onError={(e) => handleImgError(e, '/favicon.png')}
             />
           </a>
 
@@ -75,17 +92,17 @@ export default function ConnectLanding() {
               <Phone className="w-3.5 h-3.5 text-[#F97316]" />
               <span>98241 52731</span>
             </a>
-            <a 
-              href="/inquiry" 
-              className="text-xs font-bold bg-[#F97316] text-white px-4 py-2 rounded-full hover:bg-[#EA580C] transition-all shadow-md active:scale-95"
+            <button 
+              onClick={handleOpenCounsellor}
+              className="text-xs font-bold bg-[#F97316] text-white px-4 py-2 rounded-full hover:bg-[#EA580C] transition-all shadow-md active:scale-95 cursor-pointer"
             >
-              Book Free Counselling
-            </a>
+              Speak to Our Counsellor
+            </button>
           </div>
         </div>
       </header>
 
-      {/* HERO SECTION - ELEGANT & REFINED LUXURY STYLE */}
+      {/* HERO SECTION - ELEGANT LUXURY BRAND STYLE */}
       <section className="relative bg-[#0A2342] text-white pt-10 pb-16 px-4 overflow-hidden">
         {/* Subtle background glow */}
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-4xl h-72 bg-[#F97316]/10 blur-[120px] pointer-events-none rounded-full" />
@@ -123,7 +140,7 @@ export default function ConnectLanding() {
             Expert Study Abroad Counselling, IELTS Coaching, University Admissions and Visa Guidance — all in one place.
           </motion.p>
 
-          {/* Unified, Elegant Hero Buttons */}
+          {/* Unified Hero Buttons */}
           <motion.div 
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -138,13 +155,13 @@ export default function ConnectLanding() {
               <span>Study Abroad</span>
             </a>
 
-            <a 
-              href="/inquiry" 
-              className="flex items-center justify-center gap-2 py-3.5 px-4 rounded-[16px] bg-[#F97316] hover:bg-[#EA580C] text-white font-bold text-xs sm:text-sm transition-all hover:scale-[1.02] active:scale-95 shadow-lg shadow-[#F97316]/25"
+            <button 
+              onClick={handleOpenCounsellor}
+              className="flex items-center justify-center gap-2 py-3.5 px-4 rounded-[16px] bg-[#F97316] hover:bg-[#EA580C] text-white font-bold text-xs sm:text-sm transition-all hover:scale-[1.02] active:scale-95 shadow-lg shadow-[#F97316]/25 cursor-pointer"
             >
               <Calendar className="w-4 h-4" />
-              <span>Book Counselling</span>
-            </a>
+              <span>Speak to Counsellor</span>
+            </button>
 
             <a 
               href={whatsappUrl}
@@ -195,7 +212,7 @@ export default function ConnectLanding() {
         </div>
       </section>
 
-      {/* DESTINATIONS SECTION WITH REAL LANDMARK IMAGES */}
+      {/* DESTINATIONS SECTION WITH LOCAL / HIGH-RELIABILITY LANDMARK IMAGES */}
       <section id="countries" className="max-w-4xl mx-auto px-4 mt-14 scroll-mt-20">
         <div className="text-center mb-8">
           <span className="text-xs font-bold tracking-widest text-[#F97316] uppercase bg-[#F97316]/10 px-3 py-1 rounded-full">
@@ -214,7 +231,7 @@ export default function ConnectLanding() {
             {
               flag: '🇬🇧',
               name: 'United Kingdom',
-              image: 'https://images.unsplash.com/photo-1513635269975-59663e0ac1ad?auto=format&fit=crop&w=800&q=80',
+              image: '/images/destinations_hero.webp',
               desc: 'Top Russell Group unis & 2-year Graduate Work Route.',
               badge: 'Fast Track Offer',
               link: '/study-abroad/uk'
@@ -222,7 +239,7 @@ export default function ConnectLanding() {
             {
               flag: '🇦🇺',
               name: 'Australia',
-              image: 'https://images.unsplash.com/photo-1523482580672-f109ba8cb9be?auto=format&fit=crop&w=800&q=80',
+              image: '/images/student_abroad_new.webp',
               desc: 'High PR potential, top quality of life & work rights.',
               badge: 'Popular for PR',
               link: '/study-abroad/australia'
@@ -230,7 +247,7 @@ export default function ConnectLanding() {
             {
               flag: '🇨🇦',
               name: 'Canada',
-              image: 'https://images.unsplash.com/photo-1517935706615-2717063c2225?auto=format&fit=crop&w=800&q=80',
+              image: '/images/universities_hero.webp',
               desc: 'Express Entry PR pathways & up to 3 yrs PGWP.',
               badge: 'PGWP Available',
               link: '/study-abroad/canada'
@@ -238,7 +255,7 @@ export default function ConnectLanding() {
             {
               flag: '🇺🇸',
               name: 'United States',
-              image: 'https://images.unsplash.com/photo-1485738422979-f5c462d49f74?auto=format&fit=crop&w=800&q=80',
+              image: '/images/global_new.webp',
               desc: 'Ivy League excellence & 3-year STEM OPT extension.',
               badge: 'STEM OPT 3Yrs',
               link: '/study-abroad/usa'
@@ -246,7 +263,7 @@ export default function ConnectLanding() {
             {
               flag: '🇳🇿',
               name: 'New Zealand',
-              image: 'https://images.unsplash.com/photo-1507699622108-4be3abd695ad?auto=format&fit=crop&w=800&q=80',
+              image: '/images/pathways_new.webp',
               desc: 'Safe, welcoming environment & post-study work rights.',
               badge: 'Safe & Green',
               link: '/study-abroad/new-zealand'
@@ -254,7 +271,7 @@ export default function ConnectLanding() {
             {
               flag: '🇮🇪',
               name: 'Ireland',
-              image: 'https://images.unsplash.com/photo-1590089415225-401ed6f9db8e?auto=format&fit=crop&w=800&q=80',
+              image: '/images/consultation.webp',
               desc: 'European Tech Hub with 2-year stay back option.',
               badge: 'Tech Hub',
               link: '/study-abroad/ireland'
@@ -262,7 +279,7 @@ export default function ConnectLanding() {
             {
               flag: '🇩🇪',
               name: 'Germany',
-              image: 'https://images.unsplash.com/photo-1560969184-10fe8719e047?auto=format&fit=crop&w=800&q=80',
+              image: '/images/services_hero.webp',
               desc: 'Tuition-free public universities & strong engineering job market.',
               badge: 'Free Tuition',
               link: '/study-abroad/germany'
@@ -270,7 +287,7 @@ export default function ConnectLanding() {
             {
               flag: '🇫🇷',
               name: 'Europe (Schengen)',
-              image: 'https://images.unsplash.com/photo-1502602898657-3e91760cbb34?auto=format&fit=crop&w=800&q=80',
+              image: '/images/office_photo.jpg',
               desc: 'France, Italy, Poland & Spain study opportunities.',
               badge: 'Schengen Access',
               link: '/study-abroad/europe'
@@ -288,9 +305,11 @@ export default function ConnectLanding() {
                 <div className="relative h-40 overflow-hidden bg-slate-100">
                   <img 
                     src={c.image} 
-                    alt={`${c.name} Landmark`}
+                    alt={`${c.name} Destination`}
                     className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" 
                     loading="lazy"
+                    referrerPolicy="no-referrer"
+                    onError={(e) => handleImgError(e, '/images/destinations_hero.webp')}
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
                   <span className="absolute top-2.5 left-2.5 bg-white/95 backdrop-blur-md text-[#0A2342] text-[11px] font-bold px-2.5 py-1 rounded-full shadow-sm flex items-center gap-1.5">
@@ -371,13 +390,13 @@ export default function ConnectLanding() {
                 </div>
               </div>
 
-              <a
-                href="/inquiry"
-                className="mt-4 w-full bg-[#F97316] hover:bg-[#EA580C] text-white text-xs font-bold py-2.5 px-4 rounded-xl transition-all shadow-md flex items-center justify-center gap-1.5"
+              <button
+                onClick={handleOpenCounsellor}
+                className="mt-4 w-full bg-[#F97316] hover:bg-[#EA580C] text-white text-xs font-bold py-2.5 px-4 rounded-xl transition-all shadow-md flex items-center justify-center gap-1.5 cursor-pointer"
               >
                 <span>Book VIP Seat</span>
                 <ArrowRight className="w-3.5 h-3.5" />
-              </a>
+              </button>
             </div>
           </div>
         </div>
@@ -464,6 +483,7 @@ export default function ConnectLanding() {
                 src="/images/Tesca_logo.png" 
                 alt="TESCA Consultancy" 
                 className="h-10 w-auto mb-3 object-contain"
+                onError={(e) => handleImgError(e, '/favicon.png')}
               />
               <p className="text-xs text-slate-300 mb-4 leading-relaxed">
                 Since 2005 • Your Dreams, Our Guidance. Visit our main office in Surat for free in-person counselling.
@@ -507,15 +527,15 @@ export default function ConnectLanding() {
 
             {/* Direct Booking Action Box */}
             <div className="bg-white/10 rounded-[20px] p-5 border border-white/10 backdrop-blur-md text-center">
-              <h4 className="font-bold text-sm text-white mb-2">Book Free Counselling</h4>
+              <h4 className="font-bold text-sm text-white mb-2">Speak to Our Counsellor</h4>
               <p className="text-xs text-slate-300 mb-4">Connect with senior visa officers & advisors.</p>
-              <a
-                href="/inquiry"
-                className="w-full inline-flex items-center justify-center gap-2 bg-[#F97316] text-white text-xs font-bold py-3 px-4 rounded-xl hover:bg-[#EA580C] transition-colors shadow-md mb-2"
+              <button
+                onClick={handleOpenCounsellor}
+                className="w-full inline-flex items-center justify-center gap-2 bg-[#F97316] text-white text-xs font-bold py-3 px-4 rounded-xl hover:bg-[#EA580C] transition-colors shadow-md mb-2 cursor-pointer"
               >
-                <span>Fill Online Inquiry Form</span>
+                <span>Speak to Our Counsellor</span>
                 <ArrowRight className="w-3.5 h-3.5" />
-              </a>
+              </button>
               <a
                 href="https://maps.google.com/?q=TESCA+Surat"
                 target="_blank"
@@ -579,13 +599,13 @@ export default function ConnectLanding() {
             <span>WhatsApp</span>
           </a>
 
-          <a
-            href="/inquiry"
-            className="flex flex-col items-center gap-0.5 text-[10px] font-bold text-[#F97316] hover:text-orange-400 transition-colors"
+          <button
+            onClick={handleOpenCounsellor}
+            className="flex flex-col items-center gap-0.5 text-[10px] font-bold text-[#F97316] hover:text-orange-400 transition-colors cursor-pointer border-none bg-transparent"
           >
             <span className="text-base">📅</span>
             <span>Book</span>
-          </a>
+          </button>
 
           <a
             href="tel:+919824152731"
