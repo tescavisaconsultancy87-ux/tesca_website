@@ -97,9 +97,10 @@ export const POST: APIRoute = async ({ request, locals }) => {
 
       const checkQuery = supabase
         .from('leads')
-        .select('id, status')
+        .select('id, status, created_at')
         .eq('lead_type', 'popup')
-        .neq('status', 'completed');
+        .neq('status', 'completed')
+        .order('created_at', { ascending: false });
 
       if (cleanEmail && last10Digits) {
         checkQuery.or(`phone.eq."${cleanPhone}",email.eq."${cleanEmail}",phone.ilike."%${last10Digits}"`);
@@ -115,17 +116,28 @@ export const POST: APIRoute = async ({ request, locals }) => {
       if (checkError) {
         console.error("[popup-lead] Error checking for existing leads:", checkError);
       } else if (existingLeads && existingLeads.length > 0) {
-        hasExisting = true;
-      }
-    }
+        const latest = existingLeads[0];
+        const createdAtMs = new Date(latest.created_at || Date.now()).getTime();
+        const isRecent = (Date.now() - createdAtMs) < 60000;
 
-    if (hasExisting) {
-      return new Response(JSON.stringify({ 
-        error: "Our team already has an active request for this contact. We will reach out to you shortly!" 
-      }), {
-        status: 409,
-        headers: { "Content-Type": "application/json" }
-      });
+        if (isRecent) {
+          return new Response(JSON.stringify({ 
+            success: true,
+            leadId: latest.id,
+            message: "Your inquiry has already been received!"
+          }), {
+            status: 200,
+            headers: { "Content-Type": "application/json" }
+          });
+        }
+
+        return new Response(JSON.stringify({ 
+          error: "Our team already has an active request for this contact. We will reach out to you shortly!" 
+        }), {
+          status: 409,
+          headers: { "Content-Type": "application/json" }
+        });
+      }
     }
 
     // 4. Save to Supabase leads table
@@ -174,9 +186,9 @@ export const POST: APIRoute = async ({ request, locals }) => {
 
     if (googleSheetUrl) {
       const params = new URLSearchParams({
-        "Full Name": cleanName,
+        "Full Name": cleanName || "",
         "Email": cleanEmail || "Not provided",
-        "Mobile Number": cleanPhone,
+        "Mobile Number": cleanPhone || "",
         "Comments": `Captured directly from popup: "${cleanPopupTitle}"`,
         "Lead Source": `Popup: ${cleanPopupTitle}`,
       });

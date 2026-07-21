@@ -289,8 +289,9 @@ export const POST: APIRoute = async ({ request, locals }) => {
 
     const checkQuery = supabase
       .from('leads')
-      .select('id, status, phone, email')
-      .neq('status', 'completed');
+      .select('id, status, phone, email, details, created_at')
+      .neq('status', 'completed')
+      .order('created_at', { ascending: false });
 
     if (cleanEmail && last10Digits) {
       checkQuery.or(`phone.eq."${cleanPhone}",email.eq."${cleanEmail}",phone.ilike."%${last10Digits}"`);
@@ -310,6 +311,38 @@ export const POST: APIRoute = async ({ request, locals }) => {
     }
 
     if (existingLeads && existingLeads.length > 0) {
+      const latest = existingLeads[0];
+      const createdAtMs = new Date(latest.created_at || Date.now()).getTime();
+      const isRecent = (Date.now() - createdAtMs) < 60000;
+
+      if (isRecent) {
+        let bookingToken = "";
+        try {
+          const det = typeof latest.details === 'string' ? JSON.parse(latest.details) : (latest.details || {});
+          bookingToken = det.bookingToken || "";
+        } catch (e) {}
+
+        if (!bookingToken) {
+          bookingToken = createBookingToken();
+          const bookingTokenHash = await sha256Hex(bookingToken);
+          const updatedDetails = JSON.stringify({
+            ...(typeof latest.details === 'string' ? JSON.parse(latest.details || '{}') : latest.details || {}),
+            bookingTokenHash
+          });
+          await supabase.from('leads').update({ details: updatedDetails }).eq('id', latest.id);
+        }
+
+        return new Response(JSON.stringify({ 
+          success: true,
+          leadId: latest.id,
+          bookingToken,
+          message: "An active session already exists for this profile."
+        }), {
+          status: 200,
+          headers: { "Content-Type": "application/json" }
+        });
+      }
+
       return new Response(JSON.stringify({ 
         error: "An active counselling booking or inquiry already exists for this email or phone number. Our team is already reviewing your profile and will contact you shortly." 
       }), {

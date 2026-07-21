@@ -1,0 +1,11 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import ConnectLanding from '../../components/ConnectLanding';
+
+const title = "Connect with TESCA | Spoken English & Visa Consultancy Surat";
+const description = "Scan and Connect with TESCA Spoken English & Visa Consultancy Surat. Book free study abroad counselling, IELTS/PTE coaching, UK/Canada/Australia visa guidance since 2005.";
+---
+
+<Layout title={title} description={description}>
+  <ConnectLanding client:load />
+</Layout>

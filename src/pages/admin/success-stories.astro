@@ -413,7 +413,7 @@ try {
       const htmlText = await res.text();
       const parser = new DOMParser();
       const doc = parser.parseFromString(htmlText, "text/html");
-      const errorBanner = doc.querySelector(".bg-rose-50");
+      const errorBanner = doc.querySelector(".admin-alert-banner.bg-rose-50");
       if (errorBanner) {
         alert("Error: " + errorBanner.textContent.trim());
         return false;

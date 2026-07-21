@@ -37,3 +37,6 @@ preview.*.log
 # graphify
 graphify-out/
 graph.html
+
+# temporary files
+tmp/

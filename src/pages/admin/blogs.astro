@@ -478,7 +478,7 @@ try {
       const htmlText = await res.text();
       const parser = new DOMParser();
       const doc = parser.parseFromString(htmlText, "text/html");
-      const errorBanner = doc.querySelector(".bg-rose-50");
+      const errorBanner = doc.querySelector(".admin-alert-banner.bg-rose-50");
       if (errorBanner) {
         alert("Error: " + errorBanner.textContent?.trim());
         return false;
@@ -658,7 +658,14 @@ try {
     // Load existing FAQ data
     if (faqHidden?.value) {
       try {
-        faqEntries = JSON.parse(faqHidden.value);
+        let parsed = JSON.parse(faqHidden.value);
+        if (typeof parsed === 'string') parsed = JSON.parse(parsed);
+        if (Array.isArray(parsed)) {
+          faqEntries = parsed.map((item: any) => ({
+            q: (item?.q || item?.question || item?.Question || item?.Q || '').toString(),
+            a: (item?.a || item?.answer || item?.Answer || item?.A || '').toString()
+          }));
+        }
       } catch { faqEntries = []; }
     }
 

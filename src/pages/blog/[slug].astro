@@ -7,6 +7,32 @@ import { supabase } from "../../utils/supabase";
 
 const { slug } = Astro.params;
 
+const normalizeFaq = (faqRaw: any): { q: string; a: string }[] => {
+  if (!faqRaw) return [];
+  let parsed = faqRaw;
+  if (typeof parsed === 'string') {
+    try {
+      parsed = JSON.parse(parsed);
+    } catch {
+      return [];
+    }
+  }
+  if (!Array.isArray(parsed)) return [];
+  return parsed.map((item: any) => {
+    if (typeof item === 'string') {
+      try {
+        item = JSON.parse(item);
+      } catch {
+        return { q: item, a: '' };
+      }
+    }
+    if (!item || typeof item !== 'object') return { q: '', a: '' };
+    const q = item.q || item.question || item.Question || item.Q || item.title || '';
+    const a = item.a || item.answer || item.Answer || item.A || item.content || '';
+    return { q, a };
+  }).filter(item => item.q || item.a);
+};
+
 // Try to fetch from Supabase first, then fall back to static data
 let post: BlogPost | null = null;
 
@@ -28,7 +54,7 @@ try {
       tagBg: data.tag_bg,
       link: `/blog/${data.slug}`,
       content: data.content,
-      faq: data.faq || [],
+      faq: normalizeFaq(data.faq),
     };
   }
 } catch (err) {
@@ -39,7 +65,10 @@ try {
 if (!post) {
   const staticPost = staticBlogPosts.find(p => p.slug === slug);
   if (staticPost) {
-    post = staticPost;
+    post = {
+      ...staticPost,
+      faq: normalizeFaq(staticPost.faq),
+    };
   }
 }
 

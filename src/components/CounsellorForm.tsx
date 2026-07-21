@@ -274,7 +274,7 @@ export default function CounsellorForm() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!validate()) return;
+    if (status === "sending" || !validate()) return;
     setStatus("sending");
 
     try {

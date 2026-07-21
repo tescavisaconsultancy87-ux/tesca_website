@@ -497,6 +497,23 @@ try {
 </Layout>
 
 <script>
+  async function handleResponse(res: Response, successMsg: string) {
+    if (res.ok) {
+      if ((window as any).showToast) {
+        (window as any).showToast(successMsg, "success");
+      }
+      setTimeout(() => {
+        window.location.href = window.location.pathname;
+      }, 400);
+    } else {
+      if ((window as any).showToast) {
+        (window as any).showToast("Failed to process request.", "error");
+      } else {
+        alert("Failed to process request.");
+      }
+    }
+  }
+
   function setupPopupAdmin() {
     const is_active_toggle = document.getElementById("is_active_toggle") as HTMLInputElement;
     const is_active_value = document.getElementById("is_active_value") as HTMLInputElement;
