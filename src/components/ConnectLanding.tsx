@@ -63,12 +63,6 @@ export default function ConnectLanding() {
     }
   };
 
-  // Image fallback handler
-  const handleImgError = (e: React.SyntheticEvent<HTMLImageElement, Event>, fallbackSrc: string) => {
-    e.currentTarget.onerror = null; // Prevent infinite loop
-    e.currentTarget.src = fallbackSrc;
-  };
-
   return (
     <div className="min-h-screen bg-[#F8FAFC] text-[#1E293B] font-sans antialiased selection:bg-[#F97316] selection:text-white pb-24 md:pb-12">
       
@@ -80,7 +74,6 @@ export default function ConnectLanding() {
               src="/images/Tesca_logo.png" 
               alt="TESCA Spoken English & Visa Consultancy" 
               className="h-10 sm:h-12 w-auto object-contain"
-              onError={(e) => handleImgError(e, '/favicon.png')}
             />
           </a>
 
@@ -212,7 +205,7 @@ export default function ConnectLanding() {
         </div>
       </section>
 
-      {/* DESTINATIONS SECTION WITH LOCAL / HIGH-RELIABILITY LANDMARK IMAGES */}
+      {/* DESTINATIONS SECTION WITH LOCAL GUARANTEED LANDMARK PHOTOS */}
       <section id="countries" className="max-w-4xl mx-auto px-4 mt-14 scroll-mt-20">
         <div className="text-center mb-8">
           <span className="text-xs font-bold tracking-widest text-[#F97316] uppercase bg-[#F97316]/10 px-3 py-1 rounded-full">
@@ -231,7 +224,8 @@ export default function ConnectLanding() {
             {
               flag: '🇬🇧',
               name: 'United Kingdom',
-              image: '/images/destinations_hero.webp',
+              landmark: 'Big Ben & Tower Bridge',
+              image: '/images/landmarks/uk.jpg',
               desc: 'Top Russell Group unis & 2-year Graduate Work Route.',
               badge: 'Fast Track Offer',
               link: '/study-abroad/uk'
@@ -239,7 +233,8 @@ export default function ConnectLanding() {
             {
               flag: '🇦🇺',
               name: 'Australia',
-              image: '/images/student_abroad_new.webp',
+              landmark: 'Sydney Opera House',
+              image: '/images/landmarks/australia.jpg',
               desc: 'High PR potential, top quality of life & work rights.',
               badge: 'Popular for PR',
               link: '/study-abroad/australia'
@@ -247,7 +242,8 @@ export default function ConnectLanding() {
             {
               flag: '🇨🇦',
               name: 'Canada',
-              image: '/images/universities_hero.webp',
+              landmark: 'CN Tower & Skyline',
+              image: '/images/landmarks/canada.jpg',
               desc: 'Express Entry PR pathways & up to 3 yrs PGWP.',
               badge: 'PGWP Available',
               link: '/study-abroad/canada'
@@ -255,7 +251,8 @@ export default function ConnectLanding() {
             {
               flag: '🇺🇸',
               name: 'United States',
-              image: '/images/global_new.webp',
+              landmark: 'Statue of Liberty & NYC',
+              image: '/images/landmarks/usa.jpg',
               desc: 'Ivy League excellence & 3-year STEM OPT extension.',
               badge: 'STEM OPT 3Yrs',
               link: '/study-abroad/usa'
@@ -263,7 +260,8 @@ export default function ConnectLanding() {
             {
               flag: '🇳🇿',
               name: 'New Zealand',
-              image: '/images/pathways_new.webp',
+              landmark: 'Auckland Sky Tower',
+              image: '/images/landmarks/new-zealand.jpg',
               desc: 'Safe, welcoming environment & post-study work rights.',
               badge: 'Safe & Green',
               link: '/study-abroad/new-zealand'
@@ -271,7 +269,8 @@ export default function ConnectLanding() {
             {
               flag: '🇮🇪',
               name: 'Ireland',
-              image: '/images/consultation.webp',
+              landmark: 'Dublin Ha\'penny Bridge',
+              image: '/images/landmarks/ireland.jpg',
               desc: 'European Tech Hub with 2-year stay back option.',
               badge: 'Tech Hub',
               link: '/study-abroad/ireland'
@@ -279,7 +278,8 @@ export default function ConnectLanding() {
             {
               flag: '🇩🇪',
               name: 'Germany',
-              image: '/images/services_hero.webp',
+              landmark: 'Brandenburg Gate',
+              image: '/images/landmarks/germany.jpg',
               desc: 'Tuition-free public universities & strong engineering job market.',
               badge: 'Free Tuition',
               link: '/study-abroad/germany'
@@ -287,7 +287,8 @@ export default function ConnectLanding() {
             {
               flag: '🇫🇷',
               name: 'Europe (Schengen)',
-              image: '/images/office_photo.jpg',
+              landmark: 'Eiffel Tower Paris',
+              image: '/images/landmarks/europe.jpg',
               desc: 'France, Italy, Poland & Spain study opportunities.',
               badge: 'Schengen Access',
               link: '/study-abroad/europe'
@@ -302,19 +303,23 @@ export default function ConnectLanding() {
               className="bg-white rounded-[20px] overflow-hidden border border-slate-200/80 shadow-sm hover:shadow-md transition-all flex flex-col justify-between group"
             >
               <div>
-                <div className="relative h-40 overflow-hidden bg-slate-100">
+                <div className="relative h-44 overflow-hidden bg-slate-100">
                   <img 
                     src={c.image} 
-                    alt={`${c.name} Destination`}
+                    alt={`${c.name} Landmark - ${c.landmark}`}
                     className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" 
                     loading="lazy"
-                    referrerPolicy="no-referrer"
-                    onError={(e) => handleImgError(e, '/images/destinations_hero.webp')}
                   />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/20 to-transparent" />
+                  
                   <span className="absolute top-2.5 left-2.5 bg-white/95 backdrop-blur-md text-[#0A2342] text-[11px] font-bold px-2.5 py-1 rounded-full shadow-sm flex items-center gap-1.5">
                     <span className="text-sm">{c.flag}</span> {c.name}
                   </span>
+
+                  <span className="absolute bottom-2.5 left-2.5 text-white/90 text-[10px] font-medium drop-shadow-md">
+                    📍 {c.landmark}
+                  </span>
+
                   <span className="absolute bottom-2.5 right-2.5 bg-[#F97316] text-white text-[10px] font-bold px-2 py-0.5 rounded-md shadow-sm">
                     {c.badge}
                   </span>
@@ -340,15 +345,25 @@ export default function ConnectLanding() {
         </div>
       </section>
 
-      {/* UPCOMING ADMISSIONS EVENT */}
+      {/* UPCOMING ADMISSIONS EVENT & UPDATES */}
       <section className="max-w-4xl mx-auto px-4 mt-14">
         <div className="bg-white rounded-[24px] border border-slate-200/80 p-6 sm:p-8 shadow-sm relative overflow-hidden">
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
             <div>
-              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-rose-50 border border-rose-200 text-rose-600 text-xs font-bold mb-3">
-                <span className="w-2 h-2 rounded-full bg-rose-500 animate-ping" />
-                Upcoming Admission Event
+              <div className="flex items-center gap-2 mb-3">
+                <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-rose-50 border border-rose-200 text-rose-600 text-xs font-bold">
+                  <span className="w-2 h-2 rounded-full bg-rose-500 animate-ping" />
+                  Upcoming Admission Event
+                </span>
+                <a 
+                  href="/updates" 
+                  className="text-xs font-bold text-[#0A2342] hover:text-[#F97316] underline flex items-center gap-1"
+                >
+                  <span>View All Updates</span>
+                  <ExternalLink className="w-3 h-3" />
+                </a>
               </div>
+
               <h2 className="text-2xl font-extrabold text-[#0A2342] tracking-tight">
                 🇬🇧 UK Admission Mega Fair 2026
               </h2>
@@ -483,7 +498,6 @@ export default function ConnectLanding() {
                 src="/images/Tesca_logo.png" 
                 alt="TESCA Consultancy" 
                 className="h-10 w-auto mb-3 object-contain"
-                onError={(e) => handleImgError(e, '/favicon.png')}
               />
               <p className="text-xs text-slate-300 mb-4 leading-relaxed">
                 Since 2005 • Your Dreams, Our Guidance. Visit our main office in Surat for free in-person counselling.
