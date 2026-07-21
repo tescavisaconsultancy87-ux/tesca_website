@@ -9,177 +9,256 @@ import AICounsellor from "../components/AICounsellor";
   description="Generate a natural, genuine Google review for visa and study abroad consultancy services instantly."
   showNavFooter={false}
 >
-  <section class="max-w-3xl mx-auto px-4 sm:px-6 pt-2 pb-10 sm:pt-4 sm:pb-16">
-    
-    <div class="bg-white border border-slate-200 rounded-[2rem] p-5 sm:p-6 lg:p-8 shadow-xl relative text-left w-full max-h-[85vh] overflow-y-auto">
-      <div class="space-y-4 sm:space-y-5">
-        
-        <div class="space-y-2">
-          <span class="block text-xs font-bold text-slate-700 uppercase tracking-wider">
-            Target Country (Optional)
-          </span>
-          <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3" id="country-grid">
-            <button
-              type="button"
-              data-value=""
-              class="country-pill flex items-center justify-center gap-2 px-4 py-3 rounded-xl border text-xs font-bold transition-all hover:bg-slate-50 active:scale-95 cursor-pointer bg-indigo-50 border-indigo-500 text-indigo-700"
-            >
-              🌍 All Countries
-            </button>
-            <button
-              type="button"
-              data-value="USA"
-              data-code="us"
-              class="country-pill flex items-center gap-2 px-4 py-3 rounded-xl border text-xs font-bold transition-all hover:bg-slate-50 active:scale-95 cursor-pointer bg-white border-slate-200 text-slate-700"
-            >
-              <img src="https://flagcdn.com/w20/us.png" alt="USA flag" class="w-5 h-3.5 object-cover rounded-xs shadow-xs" />
-              USA
-            </button>
-            <button
-              type="button"
-              data-value="United Kingdom"
-              data-code="gb"
-              class="country-pill flex items-center gap-2 px-4 py-3 rounded-xl border text-xs font-bold transition-all hover:bg-slate-50 active:scale-95 cursor-pointer bg-white border-slate-200 text-slate-700"
-            >
-              <img src="https://flagcdn.com/w20/gb.png" alt="UK flag" class="w-5 h-3.5 object-cover rounded-xs shadow-xs" />
-              UK
-            </button>
-            <button
-              type="button"
-              data-value="Canada"
-              data-code="ca"
-              class="country-pill flex items-center gap-2 px-4 py-3 rounded-xl border text-xs font-bold transition-all hover:bg-slate-50 active:scale-95 cursor-pointer bg-white border-slate-200 text-slate-700"
-            >
-              <img src="https://flagcdn.com/w20/ca.png" alt="Canada flag" class="w-5 h-3.5 object-cover rounded-xs shadow-xs" />
-              Canada
-            </button>
-            <button
-              type="button"
-              data-value="Australia"
-              data-code="au"
-              class="country-pill flex items-center gap-2 px-4 py-3 rounded-xl border text-xs font-bold transition-all hover:bg-slate-50 active:scale-95 cursor-pointer bg-white border-slate-200 text-slate-700"
-            >
-              <img src="https://flagcdn.com/w20/au.png" alt="Australia flag" class="w-5 h-3.5 object-cover rounded-xs shadow-xs" />
-              Australia
-            </button>
-            <button
-              type="button"
-              data-value="Germany"
-              data-code="de"
-              class="country-pill flex items-center gap-2 px-4 py-3 rounded-xl border text-xs font-bold transition-all hover:bg-slate-50 active:scale-95 cursor-pointer bg-white border-slate-200 text-slate-700"
-            >
-              <img src="https://flagcdn.com/w20/de.png" alt="Germany flag" class="w-5 h-3.5 object-cover rounded-xs shadow-xs" />
-              Germany
-            </button>
-            <button
-              type="button"
-              data-value="Ireland"
-              data-code="ie"
-              class="country-pill flex items-center gap-2 px-4 py-3 rounded-xl border text-xs font-bold transition-all hover:bg-slate-50 active:scale-95 cursor-pointer bg-white border-slate-200 text-slate-700"
-            >
-              <img src="https://flagcdn.com/w20/ie.png" alt="Ireland flag" class="w-5 h-3.5 object-cover rounded-xs shadow-xs" />
-              Ireland
-            </button>
-            <button
-              type="button"
-              data-value="New Zealand"
-              data-code="nz"
-              class="country-pill flex items-center gap-2 px-4 py-3 rounded-xl border text-xs font-bold transition-all hover:bg-slate-50 active:scale-95 cursor-pointer bg-white border-slate-200 text-slate-700"
-            >
-              <img src="https://flagcdn.com/w20/nz.png" alt="New Zealand flag" class="w-5 h-3.5 object-cover rounded-xs shadow-xs" />
-              New Zealand
-            </button>
-            <button
-              type="button"
-              data-value="Dubai"
-              data-code="ae"
-              class="country-pill flex items-center gap-2 px-4 py-3 rounded-xl border text-xs font-bold transition-all hover:bg-slate-50 active:scale-95 cursor-pointer bg-white border-slate-200 text-slate-700"
-            >
-              <img src="https://flagcdn.com/w20/ae.png" alt="Dubai flag" class="w-5 h-3.5 object-cover rounded-xs shadow-xs" />
-              Dubai
-            </button>
-            <button
-              type="button"
-              data-value="Singapore"
-              data-code="sg"
-              class="country-pill flex items-center gap-2 px-4 py-3 rounded-xl border text-xs font-bold transition-all hover:bg-slate-50 active:scale-95 cursor-pointer bg-white border-slate-200 text-slate-700"
-            >
-              <img src="https://flagcdn.com/w20/sg.png" alt="Singapore flag" class="w-5 h-3.5 object-cover rounded-xs shadow-xs" />
-              Singapore
-            </button>
-          </div>
+  <main class="min-h-screen bg-slate-50/70 py-4 sm:py-8 px-3.5 sm:px-6 flex flex-col items-center justify-center select-none md:select-auto">
+    <div class="w-full max-w-2xl mx-auto space-y-4 sm:space-y-6">
+      
+      <!-- Top Brand & Trust Header -->
+      <div class="bg-white border border-slate-200/80 rounded-2xl sm:rounded-3xl p-3.5 sm:p-5 shadow-sm flex items-center justify-between gap-3">
+        <a href="/" class="flex items-center gap-2.5 shrink-0 hover:opacity-90 transition-opacity">
+          <img src="/images/Tesca_logo.png" alt="TESCA Visa Consultancy" class="h-7 sm:h-9 w-auto object-contain" />
+        </a>
+        <div class="flex items-center gap-1.5 bg-amber-50 border border-amber-200/70 px-3 py-1.5 rounded-full text-amber-800 text-xs font-bold font-sans shadow-2xs">
+          <span class="text-amber-500 text-xs sm:text-sm">★★★★★</span>
+          <span class="hidden xs:inline">5.0 Google Review</span>
+          <span class="xs:hidden">5.0</span>
         </div>
-
-        <div class="space-y-2">
-          <span class="block text-xs font-bold text-slate-700 uppercase tracking-wider">
-            Visa Type (Optional)
-          </span>
-          <div class="grid grid-cols-2 sm:grid-cols-4 gap-3" id="visa-grid">
-            <button
-              type="button"
-              data-value=""
-              class="visa-pill flex items-center justify-center gap-2 px-4 py-3 rounded-xl border text-xs font-bold transition-all hover:bg-slate-50 active:scale-95 cursor-pointer bg-indigo-50 border-indigo-500 text-indigo-700"
-            >
-              🌐 All Visas
-            </button>
-            <button
-              type="button"
-              data-value="Student Visa"
-              class="visa-pill flex items-center justify-center gap-2 px-4 py-3 rounded-xl border text-xs font-bold transition-all hover:bg-slate-50 active:scale-95 cursor-pointer bg-white border-slate-200 text-slate-700"
-            >
-              🎓 Student Visa
-            </button>
-            <button
-              type="button"
-              data-value="Visitor / Tourist Visa"
-              class="visa-pill flex items-center justify-center gap-2 px-4 py-3 rounded-xl border text-xs font-bold transition-all hover:bg-slate-50 active:scale-95 cursor-pointer bg-white border-slate-200 text-slate-700"
-            >
-              ✈️ Tourist Visa
-            </button>
-            <button
-              type="button"
-              data-value="Dependent Visa"
-              class="visa-pill flex items-center justify-center gap-2 px-4 py-3 rounded-xl border text-xs font-bold transition-all hover:bg-slate-50 active:scale-95 cursor-pointer bg-white border-slate-200 text-slate-700"
-            >
-              👨‍👩‍👧‍👦 Dependent Visa
-            </button>
-          </div>
-        </div>
-
-        <div class="space-y-2 pt-4 border-t border-slate-100">
-          <label for="review-output-textarea" class="block text-xs font-bold text-slate-700 uppercase tracking-wider">
-            Your Generated Review (~30 words)
-          </label>
-          <textarea
-            id="review-output-textarea"
-            rows="3"
-            readonly
-            class="w-full bg-slate-50 border border-slate-200 rounded-2xl px-4 py-3 text-sm text-slate-700 leading-relaxed focus:outline-none resize-none font-sans font-medium"
-            placeholder="Generating review..."
-          ></textarea>
-        </div>
-
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <button
-            type="button"
-            id="submit-btn"
-            class="w-full py-3 bg-[#F08A00] hover:bg-[#C06E00] text-white font-bold text-sm rounded-full shadow-md hover:scale-[1.01] transition-all flex items-center justify-center gap-2 cursor-pointer font-sans tracking-wide active:scale-95"
-          >
-            <span>Copy & Go to Google Reviews</span>
-          </button>
-          
-          <button
-            type="button"
-            id="regenerate-btn"
-            class="w-full py-3 bg-[#0A7880] hover:bg-[#075E64] text-white font-bold text-sm rounded-full shadow-md hover:scale-[1.01] transition-all flex items-center justify-center gap-2 cursor-pointer font-sans tracking-wide active:scale-95"
-          >
-            <span>Regenerate Variation</span>
-          </button>
-        </div>
-
       </div>
+
+      <!-- Main Review Generator Card -->
+      <div class="bg-white border border-slate-200 rounded-2xl sm:rounded-[2rem] p-4 sm:p-6 lg:p-8 shadow-xl relative text-left w-full">
+        <div class="space-y-5 sm:space-y-6">
+          
+          <!-- Card Title & Instructions -->
+          <div class="space-y-1">
+            <div class="flex items-center justify-between flex-wrap gap-2">
+              <h1 class="text-lg sm:text-2xl font-extrabold text-slate-900 font-display tracking-tight flex items-center gap-2">
+                <span>Google Review Generator</span>
+              </h1>
+              <span class="text-[10px] sm:text-xs font-extrabold px-2.5 py-0.5 rounded-full bg-indigo-50 text-indigo-700 border border-indigo-200/60 uppercase tracking-wider font-sans">
+                AI Powered
+              </span>
+            </div>
+            <p class="text-xs sm:text-sm text-slate-500 font-sans leading-relaxed">
+              Select options below to generate a natural review. Copy & paste directly on Google Reviews!
+            </p>
+          </div>
+
+          <!-- Target Country Grid -->
+          <div class="space-y-2">
+            <label class="block text-[11px] sm:text-xs font-bold text-slate-700 uppercase tracking-wider font-sans">
+              1. Target Country <span class="text-slate-400 font-normal">(Optional)</span>
+            </label>
+            <div class="grid grid-cols-2 xs:grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-2" id="country-grid">
+              <button
+                type="button"
+                data-value=""
+                class="country-pill flex items-center justify-center gap-1.5 px-3 py-2.5 rounded-xl border text-xs font-semibold transition-all hover:bg-slate-100 active:scale-95 cursor-pointer bg-indigo-600 border-indigo-600 text-white shadow-xs min-h-[42px]"
+              >
+                <span>🌍 All</span>
+              </button>
+              <button
+                type="button"
+                data-value="USA"
+                data-code="us"
+                class="country-pill flex items-center justify-center gap-2 px-3 py-2.5 rounded-xl border text-xs font-semibold transition-all hover:bg-slate-100 active:scale-95 cursor-pointer bg-slate-50/80 border-slate-200 text-slate-700 min-h-[42px]"
+              >
+                <img src="https://flagcdn.com/w20/us.png" alt="USA flag" class="w-4.5 h-3 object-cover rounded-xs shadow-2xs shrink-0" />
+                <span>USA</span>
+              </button>
+              <button
+                type="button"
+                data-value="United Kingdom"
+                data-code="gb"
+                class="country-pill flex items-center justify-center gap-2 px-3 py-2.5 rounded-xl border text-xs font-semibold transition-all hover:bg-slate-100 active:scale-95 cursor-pointer bg-slate-50/80 border-slate-200 text-slate-700 min-h-[42px]"
+              >
+                <img src="https://flagcdn.com/w20/gb.png" alt="UK flag" class="w-4.5 h-3 object-cover rounded-xs shadow-2xs shrink-0" />
+                <span>UK</span>
+              </button>
+              <button
+                type="button"
+                data-value="Canada"
+                data-code="ca"
+                class="country-pill flex items-center justify-center gap-2 px-3 py-2.5 rounded-xl border text-xs font-semibold transition-all hover:bg-slate-100 active:scale-95 cursor-pointer bg-slate-50/80 border-slate-200 text-slate-700 min-h-[42px]"
+              >
+                <img src="https://flagcdn.com/w20/ca.png" alt="Canada flag" class="w-4.5 h-3 object-cover rounded-xs shadow-2xs shrink-0" />
+                <span>Canada</span>
+              </button>
+              <button
+                type="button"
+                data-value="Australia"
+                data-code="au"
+                class="country-pill flex items-center justify-center gap-2 px-3 py-2.5 rounded-xl border text-xs font-semibold transition-all hover:bg-slate-100 active:scale-95 cursor-pointer bg-slate-50/80 border-slate-200 text-slate-700 min-h-[42px]"
+              >
+                <img src="https://flagcdn.com/w20/au.png" alt="Australia flag" class="w-4.5 h-3 object-cover rounded-xs shadow-2xs shrink-0" />
+                <span>Australia</span>
+              </button>
+              <button
+                type="button"
+                data-value="Germany"
+                data-code="de"
+                class="country-pill flex items-center justify-center gap-2 px-3 py-2.5 rounded-xl border text-xs font-semibold transition-all hover:bg-slate-100 active:scale-95 cursor-pointer bg-slate-50/80 border-slate-200 text-slate-700 min-h-[42px]"
+              >
+                <img src="https://flagcdn.com/w20/de.png" alt="Germany flag" class="w-4.5 h-3 object-cover rounded-xs shadow-2xs shrink-0" />
+                <span>Germany</span>
+              </button>
+              <button
+                type="button"
+                data-value="Ireland"
+                data-code="ie"
+                class="country-pill flex items-center justify-center gap-2 px-3 py-2.5 rounded-xl border text-xs font-semibold transition-all hover:bg-slate-100 active:scale-95 cursor-pointer bg-slate-50/80 border-slate-200 text-slate-700 min-h-[42px]"
+              >
+                <img src="https://flagcdn.com/w20/ie.png" alt="Ireland flag" class="w-4.5 h-3 object-cover rounded-xs shadow-2xs shrink-0" />
+                <span>Ireland</span>
+              </button>
+              <button
+                type="button"
+                data-value="New Zealand"
+                data-code="nz"
+                class="country-pill flex items-center justify-center gap-2 px-3 py-2.5 rounded-xl border text-xs font-semibold transition-all hover:bg-slate-100 active:scale-95 cursor-pointer bg-slate-50/80 border-slate-200 text-slate-700 min-h-[42px]"
+              >
+                <img src="https://flagcdn.com/w20/nz.png" alt="New Zealand flag" class="w-4.5 h-3 object-cover rounded-xs shadow-2xs shrink-0" />
+                <span>N. Zealand</span>
+              </button>
+              <button
+                type="button"
+                data-value="Dubai"
+                data-code="ae"
+                class="country-pill flex items-center justify-center gap-2 px-3 py-2.5 rounded-xl border text-xs font-semibold transition-all hover:bg-slate-100 active:scale-95 cursor-pointer bg-slate-50/80 border-slate-200 text-slate-700 min-h-[42px]"
+              >
+                <img src="https://flagcdn.com/w20/ae.png" alt="Dubai flag" class="w-4.5 h-3 object-cover rounded-xs shadow-2xs shrink-0" />
+                <span>Dubai</span>
+              </button>
+              <button
+                type="button"
+                data-value="Singapore"
+                data-code="sg"
+                class="country-pill flex items-center justify-center gap-2 px-3 py-2.5 rounded-xl border text-xs font-semibold transition-all hover:bg-slate-100 active:scale-95 cursor-pointer bg-slate-50/80 border-slate-200 text-slate-700 min-h-[42px]"
+              >
+                <img src="https://flagcdn.com/w20/sg.png" alt="Singapore flag" class="w-4.5 h-3 object-cover rounded-xs shadow-2xs shrink-0" />
+                <span>Singapore</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Visa Type Grid -->
+          <div class="space-y-2">
+            <label class="block text-[11px] sm:text-xs font-bold text-slate-700 uppercase tracking-wider font-sans">
+              2. Visa Type <span class="text-slate-400 font-normal">(Optional)</span>
+            </label>
+            <div class="grid grid-cols-2 sm:grid-cols-4 gap-2" id="visa-grid">
+              <button
+                type="button"
+                data-value=""
+                class="visa-pill flex items-center justify-center gap-1.5 px-3 py-2.5 rounded-xl border text-xs font-semibold transition-all hover:bg-slate-100 active:scale-95 cursor-pointer bg-indigo-600 border-indigo-600 text-white shadow-xs min-h-[42px]"
+              >
+                <span>🌐 All Visas</span>
+              </button>
+              <button
+                type="button"
+                data-value="Student Visa"
+                class="visa-pill flex items-center justify-center gap-1.5 px-3 py-2.5 rounded-xl border text-xs font-semibold transition-all hover:bg-slate-100 active:scale-95 cursor-pointer bg-slate-50/80 border-slate-200 text-slate-700 min-h-[42px]"
+              >
+                <span>🎓 Student</span>
+              </button>
+              <button
+                type="button"
+                data-value="Visitor / Tourist Visa"
+                class="visa-pill flex items-center justify-center gap-1.5 px-3 py-2.5 rounded-xl border text-xs font-semibold transition-all hover:bg-slate-100 active:scale-95 cursor-pointer bg-slate-50/80 border-slate-200 text-slate-700 min-h-[42px]"
+              >
+                <span>✈️ Tourist</span>
+              </button>
+              <button
+                type="button"
+                data-value="Dependent Visa"
+                class="visa-pill flex items-center justify-center gap-1.5 px-3 py-2.5 rounded-xl border text-xs font-semibold transition-all hover:bg-slate-100 active:scale-95 cursor-pointer bg-slate-50/80 border-slate-200 text-slate-700 min-h-[42px]"
+              >
+                <span>👨‍👩‍👧‍👦 Dependent</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Review Output Box -->
+          <div class="space-y-2 pt-3 border-t border-slate-100">
+            <div class="flex items-center justify-between">
+              <label for="review-output-textarea" class="block text-[11px] sm:text-xs font-bold text-slate-700 uppercase tracking-wider font-sans">
+                Generated Review (~30 words)
+              </label>
+              <span id="copy-status-badge" class="text-[11px] font-semibold text-slate-400 font-sans">
+                Ready to copy
+              </span>
+            </div>
+            
+            <div class="relative group">
+              <textarea
+                id="review-output-textarea"
+                rows="4"
+                readonly
+                class="w-full bg-slate-50 border border-slate-200 rounded-2xl p-3.5 sm:p-4 text-base sm:text-sm text-slate-800 leading-relaxed focus:outline-none resize-none font-sans font-medium transition-all shadow-inner select-all"
+                placeholder="Generating your review..."
+              ></textarea>
+              
+              <!-- Quick Copy Button inside Textarea -->
+              <button
+                type="button"
+                id="quick-copy-btn"
+                title="Copy review text"
+                class="absolute top-2.5 right-2.5 p-2 bg-white hover:bg-slate-100 text-slate-600 hover:text-slate-900 border border-slate-200 rounded-xl shadow-xs transition-all cursor-pointer active:scale-95 flex items-center gap-1 text-xs font-bold font-sans"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="14" height="14" x="8" y="8" rx="2" ry="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/></svg>
+                <span id="quick-copy-text" class="hidden xs:inline">Copy</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Action Buttons -->
+          <div class="flex flex-col sm:flex-row gap-3 pt-2">
+            <button
+              type="button"
+              id="submit-btn"
+              class="w-full py-3.5 sm:py-4 px-5 bg-gradient-to-r from-[#F08A00] to-[#E07A00] hover:from-[#E07D00] hover:to-[#C86F00] text-white font-extrabold text-sm sm:text-base rounded-2xl shadow-lg shadow-[#F08A00]/25 transition-all flex items-center justify-center gap-2.5 cursor-pointer font-sans tracking-wide active:scale-[0.98] min-h-[48px]"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="shrink-0"><rect width="14" height="14" x="8" y="8" rx="2" ry="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/></svg>
+              <span>Copy & Go to Google Reviews</span>
+            </button>
+            
+            <button
+              type="button"
+              id="regenerate-btn"
+              class="w-full sm:w-auto py-3.5 sm:py-4 px-5 bg-[#0A7880] hover:bg-[#075E64] text-white font-bold text-sm sm:text-base rounded-2xl shadow-md transition-all flex items-center justify-center gap-2 cursor-pointer font-sans tracking-wide active:scale-[0.98] shrink-0 min-h-[48px]"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="shrink-0"><path d="M21 12a9 9 0 1 1-9-9c2.52 0 4.93 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/></svg>
+              <span>Regenerate</span>
+            </button>
+          </div>
+
+          <!-- Steps Checklist / Instructions -->
+          <div class="mt-4 pt-4 border-t border-slate-100 grid grid-cols-3 gap-2 text-center text-[11px] text-slate-500 font-sans">
+            <div class="flex flex-col items-center">
+              <span class="w-5 h-5 rounded-full bg-slate-100 text-slate-700 font-extrabold flex items-center justify-center text-[10px] mb-1">1</span>
+              <span>Select Options</span>
+            </div>
+            <div class="flex flex-col items-center">
+              <span class="w-5 h-5 rounded-full bg-amber-100 text-amber-800 font-extrabold flex items-center justify-center text-[10px] mb-1">2</span>
+              <span>Copy Review</span>
+            </div>
+            <div class="flex flex-col items-center">
+              <span class="w-5 h-5 rounded-full bg-emerald-100 text-emerald-800 font-extrabold flex items-center justify-center text-[10px] mb-1">3</span>
+              <span>Paste on Google</span>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- Footer Copyright Link -->
+      <div class="text-center">
+        <p class="text-[11px] font-semibold text-slate-400 font-sans">
+          © {new Date().getFullYear()} TESCA Visa Consultancy. ISO 9001:2015 Certified.
+        </p>
+      </div>
+
     </div>
-  </section>
+  </main>
 
   <AICounsellor client:only="react" />
 </Layout>
@@ -191,6 +270,9 @@ import AICounsellor from "../components/AICounsellor";
 
     const submitBtn = document.getElementById("submit-btn") as HTMLButtonElement;
     const regenerateBtn = document.getElementById("regenerate-btn") as HTMLButtonElement;
+    const quickCopyBtn = document.getElementById("quick-copy-btn") as HTMLButtonElement;
+    const quickCopyText = document.getElementById("quick-copy-text") as HTMLSpanElement;
+    const copyStatusBadge = document.getElementById("copy-status-badge") as HTMLSpanElement;
     const reviewOutput = document.getElementById("review-output-textarea") as HTMLTextAreaElement;
 
     const countryPills = document.querySelectorAll(".country-pill");
@@ -222,9 +304,9 @@ import AICounsellor from "../components/AICounsellor";
         (window as any).showBtnLoader(loadingBtn, "Generating...");
       } else {
         loadingBtn.disabled = true;
-        loadingBtn.textContent = "Generating...";
       }
       reviewOutput.value = "Generating your review...";
+      if (copyStatusBadge) copyStatusBadge.textContent = "Generating...";
 
       try {
         const res = await fetch("/api/generate-review", {
@@ -255,8 +337,7 @@ import AICounsellor from "../components/AICounsellor";
         } else {
           loadingBtn.disabled = false;
         }
-        submitBtn.textContent = "Copy & Go to Google Reviews";
-        regenerateBtn.textContent = "Regenerate Variation";
+        if (copyStatusBadge) copyStatusBadge.textContent = "Ready to copy";
       }
     }
 
@@ -274,8 +355,8 @@ import AICounsellor from "../components/AICounsellor";
       });
     }
 
-    const activeStyles = ["bg-indigo-50", "border-indigo-500", "text-indigo-700"];
-    const inactiveStyles = ["bg-white", "border-slate-200", "text-slate-700"];
+    const activeStyles = ["bg-indigo-600", "border-indigo-600", "text-white", "shadow-xs"];
+    const inactiveStyles = ["bg-slate-50/80", "border-slate-200", "text-slate-700"];
 
     // Country selection
     countryPills.forEach((pill) => {
@@ -300,6 +381,54 @@ import AICounsellor from "../components/AICounsellor";
       generateReview(regenerateBtn);
     });
 
+    // Clipboard copy helper
+    function copyTextToClipboard(text: string): boolean {
+      if (!text || text === "Generating your review...") return false;
+      
+      let success = false;
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(text).catch(() => {
+          fallbackCopy(text);
+        });
+        success = true;
+      } else {
+        success = fallbackCopy(text);
+      }
+      return success;
+    }
+
+    function fallbackCopy(text: string): boolean {
+      try {
+        const textarea = document.createElement("textarea");
+        textarea.value = text;
+        textarea.style.position = "fixed";
+        textarea.style.opacity = "0";
+        document.body.appendChild(textarea);
+        textarea.focus();
+        textarea.select();
+        const ok = document.execCommand("copy");
+        document.body.removeChild(textarea);
+        return ok;
+      } catch {
+        return false;
+      }
+    }
+
+    // Quick copy button inside textarea
+    if (quickCopyBtn) {
+      quickCopyBtn.addEventListener("click", () => {
+        const text = reviewOutput.value || "";
+        if (copyTextToClipboard(text)) {
+          if (quickCopyText) quickCopyText.textContent = "Copied!";
+          if (copyStatusBadge) copyStatusBadge.textContent = "Copied to clipboard!";
+          setTimeout(() => {
+            if (quickCopyText) quickCopyText.textContent = "Copy";
+            if (copyStatusBadge) copyStatusBadge.textContent = "Ready to copy";
+          }, 2000);
+        }
+      });
+    }
+
     // Copy to clipboard and redirect to Google Reviews
     submitBtn.addEventListener("click", () => {
       const text = reviewOutput.value || "";
@@ -308,29 +437,16 @@ import AICounsellor from "../components/AICounsellor";
         return;
       }
 
-      // Try to copy to clipboard safely
-      if (navigator.clipboard && navigator.clipboard.writeText) {
-        navigator.clipboard.writeText(text).catch((err) => {
-          console.error("Failed to copy text:", err);
-        });
-      } else {
-        // Fallback copy for webviews / in-app browsers on iOS
-        try {
-          const textarea = document.createElement("textarea");
-          textarea.value = text;
-          textarea.style.position = "fixed";
-          document.body.appendChild(textarea);
-          textarea.focus();
-          textarea.select();
-          document.execCommand("copy");
-          document.body.removeChild(textarea);
-        } catch (err) {
-          console.error("Fallback copy failed:", err);
-        }
+      copyTextToClipboard(text);
+
+      if (copyStatusBadge) copyStatusBadge.textContent = "Copied! Redirecting...";
+      if (window.alert) {
+        window.alert("Review copied to clipboard! Opening Google Reviews...");
       }
 
-      // Synchronous redirect is fully trusted and not blocked by iOS Safari
-      window.location.href = "https://search.google.com/local/writereview?placeid=ChIJs1mzR4ZP4DsR_nxj9fVK9hE";
+      setTimeout(() => {
+        window.location.href = "https://search.google.com/local/writereview?placeid=ChIJs1mzR4ZP4DsR_nxj9fVK9hE";
+      }, 300);
     });
 
     // Trigger initial load review
