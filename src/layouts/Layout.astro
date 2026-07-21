@@ -1587,7 +1587,9 @@ if (Astro.url.pathname.startsWith("/admin")) {
 
 				(window as any).showBtnLoader = function(btn: HTMLElement, label?: string) {
 					if (!btn) return;
-					(btn as any)._originalHTML = btn.innerHTML;
+					if (!btn.querySelector('.btn-spinner') && !btn.querySelector('.animate-spin')) {
+						(btn as any)._originalHTML = btn.innerHTML;
+					}
 					btn.innerHTML = SPINNER_HTML + (label ? ' ' + label : '');
 					setTimeout(() => {
 						(btn as HTMLButtonElement).disabled = true;
@@ -1598,7 +1600,10 @@ if (Astro.url.pathname.startsWith("/admin")) {
 					if (!btn) return;
 					(btn as HTMLButtonElement).disabled = false;
 					const orig = (btn as any)._originalHTML;
-					if (orig) btn.innerHTML = orig;
+					if (orig) {
+						btn.innerHTML = orig;
+						delete (btn as any)._originalHTML;
+					}
 				};
 
 				// Global form submission handler for non-AJAX forms
