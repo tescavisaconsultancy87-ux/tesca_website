@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 import { 
   GraduationCap, 
   Calendar, 
@@ -7,32 +7,18 @@ import {
   Phone, 
   MapPin, 
   Globe, 
-  FileText, 
   Award, 
   CheckCircle2, 
   ArrowRight, 
-  Download, 
   Star, 
   Clock, 
   Sparkles, 
-  ChevronRight, 
   UserCheck, 
   ShieldCheck, 
   Zap, 
-  BookOpen, 
-  Search, 
-  Share2, 
-  X, 
-  Check, 
-  ExternalLink,
-  ChevronLeft,
-  Send,
   Building2,
   Users,
-  Compass,
-  FileCheck,
-  Briefcase,
-  HelpCircle
+  ExternalLink
 } from 'lucide-react';
 
 const InstagramIcon = (props: React.SVGProps<SVGSVGElement>) => (
@@ -48,49 +34,8 @@ const YoutubeIcon = (props: React.SVGProps<SVGSVGElement>) => (
   <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round" {...props}><path d="M22.54 6.42a2.78 2.78 0 0 0-1.94-2C18.88 4 12 4 12 4s-6.88 0-8.6.46a2.78 2.78 0 0 0-1.94 2A29 29 0 0 0 1 11.75a29 29 0 0 0 .46 5.33A2.78 2.78 0 0 0 3.4 19c1.72.46 8.6.46 8.6.46s6.88 0 8.6-.46a2.78 2.78 0 0 0 1.94-2 29 29 0 0 0 .46-5.25 29 29 0 0 0-.46-5.33z"/><polygon points="9.75 15.02 15.5 11.75 9.75 8.48 9.75 15.02"/></svg>
 );
 
-// Types
-interface FormState {
-  name: string;
-  phone: string;
-  email: string;
-  country: string;
-  intake: string;
-  qualification: string;
-  message: string;
-}
-
 export default function ConnectLanding() {
-  // Navigation & Scroll state
-  const [activeTab, setActiveTab] = useState('home');
-  const [showScrollTop, setShowScrollTop] = useState(false);
-
-  // Form State
-  const [formData, setFormData] = useState<FormState>({
-    name: '',
-    phone: '',
-    email: '',
-    country: 'UK',
-    intake: 'Fall 2026',
-    qualification: 'Bachelor\'s Degree',
-    message: ''
-  });
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [isSubmitted, setIsSubmitted] = useState(false);
-
-  // Resource Download Modal
-  const [activeModalResource, setActiveModalResource] = useState<string | null>(null);
-  const [resourceEmail, setResourceEmail] = useState('');
-  const [resourceSent, setResourceSent] = useState(false);
-
-  // Event Registration Modal
-  const [isEventModalOpen, setIsEventModalOpen] = useState(false);
-  const [eventFormData, setEventFormData] = useState({ name: '', phone: '', email: '' });
-  const [eventBooked, setEventBooked] = useState(false);
-
-  // Quick Action Modal / Drawer
-  const [quickActionModal, setQuickActionModal] = useState<string | null>(null);
-
-  // Countdown timer for Event (Target date: 15 days in future)
+  // Countdown timer for Event
   const [timeLeft, setTimeLeft] = useState({ days: 14, hours: 18, mins: 42, secs: 10 });
 
   useEffect(() => {
@@ -106,93 +51,33 @@ export default function ConnectLanding() {
     return () => clearInterval(timer);
   }, []);
 
-  const handleFormSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setIsSubmitting(true);
-
-    try {
-      // Send to webhook (Airtable via n8n or direct webhook endpoint)
-      const webhookUrl = 'https://n8n.tescavisa.com/webhook/lead-capture';
-      await fetch(webhookUrl, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          ...formData,
-          source: 'Business Card QR Code (/connect)',
-          timestamp: new Date().toISOString()
-        })
-      }).catch(err => console.log('Webhook fallback mode active:', err));
-    } catch (err) {
-      console.log('Submission saved locally');
-    }
-
-    setTimeout(() => {
-      setIsSubmitting(false);
-      setIsSubmitted(true);
-    }, 800);
-  };
-
-  const handleResourceSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    setResourceSent(true);
-    setTimeout(() => {
-      setResourceSent(false);
-      setActiveModalResource(null);
-      setResourceEmail('');
-    }, 2500);
-  };
-
-  const handleEventSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    setEventBooked(true);
-    setTimeout(() => {
-      setEventBooked(false);
-      setIsEventModalOpen(false);
-      setEventFormData({ name: '', phone: '', email: '' });
-    }, 2500);
-  };
-
-  // WhatsApp Pre-filled Link
   const whatsappUrl = `https://wa.me/919824152731?text=${encodeURIComponent('Hi TESCA, I want to study abroad.')}`;
 
   return (
     <div className="min-h-screen bg-[#F8FAFC] text-[#1E293B] font-sans antialiased selection:bg-[#F97316] selection:text-white pb-24 md:pb-12">
       
-      {/* TOP BRAND HEADER (Sticky Glassmorphism) */}
-      <header className="sticky top-0 z-40 bg-[#0A2342]/95 backdrop-blur-md border-b border-white/10 text-white transition-all shadow-md">
-        <div className="max-w-4xl mx-auto px-4 py-3 flex items-center justify-between">
-          <a href="/" className="flex items-center gap-3 group">
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-[#F97316] to-[#FB923C] p-0.5 shadow-lg shadow-[#F97316]/20">
-              <div className="w-full h-full bg-[#0A2342] rounded-[10px] flex items-center justify-center font-bold text-white text-lg tracking-wider">
-                T
-              </div>
-            </div>
-            <div>
-              <div className="flex items-center gap-2">
-                <span className="font-extrabold text-lg tracking-tight text-white group-hover:text-[#F97316] transition-colors">
-                  TESCA
-                </span>
-                <span className="text-[10px] font-semibold tracking-wider bg-[#F97316]/20 text-[#F97316] px-2 py-0.5 rounded-full border border-[#F97316]/30">
-                  Since 2005
-                </span>
-              </div>
-              <p className="text-[11px] text-slate-300 font-medium tracking-tight">
-                Spoken English & Visa Consultancy
-              </p>
-            </div>
+      {/* BRAND HEADER (Minimal & Elegant with TESCA Logo) */}
+      <header className="bg-[#0A2342] text-white border-b border-white/10 py-4 px-4 shadow-sm">
+        <div className="max-w-5xl mx-auto flex items-center justify-between">
+          <a href="/" className="flex items-center gap-3">
+            <img 
+              src="/images/Tesca_logo.png" 
+              alt="TESCA Spoken English & Visa Consultancy" 
+              className="h-10 sm:h-12 w-auto object-contain"
+            />
           </a>
 
-          <div className="hidden sm:flex items-center gap-3">
+          <div className="flex items-center gap-3">
             <a 
               href="tel:+919824152731" 
-              className="text-xs font-semibold text-white/90 hover:text-white flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/10 hover:bg-white/20 transition-all border border-white/15"
+              className="hidden sm:flex items-center gap-1.5 text-xs font-semibold text-white/90 hover:text-white px-3.5 py-2 rounded-full bg-white/10 hover:bg-white/20 transition-all border border-white/15"
             >
               <Phone className="w-3.5 h-3.5 text-[#F97316]" />
-              98241 52731
+              <span>98241 52731</span>
             </a>
             <a 
-              href="#counselling-form" 
-              className="text-xs font-bold bg-[#F97316] text-white px-4 py-2 rounded-full hover:bg-[#EA580C] transition-all shadow-md hover:shadow-lg hover:shadow-[#F97316]/25 active:scale-95"
+              href="/inquiry" 
+              className="text-xs font-bold bg-[#F97316] text-white px-4 py-2 rounded-full hover:bg-[#EA580C] transition-all shadow-md active:scale-95"
             >
               Book Free Counselling
             </a>
@@ -200,205 +85,121 @@ export default function ConnectLanding() {
         </div>
       </header>
 
-      {/* HERO SECTION */}
-      <section className="relative overflow-hidden bg-gradient-to-b from-[#0A2342] via-[#0E2F56] to-[#0A2342] text-white pt-8 pb-16 px-4">
-        {/* Soft background light */}
-        <div className="absolute top-1/4 left-1/2 -translate-x-1/2 w-96 h-96 bg-[#F97316]/15 rounded-full blur-[100px] pointer-events-none" />
+      {/* HERO SECTION - ELEGANT & REFINED LUXURY STYLE */}
+      <section className="relative bg-[#0A2342] text-white pt-10 pb-16 px-4 overflow-hidden">
+        {/* Subtle background glow */}
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-4xl h-72 bg-[#F97316]/10 blur-[120px] pointer-events-none rounded-full" />
 
         <div className="max-w-3xl mx-auto text-center relative z-10">
           
           {/* Trust Badge */}
           <motion.div 
-            initial={{ opacity: 0, y: 15 }}
+            initial={{ opacity: 0, y: 12 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5 }}
-            className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white/10 border border-white/15 text-xs font-medium text-slate-200 backdrop-blur-md mb-6 shadow-inner"
+            className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/10 border border-white/15 text-xs font-medium text-slate-200 backdrop-blur-md mb-6"
           >
             <Sparkles className="w-3.5 h-3.5 text-[#F97316]" />
-            <span>21+ Years of Excellence • Surat's Most Trusted</span>
+            <span>Since 2005 • Surat's Premier Visa Consultancy</span>
           </motion.div>
 
           {/* Main Title */}
           <motion.h1 
-            initial={{ opacity: 0, y: 20 }}
+            initial={{ opacity: 0, y: 16 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0.1 }}
+            transition={{ duration: 0.5, delay: 0.1 }}
             className="text-3xl sm:text-5xl font-extrabold tracking-tight leading-tight text-white mb-4"
           >
-            Start Your <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#F97316] via-[#FB923C] to-[#FDBA74]">Global Education</span> Journey
+            Start Your <span className="text-[#F97316]">Global Education</span> Journey
           </motion.h1>
 
           {/* Subtitle */}
           <motion.p 
-            initial={{ opacity: 0, y: 20 }}
+            initial={{ opacity: 0, y: 16 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0.2 }}
-            className="text-sm sm:text-base text-slate-300 max-w-2xl mx-auto mb-8 font-normal leading-relaxed"
+            transition={{ duration: 0.5, delay: 0.2 }}
+            className="text-sm sm:text-base text-slate-300 max-w-2xl mx-auto mb-10 font-normal leading-relaxed"
           >
             Expert Study Abroad Counselling, IELTS Coaching, University Admissions and Visa Guidance — all in one place.
           </motion.p>
 
-          {/* Four Large Rounded Hero CTA Buttons */}
+          {/* Unified, Elegant Hero Buttons */}
           <motion.div 
-            initial={{ opacity: 0, y: 25 }}
+            initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0.3 }}
+            transition={{ duration: 0.5, delay: 0.3 }}
             className="grid grid-cols-2 sm:grid-cols-4 gap-3 max-w-2xl mx-auto"
           >
             <a 
               href="#countries" 
-              className="flex flex-col items-center justify-center gap-2 p-4 rounded-[20px] bg-white/10 hover:bg-white/20 border border-white/15 backdrop-blur-md text-white font-semibold text-xs sm:text-sm transition-all hover:scale-[1.03] active:scale-95 shadow-md group"
+              className="flex items-center justify-center gap-2 py-3.5 px-4 rounded-[16px] bg-white/10 hover:bg-white/20 border border-white/20 text-white font-semibold text-xs sm:text-sm transition-all hover:scale-[1.02] active:scale-95 shadow-sm"
             >
-              <div className="w-10 h-10 rounded-full bg-[#F97316]/20 flex items-center justify-center text-[#F97316] group-hover:scale-110 transition-transform">
-                <GraduationCap className="w-5 h-5" />
-              </div>
-              <span>🎓 Study Abroad</span>
+              <GraduationCap className="w-4 h-4 text-[#F97316]" />
+              <span>Study Abroad</span>
             </a>
 
             <a 
-              href="#counselling-form" 
-              className="flex flex-col items-center justify-center gap-2 p-4 rounded-[20px] bg-[#F97316] hover:bg-[#EA580C] text-white font-bold text-xs sm:text-sm transition-all hover:scale-[1.03] active:scale-95 shadow-lg shadow-[#F97316]/30 group"
+              href="/inquiry" 
+              className="flex items-center justify-center gap-2 py-3.5 px-4 rounded-[16px] bg-[#F97316] hover:bg-[#EA580C] text-white font-bold text-xs sm:text-sm transition-all hover:scale-[1.02] active:scale-95 shadow-lg shadow-[#F97316]/25"
             >
-              <div className="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center text-white group-hover:scale-110 transition-transform">
-                <Calendar className="w-5 h-5" />
-              </div>
-              <span>📅 Book Counselling</span>
+              <Calendar className="w-4 h-4" />
+              <span>Book Counselling</span>
             </a>
 
             <a 
               href={whatsappUrl}
               target="_blank"
               rel="noopener noreferrer"
-              className="flex flex-col items-center justify-center gap-2 p-4 rounded-[20px] bg-[#25D366] hover:bg-[#20bd5a] text-white font-bold text-xs sm:text-sm transition-all hover:scale-[1.03] active:scale-95 shadow-lg shadow-[#25D366]/30 group"
+              className="flex items-center justify-center gap-2 py-3.5 px-4 rounded-[16px] bg-white/10 hover:bg-white/20 border border-white/20 text-white font-semibold text-xs sm:text-sm transition-all hover:scale-[1.02] active:scale-95 shadow-sm"
             >
-              <div className="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center text-white group-hover:scale-110 transition-transform">
-                <MessageCircle className="w-5 h-5" />
-              </div>
-              <span>💬 WhatsApp</span>
+              <MessageCircle className="w-4 h-4 text-emerald-400" />
+              <span>WhatsApp</span>
             </a>
 
             <a 
               href="tel:+919824152731" 
-              className="flex flex-col items-center justify-center gap-2 p-4 rounded-[20px] bg-white/10 hover:bg-white/20 border border-white/15 backdrop-blur-md text-white font-semibold text-xs sm:text-sm transition-all hover:scale-[1.03] active:scale-95 shadow-md group"
+              className="flex flex-col sm:flex-row items-center justify-center gap-1.5 py-3.5 px-4 rounded-[16px] bg-white/10 hover:bg-white/20 border border-white/20 text-white font-semibold text-xs sm:text-sm transition-all hover:scale-[1.02] active:scale-95 shadow-sm"
             >
-              <div className="w-10 h-10 rounded-full bg-blue-500/20 flex items-center justify-center text-blue-400 group-hover:scale-110 transition-transform">
-                <Phone className="w-5 h-5" />
-              </div>
-              <span>📞 Call Now</span>
+              <Phone className="w-4 h-4 text-blue-400" />
+              <span>Call Now</span>
             </a>
           </motion.div>
 
         </div>
       </section>
 
-      {/* QUICK ACTIONS - APPLE WALLET STYLE CARDS */}
-      <section className="max-w-4xl mx-auto px-4 -mt-8 relative z-20">
-        <div className="bg-white/90 backdrop-blur-xl rounded-[24px] p-4 sm:p-6 shadow-xl border border-slate-200/80">
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-xs font-bold tracking-wider text-slate-400 uppercase">
-              Quick Actions & Services
-            </h2>
-            <span className="text-xs text-[#F97316] font-semibold flex items-center gap-1">
-              Apple Wallet Inspired <Sparkles className="w-3 h-3" />
-            </span>
-          </div>
-
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-            {[
-              { id: 'study', title: 'Study Abroad', icon: GraduationCap, color: 'from-blue-500 to-indigo-600', desc: 'Top Global Unis' },
-              { id: 'ielts', title: 'IELTS / PTE', icon: BookOpen, color: 'from-orange-500 to-amber-600', desc: 'Band 7+ Coaching' },
-              { id: 'visitor', title: 'Visitor Visa', icon: Globe, color: 'from-emerald-500 to-teal-600', desc: 'Tourist & Family' },
-              { id: 'work', title: 'Work Visa', icon: Briefcase, color: 'from-purple-500 to-indigo-600', desc: 'Post Study & Work' },
-              { id: 'scholarship', title: 'Scholarship', icon: Award, color: 'from-amber-500 to-orange-600', desc: 'Up to 100% Aid' },
-              { id: 'admission', title: 'Uni Admission', icon: Building2, color: 'from-rose-500 to-red-600', desc: 'Fast Offer Letters' },
-              { id: 'docs', title: 'Doc Checklist', icon: FileCheck, color: 'from-cyan-500 to-blue-600', desc: 'Complete Dossier' },
-              { id: 'track', title: 'Track Status', icon: Search, color: 'from-slate-700 to-slate-900', desc: 'Live Updates' },
-            ].map((action, idx) => (
-              <motion.button
-                key={action.id}
-                whileHover={{ y: -4, scale: 1.02 }}
-                whileTap={{ scale: 0.96 }}
-                onClick={() => {
-                  if (action.id === 'study') {
-                    document.getElementById('countries')?.scrollIntoView({ behavior: 'smooth' });
-                  } else if (action.id === 'docs' || action.id === 'ielts') {
-                    document.getElementById('free-resources')?.scrollIntoView({ behavior: 'smooth' });
-                  } else {
-                    setQuickActionModal(action.title);
-                  }
-                }}
-                className="flex flex-col justify-between text-left p-3.5 rounded-[20px] bg-slate-50 hover:bg-white border border-slate-200/60 shadow-sm hover:shadow-md transition-all group"
-              >
-                <div className="flex items-center justify-between w-full mb-3">
-                  <div className={`w-9 h-9 rounded-xl bg-gradient-to-br ${action.color} text-white flex items-center justify-center shadow-sm group-hover:scale-105 transition-transform`}>
-                    <action.icon className="w-4 h-4" />
-                  </div>
-                  <ChevronRight className="w-4 h-4 text-slate-300 group-hover:text-[#F97316] transition-colors" />
-                </div>
-                <div>
-                  <h3 className="font-bold text-slate-900 text-xs sm:text-sm tracking-tight group-hover:text-[#0A2342] transition-colors">
-                    {action.title}
-                  </h3>
-                  <p className="text-[11px] text-slate-500 font-medium">
-                    {action.desc}
-                  </p>
-                </div>
-              </motion.button>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* SUCCESS NUMBERS (ANIMATED COUNTERS) */}
-      <section className="max-w-4xl mx-auto px-4 mt-12">
-        <div className="bg-[#0A2342] rounded-[24px] p-6 text-white shadow-lg relative overflow-hidden">
-          <div className="absolute right-0 top-0 w-64 h-64 bg-[#F97316]/10 rounded-full blur-3xl pointer-events-none" />
-
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-6 text-center relative z-10">
+      {/* STATS SECTION */}
+      <section className="max-w-4xl mx-auto px-4 -mt-6 relative z-20">
+        <div className="bg-white rounded-[20px] p-6 shadow-xl border border-slate-200/80">
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 text-center">
             <div className="p-2">
-              <div className="text-2xl sm:text-4xl font-extrabold text-[#F97316] tracking-tight mb-1">
-                21+
-              </div>
-              <div className="text-xs text-slate-300 font-medium">
-                Years Experience
-              </div>
+              <div className="text-2xl sm:text-3xl font-extrabold text-[#0A2342] tracking-tight">21+</div>
+              <div className="text-xs text-slate-500 font-medium mt-0.5">Years Experience</div>
             </div>
 
-            <div className="p-2 border-l border-white/10 sm:border-l-1">
-              <div className="text-2xl sm:text-4xl font-extrabold text-white tracking-tight mb-1">
-                50,000+
-              </div>
-              <div className="text-xs text-slate-300 font-medium">
-                Students Guided
-              </div>
+            <div className="p-2 border-l border-slate-200">
+              <div className="text-2xl sm:text-3xl font-extrabold text-[#F97316] tracking-tight">50,000+</div>
+              <div className="text-xs text-slate-500 font-medium mt-0.5">Students Guided</div>
             </div>
 
-            <div className="p-2 sm:border-l border-white/10">
-              <div className="text-2xl sm:text-4xl font-extrabold text-[#F97316] tracking-tight mb-1">
-                98%
-              </div>
-              <div className="text-xs text-slate-300 font-medium">
-                Visa Success Rate
-              </div>
+            <div className="p-2 sm:border-l border-slate-200">
+              <div className="text-2xl sm:text-3xl font-extrabold text-[#0A2342] tracking-tight">98%</div>
+              <div className="text-xs text-slate-500 font-medium mt-0.5">Visa Success Rate</div>
             </div>
 
-            <div className="p-2 border-l border-white/10">
-              <div className="text-2xl sm:text-4xl font-extrabold text-white tracking-tight mb-1">
-                100+
-              </div>
-              <div className="text-xs text-slate-300 font-medium">
-                University Partners
-              </div>
+            <div className="p-2 border-l border-slate-200">
+              <div className="text-2xl sm:text-3xl font-extrabold text-[#F97316] tracking-tight">100+</div>
+              <div className="text-xs text-slate-500 font-medium mt-0.5">University Partners</div>
             </div>
           </div>
         </div>
       </section>
 
-      {/* COUNTRIES SECTION */}
+      {/* DESTINATIONS SECTION WITH REAL LANDMARK IMAGES */}
       <section id="countries" className="max-w-4xl mx-auto px-4 mt-14 scroll-mt-20">
         <div className="text-center mb-8">
           <span className="text-xs font-bold tracking-widest text-[#F97316] uppercase bg-[#F97316]/10 px-3 py-1 rounded-full">
-            Study Destinations
+            Global Pathways
           </span>
           <h2 className="text-2xl sm:text-3xl font-extrabold text-[#0A2342] mt-2 tracking-tight">
             Choose Your Destination
@@ -413,58 +214,66 @@ export default function ConnectLanding() {
             {
               flag: '🇬🇧',
               name: 'United Kingdom',
-              image: 'https://images.unsplash.com/photo-1513635269975-59663e0ac1ad?auto=format&fit=crop&w=600&q=80',
+              image: 'https://images.unsplash.com/photo-1513635269975-59663e0ac1ad?auto=format&fit=crop&w=800&q=80',
               desc: 'Top Russell Group unis & 2-year Graduate Work Route.',
-              badge: 'Fast Track Offer'
+              badge: 'Fast Track Offer',
+              link: '/study-abroad/uk'
             },
             {
               flag: '🇦🇺',
               name: 'Australia',
-              image: 'https://images.unsplash.com/photo-1523482580672-f109ba8cb9be?auto=format&fit=crop&w=600&q=80',
+              image: 'https://images.unsplash.com/photo-1523482580672-f109ba8cb9be?auto=format&fit=crop&w=800&q=80',
               desc: 'High PR potential, top quality of life & work rights.',
-              badge: 'Popular for PR'
+              badge: 'Popular for PR',
+              link: '/study-abroad/australia'
             },
             {
               flag: '🇨🇦',
               name: 'Canada',
-              image: 'https://images.unsplash.com/photo-1503614472-8c93d56e92ce?auto=format&fit=crop&w=600&q=80',
+              image: 'https://images.unsplash.com/photo-1517935706615-2717063c2225?auto=format&fit=crop&w=800&q=80',
               desc: 'Express Entry PR pathways & up to 3 yrs PGWP.',
-              badge: 'PGWP Available'
+              badge: 'PGWP Available',
+              link: '/study-abroad/canada'
             },
             {
               flag: '🇺🇸',
               name: 'United States',
-              image: 'https://images.unsplash.com/photo-1485738422979-f5c462d49f74?auto=format&fit=crop&w=600&q=80',
+              image: 'https://images.unsplash.com/photo-1485738422979-f5c462d49f74?auto=format&fit=crop&w=800&q=80',
               desc: 'Ivy League excellence & 3-year STEM OPT extension.',
-              badge: 'STEM OPT 3Yrs'
+              badge: 'STEM OPT 3Yrs',
+              link: '/study-abroad/usa'
             },
             {
               flag: '🇳🇿',
               name: 'New Zealand',
-              image: 'https://images.unsplash.com/photo-1507699622108-4be3abd695ad?auto=format&fit=crop&w=600&q=80',
+              image: 'https://images.unsplash.com/photo-1507699622108-4be3abd695ad?auto=format&fit=crop&w=800&q=80',
               desc: 'Safe, welcoming environment & post-study work rights.',
-              badge: 'Safe & Green'
+              badge: 'Safe & Green',
+              link: '/study-abroad/new-zealand'
             },
             {
               flag: '🇮🇪',
               name: 'Ireland',
-              image: 'https://images.unsplash.com/photo-1590089415225-401ed6f9db8e?auto=format&fit=crop&w=600&q=80',
+              image: 'https://images.unsplash.com/photo-1590089415225-401ed6f9db8e?auto=format&fit=crop&w=800&q=80',
               desc: 'European Tech Hub with 2-year stay back option.',
-              badge: 'Tech Hub'
+              badge: 'Tech Hub',
+              link: '/study-abroad/ireland'
             },
             {
               flag: '🇩🇪',
               name: 'Germany',
-              image: 'https://images.unsplash.com/photo-1467269204594-9661b134dd2b?auto=format&fit=crop&w=600&q=80',
+              image: 'https://images.unsplash.com/photo-1560969184-10fe8719e047?auto=format&fit=crop&w=800&q=80',
               desc: 'Tuition-free public universities & strong engineering job market.',
-              badge: 'Free Tuition'
+              badge: 'Free Tuition',
+              link: '/study-abroad/germany'
             },
             {
               flag: '🇫🇷',
               name: 'Europe (Schengen)',
-              image: 'https://images.unsplash.com/photo-1502602898657-3e91760cbb34?auto=format&fit=crop&w=600&q=80',
+              image: 'https://images.unsplash.com/photo-1502602898657-3e91760cbb34?auto=format&fit=crop&w=800&q=80',
               desc: 'France, Italy, Poland & Spain study opportunities.',
-              badge: 'Schengen Access'
+              badge: 'Schengen Access',
+              link: '/study-abroad/europe'
             }
           ].map((c, i) => (
             <motion.div
@@ -473,18 +282,18 @@ export default function ConnectLanding() {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ duration: 0.4, delay: i * 0.05 }}
-              className="bg-white rounded-[20px] overflow-hidden border border-slate-200/70 shadow-sm hover:shadow-lg transition-all group flex flex-col justify-between"
+              className="bg-white rounded-[20px] overflow-hidden border border-slate-200/80 shadow-sm hover:shadow-md transition-all flex flex-col justify-between group"
             >
               <div>
-                <div className="relative h-36 overflow-hidden">
+                <div className="relative h-40 overflow-hidden bg-slate-100">
                   <img 
                     src={c.image} 
-                    alt={c.name} 
+                    alt={`${c.name} Landmark`}
                     className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" 
                     loading="lazy"
                   />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
-                  <span className="absolute top-2.5 left-2.5 bg-white/90 backdrop-blur-md text-[#0A2342] text-[11px] font-bold px-2.5 py-1 rounded-full shadow-sm flex items-center gap-1.5">
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
+                  <span className="absolute top-2.5 left-2.5 bg-white/95 backdrop-blur-md text-[#0A2342] text-[11px] font-bold px-2.5 py-1 rounded-full shadow-sm flex items-center gap-1.5">
                     <span className="text-sm">{c.flag}</span> {c.name}
                   </span>
                   <span className="absolute bottom-2.5 right-2.5 bg-[#F97316] text-white text-[10px] font-bold px-2 py-0.5 rounded-md shadow-sm">
@@ -500,12 +309,11 @@ export default function ConnectLanding() {
 
               <div className="px-4 pb-4 pt-1">
                 <a
-                  href="#counselling-form"
-                  onClick={() => setFormData(prev => ({ ...prev, country: c.name }))}
-                  className="w-full inline-flex items-center justify-center gap-1.5 text-xs font-bold text-[#0A2342] hover:text-[#F97316] bg-slate-100 hover:bg-slate-200/70 py-2.5 rounded-xl transition-colors group-hover:bg-[#0A2342] group-hover:text-white"
+                  href={c.link}
+                  className="w-full inline-flex items-center justify-center gap-1.5 text-xs font-bold text-[#0A2342] hover:text-white bg-slate-100 hover:bg-[#0A2342] py-2.5 rounded-xl transition-all"
                 >
                   <span>Explore {c.name}</span>
-                  <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" />
+                  <ArrowRight className="w-3.5 h-3.5" />
                 </a>
               </div>
             </motion.div>
@@ -513,71 +321,14 @@ export default function ConnectLanding() {
         </div>
       </section>
 
-      {/* FREE RESOURCES SECTION */}
-      <section id="free-resources" className="max-w-4xl mx-auto px-4 mt-14 scroll-mt-20">
-        <div className="bg-gradient-to-br from-slate-900 to-[#0A2342] rounded-[24px] p-6 sm:p-8 text-white shadow-xl relative overflow-hidden">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-6 gap-2">
-            <div>
-              <span className="text-xs font-bold tracking-wider text-[#F97316] uppercase bg-white/10 px-3 py-1 rounded-full">
-                Instant Download
-              </span>
-              <h2 className="text-2xl sm:text-3xl font-extrabold text-white mt-2 tracking-tight">
-                Free Study Abroad & Visa Guides
-              </h2>
-            </div>
-            <p className="text-xs text-slate-300 max-w-xs">
-              Handcrafted templates, vocabulary kits, and checklists used by 50,000+ students.
-            </p>
-          </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-            {[
-              { title: 'IELTS Vocabulary PDF', type: '1000+ High Band Words', icon: BookOpen },
-              { title: 'PTE Templates', type: 'Writing & Speaking 79+ Blueprints', icon: Zap },
-              { title: 'Document Checklist', type: 'Complete Embassy Dossier', icon: FileCheck },
-              { title: 'SOP Samples', type: 'Winning Statement of Purpose', icon: FileText },
-              { title: 'Financial Documents Guide', type: 'Proof of Funds & Bank Solvency', icon: ShieldCheck },
-              { title: 'CAS & Visa Guide', type: 'Step-by-step Filing Checklist', icon: CheckCircle2 }
-            ].map((res, i) => (
-              <div 
-                key={res.title}
-                className="p-4 rounded-[18px] bg-white/10 hover:bg-white/15 border border-white/10 backdrop-blur-md flex items-center justify-between gap-3 group transition-all"
-              >
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-xl bg-[#F97316]/20 text-[#F97316] flex items-center justify-center shrink-0">
-                    <res.icon className="w-5 h-5" />
-                  </div>
-                  <div>
-                    <h3 className="text-xs font-bold text-white tracking-tight">
-                      {res.title}
-                    </h3>
-                    <p className="text-[11px] text-slate-300 font-medium">
-                      {res.type}
-                    </p>
-                  </div>
-                </div>
-
-                <button
-                  onClick={() => setActiveModalResource(res.title)}
-                  className="w-8 h-8 rounded-full bg-[#F97316] hover:bg-[#EA580C] text-white flex items-center justify-center shrink-0 shadow-md hover:scale-110 active:scale-95 transition-all"
-                  title="Download Resource"
-                >
-                  <Download className="w-4 h-4" />
-                </button>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* UPCOMING EVENTS WITH COUNTDOWN TIMER */}
+      {/* UPCOMING ADMISSIONS EVENT */}
       <section className="max-w-4xl mx-auto px-4 mt-14">
         <div className="bg-white rounded-[24px] border border-slate-200/80 p-6 sm:p-8 shadow-sm relative overflow-hidden">
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
             <div>
               <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-rose-50 border border-rose-200 text-rose-600 text-xs font-bold mb-3">
                 <span className="w-2 h-2 rounded-full bg-rose-500 animate-ping" />
-                Upcoming Admissions Event
+                Upcoming Admission Event
               </div>
               <h2 className="text-2xl font-extrabold text-[#0A2342] tracking-tight">
                 🇬🇧 UK Admission Mega Fair 2026
@@ -620,13 +371,13 @@ export default function ConnectLanding() {
                 </div>
               </div>
 
-              <button
-                onClick={() => setIsEventModalOpen(true)}
-                className="mt-4 w-full bg-[#F97316] hover:bg-[#EA580C] text-white text-xs font-bold py-2.5 px-4 rounded-xl transition-all shadow-md active:scale-95 flex items-center justify-center gap-1.5"
+              <a
+                href="/inquiry"
+                className="mt-4 w-full bg-[#F97316] hover:bg-[#EA580C] text-white text-xs font-bold py-2.5 px-4 rounded-xl transition-all shadow-md flex items-center justify-center gap-1.5"
               >
-                <span>Book Seat Now</span>
+                <span>Book VIP Seat</span>
                 <ArrowRight className="w-3.5 h-3.5" />
-              </button>
+              </a>
             </div>
           </div>
         </div>
@@ -636,7 +387,7 @@ export default function ConnectLanding() {
       <section className="max-w-4xl mx-auto px-4 mt-14">
         <div className="text-center mb-8">
           <span className="text-xs font-bold tracking-widest text-[#F97316] uppercase bg-[#F97316]/10 px-3 py-1 rounded-full">
-            Our Key Edge
+            Our Advantage
           </span>
           <h2 className="text-2xl sm:text-3xl font-extrabold text-[#0A2342] mt-2 tracking-tight">
             Why Choose TESCA?
@@ -653,16 +404,15 @@ export default function ConnectLanding() {
             { title: 'Transparent Process', desc: 'Zero hidden charges, complete file visibility.', icon: ShieldCheck },
             { title: 'Fast Application', desc: 'Express offer letter turnaround within 48 hrs.', icon: Zap },
             { title: 'Visa Assistance', desc: '98% visa success rate across all countries.', icon: CheckCircle2 },
-            { title: 'Interview Prep', desc: 'Mock interviews with former visa officers.', icon: Users },
             { title: 'Scholarship Guidance', desc: 'Helping unlock up to 100% tuition waivers.', icon: Award }
-          ].map((item, idx) => (
+          ].map((item) => (
             <div
               key={item.title}
-              className="p-4 rounded-[20px] bg-white border border-slate-200/70 shadow-sm hover:shadow-md transition-all flex flex-col justify-between"
+              className="p-4 rounded-[20px] bg-white border border-slate-200/70 shadow-sm flex flex-col justify-between"
             >
               <div>
-                <div className="w-10 h-10 rounded-xl bg-[#0A2342]/5 text-[#0A2342] flex items-center justify-center mb-3">
-                  <item.icon className="w-5 h-5 text-[#F97316]" />
+                <div className="w-9 h-9 rounded-xl bg-[#0A2342]/5 text-[#0A2342] flex items-center justify-center mb-3">
+                  <item.icon className="w-4 h-4 text-[#F97316]" />
                 </div>
                 <h3 className="font-bold text-slate-900 text-xs sm:text-sm tracking-tight mb-1">
                   {item.title}
@@ -676,79 +426,8 @@ export default function ConnectLanding() {
         </div>
       </section>
 
-      {/* STUDENT TESTIMONIALS (CAROUSEL SLIDER) */}
-      <section className="max-w-4xl mx-auto px-4 mt-14">
-        <div className="text-center mb-8">
-          <span className="text-xs font-bold tracking-widest text-[#F97316] uppercase bg-[#F97316]/10 px-3 py-1 rounded-full">
-            Student Success Stories
-          </span>
-          <h2 className="text-2xl sm:text-3xl font-extrabold text-[#0A2342] mt-2 tracking-tight">
-            Real Stories, Real Visas
-          </h2>
-        </div>
-
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-          {[
-            {
-              name: 'Pooja Patel',
-              country: '🇬🇧 United Kingdom',
-              university: 'University of Manchester',
-              score: 'IELTS 7.5 Band',
-              img: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=300&q=80',
-              quote: 'TESCA made my UK student visa process seamless! Got my CAS in 3 days and visa stamped in 10 days.'
-            },
-            {
-              name: 'Rahul Desai',
-              country: '🇨🇦 Canada',
-              university: 'Conestoga College',
-              score: 'PTE 72 Score',
-              img: 'https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?auto=format&fit=crop&w=300&q=80',
-              quote: 'From IELTS coaching to SDS visa file preparation, TESCA staff in Surat supported me step by step.'
-            },
-            {
-              name: 'Anjali Sharma',
-              country: '🇦🇺 Australia',
-              university: 'University of Melbourne',
-              score: 'IELTS 8.0 Band',
-              img: 'https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=crop&w=300&q=80',
-              quote: 'Best visa consultancy in Surat! Got $10,000 scholarship guidance and quick GTE approval.'
-            }
-          ].map((t) => (
-            <div 
-              key={t.name}
-              className="bg-white rounded-[20px] p-5 border border-slate-200/70 shadow-sm flex flex-col justify-between"
-            >
-              <div>
-                <div className="flex items-center gap-3 mb-3">
-                  <img src={t.img} alt={t.name} className="w-12 h-12 rounded-full object-cover border-2 border-[#F97316]" />
-                  <div>
-                    <h3 className="font-bold text-slate-900 text-sm">{t.name}</h3>
-                    <p className="text-[11px] font-semibold text-[#0A2342]">{t.country}</p>
-                    <p className="text-[10px] text-slate-400">{t.university}</p>
-                  </div>
-                </div>
-
-                <div className="flex items-center gap-1 text-amber-400 mb-2">
-                  {[...Array(5)].map((_, i) => (
-                    <Star key={i} className="w-3.5 h-3.5 fill-amber-400" />
-                  ))}
-                </div>
-
-                <p className="text-xs text-slate-600 italic leading-relaxed mb-4">
-                  "{t.quote}"
-                </p>
-              </div>
-
-              <span className="inline-block text-[10px] font-bold text-emerald-600 bg-emerald-50 px-2.5 py-1 rounded-md self-start">
-                ✓ Verified Visa Issued
-              </span>
-            </div>
-          ))}
-        </div>
-      </section>
-
-      {/* GOOGLE REVIEWS BADGE */}
-      <section className="max-w-4xl mx-auto px-4 mt-10 text-center">
+      {/* GOOGLE REVIEWS & RATING BADGE */}
+      <section className="max-w-4xl mx-auto px-4 mt-12 text-center">
         <div className="inline-flex flex-col sm:flex-row items-center gap-4 bg-white px-6 py-4 rounded-[20px] border border-slate-200/80 shadow-sm">
           <div className="flex items-center gap-2">
             <span className="text-xl font-extrabold text-[#0A2342]">4.9</span>
@@ -767,182 +446,12 @@ export default function ConnectLanding() {
               href="https://g.co/kgs/tesca" 
               target="_blank" 
               rel="noopener noreferrer"
-              className="text-xs font-bold bg-slate-100 hover:bg-slate-200 text-[#0A2342] px-4 py-2 rounded-xl transition-colors flex items-center gap-1"
+              className="text-xs font-bold bg-[#F97316] text-white px-4 py-2 rounded-xl hover:bg-[#EA580C] transition-colors flex items-center gap-1.5"
             >
-              <span>Read Reviews</span>
-              <ExternalLink className="w-3 h-3" />
-            </a>
-            <a 
-              href="https://g.co/kgs/tesca" 
-              target="_blank" 
-              rel="noopener noreferrer"
-              className="text-xs font-bold bg-[#F97316] text-white px-4 py-2 rounded-xl hover:bg-[#EA580C] transition-colors"
-            >
-              Leave Review
+              <span>Read Reviews on Google</span>
+              <ExternalLink className="w-3.5 h-3.5" />
             </a>
           </div>
-        </div>
-      </section>
-
-      {/* LEAD CAPTURE FORM SECTION */}
-      <section id="counselling-form" className="max-w-4xl mx-auto px-4 mt-14 scroll-mt-20">
-        <div className="bg-white rounded-[24px] p-6 sm:p-10 border border-slate-200 shadow-xl relative overflow-hidden">
-          
-          <div className="text-center max-w-xl mx-auto mb-8">
-            <span className="text-xs font-bold tracking-widest text-[#F97316] uppercase bg-[#F97316]/10 px-3.5 py-1 rounded-full">
-              Free 1-on-1 Session
-            </span>
-            <h2 className="text-2xl sm:text-3xl font-extrabold text-[#0A2342] mt-2 tracking-tight">
-              Book Your Free Counselling
-            </h2>
-            <p className="text-xs sm:text-sm text-slate-500 mt-1">
-              Fill in your details below and our senior counsellors will contact you within 2 hours.
-            </p>
-          </div>
-
-          {isSubmitted ? (
-            <motion.div 
-              initial={{ opacity: 0, scale: 0.95 }}
-              animate={{ opacity: 1, scale: 1 }}
-              className="text-center py-10 bg-slate-50 rounded-[20px] border border-slate-200/60 p-6"
-            >
-              <div className="w-16 h-16 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center mx-auto mb-4">
-                <CheckCircle2 className="w-8 h-8" />
-              </div>
-              <h3 className="text-xl font-extrabold text-[#0A2342] mb-2">
-                Thank You!
-              </h3>
-              <p className="text-sm text-slate-600 max-w-md mx-auto mb-6">
-                We'll contact you shortly on <span className="font-semibold text-slate-900">{formData.phone}</span> to schedule your free study abroad counselling session.
-              </p>
-              <button
-                onClick={() => {
-                  setIsSubmitted(false);
-                  setFormData({ name: '', phone: '', email: '', country: 'UK', intake: 'Fall 2026', qualification: 'Bachelor\'s Degree', message: '' });
-                }}
-                className="text-xs font-bold text-[#F97316] hover:underline"
-              >
-                Submit another response
-              </button>
-            </motion.div>
-          ) : (
-            <form onSubmit={handleFormSubmit} className="space-y-4 max-w-2xl mx-auto">
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-xs font-bold text-slate-700 mb-1">Full Name *</label>
-                  <input
-                    type="text"
-                    required
-                    placeholder="Enter your name"
-                    value={formData.name}
-                    onChange={e => setFormData({ ...formData, name: e.target.value })}
-                    className="w-full px-4 py-3 rounded-xl border border-slate-200 bg-slate-50/50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#F97316]/50 focus:border-[#F97316] text-xs sm:text-sm font-medium transition-all"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-xs font-bold text-slate-700 mb-1">Phone Number *</label>
-                  <input
-                    type="tel"
-                    required
-                    placeholder="+91 98765 43210"
-                    value={formData.phone}
-                    onChange={e => setFormData({ ...formData, phone: e.target.value })}
-                    className="w-full px-4 py-3 rounded-xl border border-slate-200 bg-slate-50/50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#F97316]/50 focus:border-[#F97316] text-xs sm:text-sm font-medium transition-all"
-                  />
-                </div>
-              </div>
-
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-xs font-bold text-slate-700 mb-1">Email Address</label>
-                  <input
-                    type="email"
-                    placeholder="yourname@gmail.com"
-                    value={formData.email}
-                    onChange={e => setFormData({ ...formData, email: e.target.value })}
-                    className="w-full px-4 py-3 rounded-xl border border-slate-200 bg-slate-50/50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#F97316]/50 focus:border-[#F97316] text-xs sm:text-sm font-medium transition-all"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-xs font-bold text-slate-700 mb-1">Preferred Country</label>
-                  <select
-                    value={formData.country}
-                    onChange={e => setFormData({ ...formData, country: e.target.value })}
-                    className="w-full px-4 py-3 rounded-xl border border-slate-200 bg-slate-50/50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#F97316]/50 focus:border-[#F97316] text-xs sm:text-sm font-medium transition-all"
-                  >
-                    <option value="UK">United Kingdom 🇬🇧</option>
-                    <option value="Australia">Australia 🇦🇺</option>
-                    <option value="Canada">Canada 🇨🇦</option>
-                    <option value="USA">United States 🇺🇸</option>
-                    <option value="New Zealand">New Zealand 🇳🇿</option>
-                    <option value="Ireland">Ireland 🇮🇪</option>
-                    <option value="Germany">Germany 🇩🇪</option>
-                    <option value="Europe">Europe (Schengen) 🇫🇷</option>
-                  </select>
-                </div>
-              </div>
-
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-xs font-bold text-slate-700 mb-1">Preferred Intake</label>
-                  <select
-                    value={formData.intake}
-                    onChange={e => setFormData({ ...formData, intake: e.target.value })}
-                    className="w-full px-4 py-3 rounded-xl border border-slate-200 bg-slate-50/50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#F97316]/50 focus:border-[#F97316] text-xs sm:text-sm font-medium transition-all"
-                  >
-                    <option value="Fall 2026">Fall 2026 (Sept/Oct)</option>
-                    <option value="Spring 2027">Spring 2027 (Jan/Feb)</option>
-                    <option value="Summer 2027">Summer 2027 (May/June)</option>
-                  </select>
-                </div>
-
-                <div>
-                  <label className="block text-xs font-bold text-slate-700 mb-1">Current Qualification</label>
-                  <select
-                    value={formData.qualification}
-                    onChange={e => setFormData({ ...formData, qualification: e.target.value })}
-                    className="w-full px-4 py-3 rounded-xl border border-slate-200 bg-slate-50/50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#F97316]/50 focus:border-[#F97316] text-xs sm:text-sm font-medium transition-all"
-                  >
-                    <option value="12th Standard">12th Standard (Higher Secondary)</option>
-                    <option value="Bachelor's Degree">Bachelor's Degree</option>
-                    <option value="Master's Degree">Master's Degree</option>
-                    <option value="Diploma">Diploma / Vocational</option>
-                  </select>
-                </div>
-              </div>
-
-              <div>
-                <label className="block text-xs font-bold text-slate-700 mb-1">Message / Questions (Optional)</label>
-                <textarea
-                  rows={3}
-                  placeholder="Tell us about your target course or any specific queries..."
-                  value={formData.message}
-                  onChange={e => setFormData({ ...formData, message: e.target.value })}
-                  className="w-full px-4 py-3 rounded-xl border border-slate-200 bg-slate-50/50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#F97316]/50 focus:border-[#F97316] text-xs sm:text-sm font-medium transition-all"
-                />
-              </div>
-
-              <button
-                type="submit"
-                disabled={isSubmitting}
-                className="w-full bg-[#F97316] hover:bg-[#EA580C] text-white text-sm font-bold py-3.5 px-6 rounded-xl transition-all shadow-lg hover:shadow-xl hover:shadow-[#F97316]/25 active:scale-[0.99] flex items-center justify-center gap-2"
-              >
-                {isSubmitting ? (
-                  <span className="flex items-center gap-2">
-                    <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                    Submitting...
-                  </span>
-                ) : (
-                  <>
-                    <span>Book Free Counselling</span>
-                    <ArrowRight className="w-4 h-4" />
-                  </>
-                )}
-              </button>
-            </form>
-          )}
         </div>
       </section>
 
@@ -951,14 +460,13 @@ export default function ConnectLanding() {
         <div className="bg-[#0A2342] text-white rounded-[24px] p-6 sm:p-8 border border-white/10 shadow-lg">
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-8 items-center">
             <div>
-              <div className="flex items-center gap-2 mb-3">
-                <div className="w-8 h-8 rounded-lg bg-[#F97316] text-white flex items-center justify-center font-bold text-sm">
-                  T
-                </div>
-                <h3 className="font-extrabold text-lg text-white">TESCA Consultancy</h3>
-              </div>
+              <img 
+                src="/images/Tesca_logo.png" 
+                alt="TESCA Consultancy" 
+                className="h-10 w-auto mb-3 object-contain"
+              />
               <p className="text-xs text-slate-300 mb-4 leading-relaxed">
-                Since 2005 • Your Dreams, Our Guidance. Visit our office in Surat for personalized in-person counselling.
+                Since 2005 • Your Dreams, Our Guidance. Visit our main office in Surat for free in-person counselling.
               </p>
 
               <div className="space-y-2.5 text-xs text-slate-200">
@@ -997,18 +505,25 @@ export default function ConnectLanding() {
               </div>
             </div>
 
-            {/* Quick Action Map / Office Card */}
+            {/* Direct Booking Action Box */}
             <div className="bg-white/10 rounded-[20px] p-5 border border-white/10 backdrop-blur-md text-center">
-              <h4 className="font-bold text-sm text-white mb-2">Office Hours</h4>
-              <p className="text-xs text-slate-300 mb-4">Monday – Saturday: 9:30 AM to 7:00 PM</p>
+              <h4 className="font-bold text-sm text-white mb-2">Book Free Counselling</h4>
+              <p className="text-xs text-slate-300 mb-4">Connect with senior visa officers & advisors.</p>
+              <a
+                href="/inquiry"
+                className="w-full inline-flex items-center justify-center gap-2 bg-[#F97316] text-white text-xs font-bold py-3 px-4 rounded-xl hover:bg-[#EA580C] transition-colors shadow-md mb-2"
+              >
+                <span>Fill Online Inquiry Form</span>
+                <ArrowRight className="w-3.5 h-3.5" />
+              </a>
               <a
                 href="https://maps.google.com/?q=TESCA+Surat"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="w-full inline-flex items-center justify-center gap-2 bg-white text-[#0A2342] text-xs font-bold py-2.5 px-4 rounded-xl hover:bg-slate-100 transition-colors shadow-md"
+                className="w-full inline-flex items-center justify-center gap-2 bg-white/10 hover:bg-white/20 text-white text-xs font-medium py-2.5 px-4 rounded-xl transition-colors"
               >
                 <MapPin className="w-3.5 h-3.5 text-[#F97316]" />
-                <span>Get Directions on Google Maps</span>
+                <span>Get Google Maps Directions</span>
               </a>
             </div>
           </div>
@@ -1017,7 +532,7 @@ export default function ConnectLanding() {
 
       {/* FOOTER */}
       <footer className="max-w-4xl mx-auto px-4 mt-12 text-center text-xs text-slate-500 pb-10">
-        <p className="font-medium text-slate-600 mb-1">
+        <p className="font-semibold text-slate-700 mb-1">
           TESCA Spoken English & Visa Consultancy
         </p>
         <p>© 2005 - {new Date().getFullYear()} TESCA Visa Consultancy. All Rights Reserved.</p>
@@ -1035,12 +550,11 @@ export default function ConnectLanding() {
         <span className="hidden sm:inline font-bold text-xs pr-1">Chat on WhatsApp</span>
       </a>
 
-      {/* MOBILE BOTTOM STICKY NAVIGATION (THUMB-FRIENDLY) */}
-      <nav className="fixed bottom-0 left-0 right-0 z-50 bg-[#0A2342]/95 backdrop-blur-lg border-t border-white/10 text-slate-300 py-2 px-3 shadow-2xl">
+      {/* MOBILE BOTTOM STICKY NAVIGATION (THUMB-FRIENDLY & DIRECT LINKS) */}
+      <nav className="fixed bottom-0 left-0 right-0 z-50 bg-[#0A2342]/95 backdrop-blur-lg border-t border-white/10 text-slate-300 py-2.5 px-4 shadow-2xl">
         <div className="max-w-md mx-auto flex items-center justify-around">
           <a
-            href="#"
-            onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+            href="/"
             className="flex flex-col items-center gap-0.5 text-[10px] font-semibold text-white/80 hover:text-white transition-colors"
           >
             <span className="text-base">🏠</span>
@@ -1052,7 +566,7 @@ export default function ConnectLanding() {
             className="flex flex-col items-center gap-0.5 text-[10px] font-semibold text-white/80 hover:text-white transition-colors"
           >
             <span className="text-base">🎓</span>
-            <span>Study</span>
+            <span>Destinations</span>
           </a>
 
           <a
@@ -1066,7 +580,7 @@ export default function ConnectLanding() {
           </a>
 
           <a
-            href="#counselling-form"
+            href="/inquiry"
             className="flex flex-col items-center gap-0.5 text-[10px] font-bold text-[#F97316] hover:text-orange-400 transition-colors"
           >
             <span className="text-base">📅</span>
@@ -1082,166 +596,6 @@ export default function ConnectLanding() {
           </a>
         </div>
       </nav>
-
-      {/* RESOURCE DOWNLOAD MODAL */}
-      <AnimatePresence>
-        {activeModalResource && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
-            <motion.div
-              initial={{ opacity: 0, scale: 0.95 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.95 }}
-              className="bg-white rounded-[24px] p-6 max-w-sm w-full shadow-2xl relative"
-            >
-              <button
-                onClick={() => setActiveModalResource(null)}
-                className="absolute top-4 right-4 text-slate-400 hover:text-slate-600"
-              >
-                <X className="w-5 h-5" />
-              </button>
-
-              <div className="w-12 h-12 rounded-2xl bg-[#F97316]/10 text-[#F97316] flex items-center justify-center mb-4">
-                <Download className="w-6 h-6" />
-              </div>
-
-              <h3 className="font-extrabold text-lg text-[#0A2342] mb-1">
-                Download {activeModalResource}
-              </h3>
-              <p className="text-xs text-slate-500 mb-4">
-                Enter your email or phone to receive instant PDF download link.
-              </p>
-
-              {resourceSent ? (
-                <div className="text-center py-4 text-emerald-600 font-bold text-xs flex items-center justify-center gap-2 bg-emerald-50 rounded-xl">
-                  <Check className="w-4 h-4" /> Download link sent to your phone & email!
-                </div>
-              ) : (
-                <form onSubmit={handleResourceSubmit} className="space-y-3">
-                  <input
-                    type="text"
-                    required
-                    placeholder="Enter phone or email address"
-                    value={resourceEmail}
-                    onChange={e => setResourceEmail(e.target.value)}
-                    className="w-full px-3.5 py-2.5 text-xs rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-[#F97316]/50"
-                  />
-                  <button
-                    type="submit"
-                    className="w-full bg-[#F97316] text-white text-xs font-bold py-3 rounded-xl hover:bg-[#EA580C] transition-colors"
-                  >
-                    Send PDF Download Link
-                  </button>
-                </form>
-              )}
-            </motion.div>
-          </div>
-        )}
-      </AnimatePresence>
-
-      {/* EVENT BOOKING MODAL */}
-      <AnimatePresence>
-        {isEventModalOpen && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
-            <motion.div
-              initial={{ opacity: 0, scale: 0.95 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.95 }}
-              className="bg-white rounded-[24px] p-6 max-w-sm w-full shadow-2xl relative"
-            >
-              <button
-                onClick={() => setIsEventModalOpen(false)}
-                className="absolute top-4 right-4 text-slate-400 hover:text-slate-600"
-              >
-                <X className="w-5 h-5" />
-              </button>
-
-              <h3 className="font-extrabold text-lg text-[#0A2342] mb-1">
-                🇬🇧 Book Seat for UK Mega Fair
-              </h3>
-              <p className="text-xs text-slate-500 mb-4">
-                Reserve your free VIP seat to meet UK university representatives directly.
-              </p>
-
-              {eventBooked ? (
-                <div className="text-center py-4 text-emerald-600 font-bold text-xs flex items-center justify-center gap-2 bg-emerald-50 rounded-xl">
-                  <Check className="w-4 h-4" /> Seat Reserved! Confirmation sent via WhatsApp.
-                </div>
-              ) : (
-                <form onSubmit={handleEventSubmit} className="space-y-3">
-                  <input
-                    type="text"
-                    required
-                    placeholder="Your Name"
-                    value={eventFormData.name}
-                    onChange={e => setEventFormData({ ...eventFormData, name: e.target.value })}
-                    className="w-full px-3.5 py-2.5 text-xs rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-[#F97316]/50"
-                  />
-                  <input
-                    type="tel"
-                    required
-                    placeholder="WhatsApp Number"
-                    value={eventFormData.phone}
-                    onChange={e => setEventFormData({ ...eventFormData, phone: e.target.value })}
-                    className="w-full px-3.5 py-2.5 text-xs rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-[#F97316]/50"
-                  />
-                  <button
-                    type="submit"
-                    className="w-full bg-[#F97316] text-white text-xs font-bold py-3 rounded-xl hover:bg-[#EA580C] transition-colors"
-                  >
-                    Confirm VIP Seat
-                  </button>
-                </form>
-              )}
-            </motion.div>
-          </div>
-        )}
-      </AnimatePresence>
-
-      {/* QUICK ACTION MODAL */}
-      <AnimatePresence>
-        {quickActionModal && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
-            <motion.div
-              initial={{ opacity: 0, scale: 0.95 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.95 }}
-              className="bg-white rounded-[24px] p-6 max-w-sm w-full shadow-2xl relative"
-            >
-              <button
-                onClick={() => setQuickActionModal(null)}
-                className="absolute top-4 right-4 text-slate-400 hover:text-slate-600"
-              >
-                <X className="w-5 h-5" />
-              </button>
-
-              <h3 className="font-extrabold text-lg text-[#0A2342] mb-1">
-                {quickActionModal}
-              </h3>
-              <p className="text-xs text-slate-500 mb-4">
-                Get personalized guidance and details for {quickActionModal} from our Surat experts.
-              </p>
-
-              <div className="space-y-3">
-                <a
-                  href={whatsappUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="w-full bg-[#25D366] text-white text-xs font-bold py-3 rounded-xl flex items-center justify-center gap-2 hover:bg-[#20bd5a] transition-colors"
-                >
-                  <MessageCircle className="w-4 h-4" /> Ask via WhatsApp
-                </a>
-                <a
-                  href="#counselling-form"
-                  onClick={() => setQuickActionModal(null)}
-                  className="w-full bg-[#0A2342] text-white text-xs font-bold py-3 rounded-xl flex items-center justify-center gap-2 hover:bg-[#0E2F56] transition-colors"
-                >
-                  <Calendar className="w-4 h-4" /> Schedule Free Consultation
-                </a>
-              </div>
-            </motion.div>
-          </div>
-        )}
-      </AnimatePresence>
 
     </div>
   );
