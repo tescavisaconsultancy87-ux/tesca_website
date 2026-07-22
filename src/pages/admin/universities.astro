@@ -368,9 +368,39 @@ try {
 
         {/* List panel (7 cols) */}
         <div class="lg:col-span-7 space-y-4">
-          <h2 class="text-base font-bold text-slate-800 flex items-center gap-2">
-            <span set:html={SVG.Landmark} class="text-emerald-600" /> Active Universities Database ({universities.length})
-          </h2>
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-white p-4 rounded-2xl border border-slate-200 shadow-xs">
+            <h2 class="text-base font-bold text-slate-800 flex items-center gap-2">
+              <span set:html={SVG.Landmark} class="text-emerald-600" /> Universities (<span id="visible-uni-count">{universities.length}</span>/<span id="total-uni-count">{universities.length}</span>)
+            </h2>
+
+            <div class="flex flex-wrap items-center gap-2">
+              <select
+                id="filter-country"
+                class="px-3 py-1.5 rounded-xl border border-slate-200 bg-slate-50 text-xs font-semibold text-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all cursor-pointer"
+              >
+                <option value="all">All Countries</option>
+                <option value="us">USA 🇺🇸</option>
+                <option value="uk">United Kingdom 🇬🇧</option>
+                <option value="ca">Canada 🇨🇦</option>
+                <option value="au">Australia 🇦🇺</option>
+                <option value="de">Germany 🇩🇪</option>
+                <option value="nz">New Zealand 🇳🇿</option>
+                <option value="ie">Ireland 🇮🇪</option>
+                <option value="sg">Singapore 🇸🇬</option>
+                <option value="ch">Switzerland 🇨🇭</option>
+                <option value="my">Malaysia 🇲🇾</option>
+                <option value="ae">Dubai 🇦🇪</option>
+                <option value="eu">Europe 🇪🇺</option>
+              </select>
+
+              <input
+                type="text"
+                id="search-university"
+                placeholder="Search name..."
+                class="px-3 py-1.5 rounded-xl border border-slate-200 bg-slate-50 text-xs text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all w-28 sm:w-36"
+              />
+            </div>
+          </div>
 
           {universities.length === 0 ? (
             <p class="text-xs text-slate-500 py-6 text-center">No universities found in database.</p>
@@ -387,7 +417,12 @@ try {
                 </thead>
                 <tbody class="divide-y divide-slate-100">
                   {universities.map((u) => (
-                    <tr class="hover:bg-slate-50 transition-colors">
+                    <tr 
+                      class="uni-row hover:bg-slate-50 transition-colors"
+                      data-code={u.code.toLowerCase()}
+                      data-country={u.country.toLowerCase()}
+                      data-name={u.name.toLowerCase()}
+                    >
                       <td class="px-4 py-4 align-top">
                         <div class="flex items-start gap-3">
                           {u.image_url || u.photo ? (
@@ -465,6 +500,11 @@ try {
                       </td>
                     </tr>
                   ))}
+                  <tr id="no-filter-matches" class="hidden">
+                    <td colspan="4" class="px-4 py-8 text-center text-slate-400 text-xs font-medium">
+                      No universities match your filter criteria.
+                    </td>
+                  </tr>
                 </tbody>
               </table>
             </div>
@@ -731,7 +771,53 @@ try {
     }
   }
 
+  function setupFilter() {
+    const filterSelect = document.getElementById("filter-country") as HTMLSelectElement;
+    const searchInput = document.getElementById("search-university") as HTMLInputElement;
+    const uniRows = document.querySelectorAll(".uni-row");
+    const visibleCountSpan = document.getElementById("visible-uni-count");
+    const noMatchMsg = document.getElementById("no-filter-matches");
+
+    if (!filterSelect && !searchInput) return;
+
+    const filterUnis = () => {
+      const selectedCountryCode = filterSelect?.value.toLowerCase() || "all";
+      const searchQuery = searchInput?.value.trim().toLowerCase() || "";
+      let visibleCount = 0;
+
+      uniRows.forEach(row => {
+        const el = row as HTMLElement;
+        const code = (el.dataset.code || "").toLowerCase();
+        const country = (el.dataset.country || "").toLowerCase();
+        const name = (el.dataset.name || "").toLowerCase();
+
+        const matchesCountry = selectedCountryCode === "all" || code === selectedCountryCode || country.includes(selectedCountryCode);
+        const matchesSearch = !searchQuery || name.includes(searchQuery) || country.includes(searchQuery);
+
+        if (matchesCountry && matchesSearch) {
+          el.classList.remove("hidden");
+          visibleCount++;
+        } else {
+          el.classList.add("hidden");
+        }
+      });
+
+      if (visibleCountSpan) visibleCountSpan.textContent = visibleCount.toString();
+      if (noMatchMsg) {
+        if (visibleCount === 0 && uniRows.length > 0) {
+          noMatchMsg.classList.remove("hidden");
+        } else {
+          noMatchMsg.classList.add("hidden");
+        }
+      }
+    };
+
+    filterSelect?.addEventListener("change", filterUnis);
+    searchInput?.addEventListener("input", filterUnis);
+  }
+
   setupUniEdit();
+  setupFilter();
 
   // Add loader to submit button on form submit
   const uniForm = document.querySelector("form");
@@ -768,6 +854,7 @@ try {
   bindDeleteConfirm();
   document.addEventListener("astro:page-load", () => {
     setupUniEdit();
+    setupFilter();
     bindDeleteConfirm();
   });
 </script>
