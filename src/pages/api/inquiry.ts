@@ -117,21 +117,60 @@ body = await request.json();
     };
     const detailsStr = JSON.stringify(cleanDetails);
 
-    const { data: insertedData, error } = await supabase
-      .from('leads')
-      .insert({
-        lead_type: 'inquiry',
-        name: cleanFullName,
-        email: cleanEmail,
-        phone: cleanMobile,
-        details: detailsStr,
-        status: 'pending'
-      })
-      .select('id')
-      .single();
+    // 1. DIRECT SYNCHRONOUS WRITE TO CRM PORTAL SUPABASE DATABASE (cases table)
+    await forwardInquiryToCRM({
+      full_name: cleanFullName,
+      email: cleanEmail || '',
+      mobile: cleanMobile,
+      dob: body.dob || body.date_of_birth || '',
+      city: cleanDetails.city || 'Online',
+      country_preference: cleanPreferredCountries.join(", ") || "Canada",
+      preferred_countries: cleanPreferredCountries,
+      lead_source: cleanDetails.leadSource || "Website /inquiry Form",
+      reference_name: body.referenceName || body.reference_name || body.refName || '',
+      reference_mobile: body.referenceMobile || body.reference_mobile || body.refMobile || '',
+      inquiry_types: cleanDetails.inquiryType || [],
+      visa_type: Array.isArray(cleanDetails.inquiryType) && cleanDetails.inquiryType.length > 0 ? cleanDetails.inquiryType[0] : 'Student Visa',
+      marital_status: body.maritalStatus || body.marital_status || 'Single',
+      passport_available: body.passportAvailable || body.passport_available || 'No',
+      ssc_completed: body.sscCompleted || body.ssc_completed || body.completedTenth || 'Yes',
+      hsc_completed: body.hscCompleted || body.hsc_completed || body.completedTwelfth || 'Yes',
+      highest_qualification: body.highest || cleanDetails.education || "Bachelor's",
+      study_level: body.highest || cleanDetails.education || "Bachelor's",
+      passing_year: body.collegeYear || body.passingYear || body.passing_year || '',
+      gpa_percentage: body.collegeGpa || body.gpaPercentage || body.gpa_percentage || '',
+      college_university: body.collegeUni || body.universityName || body.college_university || '',
+      college_course: body.collegeCourse || body.courseName || body.college_course || '',
+      language_test_type: body.languageTestType || cleanDetails.languageTest || 'None',
+      exam_score: body.languageTestScore || body.examScore || body.exam_score || '',
+      visa_refusal: body.visaRefusal || cleanDetails.visaRefusal || 'No',
+      refusal_country: body.refusalCountry || body.refusalCountryName || body.refusal_country || '',
+      refusal_date: body.refusalDate || body.refusal_date || '',
+      refusal_reason: body.refusalReason || body.refusal_reason || '',
+      preferred_contact_method: body.contactMethod || body.preferredContactMethod || body.preferred_contact_method || 'WhatsApp',
+      best_time_to_contact: body.contactTime || body.bestTimeToContact || body.best_time_to_contact || 'Morning',
+      source: cleanDetails.leadSource || "Website /inquiry Form",
+      notes: cleanDetails.comments || cleanDetails.message || "Submitted via website /inquiry page"
+    });
 
-    if (error) {
-      throw error;
+    // 2. Safe write to website DB (leads table)
+    let insertedData: any = null;
+    try {
+      const res = await supabase
+        .from('leads')
+        .insert({
+          lead_type: 'inquiry',
+          name: cleanFullName,
+          email: cleanEmail,
+          phone: cleanMobile,
+          details: detailsStr,
+          status: 'pending'
+        })
+        .select('id')
+        .single();
+      insertedData = res.data;
+    } catch (dbErr) {
+      console.warn('[Website DB Insert Notice]:', dbErr);
     }
 
     const googleSheetUrl = getEnv('GOOGLE_SHEET_URL') || import.meta.env.GOOGLE_SHEET_URL;
@@ -165,45 +204,9 @@ body = await request.json();
       runInBackground(locals, () => sendMail({ to: cleanEmail, subject, html }), "inquiry-confirmation-email");
     }
 
-    // Direct synchronous write to TESCA CRM Portal Supabase Database
-    await forwardInquiryToCRM({
-      full_name: cleanFullName,
-      email: cleanEmail || '',
-      mobile: cleanMobile,
-      dob: body.dob || body.date_of_birth || '',
-      city: cleanDetails.city || 'Online',
-      country_preference: cleanPreferredCountries.join(", ") || "Canada",
-      preferred_countries: cleanPreferredCountries,
-      lead_source: cleanDetails.leadSource || "Website /inquiry Form",
-      reference_name: body.referenceName || body.reference_name || '',
-      reference_mobile: body.referenceMobile || body.reference_mobile || '',
-      inquiry_types: cleanDetails.inquiryType || [],
-      visa_type: Array.isArray(cleanDetails.inquiryType) && cleanDetails.inquiryType.length > 0 ? cleanDetails.inquiryType[0] : 'Student Visa',
-      marital_status: body.maritalStatus || body.marital_status || 'Single',
-      passport_available: body.passportAvailable || body.passport_available || 'No',
-      ssc_completed: body.sscCompleted || body.ssc_completed || 'Yes',
-      hsc_completed: body.hscCompleted || body.hsc_completed || 'Yes',
-      highest_qualification: cleanDetails.education || "Bachelor's",
-      study_level: cleanDetails.education || "Bachelor's",
-      passing_year: body.passingYear || body.passing_year || '',
-      gpa_percentage: body.gpaPercentage || body.gpa_percentage || '',
-      college_university: body.universityName || body.college_university || '',
-      college_course: body.courseName || body.college_course || '',
-      language_test_type: cleanDetails.languageTest || 'None',
-      exam_score: body.examScore || body.exam_score || '',
-      visa_refusal: cleanDetails.visaRefusal || 'No',
-      refusal_country: body.refusalCountryName || body.refusal_country || '',
-      refusal_date: body.refusalDate || body.refusal_date || '',
-      refusal_reason: body.refusalReason || body.refusal_reason || '',
-      preferred_contact_method: body.preferredContactMethod || body.preferred_contact_method || 'WhatsApp',
-      best_time_to_contact: body.bestTimeToContact || body.best_time_to_contact || 'Morning',
-      source: cleanDetails.leadSource || "Website /inquiry Form",
-      notes: cleanDetails.comments || cleanDetails.message || "Submitted via website /inquiry page"
-    });
-
     return jsonResponse({
       success: true,
-      leadId: insertedData?.id || null
+      leadId: insertedData?.id || cleanLeadId || null
     });
 
   } catch (err: any) {
