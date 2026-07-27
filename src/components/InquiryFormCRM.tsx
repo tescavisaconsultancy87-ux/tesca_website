@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from "react";
 import { 
   Check, ChevronLeft, ChevronRight, User, Phone, 
   Mail, Calendar, MapPin, GraduationCap, Info, Lock, X, 
-  AlertCircle, CheckCircle, Clock, MessageSquare, Shield, Loader2, Globe, ChevronDown
+  AlertCircle, CheckCircle, Clock, MessageSquare, Shield, Loader2, Globe, ChevronDown, RotateCcw, Trash2
 } from "lucide-react";
 
 // Types
@@ -192,23 +192,67 @@ export default function InquiryFormCRM() {
     return `TESCA-${dateStr}-${randomPart}`;
   };
 
-  // Load from local storage
+  // Draft Confirmation & Manual Clear States
+  const [showDraftModal, setShowDraftModal] = useState(false);
+  const [pendingDraft, setPendingDraft] = useState<FormData | null>(null);
+  const [showClearConfirmModal, setShowClearConfirmModal] = useState(false);
+
+  // Load from local storage with confirmation modal
   useEffect(() => {
     const saved = localStorage.getItem("tesca_crm_inquiry");
     if (saved) {
       try {
         const parsed = JSON.parse(saved);
-        if (!parsed.leadId) {
-          parsed.leadId = generateLeadId();
+        const hasContent = Boolean(
+          parsed.fullName?.trim() || 
+          parsed.mobileNumber?.trim() || 
+          parsed.email?.trim() || 
+          (parsed.preferredCountries && parsed.preferredCountries.length > 0) ||
+          (parsed.inquiryType && parsed.inquiryType.length > 0) ||
+          parsed.city?.trim()
+        );
+
+        if (hasContent) {
+          if (!parsed.leadId) {
+            parsed.leadId = generateLeadId();
+          }
+          setPendingDraft(parsed);
+          setShowDraftModal(true);
+          setFormData(prev => ({ ...prev, leadId: parsed.leadId }));
+          return;
         }
-        setFormData(parsed);
       } catch (e) {
         console.error("Error parsing saved form data", e);
       }
-    } else {
-      setFormData(prev => ({ ...prev, leadId: generateLeadId() }));
     }
+    setFormData(prev => ({ ...prev, leadId: generateLeadId() }));
   }, []);
+
+  const restoreDraft = () => {
+    if (pendingDraft) {
+      setFormData(pendingDraft);
+    }
+    setShowDraftModal(false);
+    setPendingDraft(null);
+    if (typeof window !== "undefined" && (window as any).showToast) {
+      (window as any).showToast("Previous form progress restored!", "success");
+    }
+  };
+
+  const clearDraftAndStartFresh = () => {
+    localStorage.removeItem("tesca_crm_inquiry");
+    const newLeadId = generateLeadId();
+    setFormData({ ...INITIAL_STATE, leadId: newLeadId });
+    setCurrentStep(1);
+    setErrors({});
+    setShowDraftModal(false);
+    setShowClearConfirmModal(false);
+    setPendingDraft(null);
+    startTrackedRef.current = false;
+    if (typeof window !== "undefined" && (window as any).showToast) {
+      (window as any).showToast("Form cleared. Started fresh assessment.", "info");
+    }
+  };
 
   const startTrackedRef = useRef(false);
 
@@ -581,9 +625,20 @@ Comments/Additional Info: ${formData.comments || "None"}`;
                 Please complete the form below and our counselor will call you in some times.
               </p>
             </div>
-            {/* Sticky Step Progress Indicator */}
+            {/* Sticky Step Progress Indicator & Clear Action */}
             <div className="shrink-0 flex flex-col items-end gap-1.5">
-              <span className="text-xs font-bold text-[#0F4C81] font-sans">Step {currentStep} of 9</span>
+              <div className="flex items-center gap-3">
+                <button
+                  type="button"
+                  onClick={() => setShowClearConfirmModal(true)}
+                  className="flex items-center gap-1 text-[11px] font-semibold text-slate-400 hover:text-red-600 transition-colors cursor-pointer"
+                  title="Clear all fields and restart"
+                >
+                  <RotateCcw className="w-3 h-3" />
+                  <span>Clear Form</span>
+                </button>
+                <span className="text-xs font-bold text-[#0F4C81] font-sans">Step {currentStep} of 9</span>
+              </div>
               <div className="w-24 h-2 bg-slate-100 rounded-full overflow-hidden border border-slate-200/50">
                 <div 
                   className="h-full bg-gradient-to-r from-[#0F4C81] to-[#0F4C81]/80 transition-all duration-300"
@@ -592,6 +647,92 @@ Comments/Additional Info: ${formData.comments || "None"}`;
               </div>
             </div>
           </div>
+
+          {/* DRAFT RESTORATION MODAL */}
+          {showDraftModal && (
+            <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4 animate-[fadeIn_0.25s_ease-out]">
+              <div className="bg-white rounded-3xl shadow-2xl max-w-md w-full p-6 text-left border border-slate-100 animate-[scaleIn_0.25s_ease-out] space-y-4">
+                <div className="flex items-start gap-3">
+                  <div className="p-3 bg-amber-50 text-amber-600 rounded-2xl shrink-0">
+                    <Clock className="w-6 h-6" />
+                  </div>
+                  <div>
+                    <h3 className="text-lg font-bold text-slate-800 font-display">Unsaved Draft Found</h3>
+                    <p className="text-xs text-slate-500 font-sans mt-1 leading-relaxed">
+                      You have saved form progress from a previous session. Would you like to restore your draft or clear the form and start fresh?
+                    </p>
+                  </div>
+                </div>
+
+                {pendingDraft && (
+                  <div className="bg-slate-50 border border-slate-100 rounded-xl p-3 text-xs text-slate-600 space-y-1 font-sans">
+                    {pendingDraft.fullName && (
+                      <p><span className="font-semibold text-slate-700">Name:</span> {pendingDraft.fullName}</p>
+                    )}
+                    {pendingDraft.mobileNumber && (
+                      <p><span className="font-semibold text-slate-700">Phone:</span> {pendingDraft.mobileNumber}</p>
+                    )}
+                    {pendingDraft.leadId && (
+                      <p><span className="font-semibold text-slate-500">ID:</span> <span className="font-mono text-[10px]">{pendingDraft.leadId}</span></p>
+                    )}
+                  </div>
+                )}
+
+                <div className="flex flex-col sm:flex-row gap-2 pt-2 border-t border-slate-100">
+                  <button
+                    type="button"
+                    onClick={clearDraftAndStartFresh}
+                    className="flex-1 py-2.5 px-4 bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold text-xs rounded-xl transition-all cursor-pointer text-center font-sans"
+                  >
+                    Start Fresh (Clear)
+                  </button>
+                  <button
+                    type="button"
+                    onClick={restoreDraft}
+                    className="flex-1 py-2.5 px-4 bg-[#0F4C81] hover:bg-[#0c3c66] text-white font-semibold text-xs rounded-xl transition-all cursor-pointer shadow-md text-center font-sans"
+                  >
+                    Continue Saved Draft →
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* CLEAR FORM CONFIRMATION MODAL */}
+          {showClearConfirmModal && (
+            <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4 animate-[fadeIn_0.25s_ease-out]">
+              <div className="bg-white rounded-3xl shadow-2xl max-w-sm w-full p-6 text-left border border-slate-100 animate-[scaleIn_0.25s_ease-out] space-y-4">
+                <div className="flex items-start gap-3">
+                  <div className="p-3 bg-red-50 text-red-500 rounded-2xl shrink-0">
+                    <Trash2 className="w-6 h-6" />
+                  </div>
+                  <div>
+                    <h3 className="text-lg font-bold text-slate-800 font-display">Clear Form Data?</h3>
+                    <p className="text-xs text-slate-500 font-sans mt-1 leading-relaxed">
+                      Are you sure you want to erase all your entries and reset the form to step 1?
+                    </p>
+                  </div>
+                </div>
+
+                <div className="flex gap-2 pt-2 border-t border-slate-100">
+                  <button
+                    type="button"
+                    onClick={() => setShowClearConfirmModal(false)}
+                    className="flex-1 py-2.5 px-4 bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold text-xs rounded-xl transition-all cursor-pointer text-center font-sans"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="button"
+                    onClick={clearDraftAndStartFresh}
+                    className="flex-1 py-2.5 px-4 bg-red-600 hover:bg-red-700 text-white font-semibold text-xs rounded-xl transition-all cursor-pointer shadow-md text-center font-sans"
+                  >
+                    Yes, Clear Form
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
 
           {/* Form Step Contents */}
           <form className="space-y-6" onSubmit={e => e.preventDefault()}>

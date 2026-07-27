@@ -6,6 +6,7 @@ import { getEnv } from '../../utils/env';
 import { sendMail } from '../../utils/mailer';
 import { inquiryConfirmationEmail } from '../../utils/emailTemplates';
 import { runInBackground } from '../../utils/background';
+import { forwardInquiryToCRM } from '../../utils/crmWebhook';
 
 const RATE_LIMIT_WINDOW_MS = 10 * 60 * 1000;
 const RATE_LIMIT_MAX = 8;
@@ -163,6 +164,16 @@ body = await request.json();
       });
       runInBackground(locals, () => sendMail({ to: cleanEmail, subject, html }), "inquiry-confirmation-email");
     }
+
+    // Forward inquiry directly to TESCA CRM Portal Webhook
+    forwardInquiryToCRM(locals, {
+      fullName: cleanFullName,
+      email: cleanEmail,
+      phone: cleanMobile,
+      countryPreference: cleanPreferredCountries.join(", ") || "Canada",
+      source: cleanDetails.leadSource || "Website Inquiry Form",
+      notes: cleanDetails.comments || cleanDetails.message || "Submitted via website /inquiry page"
+    });
 
     return jsonResponse({
       success: true,
