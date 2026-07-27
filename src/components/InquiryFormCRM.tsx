@@ -438,6 +438,9 @@ Comments/Additional Info: ${formData.comments || "None"}`;
           });
           console.log(`[Tracking] GA4 application_submit fired: ${formData.leadId}`);
         }
+        if ((window as any).showToast) {
+          (window as any).showToast("Inquiry submitted successfully! We'll contact you within 24 hours.", "success");
+        }
       }
       setIsSuccess(true);
       localStorage.removeItem("tesca_crm_inquiry");
@@ -448,7 +451,9 @@ Comments/Additional Info: ${formData.comments || "None"}`;
           formData
         });
       }
-      alert("Something went wrong while submitting your inquiry. Please check your connection and try again, or contact us directly via WhatsApp.");
+      if (typeof window !== "undefined" && (window as any).showToast) {
+        (window as any).showToast("Something went wrong. Please try again or contact us via WhatsApp.", "error");
+      }
     } finally {
       setIsSubmitting(false);
     }

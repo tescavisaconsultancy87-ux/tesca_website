@@ -7,27 +7,163 @@ import InquiryFormCRM from "../components/InquiryFormCRM";
 <!doctype html>
 <html lang="en">
   <head>
-    <!-- Google tag (gtag.js) -->
-    <script is:inline async src="https://www.googletagmanager.com/gtag/js?id=G-2HW0JXMF2Y"></script>
-    <script is:inline>
-      window.dataLayer = window.dataLayer || [];
-      function gtag(){dataLayer.push(arguments);}
-      gtag('js', new Date());
-      gtag('config', 'G-2HW0JXMF2Y');
-    </script>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <link rel="icon" type="image/png" href="/favicon.png" />
     <link rel="shortcut icon" href="/favicon.ico" />
-    <title>Assessment Form | TESCA Visa Consultancy</title>
-    <meta name="description" content="Study Abroad, Visa & Immigration Assessment Form. Please complete the form and our counselor will contact you within 24 hours." />
+    <title>Quick Enquiry | TESCA Visa Consultancy</title>
+    <meta name="description" content="Get free study abroad counselling. Fill in your details and our expert counsellors will contact you within 24 hours." />
   </head>
   <body class="bg-gradient-to-br from-slate-50 to-[#0F4C81]/5 min-h-screen flex flex-col items-center justify-center p-3 md:p-8 font-sans">
     
-    <!-- Multi-step lead capture component -->
-    <main class="w-full flex justify-center">
+    <main class="w-full max-w-2xl mx-auto space-y-8">
+      
+      <!-- Quick Enquiry Form (JS-free fallback) -->
+      <div class="bg-white rounded-[2rem] shadow-2xl border border-slate-100/80 p-6 md:p-10 text-left" id="quick-enquiry">
+        <div class="flex items-center gap-2 mb-1">
+          <h1 class="text-2xl font-extrabold font-display text-[#0F4C81]">Quick Enquiry</h1>
+          <span class="text-[9px] font-bold text-[#0F4C81] bg-[#0F4C81]/10 px-2 py-0.5 border border-[#0F4C81]/20 rounded font-sans uppercase">Free</span>
+        </div>
+        <p class="text-sm text-slate-500 font-sans font-normal mb-6 leading-relaxed">
+          Get a free profile evaluation — our counsellor will call you back within 24 hours.
+        </p>
+
+        <form id="quick-enquiry-form" class="space-y-4">
+          <input type="hidden" name="_subject" value="Quick Website Enquiry" />
+          <input type="hidden" name="_captcha" value="false" />
+          
+          <div>
+            <label for="qe-name" class="text-xs font-bold uppercase tracking-wider text-slate-600 font-sans block mb-1.5">Full Name *</label>
+            <input id="qe-name" name="name" type="text" required
+              placeholder="John Doe"
+              class="w-full px-4 py-3 bg-white border border-slate-200 focus:border-[#0F4C81] focus:ring-2 focus:ring-[#0F4C81]/15 rounded-xl text-sm placeholder-slate-400 focus:outline-none transition-all font-sans"
+            />
+          </div>
+
+          <div>
+            <label for="qe-phone" class="text-xs font-bold uppercase tracking-wider text-slate-600 font-sans block mb-1.5">Phone / WhatsApp *</label>
+            <input id="qe-phone" name="phone" type="tel" required
+              placeholder="+91 98241 52731"
+              class="w-full px-4 py-3 bg-white border border-slate-200 focus:border-[#0F4C81] focus:ring-2 focus:ring-[#0F4C81]/15 rounded-xl text-sm placeholder-slate-400 focus:outline-none transition-all font-sans"
+            />
+          </div>
+
+          <div>
+            <label for="qe-email" class="text-xs font-bold uppercase tracking-wider text-slate-600 font-sans block mb-1.5">Email (optional)</label>
+            <input id="qe-email" name="email" type="email"
+              placeholder="john@email.com"
+              class="w-full px-4 py-3 bg-white border border-slate-200 focus:border-[#0F4C81] focus:ring-2 focus:ring-[#0F4C81]/15 rounded-xl text-sm placeholder-slate-400 focus:outline-none transition-all font-sans"
+            />
+          </div>
+
+          <div>
+            <label for="qe-country" class="text-xs font-bold uppercase tracking-wider text-slate-600 font-sans block mb-1.5">Interested Country</label>
+            <select id="qe-country" name="country"
+              class="w-full px-4 py-3 bg-white border border-slate-200 focus:border-[#0F4C81] focus:ring-2 focus:ring-[#0F4C81]/15 rounded-xl text-sm focus:outline-none transition-all font-sans text-slate-700"
+            >
+              <option value="">Select a country...</option>
+              <option value="USA">USA</option>
+              <option value="UK">United Kingdom</option>
+              <option value="Canada">Canada</option>
+              <option value="Australia">Australia</option>
+              <option value="New Zealand">New Zealand</option>
+              <option value="Germany">Germany</option>
+              <option value="Ireland">Ireland</option>
+              <option value="Europe">Europe</option>
+              <option value="Singapore">Singapore</option>
+              <option value="Dubai">Dubai</option>
+              <option value="Other">Other</option>
+            </select>
+          </div>
+
+          <button type="submit"
+            class="w-full py-3.5 bg-[#F08A00] hover:bg-[#C06E00] text-white font-bold text-sm rounded-xl shadow-md transition-all duration-200 cursor-pointer font-sans tracking-wide"
+          >
+            Get Free Counselling →
+          </button>
+
+          <p class="text-[10px] text-slate-400 font-sans font-normal text-center mt-2">
+            Your information is secure. We'll respond within 24 hours.
+          </p>
+        </form>
+
+        <div id="qe-success" class="hidden flex flex-col items-center justify-center py-8 text-center space-y-4">
+          <div class="p-4 rounded-full bg-emerald-100 text-emerald-600">
+            <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
+          </div>
+          <h3 class="text-xl font-bold font-display text-slate-800">Thank You!</h3>
+          <p class="text-sm text-slate-600 font-sans font-normal max-w-xs leading-relaxed">
+            Our senior counsellor will review your profile and contact you within 24 hours.
+          </p>
+        </div>
+
+        <div id="qe-error" class="hidden text-center py-4">
+          <p class="text-sm text-red-600 font-sans font-medium">Something went wrong. Please try again or WhatsApp us directly at <a href="https://wa.me/919824152731" class="text-[#25D366] font-bold underline">+91 98241 52731</a>.</p>
+        </div>
+      </div>
+
+      <script>
+        // Quick Enquiry Form — JS-free fallback with fetch + toast
+        const form = document.getElementById('quick-enquiry-form');
+        const successDiv = document.getElementById('qe-success');
+        const errorDiv = document.getElementById('qe-error');
+
+        if (form) {
+          form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const btn = form.querySelector('button[type="submit"]') as HTMLButtonElement;
+            btn.disabled = true;
+            btn.textContent = 'Submitting...';
+
+            const data = {
+              fullName: (document.getElementById('qe-name') as HTMLInputElement).value.trim(),
+              mobileNumber: (document.getElementById('qe-phone') as HTMLInputElement).value.trim(),
+              email: (document.getElementById('qe-email') as HTMLInputElement).value.trim(),
+              destination: (document.getElementById('qe-country') as HTMLSelectElement).value,
+              leadSource: 'Quick Enquiry Form',
+            };
+
+            try {
+              const res = await fetch('/api/inquiry', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data),
+              });
+
+              const result = await res.json();
+              if (res.ok && result.success) {
+                form.classList.add('hidden');
+                successDiv?.classList.remove('hidden');
+                errorDiv?.classList.add('hidden');
+                if (typeof window !== 'undefined' && (window as any).showToast) {
+                  (window as any).showToast('Enquiry submitted! We\'ll contact you within 24 hours.', 'success');
+                }
+              } else {
+                throw new Error(result.error || 'Submission failed');
+              }
+            } catch (err) {
+              console.error('Quick Enquiry failed:', err);
+              errorDiv?.classList.remove('hidden');
+              btn.disabled = false;
+              btn.textContent = 'Get Free Counselling →';
+              if (typeof window !== 'undefined' && (window as any).showToast) {
+                (window as any).showToast('Something went wrong. Please try again or WhatsApp us.', 'error');
+              }
+            }
+          });
+        }
+      </script>
+
+      <div class="relative flex items-center gap-4 py-4">
+        <div class="flex-1 h-px bg-slate-200"></div>
+        <span class="text-xs font-bold text-slate-400 uppercase tracking-wider font-sans">or fill detailed assessment</span>
+        <div class="flex-1 h-px bg-slate-200"></div>
+      </div>
+
+      <!-- Full CRM Form -->
       <InquiryFormCRM client:load />
+      
     </main>
 
   </body>

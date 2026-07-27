@@ -176,6 +176,10 @@ export default function CounsellorForm() {
   }, [showCountryDropdown]);
 
   useEffect(() => {
+    window.dispatchEvent(new CustomEvent("counsellor-form-ready"));
+  }, []);
+
+  useEffect(() => {
     const handleOpen = () => {
       setStatus("idle");
       setSubmitError("");
@@ -272,6 +276,12 @@ export default function CounsellorForm() {
 
   const fullPhoneNumber = `${selectedPhoneCountry.dialCode} ${phone}`;
 
+  const showToast = (message: string, type: 'success' | 'error' | 'info' | 'warning' = 'info') => {
+    if (typeof window !== 'undefined' && (window as any).showToast) {
+      (window as any).showToast(message, type);
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (status === "sending" || !validate()) return;
@@ -337,17 +347,8 @@ export default function CounsellorForm() {
           visaType
         });
       }
-      setSubmitError("Something went wrong while submitting your enquiry. Please check your connection and try again, or connect with us directly via WhatsApp.");
-      setStatus("failed");
-      setFirstName("");
-      setLastName("");
-      setEmail("");
-      setPhone("");
-      setPhoneCountry("IN");
-      setMode("");
-      setDestination("");
-      setVisaType("");
-      setErrors({});
+      showToast("Something went wrong. Please try again or contact us via WhatsApp.", "error");
+      setStatus("idle");
     }
   };
 
@@ -526,7 +527,7 @@ export default function CounsellorForm() {
                       disabled={bookingStatus === "booking" || !selectedDate || !selectedTime || !bookingToken}
                       onClick={async () => {
                         if (!selectedDate || !selectedTime) {
-                          alert("Please select a date and time slot!");
+                          showToast("Please select a date and time slot.", "warning");
                           return;
                         }
                         
@@ -567,8 +568,12 @@ export default function CounsellorForm() {
                           const message = `Hello TESCA, I have booked a consultation slot${visaPart} for ${formattedDate} at ${selectedTime}. Please confirm my slot!`;
                           const encodedMsg = encodeURIComponent(message);
                           
+                          showToast("Slot booked! Opening WhatsApp to confirm.", "success");
+                          
                           // Auto redirect to WhatsApp
-                          window.open(`https://wa.me/919824152731?text=${encodedMsg}`, '_blank');
+                          setTimeout(() => {
+                            window.open(`https://wa.me/919824152731?text=${encodedMsg}`, '_blank');
+                          }, 800);
                           
                           // Reset form and close
                           setShowSlotPicker(false);
@@ -592,7 +597,7 @@ export default function CounsellorForm() {
                               selectedTime
                             });
                           }
-                          alert("Something went wrong while booking your consultation slot. Please try again or reach out to us via WhatsApp.");
+                          showToast("Booking failed. Please try again or reach out via WhatsApp.", "error");
                         } finally {
                           setBookingStatus("idle");
                         }

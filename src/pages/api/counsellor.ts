@@ -283,39 +283,26 @@ export const POST: APIRoute = async ({ request, locals }) => {
     const cleanDestination = destination ? sanitizeText(destination, 50) : "";
     const cleanVisaType = visaType ? sanitizeText(visaType, 50) : "";
 
-    // Check if there is an active lead with the same email or phone number that is not completed
+    // Check for very recent duplicate submissions (within 60 seconds) to prevent accidental double-submits
     const phoneDigits = cleanPhone.replace(/\D/g, '');
     const last10Digits = phoneDigits.length >= 10 ? phoneDigits.slice(-10) : phoneDigits;
 
-    const checkQuery = supabase
+    const { data: recentLeads, error: checkError } = await supabase
       .from('leads')
       .select('id, status, phone, email, details, created_at')
       .neq('status', 'completed')
-      .order('created_at', { ascending: false });
-
-    if (cleanEmail && last10Digits) {
-      checkQuery.or(`phone.eq."${cleanPhone}",email.eq."${cleanEmail}",phone.ilike."%${last10Digits}"`);
-    } else if (cleanEmail) {
-      checkQuery.or(`phone.eq."${cleanPhone}",email.eq."${cleanEmail}"`);
-    } else if (last10Digits) {
-      checkQuery.or(`phone.eq."${cleanPhone}",phone.ilike."%${last10Digits}"`);
-    } else {
-      checkQuery.eq('phone', cleanPhone);
-    }
-
-    const { data: existingLeads, error: checkError } = await checkQuery;
+      .order('created_at', { ascending: false })
+      .limit(1);
 
     if (checkError) {
       console.error("[counsellor] Error checking for existing active leads:", checkError);
-      throw checkError;
-    }
+    } else if (recentLeads && recentLeads.length > 0) {
+      const latest = recentLeads[0];
+      const matchPhone = latest.phone && cleanPhone && latest.phone.replace(/\D/g, '').slice(-10) === last10Digits;
+      const matchEmail = cleanEmail && latest.email && latest.email.toLowerCase() === cleanEmail.toLowerCase();
+      const isWithinWindow = (Date.now() - new Date(latest.created_at || Date.now()).getTime()) < 60000;
 
-    if (existingLeads && existingLeads.length > 0) {
-      const latest = existingLeads[0];
-      const createdAtMs = new Date(latest.created_at || Date.now()).getTime();
-      const isRecent = (Date.now() - createdAtMs) < 60000;
-
-      if (isRecent) {
+      if ((matchPhone || matchEmail) && isWithinWindow) {
         let bookingToken = "";
         try {
           const det = typeof latest.details === 'string' ? JSON.parse(latest.details) : (latest.details || {});
@@ -342,13 +329,6 @@ export const POST: APIRoute = async ({ request, locals }) => {
           headers: { "Content-Type": "application/json" }
         });
       }
-
-      return new Response(JSON.stringify({ 
-        error: "An active counselling booking or inquiry already exists for this email or phone number. Our team is already reviewing your profile and will contact you shortly." 
-      }), {
-        status: 409,
-        headers: { "Content-Type": "application/json" }
-      });
     }
 
     const fullName = `${cleanFirstName} ${cleanLastName}`;

@@ -29,6 +29,22 @@ export const onRequest = defineMiddleware(async (context, next) => {
     // Fallback/ignore during local development or build time
   }
 
+  const { hostname, pathname: reqPath, search } = context.url;
+  const isLocalHost = hostname === "localhost" || hostname === "127.0.0.1";
+  const isPreviewHost = hostname.endsWith(".pages.dev") || hostname.endsWith(".workers.dev");
+  const isPublicHost = hostname === "tescavisa.com" || hostname === "www.tescavisa.com";
+  const isAdminHost = hostname === "admin.tescavisa.com";
+
+  // Canonicalize any stray/probed subdomain that is still routed to this Worker.
+  // Cloudflare analytics showed heavy scanner traffic against hosts like
+  // oauth/app/signup/manage/dashboard/signin/user/account.tescavisa.com. Sending
+  // those to the public home page prevents the app/router from turning every
+  // malicious probe path into another 404 while keeping local and preview hosts
+  // usable.
+  if (!isPublicHost && !isAdminHost && !isLocalHost && !isPreviewHost) {
+    return Response.redirect("https://tescavisa.com/", 301);
+  }
+
   // --- Redirect legacy apex admin URLs to the dedicated admin subdomain ---
   // The admin panel now lives on admin.tescavisa.com. Permanently (301) redirect
   // tescavisa.com/admin and /admin/* — preserving the full path and query string —
@@ -36,8 +52,7 @@ export const onRequest = defineMiddleware(async (context, next) => {
   // admin.tescavisa.com/admin/dashboard). Scoped to the production apex host only:
   // the admin subdomain itself (no loop), local dev (localhost), and preview hosts
   // (*.pages.dev) are intentionally left alone so admin development still works there.
-  const { hostname, pathname: reqPath, search } = context.url;
-  const isApexHost = hostname === "tescavisa.com" || hostname === "www.tescavisa.com";
+  const isApexHost = isPublicHost;
   const isAdminPath = reqPath === "/admin" || reqPath.startsWith("/admin/");
   if (isAdminPath) {
     ensureCsrfToken(context.cookies);
@@ -62,7 +77,6 @@ export const onRequest = defineMiddleware(async (context, next) => {
   // assets are served by Cloudflare's asset layer *before* this middleware runs,
   // so a Cloudflare Redirect Rule (see Phase 5 notes) is required to fully fence
   // those off the admin subdomain.
-  const isAdminHost = hostname === "admin.tescavisa.com";
   const ADMIN_APIS = new Set(["/api/set-session", "/api/forgot-password", "/api/leads-count", "/api/announcements"]);
   // Static assets must ALWAYS be served (never redirected) so the admin UI loads:
   // hashed build output (/_astro/*), images, fonts, and any file with an extension
