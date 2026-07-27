@@ -135,45 +135,6 @@ export async function reportServerError(
   // Full diagnostics (stack trace + raw payload) stay in Cloudflare server logs only.
   console.error(`[${apiName}] Server Error:`, error, "Payload:", requestPayload);
 
-  // Send email notification to admin via Web3Forms in the background
-  const web3formsAccessKey = getEnv('WEB3FORMS_ACCESS_KEY') || (globalThis as any).process?.env?.WEB3FORMS_ACCESS_KEY;
-
-  if (web3formsAccessKey) {
-    const clientIP = getClientIP(request);
-    const time = new Date().toISOString();
-
-    // Notification is intentionally PII-free: no stack trace, no raw user data.
-    // Use the timestamp + API route to correlate with full Cloudflare logs.
-    const detailedMessage = `🚨 A server-side error occurred in the ${apiName} API route.
-
-[Basic Details]
-- API Route: ${apiName}
-- Time: ${time}
-- Client IP: ${clientIP}
-
-[Error Details]
-- Message: ${error?.message || String(error)}
-- Code: ${error?.code || "N/A"}
-
-[Request Fields (PII redacted)]
-${JSON.stringify(redactPayload(requestPayload), null, 2)}
-
-Full stack trace and unredacted payload are available in the Cloudflare Workers logs for this timestamp.`;
-
-    runInBackground(locals, () => fetch("https://api.web3forms.com/submit", {
-      method: "POST",
-      headers: { "Content-Type": "application/json", "Accept": "application/json" },
-      body: JSON.stringify({
-        access_key: web3formsAccessKey,
-        name: "TESCA Error Notification System",
-        email: "system-error@tescavisa.com",
-        subject: `⚠️ Server Error in ${apiName} API`,
-        message: detailedMessage,
-        source: "System Error Monitor",
-      })
-    }), "error-notification");
-  }
-
   return jsonResponse({ error: "Unable to process request. Please try again later." }, 500);
 }
 

@@ -12,6 +12,6 @@ STRICT_RATE_LIMITS = "true"
 #   npx wrangler secret put SUPABASE_SERVICE_ROLE_KEY
 #   npx wrangler secret put GOOGLE_SHEET_URL
 #   npx wrangler secret put GMAIL_APP_PASSWORD
-#   npx wrangler secret put WEB3FORMS_ACCESS_KEY
+
 #   npx wrangler secret put GROQ_API_KEY
 #   npx wrangler secret put OWNER_EMAIL

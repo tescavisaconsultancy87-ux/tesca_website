@@ -91,27 +91,9 @@ body = await request.json();
 
     const leadId = insertedData?.id || "N/A";
     const googleSheetUrl = getEnv('GOOGLE_SHEET_URL') || import.meta.env.GOOGLE_SHEET_URL;
-    const web3formsAccessKey = getEnv('WEB3FORMS_ACCESS_KEY') || import.meta.env.WEB3FORMS_ACCESS_KEY;
     const adminEmail = getEnv('OWNER_EMAIL') || getEnv('GMAIL_USER') || "tescavisaconsultancy87@gmail.com";
 
-    // 5. Send Web3Forms fallback submission
-    if (web3formsAccessKey) {
-      runInBackground(locals, () => fetch("https://api.web3forms.com/submit", {
-        method: "POST",
-        headers: { "Content-Type": "application/json", "Accept": "application/json" },
-        body: JSON.stringify({
-          access_key: web3formsAccessKey,
-          name: cleanFullName,
-          email: cleanEmail,
-          phone: cleanPhone,
-          subject: `🤝 New Partnership Inquiry - ${cleanFullName} (${cleanModel})`,
-          message: `New partner application. Model: ${cleanModel}. Location: ${cleanCity}. Experience: ${cleanExperience}. Comments: ${cleanComments || 'None'}. Lead ID: ${leadId}`,
-          source: "Partner With Us Form",
-        })
-      }), "web3forms-partner");
-    }
-
-    // 6. Log to Google Sheet
+    // 5. Log to Google Sheet
     if (googleSheetUrl) {
       const params = new URLSearchParams({
         "Full Name": cleanFullName,

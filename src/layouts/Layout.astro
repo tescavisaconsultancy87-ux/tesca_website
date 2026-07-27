@@ -4,22 +4,7 @@ import CounsellorForm from "../components/CounsellorForm";
 import PromoPopup from "../components/PromoPopup.astro";
 import { ClientRouter } from "astro:transitions";
 import { ensureCsrfToken } from "../utils/csrf";
-// Inline SVG helpers — no lucide-react in .astro (SSR hook errors)
-const _svg = (d: string, size = 16) => `<svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${d}</svg>`;
-const NavIcons = {
-	User: _svg('<path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/>'),
-	GraduationCap: _svg('<path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/>'),
-	FileText: _svg('<path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"/><path d="M14 2v4a2 2 0 0 0 2 2h4"/>'),
-	Award: _svg('<circle cx="12" cy="8" r="6"/><path d="M15.477 12.89 17 22l-5-3-5 3 1.523-9.11"/>'),
-	BookOpen: _svg('<path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/>'),
-	Briefcase: _svg('<rect width="20" height="14" x="2" y="7" rx="2" ry="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/>'),
-	Heart: _svg('<path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/>'),
-	Landmark: _svg('<line x1="3" x2="21" y1="22" y2="22"/><line x1="6" x2="6" y1="18" y2="22"/><line x1="10" x2="10" y1="18" y2="22"/><line x1="14" x2="14" y1="18" y2="22"/><line x1="18" x2="18" y1="18" y2="22"/><polygon points="12 2 20 7 4 7"/>'),
-	Home: _svg('<path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/>'),
-	Plane: _svg('<path d="M17.8 19.2 16 11l3.5-3.5C21 6 21 4 19 4c-2 0-2.5 2.5-3.5 3.5L11 11 2.8 6.2l-.7.8 4 6L4 15l-2-1-.7.7 1.5 2.5L5.3 19l2.5 1.5.7-.7-1-2 1.8-2.1 6 4 .8-.7-4.8-8.2L18.6 8l2 4.8-2.8 6.4z"/>'),
-	ArrowRight: _svg('<path d="M5 12h14"/><path d="m12 5 7 7-7 7"/>'),
-	Phone: _svg('<path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 12 19.79 19.79 0 0 1 1.61 3.4a2 2 0 0 1 2-2.18h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/>'),
-};
+import { Icons as NavIcons } from "../utils/icons";
 
 interface Props {
 	title?: string;
@@ -121,13 +106,10 @@ if (Astro.url.pathname.startsWith("/admin")) {
 						event_label: source
 					});
 					
-					// Conversion Key Event: consultation_form_submit
 					window.gtag('event', 'consultation_form_submit', {
 						event_category: 'conversion',
 						form_name: source
 					});
-					
-					console.log(`[Tracking] GA4 generate_lead & consultation_form_submit fired: ${source}`);
 				}
 			};
 
@@ -137,7 +119,6 @@ if (Astro.url.pathname.startsWith("/admin")) {
 						event_category: 'engagement',
 						destination: destination
 					});
-					console.log(`[Tracking] GA4 Click fired: ${type} -> ${destination}`);
 				}
 			};
 
@@ -159,7 +140,6 @@ if (Astro.url.pathname.startsWith("/admin")) {
 								destination: href
 							});
 						}
-						console.log(`[Tracking] GA4 email_click fired: ${href}`);
 					} else if (href.includes('wa.me') || href.includes('api.whatsapp.com') || href.includes('whatsapp://')) {
 						window.trackClickEvent('whatsapp', href);
 					}
@@ -182,7 +162,6 @@ if (Astro.url.pathname.startsWith("/admin")) {
 								button_text: text || 'Book Free Consultation'
 							});
 						}
-						console.log(`[Tracking] GA4 book_consultation_click fired`);
 					}
 				}
 			}, { passive: true });
@@ -642,7 +621,7 @@ if (Astro.url.pathname.startsWith("/admin")) {
 					</li>
 
 					{/* Study Destinations Dropdown */}
-					<li class="relative group">
+					<li class="relative group" data-mega-nav>
 						<a
 							href="/countries"
 							class="nav-link px-2 lg:px-3.5 py-1.5 lg:py-2 rounded-lg text-support-slate hover:bg-accent-blue hover:text-white transition-all duration-200 flex items-center gap-1.5 cursor-pointer font-sans text-xs lg:text-sm font-medium outline-none no-underline whitespace-nowrap"
@@ -652,7 +631,7 @@ if (Astro.url.pathname.startsWith("/admin")) {
 
 						{/* Mega Menu Dropdown */}
 						<div
-							class="absolute left-1/2 top-full pt-3 hidden group-hover:block w-[780px] z-50 animate-dropdown"
+							class="absolute left-1/2 top-full pt-3 hidden group-hover:block group-[.force-open]:block w-[780px] z-50 animate-dropdown"
 						>
 							<div
 								class="shadow-2xl rounded-2xl p-6 bg-white border border-slate-100 grid grid-cols-12 gap-6 text-slate-800"
@@ -779,7 +758,7 @@ if (Astro.url.pathname.startsWith("/admin")) {
 					</li>
 
 					{/* Services Dropdown */}
-					<li class="group">
+					<li class="group relative" data-mega-nav>
 						<a
 							href="/services"
 							class="nav-link px-2 lg:px-3.5 py-1.5 lg:py-2 rounded-lg text-support-slate hover:bg-accent-blue hover:text-white transition-all duration-200 flex items-center gap-1.5 cursor-pointer font-sans text-xs lg:text-sm font-medium outline-none no-underline whitespace-nowrap"
@@ -789,7 +768,7 @@ if (Astro.url.pathname.startsWith("/admin")) {
 
 						{/* Mega Menu Dropdown */}
 						<div
-							class="absolute left-0 right-0 mx-auto pt-3 hidden group-hover:block w-full max-w-[960px] z-50 animate-dropdown-center"
+							class="absolute left-0 right-0 mx-auto pt-3 hidden group-hover:block group-[.force-open]:block w-full max-w-[960px] z-50 animate-dropdown-center"
 						>
 							<div
 								class="shadow-2xl rounded-2xl p-6 bg-white border border-slate-100 grid grid-cols-12 gap-6 text-slate-800"
@@ -1313,6 +1292,33 @@ if (Astro.url.pathname.startsWith("/admin")) {
 				mobileMenuDrawer?.addEventListener("click", closeMobileMenu);
 				mobileMenuPanel?.addEventListener("click", (e) => e.stopPropagation());
 				mobileMenuClose?.addEventListener("click", closeMobileMenu);
+
+				// Mega menu touch support — toggle dropdown on click for touch devices
+				document.querySelectorAll('[data-mega-nav]').forEach(function(navItem) {
+					var link = navItem.querySelector('a');
+					var dropdown = navItem.querySelector('[class*="group-hover:block"]');
+					if (!link || !dropdown) return;
+					link.addEventListener('click', function(e) {
+						if (window.innerWidth < 768) return;
+						if ('ontouchstart' in window || navigator.maxTouchPoints > 0) {
+							var isOpen = navItem.classList.contains('force-open');
+							document.querySelectorAll('[data-mega-nav].force-open').forEach(function(el) {
+								el.classList.remove('force-open');
+							});
+							if (!isOpen) {
+								e.preventDefault();
+								navItem.classList.add('force-open');
+							}
+						}
+					});
+				});
+				document.addEventListener('click', function(e) {
+					if (!e.target.closest('[data-mega-nav]')) {
+						document.querySelectorAll('[data-mega-nav].force-open').forEach(function(el) {
+							el.classList.remove('force-open');
+						});
+					}
+				});
 
 				// 1. Interactive Navbar Morphing Script — White→Teal/Teal-glass on scroll
 				const header = document.getElementById("main-header");

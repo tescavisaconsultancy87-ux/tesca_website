@@ -72,23 +72,6 @@ export const POST: APIRoute = async ({ request, locals }) => {
 
     if (error) throw error;
 
-    const web3formsAccessKey = getEnv('WEB3FORMS_ACCESS_KEY') || import.meta.env.WEB3FORMS_ACCESS_KEY;
-
-    if (web3formsAccessKey) {
-      runInBackground(locals, () => fetch("https://api.web3forms.com/submit", {
-        method: "POST",
-        headers: { "Content-Type": "application/json", "Accept": "application/json" },
-        body: JSON.stringify({
-          access_key: web3formsAccessKey,
-          name: cleanName,
-          email: cleanEmail || 'contact@tesca.com',
-          subject: `Contact Form: ${cleanSubject || 'No Subject'} (${cleanCategory})`,
-          message: cleanMessage,
-          source: "Contact Form",
-        })
-      }), "web3forms-contact");
-    }
-
     // Send confirmation to user
     if (cleanEmail) {
       const { subject: emailSubject, html } = contactConfirmationEmail({

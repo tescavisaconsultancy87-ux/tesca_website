@@ -354,26 +354,6 @@ export const POST: APIRoute = async ({ request, locals }) => {
     }
 
     const googleSheetUrl = getEnv('GOOGLE_SHEET_URL') || import.meta.env.GOOGLE_SHEET_URL;
-    const web3formsAccessKey = getEnv('WEB3FORMS_ACCESS_KEY') || import.meta.env.WEB3FORMS_ACCESS_KEY;
-
-    if (web3formsAccessKey) {
-      runInBackground(locals, () => fetch("https://api.web3forms.com/submit", {
-        method: "POST",
-        headers: { "Content-Type": "application/json", "Accept": "application/json" },
-        body: JSON.stringify({
-          access_key: web3formsAccessKey,
-          name: fullName,
-          email: cleanEmail || "inquiry@tesca.com",
-          phone: cleanPhone,
-          subject: `New Student Enquiry - ${fullName}`,
-          counselling_mode: cleanMode,
-          visa_type: cleanVisaType,
-          destination: cleanDestination || "Not specified",
-          message: `New enquiry from ${fullName}. Phone: ${cleanPhone}. Preferred Mode: ${cleanMode}. Visa Type: ${cleanVisaType}. Destination: ${cleanDestination || "Not specified"}.`,
-          source: "Main Enquiry Form",
-        })
-      }), "web3forms-counsellor");
-    }
 
     if (googleSheetUrl) {
       const params = new URLSearchParams({

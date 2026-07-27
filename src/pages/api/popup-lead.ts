@@ -164,25 +164,8 @@ export const POST: APIRoute = async ({ request, locals }) => {
       throw error;
     }
 
-    // 5. Integrations: Web3Forms & Google Sheets
+    // 5. Integrations: Google Sheets
     const googleSheetUrl = getEnv('GOOGLE_SHEET_URL') || import.meta.env.GOOGLE_SHEET_URL;
-    const web3formsAccessKey = getEnv('WEB3FORMS_ACCESS_KEY') || import.meta.env.WEB3FORMS_ACCESS_KEY;
-
-    if (web3formsAccessKey) {
-      runInBackground(locals, () => fetch("https://api.web3forms.com/submit", {
-        method: "POST",
-        headers: { "Content-Type": "application/json", "Accept": "application/json" },
-        body: JSON.stringify({
-          access_key: web3formsAccessKey,
-          name: cleanName,
-          email: cleanEmail || "inquiry@tesca.com",
-          phone: cleanPhone,
-          subject: `Popup Lead: ${cleanPopupTitle} - ${cleanName}`,
-          message: `Lead captured directly from popup: "${cleanPopupTitle}". Phone: ${cleanPhone}. Email: ${cleanEmail || 'Not provided'}.`,
-          source: `Popup: ${cleanPopupTitle}`,
-        })
-      }), "web3forms-popup-lead");
-    }
 
     if (googleSheetUrl) {
       const params = new URLSearchParams({

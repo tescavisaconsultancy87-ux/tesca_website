@@ -118,30 +118,10 @@ const detailsStr = JSON.stringify({
       console.error("Failed to save lead in Supabase:", dbErr);
     }
 
-    // Submit lead to Google Sheets & Web3Forms
+    // Submit lead to Google Sheets
     const googleSheetUrl = getEnv('GOOGLE_SHEET_URL') || import.meta.env.GOOGLE_SHEET_URL;
-    const web3formsAccessKey = getEnv('WEB3FORMS_ACCESS_KEY') || import.meta.env.WEB3FORMS_ACCESS_KEY;
 
-    // 1. Submit to Web3Forms
-    if (web3formsAccessKey) try {
-      runInBackground(locals, () => fetch("https://api.web3forms.com/submit", {
-        method: "POST",
-        headers: { "Content-Type": "application/json", "Accept": "application/json" },
-        body: JSON.stringify({
-          access_key: web3formsAccessKey,
-          name: cleanName,
-          email: cleanEmail,
-          phone: cleanPhone,
-          subject: `Eligibility Finder Match - ${cleanName} 🎯`,
-          message: `Eligibility profile submitted by ${cleanName}. Phone: ${cleanPhone}. Email: ${cleanEmail}. Academic Score: ${academicScoreNum}%, IELTS: ${ieltsScoreNum}, Budget: ${budgetLakhsNum} Lakhs/yr. Preferred destination: ${cleanDestination}.`,
-          source: "Eligibility Finder Form",
-        })
-      }), "web3forms-eligibility");
-    } catch (err) {
-      console.error("Web3Forms eligibility submission failed:", err);
-    }
-
-    // 2. Submit to Google Sheets (GET request with query parameters)
+    // Submit to Google Sheets (GET request with query parameters)
     if (googleSheetUrl) {
       try {
         const params = new URLSearchParams({

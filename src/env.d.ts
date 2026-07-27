@@ -4,7 +4,6 @@ interface Env {
   DB: any; // Using any for local database operations to bypass wrangler types dependency
   tesca_db: any;
   GOOGLE_SHEET_URL?: string;
-  WEB3FORMS_ACCESS_KEY?: string;
   SUPABASE_SERVICE_ROLE_KEY?: string;
   GROQ_API_KEY?: string;
   OWNER_EMAIL?: string;

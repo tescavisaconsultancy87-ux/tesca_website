@@ -134,35 +134,6 @@ body = await request.json();
     }
 
     const googleSheetUrl = getEnv('GOOGLE_SHEET_URL') || import.meta.env.GOOGLE_SHEET_URL;
-    const web3formsAccessKey = getEnv('WEB3FORMS_ACCESS_KEY') || import.meta.env.WEB3FORMS_ACCESS_KEY;
-
-    const detailedMessage = [
-      `Lead ID: ${cleanLeadId || insertedData?.id || "N/A"}`,
-      `Full Name: ${cleanFullName}`,
-      `Mobile/WhatsApp: ${cleanMobile}`,
-      `Email: ${cleanEmail || "Not provided"}`,
-      `City: ${cleanDetails.city || "Not provided"}`,
-      `Country: ${cleanDetails.country || "Not provided"}`,
-      `Lead Source: ${cleanDetails.leadSource || "Not provided"}`,
-      `Inquiry Type: ${Array.isArray(cleanDetails.inquiryType) ? cleanDetails.inquiryType.join(", ") : "Not provided"}`,
-      `Preferred Countries: ${cleanPreferredCountries.join(", ") || "None"}`,
-      `Comments: ${cleanDetails.comments || "None"}`,
-    ].join("\n");
-
-    if (web3formsAccessKey) {
-      runInBackground(locals, () => fetch("https://api.web3forms.com/submit", {
-        method: "POST",
-        headers: { "Content-Type": "application/json", "Accept": "application/json" },
-        body: JSON.stringify({
-          access_key: web3formsAccessKey,
-          name: cleanFullName,
-          email: cleanEmail || "inquiry@tesca.com",
-          subject: `CRM Assessment Lead: ${cleanFullName}`,
-          message: detailedMessage,
-          source: "CRM Lead Capture Form",
-        })
-      }), "web3forms-inquiry");
-    }
 
     if (googleSheetUrl) {
       const params = new URLSearchParams({

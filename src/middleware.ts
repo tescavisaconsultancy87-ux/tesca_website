@@ -13,7 +13,7 @@ const CSP = [
   "style-src 'self' 'unsafe-inline' https://api.fontshare.com https://fonts.googleapis.com https://cdn.jsdelivr.net",
   "font-src 'self' data: https://*.fontshare.com https://fonts.gstatic.com",
   "img-src 'self' data: blob: https://flagcdn.com https://*.supabase.co https://www.google-analytics.com https://www.googletagmanager.com",
-  "connect-src 'self' https://*.supabase.co https://script.google.com https://api.web3forms.com https://api.emailjs.com https://www.google-analytics.com https://cdn.jsdelivr.net",
+  "connect-src 'self' https://*.supabase.co https://script.google.com https://api.emailjs.com https://www.google-analytics.com https://cdn.jsdelivr.net",
   "frame-ancestors 'none'",
   "base-uri 'self'",
   "form-action 'self' https://script.google.com",
