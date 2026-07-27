@@ -553,10 +553,10 @@ Comments/Additional Info: ${formData.comments || "None"}`;
   }
 
   return (
-    <div className="w-full max-w-[900px] bg-white rounded-[2rem] shadow-2xl border border-slate-100/80 overflow-hidden grid grid-cols-1 md:grid-cols-12 min-h-[600px] relative text-left">
+    <div className="w-full max-w-[980px] mx-auto bg-white rounded-[2rem] shadow-2xl border border-slate-100/80 overflow-hidden grid grid-cols-1 md:grid-cols-12 min-h-[600px] relative text-left">
       
       {/* Left Sidebar (Desktop) */}
-      <div className="hidden md:flex md:col-span-4 bg-gradient-to-br from-slate-50 to-[#0F4C81]/5 border-r border-slate-100 p-8 flex-col justify-between select-none">
+      <div className="hidden md:flex md:col-span-4 bg-gradient-to-br from-slate-50 to-[#0F4C81]/5 border-r border-slate-100 p-6 lg:p-8 flex-col justify-between select-none">
         <div className="space-y-6">
           <div className="flex items-center gap-2">
             <span className="text-sm font-extrabold tracking-wider text-[#0F4C81] font-display">
@@ -611,7 +611,7 @@ Comments/Additional Info: ${formData.comments || "None"}`;
       </div>
 
       {/* Right Content Panel */}
-      <div className="col-span-1 md:col-span-8 p-6 md:p-10 flex flex-col justify-between min-h-[500px]">
+      <div className="col-span-1 md:col-span-8 p-6 md:p-8 lg:p-10 flex flex-col justify-between min-h-[500px]">
         <div>
           {/* Top Form Branding */}
           <div className="pb-5 border-b border-slate-100 mb-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
@@ -622,7 +622,7 @@ Comments/Additional Info: ${formData.comments || "None"}`;
               </div>
               <h2 className="text-sm font-bold text-slate-700 font-sans">"-Be Genius, Be with Genius"</h2>
               <p className="text-xs text-slate-400 font-sans font-normal mt-1 leading-normal">
-                Please complete the form below and our counselor will call you in some times.
+                Please complete the form below and our expert counselor will contact you shortly.
               </p>
             </div>
             {/* Sticky Step Progress Indicator & Clear Action */}
@@ -926,7 +926,7 @@ Comments/Additional Info: ${formData.comments || "None"}`;
                 <h3 className="text-lg font-bold text-slate-800 font-display border-b border-slate-100 pb-2">🌍 Country Preference</h3>
                 <p className="text-xs text-slate-500 font-sans">Select one or more destination countries you are interested in.</p>
                 
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3" role="group" aria-label="Select preferred countries">
+                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2.5" role="group" aria-label="Select preferred countries">
                   {COUNTRIES_LIST.map((c) => {
                     const isSelected = formData.preferredCountries.includes(c.name);
                     return (
@@ -936,22 +936,22 @@ Comments/Additional Info: ${formData.comments || "None"}`;
                         role="checkbox"
                         aria-checked={isSelected}
                         onClick={() => toggleCountry(c.name)}
-                        className={`p-3 border rounded-2xl flex items-center gap-2.5 transition-all text-xs font-bold cursor-pointer font-sans ${
+                        className={`p-2.5 border rounded-2xl flex items-center gap-2 transition-all text-xs font-bold cursor-pointer font-sans min-w-0 ${
                           isSelected 
                             ? "bg-[#0F4C81]/5 border-[#0F4C81] text-[#0F4C81] shadow-sm scale-[1.01]" 
                             : "bg-white border-slate-200 text-slate-600 hover:border-slate-300 hover:bg-slate-50"
                         }`}
                       >
                         {c.code === "other" ? (
-                          <span className="text-lg leading-none select-none shrink-0">🌎</span>
+                          <span className="text-base leading-none select-none shrink-0">🌎</span>
                         ) : (
                           <img 
                             src={`https://flagcdn.com/w40/${c.code}.png`} 
                             alt={`${c.name} flag`} 
-                            className="w-6 h-4 rounded-sm object-cover shadow-sm shrink-0 border border-slate-100" 
+                            className="w-5 h-3.5 rounded-sm object-cover shadow-sm shrink-0 border border-slate-100" 
                           />
                         )}
-                        <span>{c.name}</span>
+                        <span className="truncate text-[11px] sm:text-xs font-semibold">{c.name}</span>
                       </button>
                     );
                   })}
@@ -1404,7 +1404,7 @@ Comments/Additional Info: ${formData.comments || "None"}`;
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <label id="crm-contact-method-label" className="text-xs font-bold uppercase tracking-wider text-slate-600 font-sans">Preferred Contact Method *</label>
-                    <div className="flex gap-2" role="radiogroup" aria-labelledby="crm-contact-method-label">
+                    <div className="grid grid-cols-3 gap-1.5" role="radiogroup" aria-labelledby="crm-contact-method-label">
                       {["Call", "WhatsApp", "Email"].map((method) => {
                         const isSel = formData.contactMethod === method;
                         return (
@@ -1414,7 +1414,7 @@ Comments/Additional Info: ${formData.comments || "None"}`;
                             role="radio"
                             aria-checked={isSel}
                             onClick={() => updateField({ contactMethod: method })}
-                            className={`flex-1 px-3 py-2 border text-xs font-bold rounded-xl transition-all cursor-pointer font-sans ${
+                            className={`w-full py-2 px-1 border text-[11px] sm:text-xs font-bold rounded-xl transition-all cursor-pointer font-sans text-center truncate ${
                               isSel 
                                 ? "bg-[#0F4C81]/5 border-[#0F4C81] text-[#0F4C81]" 
                                 : "bg-white border-slate-200 text-slate-600 hover:bg-slate-50"
@@ -1429,7 +1429,7 @@ Comments/Additional Info: ${formData.comments || "None"}`;
 
                   <div className="space-y-2">
                     <label id="crm-contact-time-label" className="text-xs font-bold uppercase tracking-wider text-slate-600 font-sans">Best Time To Contact *</label>
-                    <div className="flex gap-2" role="radiogroup" aria-labelledby="crm-contact-time-label">
+                    <div className="grid grid-cols-3 gap-1.5" role="radiogroup" aria-labelledby="crm-contact-time-label">
                       {["Morning", "Afternoon", "Evening"].map((time) => {
                         const isSel = formData.contactTime === time;
                         return (
@@ -1439,7 +1439,7 @@ Comments/Additional Info: ${formData.comments || "None"}`;
                             role="radio"
                             aria-checked={isSel}
                             onClick={() => updateField({ contactTime: time })}
-                            className={`flex-1 px-3 py-2 border text-xs font-bold rounded-xl transition-all cursor-pointer font-sans ${
+                            className={`w-full py-2 px-1 border text-[11px] sm:text-xs font-bold rounded-xl transition-all cursor-pointer font-sans text-center truncate ${
                               isSel 
                                 ? "bg-[#0F4C81]/5 border-[#0F4C81] text-[#0F4C81]" 
                                 : "bg-white border-slate-200 text-slate-600 hover:bg-slate-50"
