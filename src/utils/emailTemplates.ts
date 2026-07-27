@@ -626,6 +626,153 @@ export function partnerConfirmationEmail({
 // ─────────────────────────────────────────────────────────────────────────────
 // 5. PARTNER WITH US NOTIFICATION EMAIL (ADMIN)
 // ─────────────────────────────────────────────────────────────────────────────
+// ─────────────────────────────────────────────────────────────────────────────
+// 6. CONTACT FORM CONFIRMATION EMAIL (USER)
+// ─────────────────────────────────────────────────────────────────────────────
+export function contactConfirmationEmail({
+  name,
+  subject,
+  category,
+}: {
+  name: string;
+  subject: string;
+  category: string;
+}) {
+  const categoryLabel =
+    category === 'bug' ? '🐛 Bug Report' :
+    category === 'error' ? '⚠️ Error Report' :
+    '💬 General Contact';
+
+  const content = `
+  ${header()}
+
+  <!-- Hero -->
+  <tr>
+    <td style="background: linear-gradient(135deg, ${BRAND_BLUE} 0%, #1e3a5f 100%); padding: 44px 40px 36px; text-align:left;" class="hero-section">
+      <div style="display:inline-block; background:rgba(240,138,0,0.18); border:1px solid rgba(240,138,0,0.5); border-radius:30px; padding:5px 16px; margin-bottom:16px;">
+        <span style="font-size:11px; font-weight:700; color:#fbbf24; letter-spacing:1.5px; text-transform:uppercase;">${categoryLabel}</span>
+      </div>
+      <h1 style="font-size:28px; font-weight:800; color:#ffffff; margin:0 0 10px; line-height:1.25;">Thank You, ${name}!</h1>
+      <p style="font-size:15px; color:rgba(255,255,255,0.78); margin:0; line-height:1.65;">
+        We have received your <strong style="color:#fbbf24;">${subject || 'message'}</strong>. Our team will review it and get back to you within <strong style="color:#fbbf24;">24 hours</strong>.
+      </p>
+    </td>
+  </tr>
+
+  <!-- Confirmation Banner -->
+  <tr>
+    <td style="padding:32px 40px;" class="email-card">
+      <div style="background:linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%); border:2px solid #86efac; border-radius:16px; padding:24px; text-align:center;">
+        <p style="font-size:40px; margin:0 0 12px; line-height:1;">✅</p>
+        <h2 style="font-size:18px; font-weight:800; color:#15803d; margin:0 0 8px;">Message Received Successfully</h2>
+        <p style="font-size:13px; color:#374151; margin:0; line-height:1.6;">
+          We appreciate you reaching out. Your message helps us serve you better. 
+          If you need immediate assistance, please WhatsApp or call us.
+        </p>
+      </div>
+    </td>
+  </tr>
+
+  <!-- CTA -->
+  <tr>
+    <td style="padding:0 40px 40px;" class="email-card">
+      <div style="background:linear-gradient(135deg, ${BRAND_BLUE}, #1e40af); border-radius:18px; padding:28px; text-align:center;">
+        <h2 style="font-size:18px; font-weight:800; color:#ffffff; margin:0 0 10px;">Need a Faster Response?</h2>
+        <p style="font-size:13px; color:rgba(255,255,255,0.75); margin:0 0 20px;">Chat with our team directly on WhatsApp — available 9 AM – 7 PM IST.</p>
+        <a href="https://wa.me/919824152731" style="display:inline-block; background:#25D366; color:#ffffff; font-size:14px; font-weight:800; padding:13px 30px; border-radius:50px;">💬 WhatsApp Us</a>
+      </div>
+    </td>
+  </tr>
+
+  <!-- Trust Footer -->
+  <tr>
+    <td style="background:#f8fafc; border-top:1px solid #e2e8f0; padding:16px 40px; text-align:center;">
+      <span style="font-size:12px; color:#94a3b8; margin:0 10px;">⭐ 97% Visa Success Rate</span>
+      <span style="font-size:12px; color:#94a3b8; margin:0 10px;">🎓 30,000+ Students</span>
+      <span style="font-size:12px; color:#94a3b8; margin:0 10px;">📅 Since 2005</span>
+    </td>
+  </tr>`;
+
+  return {
+    subject: `✅ We Received Your ${subject || 'Message'} — TESCA`,
+    html: baseWrapper(content, `Hi ${name}, thank you for contacting TESCA. We'll respond within 24 hours.`),
+  };
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// 7. CONTACT FORM ADMIN NOTIFICATION EMAIL
+// ─────────────────────────────────────────────────────────────────────────────
+export function contactAdminNotificationEmail({
+  name,
+  email,
+  phone,
+  subject,
+  category,
+  message,
+}: {
+  name: string;
+  email?: string;
+  phone?: string;
+  subject: string;
+  category: string;
+  message: string;
+}) {
+  const categoryLabel =
+    category === 'bug' ? '🐛 Bug Report' :
+    category === 'error' ? '⚠️ Error Report' :
+    '💬 General Contact';
+
+  const content = `
+  ${header()}
+
+  <!-- Hero -->
+  <tr>
+    <td style="background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%); padding: 44px 40px 36px; text-align:left;" class="hero-section">
+      <div style="display:inline-block; background:rgba(240,138,0,0.18); border:1px solid rgba(240,138,0,0.5); border-radius:30px; padding:5px 16px; margin-bottom:16px;">
+        <span style="font-size:11px; font-weight:700; color:#fbbf24; letter-spacing:1.5px; text-transform:uppercase;">${categoryLabel}</span>
+      </div>
+      <h1 style="font-size:28px; font-weight:800; color:#ffffff; margin:0 0 10px; line-height:1.25;">New Contact Message</h1>
+      <p style="font-size:15px; color:rgba(255,255,255,0.78); margin:0; line-height:1.65;">
+        A new contact form submission from <strong style="color:#fbbf24;">${name}</strong>.
+      </p>
+    </td>
+  </tr>
+
+  <!-- Message Details -->
+  <tr>
+    <td style="padding:32px 40px;" class="email-card">
+      <table width="100%" cellpadding="0" cellspacing="0" style="border:1.5px solid #e2e8f0; border-radius:14px; overflow:hidden;">
+        ${([
+          ['Name', name],
+          ['Email', email || 'Not provided'],
+          ['Phone', phone || 'Not provided'],
+          ['Subject', subject || 'Not provided'],
+          ['Category', categoryLabel],
+        ] as [string, string][]).map(([label, value], i) => `
+        <tr style="background:${i % 2 === 0 ? '#f8fafc' : '#ffffff'};">
+          <td style="padding:14px 20px; font-size:13px; font-weight:600; color:#475569; width:35%; border-bottom:1px solid #f1f5f9;">${label}</td>
+          <td style="padding:14px 20px; font-size:13px; font-weight:700; color:${BRAND_DARK}; border-bottom:1px solid #f1f5f9;">${value}</td>
+        </tr>`).join('')}
+      </table>
+    </td>
+  </tr>
+
+  <!-- Message Body -->
+  <tr>
+    <td style="padding:0 40px 40px;" class="email-card">
+      <p style="font-size:13px; font-weight:700; color:#64748b; letter-spacing:1.2px; text-transform:uppercase; margin-bottom:12px;">Message</p>
+      <div style="background:#f8fafc; border:1.5px solid #e2e8f0; border-radius:14px; padding:20px; font-size:14px; color:#334155; line-height:1.7; white-space:pre-wrap;">
+        ${message}
+      </div>
+    </td>
+  </tr>`;
+
+  return {
+    subject: `📬 ${categoryLabel}: ${name} — ${subject || 'No Subject'}`,
+    html: baseWrapper(content, `New contact form submission from ${name}.`),
+  };
+}
+
 export function partnerNotificationEmail({
   name,
   email,
