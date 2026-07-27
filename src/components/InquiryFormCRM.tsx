@@ -437,19 +437,40 @@ Comments/Additional Info: ${formData.comments || "None"}`;
     });
 
     try {
-      const response = await fetch("/api/inquiry", {
+      const response = await fetch("https://portal.tescavisa.com/api/inquiries/webhook", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           ...formData,
-          mobileNumber: `${selectedPhoneCountry.dialCode} ${formData.mobileNumber}`,
-          address: addressStr,
-          state: "N/A",
-          leadSource,
-          education: educationStr,
-          preferredCountries: countriesStr ? formData.preferredCountries : [],
-          languageTest: languageStr,
-          visaRefusalDetails: refusalStr,
+          full_name: formData.fullName,
+          mobile: `${selectedPhoneCountry.dialCode} ${formData.mobileNumber}`,
+          phone: `${selectedPhoneCountry.dialCode} ${formData.mobileNumber}`,
+          email: formData.email,
+          city: formData.city,
+          country_preference: countriesStr || "Canada",
+          preferred_countries: formData.preferredCountries,
+          lead_source: leadSource,
+          reference_name: formData.refName,
+          reference_mobile: formData.refMobile,
+          inquiry_types: formData.inquiryType,
+          marital_status: formData.maritalStatus,
+          passport_available: formData.passportAvailable,
+          ssc_completed: formData.completedTenth,
+          hsc_completed: formData.completedTwelfth,
+          highest_qualification: formData.highest,
+          passing_year: formData.collegeYear,
+          gpa_percentage: formData.collegeGpa,
+          college_university: formData.collegeUni,
+          college_course: formData.collegeCourse,
+          language_test_type: formData.languageTestType,
+          exam_score: formData.languageTestScore,
+          visa_refusal: formData.visaRefusal,
+          refusal_country: formData.refusalCountry,
+          refusal_date: formData.refusalDate,
+          refusal_reason: formData.refusalReason,
+          preferred_contact_method: formData.contactMethod,
+          best_time_to_contact: formData.contactTime,
+          notes: formData.comments || "Submitted via website /inquiry form"
         })
       });
 
