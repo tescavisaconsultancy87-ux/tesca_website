@@ -165,8 +165,8 @@ body = await request.json();
       runInBackground(locals, () => sendMail({ to: cleanEmail, subject, html }), "inquiry-confirmation-email");
     }
 
-    // Forward inquiry directly to TESCA CRM Portal Webhook
-    forwardInquiryToCRM(locals, {
+    // Direct synchronous write to TESCA CRM Portal Supabase Database
+    await forwardInquiryToCRM({
       full_name: cleanFullName,
       email: cleanEmail || '',
       mobile: cleanMobile,
