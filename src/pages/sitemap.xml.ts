@@ -1,5 +1,6 @@
 import type { APIRoute } from "astro";
 import { getSupabase } from "../utils/supabase";
+import { blogPosts as staticBlogPosts } from "../data/blog";
 
 export const prerender = false;
 
@@ -7,7 +8,7 @@ const SITE = "https://tescavisa.com";
 
 /**
  * Static pages and their sitemap metadata.
- * Ordered by priority (homepage first).  Only public, crawlable pages —
+ * Ordered by priority (homepage first). Only public, crawlable pages —
  * /admin, /api, /review-generator are intentionally excluded.
  */
 const STATIC_PAGES: { url: string; changefreq: string; priority: string }[] = [
@@ -20,6 +21,8 @@ const STATIC_PAGES: { url: string; changefreq: string; priority: string }[] = [
   { url: "/gallery", changefreq: "weekly", priority: "0.7" },
   { url: "/updates", changefreq: "weekly", priority: "0.7" },
   { url: "/partner-with-us", changefreq: "monthly", priority: "0.7" },
+  { url: "/contact", changefreq: "monthly", priority: "0.8" },
+  { url: "/connect", changefreq: "monthly", priority: "0.7" },
   { url: "/inquiry", changefreq: "monthly", priority: "0.5" },
 
   // Service sub-pages
@@ -80,8 +83,14 @@ function escapeXml(str: string): string {
 }
 
 export const GET: APIRoute = async () => {
-  // ── Fetch published blog posts from Supabase ────────────────────────
-  let blogEntries: { slug: string; lastmod?: string }[] = [];
+  // ── Fetch published blog posts from Supabase + combine with static fallback ─
+  const blogMap = new Map<string, { slug: string; lastmod?: string }>();
+
+  // Add static fallback blog posts first
+  for (const p of staticBlogPosts) {
+    blogMap.set(p.slug, { slug: p.slug });
+  }
+
   try {
     const sb = getSupabase();
     const { data, error } = await sb
@@ -91,17 +100,20 @@ export const GET: APIRoute = async () => {
       .order("created_at", { ascending: false });
 
     if (!error && data) {
-      blogEntries = data.map((post: any) => ({
-        slug: post.slug,
-        lastmod: post.created_at
-          ? new Date(post.created_at).toISOString().split("T")[0]
-          : undefined,
-      }));
+      for (const post of data) {
+        blogMap.set(post.slug, {
+          slug: post.slug,
+          lastmod: post.created_at
+            ? new Date(post.created_at).toISOString().split("T")[0]
+            : undefined,
+        });
+      }
     }
   } catch (err) {
-    // Supabase unavailable — generate sitemap without blog posts
-    console.error("[Sitemap] Failed to fetch blog posts:", err);
+    console.error("[Sitemap] Failed to fetch blog posts from Supabase:", err);
   }
+
+  const blogEntries = Array.from(blogMap.values());
 
   // ── Build XML ───────────────────────────────────────────────────────
   const today = new Date().toISOString().split("T")[0];

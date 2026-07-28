@@ -74,7 +74,9 @@ if (!post) {
 
 // Return 404 if post not found
 if (!post) {
-  return Astro.redirect("/404");
+  Astro.response.status = 404;
+  Astro.response.statusText = "Not Found";
+  return Astro.rewrite("/404");
 }
 
 // TypeScript narrowing: post is guaranteed non-null after the redirect above

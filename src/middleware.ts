@@ -45,6 +45,11 @@ export const onRequest = defineMiddleware(async (context, next) => {
     return Response.redirect("https://tescavisa.com/", 301);
   }
 
+  // --- Canonicalize www to apex domain ---
+  if (hostname === "www.tescavisa.com") {
+    return Response.redirect(`https://tescavisa.com${reqPath}${search}`, 301);
+  }
+
   // --- Redirect legacy apex admin URLs to the dedicated admin subdomain ---
   // The admin panel now lives on admin.tescavisa.com. Permanently (301) redirect
   // tescavisa.com/admin and /admin/* — preserving the full path and query string —

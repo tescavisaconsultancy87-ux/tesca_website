@@ -28,6 +28,12 @@
 User-agent: *
 Content-Signal: search=yes,ai-train=no
 Allow: /
+Disallow: /admin
+Disallow: /admin/
+Disallow: /api/
+Disallow: /review-generator
+Disallow: /review-generator/
+Disallow: /promo/
 
 User-agent: Amazonbot
 Disallow: /
