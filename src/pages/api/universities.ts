@@ -1,6 +1,7 @@
 import type { APIRoute } from 'astro';
 import { getSupabaseAdmin } from '../../utils/supabase';
 import { genericApiError, getClientIP, checkRateLimit, jsonResponse, rateLimitResponse } from '../../utils/security';
+import { resolveUniversityLogoUrl } from '../../utils/universityLogos';
 
 const RATE_LIMIT_WINDOW_MS = 60 * 1000;
 const RATE_LIMIT_MAX = 120;
@@ -16,7 +17,7 @@ export const GET: APIRoute = async ({ request }) => {
 
   try {
     const supabase = getSupabaseAdmin();
-let query = supabase.from('universities').select('*');
+    let query = supabase.from('universities').select('*');
     
     if (countryCode && countryCode !== "all") {
       query = query.eq('code', countryCode);
@@ -30,7 +31,7 @@ let query = supabase.from('universities').select('*');
 
     const list = (universities || []).map((u: any) => ({
       ...u,
-      image_url: (u.image_url || u.photo || "").replace(/\.(png|jpg|jpeg)$/i, '.webp'),
+      image_url: resolveUniversityLogoUrl(u.name, u.image_url || u.photo),
       ug_tuition_fees: u.ug_tuition_fees || u.ug_fees || u.tuition_fees || "",
       ug_intakes: u.ug_intakes || u.ug_intake || u.intake || "",
       ug_ielts_pte: u.ug_ielts_pte || u.ug_ielts_pte_req || u.ielts_pte_req || "",

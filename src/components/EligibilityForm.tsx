@@ -1403,23 +1403,20 @@ export default function EligibilityForm() {
             </button>
 
             {/* University Cover & Logo */}
-            <div className="h-48 relative bg-slate-100 border-b border-slate-100">
-              {selectedUniversity.image_url || selectedUniversity.photo ? (
-                <img
-                  src={selectedUniversity.image_url || selectedUniversity.photo || ""}
-                  alt={selectedUniversity.name}
-                  className="w-full h-full object-cover"
-                />
-              ) : (
-                <div className="w-full h-full bg-gradient-to-r from-indigo-500/20 via-blue-500/10 to-slate-50 flex items-center justify-center text-indigo-500">
-                  <GraduationCap className="w-16 h-16 text-accent-blue" />
-                </div>
-              )}
+            <div className="h-44 relative bg-gradient-to-r from-slate-900 via-blue-950 to-indigo-950 overflow-hidden border-b border-slate-800">
+              <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-accent-blue/20 via-transparent to-transparent opacity-60"></div>
               {/* Overlay for text readability */}
-              <div className="absolute inset-0 bg-gradient-to-t from-slate-900/90 via-slate-900/40 to-transparent flex items-end p-6">
+              <div className="absolute inset-0 bg-gradient-to-t from-slate-900 via-slate-900/60 to-transparent flex items-end p-6">
                 <div className="flex items-center gap-4 relative z-10 w-full">
-                  <div className="w-20 h-20 rounded-2xl bg-white border border-slate-200/50 flex items-center justify-center shrink-0 overflow-hidden shadow-lg p-1.5">
-                    <UniversityLogo domain={resolveUniversityDomain(selectedUniversity.name)} name={selectedUniversity.name} />
+                  <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-2xl bg-white border border-slate-200/50 flex items-center justify-center shrink-0 overflow-hidden shadow-lg p-2">
+                    <img
+                      src={selectedUniversity.image_url || `https://logo.clearbit.com/${resolveUniversityDomain(selectedUniversity.name)}`}
+                      alt={selectedUniversity.name}
+                      className="w-full h-full object-contain"
+                      onError={(e) => {
+                        (e.target as HTMLElement).setAttribute("src", `https://www.google.com/s2/favicons?sz=128&domain=${resolveUniversityDomain(selectedUniversity.name)}`);
+                      }}
+                    />
                   </div>
                   <div className="text-left">
                     <div className="flex items-center gap-2 mb-1.5">
