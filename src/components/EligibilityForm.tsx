@@ -156,6 +156,21 @@ const universityDomainMap: Record<string, string> = {
   "University of Copenhagen": "ku.dk"
 };
 
+const COUNTRY_HERO_PHOTOS: Record<string, string> = {
+  uk: "https://images.unsplash.com/photo-1541829070764-84a7d30dd3f3?q=80&w=1200&auto=format&fit=crop",
+  us: "https://images.unsplash.com/photo-1562774053-701939374585?q=80&w=1200&auto=format&fit=crop",
+  ca: "https://images.unsplash.com/photo-1523050854058-8df90110c9f1?q=80&w=1200&auto=format&fit=crop",
+  au: "https://images.unsplash.com/photo-1544717305-2782549b5136?q=80&w=1200&auto=format&fit=crop",
+  de: "https://images.unsplash.com/photo-1592280771190-3e2e4d571952?q=80&w=1200&auto=format&fit=crop",
+  nz: "https://images.unsplash.com/photo-1509062522246-3755977927d7?q=80&w=1200&auto=format&fit=crop",
+  ie: "https://images.unsplash.com/photo-1541829070764-84a7d30dd3f3?q=80&w=1200&auto=format&fit=crop",
+  sg: "https://images.unsplash.com/photo-1523050854058-8df90110c9f1?q=80&w=1200&auto=format&fit=crop",
+  ch: "https://images.unsplash.com/photo-1592280771190-3e2e4d571952?q=80&w=1200&auto=format&fit=crop",
+  my: "https://images.unsplash.com/photo-1544717305-2782549b5136?q=80&w=1200&auto=format&fit=crop",
+  ae: "https://images.unsplash.com/photo-1512453979798-5ea266f8880c?q=80&w=1200&auto=format&fit=crop",
+  eu: "https://images.unsplash.com/photo-1592280771190-3e2e4d571952?q=80&w=1200&auto=format&fit=crop",
+};
+
 function resolveUniversityDomain(name: string): string {
   if (universityDomainMap[name]) {
     return universityDomainMap[name];
@@ -1357,18 +1372,20 @@ export default function EligibilityForm() {
             </button>
 
             {/* University Cover & Logo */}
-            <div className="h-48 relative bg-slate-100 border-b border-slate-100">
+            <div className="h-48 relative bg-slate-900 border-b border-slate-800 overflow-hidden">
+              <img
+                src={COUNTRY_HERO_PHOTOS[selectedUniversity.code?.toLowerCase()] || "https://images.unsplash.com/photo-1541829070764-84a7d30dd3f3?q=80&w=1200&auto=format&fit=crop"}
+                alt=""
+                className="absolute inset-0 w-full h-full object-cover opacity-50 select-none pointer-events-none"
+              />
               {selectedUniversity.image_url || selectedUniversity.photo ? (
                 <img
                   src={selectedUniversity.image_url || selectedUniversity.photo || ""}
-                  alt={selectedUniversity.name}
-                  className="w-full h-full object-cover"
+                  alt=""
+                  className="absolute inset-0 w-full h-full object-cover"
+                  onError={(e) => { (e.target as HTMLElement).style.display = 'none'; }}
                 />
-              ) : (
-                <div className="w-full h-full bg-gradient-to-r from-indigo-500/20 via-blue-500/10 to-slate-50 flex items-center justify-center text-indigo-500">
-                  <GraduationCap className="w-16 h-16 text-accent-blue" />
-                </div>
-              )}
+              ) : null}
               {/* Overlay for text readability */}
               <div className="absolute inset-0 bg-gradient-to-t from-slate-900/90 via-slate-900/40 to-transparent flex items-end p-6">
                 <div className="flex items-center gap-4 relative z-10 w-full">

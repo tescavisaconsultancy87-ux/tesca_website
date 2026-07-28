@@ -38,6 +38,21 @@ interface University {
   pg_courses?: string | null;
 }
 
+const COUNTRY_HERO_PHOTOS: Record<string, string> = {
+  uk: "https://images.unsplash.com/photo-1541829070764-84a7d30dd3f3?q=80&w=1200&auto=format&fit=crop",
+  us: "https://images.unsplash.com/photo-1562774053-701939374585?q=80&w=1200&auto=format&fit=crop",
+  ca: "https://images.unsplash.com/photo-1523050854058-8df90110c9f1?q=80&w=1200&auto=format&fit=crop",
+  au: "https://images.unsplash.com/photo-1544717305-2782549b5136?q=80&w=1200&auto=format&fit=crop",
+  de: "https://images.unsplash.com/photo-1592280771190-3e2e4d571952?q=80&w=1200&auto=format&fit=crop",
+  nz: "https://images.unsplash.com/photo-1509062522246-3755977927d7?q=80&w=1200&auto=format&fit=crop",
+  ie: "https://images.unsplash.com/photo-1541829070764-84a7d30dd3f3?q=80&w=1200&auto=format&fit=crop",
+  sg: "https://images.unsplash.com/photo-1523050854058-8df90110c9f1?q=80&w=1200&auto=format&fit=crop",
+  ch: "https://images.unsplash.com/photo-1592280771190-3e2e4d571952?q=80&w=1200&auto=format&fit=crop",
+  my: "https://images.unsplash.com/photo-1544717305-2782549b5136?q=80&w=1200&auto=format&fit=crop",
+  ae: "https://images.unsplash.com/photo-1512453979798-5ea266f8880c?q=80&w=1200&auto=format&fit=crop",
+  eu: "https://images.unsplash.com/photo-1592280771190-3e2e4d571952?q=80&w=1200&auto=format&fit=crop",
+};
+
 const countries = [
   { name: "All Destinations", code: "all" },
   { name: "USA", code: "us" },
@@ -594,26 +609,20 @@ export default function UniversityFilter() {
               `}</style>
 
               {/* ── Hero banner ── */}
-              <div className="relative h-56 shrink-0 overflow-hidden group/hero">
+              <div className="relative h-56 shrink-0 overflow-hidden bg-slate-900 group/hero">
+                <img
+                  src={COUNTRY_HERO_PHOTOS[selectedUniversity.code?.toLowerCase()] || "https://images.unsplash.com/photo-1541829070764-84a7d30dd3f3?q=80&w=1200&auto=format&fit=crop"}
+                  alt=""
+                  className="absolute inset-0 w-full h-full object-cover opacity-60 transition-transform duration-700 group-hover/hero:scale-105 select-none pointer-events-none"
+                />
                 {selectedUniversity.image_url || selectedUniversity.photo ? (
                   <img
                     src={selectedUniversity.image_url || selectedUniversity.photo || ""}
-                    alt={selectedUniversity.name}
-                    className="w-full h-full object-cover transition-transform duration-700 group-hover/hero:scale-105"
-                    loading="lazy"
-                    decoding="async"
+                    alt=""
+                    className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover/hero:scale-105"
+                    onError={(e) => { (e.target as HTMLElement).style.display = 'none'; }}
                   />
-                ) : (
-                  <div
-                    className="w-full h-full flex items-center justify-center relative overflow-hidden"
-                    style={{
-                      background: `linear-gradient(135deg, #0A7880 0%, #075E64 100%)`
-                    }}
-                  >
-                    <div className="absolute w-[200px] h-[200px] bg-white/5 rounded-full -top-12 -left-12 blur-2xl"></div>
-                    <GraduationCap className="w-24 h-24 text-white/15 relative z-10" />
-                  </div>
-                )}
+                ) : null}
                 {/* gradient overlay */}
                 <div
                   className="absolute inset-0 z-10"
