@@ -2,10 +2,8 @@ import React, { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { 
   GraduationCap, Award, Globe, Phone, Mail, User, 
-  ArrowRight, ArrowLeft, Loader2, Star, MapPin, Sparkles, AlertCircle, X, ShieldCheck, Check, Info, ChevronDown, CheckCircle2, AlertTriangle
+  ArrowRight, ArrowLeft, Loader2, Star, MapPin, Sparkles, AlertCircle, X, ShieldCheck, Check, Info, ChevronDown
 } from "lucide-react";
-import { DEFAULT_COUNTRY_RULES, convertToIeltsEquivalency, type CountryRule } from "../utils/countryRules";
-import { resolveUniversityCampusPhoto, resolveUniversityLogoUrl, resolveUniversityDomain } from "../utils/universityLogos";
 
 interface University {
   id: number;
@@ -158,7 +156,13 @@ const universityDomainMap: Record<string, string> = {
   "University of Copenhagen": "ku.dk"
 };
 
-
+function resolveUniversityDomain(name: string): string {
+  if (universityDomainMap[name]) {
+    return universityDomainMap[name];
+  }
+  const clean = name.toLowerCase().replace(/[^a-z0-9\s]/g, "");
+  return clean.split(/\s+/).slice(0, 2).join("") + ".edu";
+}
 
 function UniversityLogo({ domain, name }: { domain: string; name: string }) {
   const [imgSrc, setImgSrc] = useState(`https://logo.clearbit.com/${domain}`);
@@ -290,25 +294,11 @@ export default function EligibilityForm() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [selectedCountry, setSelectedCountry] = useState<string | null>(null);
   const [selectedLevel, setSelectedLevel] = useState<'UG' | 'PG' | null>(null);
-  const [englishType, setEnglishType] = useState<'TEST' | 'MOI'>('TEST');
-  const [testName, setTestName] = useState<'IELTS' | 'PTE' | 'TOEFL' | 'DUOLINGO' | 'GERMAN'>('IELTS');
+  const [englishType, setEnglishType] = useState<'MOI' | 'IELTS' | null>(null);
+  const [englishScoreType, setEnglishScoreType] = useState<'IELTS' | 'PTE'>('IELTS');
   const [englishScore, setEnglishScore] = useState<string>("");
   const [isCgpa, setIsCgpa] = useState<boolean>(false);
   const [academicScore, setAcademicScore] = useState<string>("");
-  
-  // Country Rules & Dynamic Criteria
-  const [countryRules, setCountryRules] = useState<Record<string, CountryRule>>(DEFAULT_COUNTRY_RULES);
-
-  useEffect(() => {
-    fetch('/api/country-rules')
-      .then(res => res.json())
-      .then(data => {
-        if (data && data.rules) {
-          setCountryRules(prev => ({ ...prev, ...data.rules }));
-        }
-      })
-      .catch(err => console.error("Failed to load dynamic country rules:", err));
-  }, []);
   
   // Lead Info
   const [name, setName] = useState("");
@@ -380,7 +370,7 @@ export default function EligibilityForm() {
     const scoreVal = parseFloat(academicScore);
     if (isNaN(scoreVal) || scoreVal <= 0) return;
     
-    if (englishType === 'TEST') {
+    if (englishType === 'IELTS') {
       const engVal = parseFloat(englishScore);
       if (isNaN(engVal) || engVal <= 0) return;
     }
@@ -417,20 +407,13 @@ export default function EligibilityForm() {
 
       const fullPhoneNumber = `${selectedPhoneCountry.dialCode} ${phone}`;
 
-      const parsedUserScore = isCgpa ? parseFloat(academicScore) * 10 : parseFloat(academicScore);
-      const computedIeltsEquiv = englishType === 'MOI' ? 6.5 : convertToIeltsEquivalency(testName, englishScore);
-      const languageLabelStr = englishType === 'MOI' ? 'MOI Certificate' : `${testName} ${englishScore}`;
-
       // 2. Submit lead details to backend eligibility route
       const leadBody = {
         name,
         email,
         phone: fullPhoneNumber,
-        score: parsedUserScore.toString(),
-        ielts: computedIeltsEquiv.toString(),
-        englishType,
-        englishTestName: testName,
-        languageLabel: languageLabelStr,
+        score: academicScore,
+        ielts: englishType === 'MOI' ? "0" : englishScore,
         budget: "30",
         destination: selectedCountry
       };
@@ -458,6 +441,9 @@ export default function EligibilityForm() {
       }
 
       // 3. Client-side evaluation
+      const parsedUserScore = isCgpa ? parseFloat(academicScore) * 10 : parseFloat(academicScore);
+      const parsedUserEngScore = parseFloat(englishScore) || 0;
+
       const directMatches: University[] = [];
       const reachMatches: University[] = [];
 
@@ -470,21 +456,29 @@ export default function EligibilityForm() {
         let englishMatchesReach = false;
 
         if (englishType === 'MOI') {
+          // Verify if MOI is accepted for selected level
           const moiStr = selectedLevel === 'UG'
             ? (uni.ug_moi || uni.ug_moi_accepted || uni.moi_accepted || "")
-            : (uni.pg_moi || uni.pg_moi_accepted || uni.moi_accepted || "");
+            : (uni.pg_moi || uni.pg_moi_accepted || uni.moi_accepted || "")
           const acceptsMoi = moiStr.toLowerCase() === "yes";
           
           englishMatchesDirect = acceptsMoi;
           englishMatchesReach = acceptsMoi;
         } else {
+          // IELTS/PTE
           const reqStr = selectedLevel === 'UG'
             ? (uni.ug_ielts_pte || uni.ug_ielts_pte_req || uni.ielts_pte_req || "")
-            : (uni.pg_ielts_pte || uni.pg_ielts_pte_req || uni.ielts_pte_req || "");
+            : (uni.pg_ielts_pte || uni.pg_ielts_pte_req || uni.ielts_pte_req || "")
           
-          const reqIelts = parseIelts(reqStr);
-          englishMatchesDirect = computedIeltsEquiv >= reqIelts;
-          englishMatchesReach = computedIeltsEquiv >= (reqIelts - 0.5);
+          if (englishScoreType === 'IELTS') {
+            const reqIelts = parseIelts(reqStr);
+            englishMatchesDirect = parsedUserEngScore >= reqIelts;
+            englishMatchesReach = parsedUserEngScore >= (reqIelts - 0.5);
+          } else {
+            const reqPte = parsePte(reqStr);
+            englishMatchesDirect = parsedUserEngScore >= reqPte;
+            englishMatchesReach = parsedUserEngScore >= (reqPte - 5);
+          }
         }
 
         if (academicMatchesDirect && englishMatchesDirect) {
@@ -509,7 +503,6 @@ export default function EligibilityForm() {
           selectedCountry,
           selectedLevel,
           englishType,
-          testName,
           englishScore,
           academicScore,
           isCgpa,
@@ -656,7 +649,7 @@ export default function EligibilityForm() {
           </motion.div>
         )}
 
-        {/* STEP 3: LANGUAGE PROFICIENCY PROOF SELECTION */}
+        {/* STEP 3: ENGLISH PROFICIENCY WAIVER OR EXAM */}
         {step === 3 && (
           <motion.div
             key="step3"
@@ -672,62 +665,18 @@ export default function EligibilityForm() {
               </button>
               <div>
                 <span className="text-[10px] font-bold text-accent-blue uppercase tracking-widest font-sans">Step 3 of 5</span>
-                <h2 className="text-2xl font-extrabold font-display text-slate-800 tracking-tight leading-tight">Language Proficiency Option</h2>
+                <h2 className="text-2xl font-extrabold font-display text-slate-800 tracking-tight leading-tight">English Proficiency Option</h2>
               </div>
             </div>
 
-            {/* Country Transparency Banner */}
-            {selectedCountry && countryRules[selectedCountry] && (
-              <div className="mb-8 p-5 rounded-2xl border bg-slate-50 border-slate-200 space-y-2">
-                <div className="flex items-center justify-between gap-3">
-                  <div className="flex items-center gap-2">
-                    <Globe className="w-4 h-4 text-accent-blue" />
-                    <span className="text-xs font-bold text-slate-800 font-display">
-                      {countryRules[selectedCountry].country_name} Language Criteria
-                    </span>
-                  </div>
-                  <span className={`text-[10px] font-extrabold px-3 py-0.5 rounded-full uppercase tracking-wider ${
-                    countryRules[selectedCountry].moi_status === 'accepted'
-                      ? "bg-emerald-100 text-emerald-800 border border-emerald-200"
-                      : countryRules[selectedCountry].moi_status === 'conditional'
-                      ? "bg-amber-100 text-amber-800 border border-amber-200"
-                      : "bg-rose-100 text-rose-800 border border-rose-200"
-                  }`}>
-                    {countryRules[selectedCountry].moi_status === 'accepted' ? "MOI Accepted" : countryRules[selectedCountry].moi_status === 'conditional' ? "MOI Conditional" : "MOI Not Accepted"}
-                  </span>
-                </div>
-                <p className="text-xs text-slate-600 font-sans leading-relaxed">
-                  {countryRules[selectedCountry].transparency_note || countryRules[selectedCountry].moi_policy_note}
-                </p>
-              </div>
-            )}
-
             <p className="text-sm text-slate-500 font-sans mb-8">
-              Select how you would like to prove your English/Language proficiency:
+              Select how you would like to prove your English language proficiency.
             </p>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 max-w-3xl mx-auto">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 max-w-2xl mx-auto">
               <button
                 type="button"
-                onClick={() => { setEnglishType('TEST'); setTimeout(() => setStep(4), 200); }}
-                className={`p-8 rounded-[2rem] border transition-all duration-300 cursor-pointer flex flex-col items-center justify-center gap-4 text-center group hover:-translate-y-1 ${
-                  englishType === 'TEST'
-                    ? "bg-cyan-50/50 border-cyan-500 shadow-md"
-                    : "bg-white border-slate-200 hover:border-cyan-500 hover:shadow-lg"
-                }`}
-              >
-                <div className="w-14 h-14 rounded-2xl bg-cyan-50 text-cyan-600 flex items-center justify-center shrink-0 shadow-sm group-hover:scale-105 transition-transform duration-300">
-                  <Globe className="w-8 h-8" />
-                </div>
-                <div>
-                  <h3 className="font-bold text-slate-800 text-lg font-display">Standardized Language Test</h3>
-                  <p className="text-xs text-slate-400 font-sans mt-1">IELTS, PTE Academic, TOEFL iBT, Duolingo (DET), or German</p>
-                </div>
-              </button>
-
-              <button
-                type="button"
-                onClick={() => { setEnglishType('MOI'); setTimeout(() => setStep(4), 200); }}
+                onClick={() => handleEnglishSelect('MOI')}
                 className={`p-8 rounded-[2rem] border transition-all duration-300 cursor-pointer flex flex-col items-center justify-center gap-4 text-center group hover:-translate-y-1 ${
                   englishType === 'MOI'
                     ? "bg-amber-50/50 border-amber-500 shadow-md"
@@ -738,8 +687,26 @@ export default function EligibilityForm() {
                   <ShieldCheck className="w-8 h-8" />
                 </div>
                 <div>
-                  <h3 className="font-bold text-slate-800 text-lg font-display">Medium of Instruction (MOI)</h3>
-                  <p className="text-xs text-slate-400 font-sans mt-1">Previous degree / High School taught entirely in English</p>
+                  <h3 className="font-bold text-slate-800 text-lg font-display">MOI Waiver Accepted</h3>
+                  <p className="text-xs text-slate-400 font-sans mt-1">Check universities accepting Medium of Instruction waiver certificate</p>
+                </div>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => handleEnglishSelect('IELTS')}
+                className={`p-8 rounded-[2rem] border transition-all duration-300 cursor-pointer flex flex-col items-center justify-center gap-4 text-center group hover:-translate-y-1 ${
+                  englishType === 'IELTS'
+                    ? "bg-cyan-50/50 border-cyan-500 shadow-md"
+                    : "bg-white border-slate-200 hover:border-cyan-500 hover:shadow-lg"
+                }`}
+              >
+                <div className="w-14 h-14 rounded-2xl bg-cyan-50 text-cyan-600 flex items-center justify-center shrink-0 shadow-sm group-hover:scale-105 transition-transform duration-300">
+                  <Globe className="w-8 h-8" />
+                </div>
+                <div>
+                  <h3 className="font-bold text-slate-800 text-lg font-display">IELTS / PTE Academic</h3>
+                  <p className="text-xs text-slate-400 font-sans mt-1">Input your overall test score to evaluate specific university thresholds</p>
                 </div>
               </button>
             </div>
@@ -762,65 +729,57 @@ export default function EligibilityForm() {
               </button>
               <div>
                 <span className="text-[10px] font-bold text-accent-blue uppercase tracking-widest font-sans">Step 4 of 5</span>
-                <h2 className="text-2xl font-extrabold font-display text-slate-800 tracking-tight leading-tight">Enter Profile Details</h2>
+                <h2 className="text-2xl font-extrabold font-display text-slate-800 tracking-tight leading-tight">Enter Your Scores</h2>
               </div>
             </div>
 
             <form onSubmit={handleScoresSubmit} className="space-y-6">
               
-              {/* Language Exam Selector & Input */}
-              {englishType === 'TEST' ? (
+              {/* If English Exam selected, show exam scores */}
+              {englishType === 'IELTS' && (
                 <div className="space-y-4 bg-slate-50 p-6 rounded-2xl border border-slate-100">
-                  <label className="text-xs font-bold text-slate-700 uppercase tracking-wider font-sans block">Select Your Test Type</label>
+                  <label className="text-xs font-bold text-slate-700 uppercase tracking-wider font-sans block">Select English Test & Score</label>
                   
-                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
-                    {[
-                      { id: 'IELTS', label: 'IELTS' },
-                      { id: 'PTE', label: 'PTE' },
-                      { id: 'TOEFL', label: 'TOEFL iBT' },
-                      { id: 'DUOLINGO', label: 'Duolingo' },
-                      { id: 'GERMAN', label: 'German B2/C1' }
-                    ].map(t => (
-                      <button
-                        key={t.id}
-                        type="button"
-                        onClick={() => { setTestName(t.id as any); setEnglishScore(""); }}
-                        className={`py-2 px-3 rounded-xl text-xs font-bold transition-all ${
-                          testName === t.id
-                            ? "bg-accent-blue text-white shadow-sm"
-                            : "bg-white border border-slate-200 text-slate-600 hover:bg-slate-100"
-                        }`}
-                      >
-                        {t.label}
-                      </button>
-                    ))}
+                  <div className="flex gap-2">
+                    <button
+                      type="button"
+                      onClick={() => { setEnglishScoreType('IELTS'); setEnglishScore(""); }}
+                      className={`flex-1 py-2 rounded-xl text-xs font-bold transition-all ${
+                        englishScoreType === 'IELTS'
+                          ? "bg-accent-blue text-white shadow-sm"
+                          : "bg-white border border-slate-200 text-slate-500 hover:bg-slate-100"
+                      }`}
+                    >
+                      IELTS Academic
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => { setEnglishScoreType('PTE'); setEnglishScore(""); }}
+                      className={`flex-1 py-2 rounded-xl text-xs font-bold transition-all ${
+                        englishScoreType === 'PTE'
+                          ? "bg-accent-blue text-white shadow-sm"
+                          : "bg-white border border-slate-200 text-slate-500 hover:bg-slate-100"
+                      }`}
+                    >
+                      PTE Academic
+                    </button>
                   </div>
 
-                  <div className="space-y-1.5 pt-2">
-                    <label htmlFor="english-score" className="text-[10px] text-slate-500 uppercase tracking-wider font-semibold">
-                      {testName === 'IELTS' ? "Overall IELTS Band (e.g. 6.5)" : testName === 'PTE' ? "PTE Score (e.g. 58)" : testName === 'TOEFL' ? "TOEFL Score (e.g. 85)" : testName === 'DUOLINGO' ? "Duolingo DET Score (e.g. 115)" : "German Level (e.g. B2)"}
+                  <div className="space-y-1.5">
+                    <label htmlFor="english-score" className="text-[10px] text-slate-400 uppercase tracking-wider font-semibold">
+                      {englishScoreType === 'IELTS' ? "Overall IELTS Band Score (e.g. 6.5)" : "Overall PTE Academic Score (e.g. 58)"}
                     </label>
                     <input
                       id="english-score"
                       type="text"
-                      inputMode="text"
+                      inputMode="decimal"
                       value={englishScore}
-                      onChange={(e) => setEnglishScore(e.target.value)}
-                      placeholder={testName === 'IELTS' ? "6.5" : testName === 'PTE' ? "58" : testName === 'TOEFL' ? "85" : testName === 'DUOLINGO' ? "115" : "B2"}
+                      onChange={(e) => setEnglishScore(validateScoreInput(e.target.value))}
+                      placeholder={englishScoreType === 'IELTS' ? "6.5" : "58"}
                       required
-                      className="w-full bg-white border border-slate-200 rounded-xl px-4 py-2.5 text-sm text-slate-800 placeholder-slate-400 focus:outline-none focus:border-accent-blue focus:ring-1 focus:ring-accent-blue font-sans"
+                      className="w-full bg-white border border-slate-200 rounded-xl px-4 py-2.5 text-sm text-slate-800 placeholder-slate-400 focus:outline-none focus:border-accent-blue focus:ring-1 focus:ring-accent-blue"
                     />
                   </div>
-                </div>
-              ) : (
-                <div className="p-4 rounded-2xl bg-amber-50/70 border border-amber-200/80 space-y-2">
-                  <div className="flex items-center gap-2 text-amber-800">
-                    <ShieldCheck className="w-5 h-5 text-amber-600" />
-                    <span className="text-xs font-bold font-display">MOI Certificate Selected</span>
-                  </div>
-                  <p className="text-xs text-amber-900/80 font-sans leading-relaxed">
-                    {selectedCountry && countryRules[selectedCountry]?.moi_policy_note ? countryRules[selectedCountry].moi_policy_note : "We will filter universities that accept Medium of Instruction waiver certificates."}
-                  </p>
                 </div>
               )}
 
@@ -1398,24 +1357,23 @@ export default function EligibilityForm() {
             </button>
 
             {/* University Cover & Logo */}
-            <div className="h-44 relative bg-slate-900 overflow-hidden border-b border-slate-800">
-              <img
-                src={resolveUniversityCampusPhoto(selectedUniversity.code, selectedUniversity.photo)}
-                alt={selectedUniversity.name}
-                className="absolute inset-0 w-full h-full object-cover opacity-50 select-none pointer-events-none"
-              />
+            <div className="h-48 relative bg-slate-100 border-b border-slate-100">
+              {selectedUniversity.image_url || selectedUniversity.photo ? (
+                <img
+                  src={selectedUniversity.image_url || selectedUniversity.photo || ""}
+                  alt={selectedUniversity.name}
+                  className="w-full h-full object-cover"
+                />
+              ) : (
+                <div className="w-full h-full bg-gradient-to-r from-indigo-500/20 via-blue-500/10 to-slate-50 flex items-center justify-center text-indigo-500">
+                  <GraduationCap className="w-16 h-16 text-accent-blue" />
+                </div>
+              )}
               {/* Overlay for text readability */}
-              <div className="absolute inset-0 bg-gradient-to-t from-slate-900 via-slate-900/60 to-transparent flex items-end p-6">
+              <div className="absolute inset-0 bg-gradient-to-t from-slate-900/90 via-slate-900/40 to-transparent flex items-end p-6">
                 <div className="flex items-center gap-4 relative z-10 w-full">
-                  <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-2xl bg-white border border-slate-200/50 flex items-center justify-center shrink-0 overflow-hidden shadow-lg p-2">
-                    <img
-                      src={selectedUniversity.image_url || `https://logo.clearbit.com/${resolveUniversityDomain(selectedUniversity.name)}`}
-                      alt={selectedUniversity.name}
-                      className="w-full h-full object-contain"
-                      onError={(e) => {
-                        (e.target as HTMLElement).setAttribute("src", `https://www.google.com/s2/favicons?sz=128&domain=${resolveUniversityDomain(selectedUniversity.name)}`);
-                      }}
-                    />
+                  <div className="w-20 h-20 rounded-2xl bg-white border border-slate-200/50 flex items-center justify-center shrink-0 overflow-hidden shadow-lg p-1.5">
+                    <UniversityLogo domain={resolveUniversityDomain(selectedUniversity.name)} name={selectedUniversity.name} />
                   </div>
                   <div className="text-left">
                     <div className="flex items-center gap-2 mb-1.5">

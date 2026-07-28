@@ -86,25 +86,18 @@ export function eligibilityResultEmail({
   name,
   academicScore,
   ieltsScore,
-  languageTestLabel,
   budget,
   destination,
-  destinationName,
   matchCount,
 }: {
   name: string;
   academicScore: number | string;
-  ieltsScore?: number | string;
-  languageTestLabel?: string;
+  ieltsScore: number | string;
   budget: number | string;
   destination: string;
-  destinationName?: string;
   matchCount: number;
 }) {
   const isGoodMatch = matchCount >= 3;
-  const countryDisplay = destinationName || destination || "Study Destination";
-  const langProofDisplay = languageTestLabel || (ieltsScore && parseFloat(String(ieltsScore)) > 0 ? `IELTS ${ieltsScore}` : "MOI / English Waiver");
-  const academicDisplay = typeof academicScore === 'number' || !String(academicScore).includes('%') ? `${academicScore}%` : academicScore;
 
   const content = `
   ${header()}
@@ -117,7 +110,7 @@ export function eligibilityResultEmail({
       </div>
       <h1 style="font-size:28px; font-weight:800; color:#ffffff; line-height:1.25; margin:0 0 10px;">Hello, ${name}! 👋</h1>
       <p style="font-size:16px; color:rgba(255,255,255,0.80); line-height:1.6; margin:0;">
-        Your eligibility assessment for <strong>${countryDisplay}</strong> is ready. Here's a personalized summary of your profile.
+        Your eligibility assessment is ready. Here's a personalized summary of your profile.
       </p>
     </td>
   </tr>
@@ -130,14 +123,14 @@ export function eligibilityResultEmail({
         <tr>
           <td style="width:33%; padding:0 6px 0 0;">
             <div style="background:#f0f9ff; border:1.5px solid #bae6fd; border-radius:14px; padding:18px 14px; text-align:center;">
-              <span style="font-size:24px; font-weight:800; color:${BRAND_BLUE}; display:block; line-height:1;">${academicDisplay}</span>
+              <span style="font-size:28px; font-weight:800; color:${BRAND_BLUE}; display:block; line-height:1;">${academicScore}%</span>
               <span style="font-size:11px; color:#64748b; font-weight:600; margin-top:4px; display:block; text-transform:uppercase; letter-spacing:0.8px;">Academic Score</span>
             </div>
           </td>
           <td style="width:33%; padding:0 3px;">
             <div style="background:#f0fdf4; border:1.5px solid #bbf7d0; border-radius:14px; padding:18px 14px; text-align:center;">
-              <span style="font-size:18px; font-weight:800; color:#16a34a; display:block; line-height:1.2;">${langProofDisplay}</span>
-              <span style="font-size:11px; color:#64748b; font-weight:600; margin-top:4px; display:block; text-transform:uppercase; letter-spacing:0.8px;">Language Proof</span>
+              <span style="font-size:28px; font-weight:800; color:#16a34a; display:block; line-height:1;">${ieltsScore}</span>
+              <span style="font-size:11px; color:#64748b; font-weight:600; margin-top:4px; display:block; text-transform:uppercase; letter-spacing:0.8px;">IELTS Band</span>
             </div>
           </td>
           <td style="width:33%; padding:0 0 0 6px;">
@@ -155,18 +148,20 @@ export function eligibilityResultEmail({
   <tr>
     <td style="padding: 24px 40px;" class="email-card">
       ${isGoodMatch
-        ? `<div style="background: linear-gradient(135deg, #f0fdf4, #dcfce7); border:2px solid #86efac; border-radius:16px; padding:22px 24px;">
-            <p style="font-size:18px; font-weight:800; color:#16a34a; margin:0 0 6px;">🎉 Great News! ${matchCount} Universities Match Your Profile</p>
-            <p style="font-size:14px; color:#374151; margin:0; line-height:1.6;">
-              Based on your academic score, language proficiency (${langProofDisplay}), and budget, we found <strong>${matchCount} matched universities</strong> for <strong>${countryDisplay}</strong>. 
-              Our counselors will shortlist the best options for you!
-            </p>
+        ? `<div style="background: linear-gradient(135deg, #f0fdf4, #dcfce7); border:2px solid #86efac; border-radius:16px; padding:22px 24px; display:flex; align-items:center;">
+            <div>
+              <p style="font-size:18px; font-weight:800; color:#16a34a; margin:0 0 6px;">🎉 Great News! ${matchCount} Universities Match Your Profile</p>
+              <p style="font-size:14px; color:#374151; margin:0; line-height:1.6;">
+                Based on your academic score, IELTS band, and budget, we found <strong>${matchCount} matched universities</strong> for <strong>${destination}</strong>. 
+                Our counselors will shortlist the best options for you!
+              </p>
+            </div>
           </div>`
         : `<div style="background:linear-gradient(135deg, #fff7ed, #ffedd5); border:2px solid #fdba74; border-radius:16px; padding:22px 24px;">
             <p style="font-size:18px; font-weight:800; color:#c2410c; margin:0 0 6px;">⚡ We Have Options for You!</p>
             <p style="font-size:14px; color:#374151; margin:0; line-height:1.6;">
               While a few universities match your current profile, our expert counselors can help you explore 
-              <strong>stretch universities</strong> and <strong>alternative language/foundation pathways</strong> for ${countryDisplay}.
+              <strong>stretch universities</strong> and <strong>alternative pathways</strong> to reach your dream destination.
             </p>
           </div>`
       }
@@ -213,60 +208,7 @@ export function eligibilityResultEmail({
 
   return {
     subject: `🎯 Your Eligibility Results Are Ready, ${name}! — TESCA`,
-    html: baseWrapper(content, `Your eligibility assessment found ${matchCount} university matches for ${countryDisplay}. View them now!`),
-  };
-}
-
-export function eligibilityAdminNotificationEmail({
-  name,
-  email,
-  phone,
-  academicScore,
-  languageTestLabel,
-  budget,
-  destinationName,
-  matchCount,
-}: {
-  name: string;
-  email: string;
-  phone: string;
-  academicScore: number | string;
-  languageTestLabel: string;
-  budget: number | string;
-  destinationName: string;
-  matchCount: number;
-}) {
-  const content = `
-  ${header()}
-  <tr>
-    <td style="padding: 32px 40px;" class="email-card">
-      <div style="background:#0F4C81; border-radius:14px; padding:20px 24px; margin-bottom:24px;">
-        <h1 style="color:#ffffff; font-size:20px; font-weight:800; margin:0 0 6px;">📥 New Student Eligibility Submission</h1>
-        <p style="color:rgba(255,255,255,0.8); font-size:14px; margin:0;">A new student has searched for university eligibility matches on the website.</p>
-      </div>
-
-      <table width="100%" cellpadding="10" cellspacing="0" style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:12px; font-size:14px; font-slate-700;">
-        <tr><td style="font-weight:700; width:35%;">Student Name:</td><td>${name}</td></tr>
-        <tr><td style="font-weight:700;">Email:</td><td><a href="mailto:${email}" style="color:${BRAND_BLUE};">${email}</a></td></tr>
-        <tr><td style="font-weight:700;">Phone:</td><td><a href="tel:${phone.replace(/\s+/g, '')}" style="color:${BRAND_BLUE};">${phone}</a></td></tr>
-        <tr><td style="font-weight:700;">Target Country:</td><td><strong>${destinationName}</strong></td></tr>
-        <tr><td style="font-weight:700;">Academic Score:</td><td>${academicScore}%</td></tr>
-        <tr><td style="font-weight:700;">Language Proof:</td><td><strong>${languageTestLabel}</strong></td></tr>
-        <tr><td style="font-weight:700;">Yearly Budget:</td><td>₹${budget} Lakhs/year</td></tr>
-        <tr><td style="font-weight:700;">Matches Found:</td><td><span style="color:#16a34a; font-weight:800;">${matchCount} Universities</span></td></tr>
-      </table>
-
-      <div style="margin-top:24px; text-align:center;">
-        <a href="https://wa.me/${phone.replace(/[^0-9]/g, '')}" style="display:inline-block; background:${BRAND_AMBER}; color:#ffffff; font-size:14px; font-weight:800; padding:12px 24px; border-radius:50px; text-decoration:none;">
-          💬 Connect on WhatsApp
-        </a>
-      </div>
-    </td>
-  </tr>`;
-
-  return {
-    subject: `🔥 New Lead: ${name} checked Eligibility for ${destinationName}`,
-    html: baseWrapper(content, `New eligibility inquiry from ${name} for ${destinationName}`),
+    html: baseWrapper(content, `Your eligibility assessment found ${matchCount} university matches. View them now!`),
   };
 }
 
