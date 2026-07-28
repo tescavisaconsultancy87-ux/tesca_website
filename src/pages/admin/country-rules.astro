@@ -1,0 +1,244 @@
+---
+import Layout from "../../layouts/Layout.astro";
+import AdminHeader from "../../components/AdminHeader.astro";
+import { checkAdminAuth } from "../../utils/adminAuth";
+import { DEFAULT_COUNTRY_RULES } from "../../utils/countryRules";
+import { supabase } from "../../utils/supabase";
+
+// Check session
+const isAuthenticated = await checkAdminAuth(Astro.cookies);
+if (!isAuthenticated) {
+  return Astro.redirect("/admin");
+}
+
+let successMessage = "";
+let errorMessage = "";
+
+// Handle POST updates
+if (Astro.request.method === "POST") {
+  try {
+    const formData = await Astro.request.formData();
+    const action = formData.get("action");
+
+    if (action === "update-country-rule") {
+      const code = formData.get("code")?.toString().toLowerCase();
+      const countryName = formData.get("country_name")?.toString().trim();
+      const allowedTests = formData.getAll("allowed_tests").map(s => s.toString());
+      const moiStatus = formData.get("moi_status")?.toString();
+      const moiPolicyNote = formData.get("moi_policy_note")?.toString().trim();
+      const transparencyNote = formData.get("transparency_note")?.toString().trim();
+      const minUgIelts = parseFloat(formData.get("min_ug_ielts")?.toString() || "6.0");
+      const minPgIelts = parseFloat(formData.get("min_pg_ielts")?.toString() || "6.5");
+
+      if (code && countryName) {
+        const { error } = await supabase
+          .from('country_settings')
+          .upsert({
+            code,
+            country_name: countryName,
+            allowed_tests: JSON.stringify(allowedTests),
+            moi_status: moiStatus || "conditional",
+            moi_policy_note: moiPolicyNote || "",
+            transparency_note: transparencyNote || "",
+            min_ug_ielts: minUgIelts,
+            min_pg_ielts: minPgIelts
+          }, { onConflict: 'code' });
+
+        if (error) throw error;
+        successMessage = `Successfully updated criteria & transparency settings for ${countryName}.`;
+      }
+    }
+  } catch (err: any) {
+    console.error("Action error on country rules page:", err);
+    errorMessage = "Failed to update country rules. Please try again.";
+  }
+}
+
+// Fetch dynamic country rules from DB
+let rulesList = { ...DEFAULT_COUNTRY_RULES };
+try {
+  const { data: dbRules, error } = await supabase
+    .from('country_settings')
+    .select('*');
+
+  if (!error && dbRules) {
+    dbRules.forEach((row: any) => {
+      const code = row.code?.toLowerCase();
+      if (code) {
+        let tests: string[] = ["IELTS", "PTE"];
+        if (Array.isArray(row.allowed_tests)) tests = row.allowed_tests;
+        else if (typeof row.allowed_tests === "string") {
+          try { tests = JSON.parse(row.allowed_tests); } catch { tests = row.allowed_tests.split(",").map(s => s.trim()); }
+        }
+
+        rulesList[code] = {
+          code,
+          country_name: row.country_name || rulesList[code]?.country_name || code.toUpperCase(),
+          allowed_tests: tests,
+          moi_status: row.moi_status || rulesList[code]?.moi_status || "conditional",
+          moi_policy_note: row.moi_policy_note || rulesList[code]?.moi_policy_note || "",
+          transparency_note: row.transparency_note || rulesList[code]?.transparency_note || "",
+          min_ug_ielts: parseFloat(row.min_ug_ielts) || rulesList[code]?.min_ug_ielts || 6.0,
+          min_pg_ielts: parseFloat(row.min_pg_ielts) || rulesList[code]?.min_pg_ielts || 6.5
+        };
+      }
+    });
+  }
+} catch (err) {
+  console.error("Failed to load country settings from DB:", err);
+}
+
+const rulesArray = Object.values(rulesList);
+---
+
+<Layout title="Manage Country Criteria & Eligibility | TESCA Admin" description="Configure country-specific language requirements, MOI policies, and student transparency notes.">
+  <div class="min-h-screen bg-slate-950 text-slate-100 flex flex-col lg:flex-row">
+    <AdminHeader activeTab="country-rules" />
+
+    <main class="flex-1 lg:ml-64 p-6 sm:p-8 lg:p-10 max-w-7xl mx-auto w-full">
+      <div class="mb-8 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div>
+          <span class="text-xs font-bold text-indigo-400 uppercase tracking-widest font-mono">Transparency & Criteria Engine</span>
+          <h1 class="text-3xl font-extrabold font-display text-white tracking-tight">Country Eligibility Rules</h1>
+          <p class="text-sm text-slate-400 mt-1">Configure language proof options, MOI acceptance status, and transparency notes shown to students during eligibility checks.</p>
+        </div>
+      </div>
+
+      {successMessage && (
+        <div class="mb-6 p-4 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 text-sm font-semibold flex items-center gap-2">
+          <span>✅</span> {successMessage}
+        </div>
+      )}
+
+      {errorMessage && (
+        <div class="mb-6 p-4 rounded-xl bg-rose-500/10 border border-rose-500/30 text-rose-400 text-sm font-semibold flex items-center gap-2">
+          <span>⚠️</span> {errorMessage}
+        </div>
+      )}
+
+      <!-- Rules Cards Grid -->
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        {rulesArray.map((rule) => (
+          <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-xl space-y-5">
+            <div class="flex items-center justify-between border-b border-slate-800 pb-4">
+              <div class="flex items-center gap-3">
+                <div class="w-10 h-7 rounded overflow-hidden border border-slate-700 shrink-0">
+                  <img
+                    src={`https://flagcdn.com/w80/${rule.code === "uk" ? "gb" : rule.code}.png`}
+                    alt={rule.country_name}
+                    class="w-full h-full object-cover"
+                  />
+                </div>
+                <div>
+                  <h2 class="text-lg font-bold text-white font-display">{rule.country_name}</h2>
+                  <span class="text-xs text-slate-400 font-mono">Code: {rule.code.toUpperCase()}</span>
+                </div>
+              </div>
+
+              <span class={`text-[10px] font-extrabold px-3 py-1 rounded-full uppercase tracking-wider ${
+                rule.moi_status === 'accepted'
+                  ? "bg-emerald-500/20 text-emerald-300 border border-emerald-500/30"
+                  : rule.moi_status === 'conditional'
+                  ? "bg-amber-500/20 text-amber-300 border border-amber-500/30"
+                  : "bg-rose-500/20 text-rose-300 border border-rose-500/30"
+              }`}>
+                {rule.moi_status === 'accepted' ? "MOI Accepted" : rule.moi_status === 'conditional' ? "MOI Conditional" : "MOI Not Accepted"}
+              </span>
+            </div>
+
+            <form method="POST" class="space-y-4">
+              <input type="hidden" name="action" value="update-country-rule" />
+              <input type="hidden" name="code" value={rule.code} />
+              <input type="hidden" name="country_name" value={rule.country_name} />
+
+              {/* MOI Status */}
+              <div>
+                <label class="block text-xs font-bold text-slate-300 uppercase tracking-wider mb-1.5">MOI Acceptance Policy</label>
+                <select
+                  name="moi_status"
+                  class="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-indigo-500"
+                >
+                  <option value="accepted" selected={rule.moi_status === 'accepted'}>Accepted (Widely accepted by partner universities)</option>
+                  <option value="conditional" selected={rule.moi_status === 'conditional'}>Conditional (Select universities / boards only)</option>
+                  <option value="not_accepted" selected={rule.moi_status === 'not_accepted'}>Not Accepted (Standardized test mandatory)</option>
+                </select>
+              </div>
+
+              {/* Allowed Tests Checkboxes */}
+              <div>
+                <label class="block text-xs font-bold text-slate-300 uppercase tracking-wider mb-2">Accepted Language Tests for {rule.country_name}</label>
+                <div class="grid grid-cols-3 gap-2 text-xs">
+                  {['IELTS', 'PTE', 'TOEFL', 'DUOLINGO', 'GERMAN', 'MOI'].map(t => (
+                    <label key={t} class="flex items-center gap-2 bg-slate-800/80 border border-slate-700/60 p-2 rounded-lg cursor-pointer hover:bg-slate-800">
+                      <input
+                        type="checkbox"
+                        name="allowed_tests"
+                        value={t}
+                        checked={rule.allowed_tests.includes(t)}
+                        class="rounded border-slate-700 bg-slate-900 text-indigo-500 focus:ring-0"
+                      />
+                      <span class="text-slate-200 font-semibold text-[11px]">{t}</span>
+                    </label>
+                  ))}
+                </div>
+              </div>
+
+              {/* Min Benchmark Scores */}
+              <div class="grid grid-cols-2 gap-3">
+                <div>
+                  <label class="block text-[11px] text-slate-400 font-semibold mb-1">Min UG IELTS Equivalent</label>
+                  <input
+                    type="number"
+                    step="0.5"
+                    name="min_ug_ielts"
+                    value={rule.min_ug_ielts}
+                    class="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white"
+                  />
+                </div>
+                <div>
+                  <label class="block text-[11px] text-slate-400 font-semibold mb-1">Min PG IELTS Equivalent</label>
+                  <input
+                    type="number"
+                    step="0.5"
+                    name="min_pg_ielts"
+                    value={rule.min_pg_ielts}
+                    class="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white"
+                  />
+                </div>
+              </div>
+
+              {/* Transparency Note for Students */}
+              <div>
+                <label class="block text-xs font-bold text-slate-300 uppercase tracking-wider mb-1">Student Transparency Note</label>
+                <textarea
+                  name="transparency_note"
+                  rows="2"
+                  class="w-full bg-slate-800 border border-slate-700 rounded-xl p-3 text-xs text-slate-200 placeholder-slate-500 focus:outline-none focus:border-indigo-500"
+                  placeholder="Note shown to students on eligibility finder..."
+                >{rule.transparency_note || rule.moi_policy_note}</textarea>
+              </div>
+
+              {/* Policy Details Note */}
+              <div>
+                <label class="block text-xs font-bold text-slate-300 uppercase tracking-wider mb-1">Counselor Advisory / Policy Detail</label>
+                <textarea
+                  name="moi_policy_note"
+                  rows="2"
+                  class="w-full bg-slate-800 border border-slate-700 rounded-xl p-3 text-xs text-slate-200 placeholder-slate-500 focus:outline-none focus:border-indigo-500"
+                  placeholder="Detailed policy explanation..."
+                >{rule.moi_policy_note}</textarea>
+              </div>
+
+              <button
+                type="submit"
+                class="w-full py-2.5 bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs rounded-xl shadow transition-all cursor-pointer"
+              >
+                Save Country Criteria
+              </button>
+            </form>
+          </div>
+        ))}
+      </div>
+    </main>
+  </div>
+</Layout>

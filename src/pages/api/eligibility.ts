@@ -4,11 +4,18 @@ import { getEnv } from '../../utils/env';
 import { validateEmail, validatePhone, validateName, validateScoreRange, sanitizeText } from '../../utils/validation';
 import { reportServerError, getClientIP, checkRateLimit, jsonResponse, rateLimitResponse, rejectOversizedJson } from '../../utils/security';
 import { sendMail } from '../../utils/mailer';
-import { eligibilityResultEmail } from '../../utils/emailTemplates';
+import { eligibilityResultEmail, eligibilityAdminNotificationEmail } from '../../utils/emailTemplates';
 import { runInBackground } from '../../utils/background';
+import { DEFAULT_COUNTRY_RULES } from '../../utils/countryRules';
 
 const RATE_LIMIT_WINDOW_MS = 10 * 60 * 1000;
 const RATE_LIMIT_MAX = 8;
+
+const COUNTRY_NAMES: Record<string, string> = {
+  us: "USA", uk: "United Kingdom", ca: "Canada", au: "Australia",
+  de: "Germany", nz: "New Zealand", ie: "Ireland", sg: "Singapore",
+  ch: "Switzerland", my: "Malaysia", ae: "Dubai", eu: "Europe",
+};
 
 export const POST: APIRoute = async ({ request, locals }) => {
   const oversized = rejectOversizedJson(request);
@@ -22,11 +29,11 @@ export const POST: APIRoute = async ({ request, locals }) => {
   let body: any = {};
   try {
     const supabase = getSupabaseAdmin();
-body = await request.json();
-    const { name, email, phone, score, ielts, budget, destination } = body;
+    body = await request.json();
+    const { name, email, phone, score, ielts, budget, destination, englishType, englishTestName, languageLabel } = body;
 
     // 1. Basic check for presence
-    if (!name || !email || !phone || !score || !ielts || !budget) {
+    if (!name || !email || !phone || !score || !budget) {
       return new Response(JSON.stringify({ error: "Missing required fields." }), {
         status: 400,
         headers: { "Content-Type": "application/json" }
@@ -62,8 +69,9 @@ body = await request.json();
       });
     }
 
-    if (!validateScoreRange(ielts, 0, 9)) {
-      return new Response(JSON.stringify({ error: "IELTS score must be a band value between 0 and 9." }), {
+    const ieltsVal = ielts ? parseFloat(ielts) : 0;
+    if (ieltsVal > 0 && !validateScoreRange(ielts, 0, 9)) {
+      return new Response(JSON.stringify({ error: "IELTS equivalency score must be between 0 and 9." }), {
         status: 400,
         headers: { "Content-Type": "application/json" }
       });
@@ -77,24 +85,28 @@ body = await request.json();
     }
 
     const academicScoreNum = parseFloat(score);
-    const ieltsScoreNum = parseFloat(ielts);
+    const ieltsScoreNum = ieltsVal;
     const budgetLakhsNum = parseFloat(budget);
 
     // 3. Sanitization
     const cleanName = sanitizeText(name, 200);
     const cleanEmail = sanitizeText(email, 254).toLowerCase();
     const cleanPhone = sanitizeText(phone, 20);
-    const cleanDestination = destination ? sanitizeText(destination, 50) : "Any";
+    const cleanDestination = destination ? sanitizeText(destination, 50).toLowerCase() : "all";
+    const destinationFullName = COUNTRY_NAMES[cleanDestination] || DEFAULT_COUNTRY_RULES[cleanDestination]?.country_name || cleanDestination.toUpperCase();
+    const cleanLangLabel = languageLabel ? sanitizeText(languageLabel, 100) : (englishType === 'MOI' ? 'MOI Certificate' : `IELTS ${ieltsScoreNum}`);
 
     // Save lead to database
     let leadId: number | null = null;
     try {
-    const supabase = getSupabaseAdmin();
-const detailsStr = JSON.stringify({
+      const detailsStr = JSON.stringify({
         academic_score: academicScoreNum,
         ielts_score: ieltsScoreNum,
+        language_label: cleanLangLabel,
+        english_type: englishType,
+        english_test_name: englishTestName,
         budget: budgetLakhsNum,
-        destination: cleanDestination
+        destination: destinationFullName
       });
       const { data: insertedData, error: dbErr } = await supabase
         .from('leads')
@@ -121,7 +133,6 @@ const detailsStr = JSON.stringify({
     // Submit lead to Google Sheets
     const googleSheetUrl = getEnv('GOOGLE_SHEET_URL') || import.meta.env.GOOGLE_SHEET_URL;
 
-    // Submit to Google Sheets (GET request with query parameters)
     if (googleSheetUrl) {
       try {
         const params = new URLSearchParams({
@@ -129,8 +140,8 @@ const detailsStr = JSON.stringify({
           "Email": cleanEmail,
           "Mobile Number": cleanPhone,
           "Counselling Mode": "Eligibility Finder",
-          "Preferred Countries": cleanDestination,
-          "Comments": `Academic: ${academicScoreNum}%, IELTS: ${ieltsScoreNum}, Budget: ${budgetLakhsNum} Lakhs/yr.`,
+          "Preferred Countries": destinationFullName,
+          "Comments": `Academic: ${academicScoreNum}%, Language: ${cleanLangLabel}, Budget: ${budgetLakhsNum} Lakhs/yr.`,
           "Lead Source": "Eligibility Finder Form",
         });
         runInBackground(locals, () => fetch(`${googleSheetUrl}?${params.toString()}`, {
@@ -141,21 +152,19 @@ const detailsStr = JSON.stringify({
       }
     }
 
-    // Conversion rate: 1 Lakh INR is approx $1,200 USD (broad average for tuition match)
+    // Conversion rate: 1 Lakh INR is approx $1,200 USD
     const budgetUSD = budgetLakhsNum * 1200;
 
     // Fetch all universities or filter by destination code
     let query = supabase.from('universities').select('*');
-    if (destination && destination !== "all") {
-      query = query.eq('code', destination);
+    if (cleanDestination && cleanDestination !== "all") {
+      query = query.eq('code', cleanDestination);
     }
     const { data: allUniversities, error: queryErr } = await query.order('name', { ascending: true });
     if (queryErr) {
       throw queryErr;
     }
 
-
-    // Helper to map and parse D1 rows
     const parseIelts = (req: string | null | undefined): number => {
       if (!req) return 0;
       const match = req.match(/(\d+(\.\d+)?)/);
@@ -185,7 +194,7 @@ const detailsStr = JSON.stringify({
     };
 
     // Map rows to normalized values & parse requirements
-    const mappedUniversities = allUniversities.map((u: any) => {
+    const mappedUniversities = (allUniversities || []).map((u: any) => {
       const ugTuition = u.ug_tuition_fees || u.ug_fees || u.tuition_fees || "";
       const ugIelts = u.ug_ielts_pte || u.ug_ielts_pte_req || u.ielts_pte_req || "";
       const ugIntake = u.ug_intakes || u.ug_intake || u.intake || "Sep";
@@ -195,13 +204,9 @@ const detailsStr = JSON.stringify({
       const minIelts = parseIelts(ugIelts);
       const minGpa = parseFloat(u.min_cgpa_percent) || 0;
       
-      // Auto-generate domain based on university name if missing
-      const cleanName = u.name.toLowerCase().replace(/[^a-z0-9\s]/g, "");
-      const domain = cleanName.split(/\s+/).slice(0, 2).join("") + ".edu";
-      
-      // Auto-generate rank based on id
+      const cleanUniName = u.name.toLowerCase().replace(/[^a-z0-9\s]/g, "");
+      const domain = cleanUniName.split(/\s+/).slice(0, 2).join("") + ".edu";
       const rank = u.id ? u.id * 3 : 15;
-      
       const city = u.country === "United Kingdom" ? "London" : u.country === "USA" ? "Boston" : "Main Campus";
       const highlights = JSON.stringify([
         `Intake: ${ugIntake}`,
@@ -224,19 +229,16 @@ const detailsStr = JSON.stringify({
     });
 
     // Filter by criteria
-    // Exact Matches:
-    const matches = mappedUniversities.filter(uni => {
+    const matches = mappedUniversities.filter((uni: any) => {
       return uni.min_gpa_percent <= academicScoreNum &&
              uni.min_ielts <= ieltsScoreNum &&
              uni.tuition_fee_max <= budgetUSD;
     }).slice(0, 15);
 
-    // Reach Matches (only if no exact matches, or less than 3)
     let reachResults: any[] = [];
     if (matches.length < 3) {
-      reachResults = mappedUniversities.filter(uni => {
-        // Must not be in exact matches
-        if (matches.some(m => m.id === uni.id)) return false;
+      reachResults = mappedUniversities.filter((uni: any) => {
+        if (matches.some((m: any) => m.id === uni.id)) return false;
         
         const gpaEligible = uni.min_gpa_percent <= academicScoreNum * 1.15;
         const ieltsEligible = uni.min_ielts <= ieltsScoreNum + 0.5;
@@ -246,17 +248,35 @@ const detailsStr = JSON.stringify({
       }).slice(0, 5);
     }
 
-    // Send confirmation email to user if email provided
+    // 1. Send confirmation email to student
     if (cleanEmail) {
-      const { subject, html } = eligibilityResultEmail({
+      const { subject: studentSubject, html: studentHtml } = eligibilityResultEmail({
         name: cleanName,
         academicScore: academicScoreNum,
         ieltsScore: ieltsScoreNum,
+        languageTestLabel: cleanLangLabel,
         budget: budgetLakhsNum,
         destination: cleanDestination,
+        destinationName: destinationFullName,
         matchCount: matches.length,
       });
-      runInBackground(locals, () => sendMail({ to: cleanEmail, subject, html }), "eligibility-result-email");
+      runInBackground(locals, () => sendMail({ to: cleanEmail, subject: studentSubject, html: studentHtml }), "eligibility-result-email");
+    }
+
+    // 2. Send admin counselor notification email
+    const adminEmail = getEnv('ADMIN_NOTIFICATION_EMAIL') || getEnv('GMAIL_USER') || import.meta.env.GMAIL_USER;
+    if (adminEmail) {
+      const { subject: adminSubject, html: adminHtml } = eligibilityAdminNotificationEmail({
+        name: cleanName,
+        email: cleanEmail,
+        phone: cleanPhone,
+        academicScore: academicScoreNum,
+        languageTestLabel: cleanLangLabel,
+        budget: budgetLakhsNum,
+        destinationName: destinationFullName,
+        matchCount: matches.length,
+      });
+      runInBackground(locals, () => sendMail({ to: adminEmail, subject: adminSubject, html: adminHtml }), "eligibility-admin-notification-email");
     }
 
     return jsonResponse({
@@ -270,3 +290,4 @@ const detailsStr = JSON.stringify({
     return await reportServerError("eligibility", err, body, request, locals);
   }
 };
+
