@@ -667,11 +667,40 @@ try {
             photoPreview.src = "";
             photoPreviewContainer.classList.add("hidden");
           }
+
+          photoPreview.onerror = () => {
+            photoPreviewContainer.classList.add("hidden");
+          };
         }
 
         document.querySelector("form")?.scrollIntoView({ behavior: "smooth", block: "start" });
       });
     });
+
+    // File input preview listener
+    const fileInput = document.getElementById("uni-photo") as HTMLInputElement;
+    const photoPrev = document.getElementById("photo-preview") as HTMLImageElement;
+    const photoPrevCont = document.getElementById("photo-preview-container");
+    const removeBtn = document.getElementById("remove-photo-btn");
+
+    if (fileInput && photoPrev && photoPrevCont) {
+      fileInput.addEventListener("change", () => {
+        const file = fileInput.files?.[0];
+        if (file) {
+          photoPrev.src = URL.createObjectURL(file);
+          photoPrevCont.classList.remove("hidden");
+        }
+      });
+    }
+
+    if (removeBtn && photoPrevCont && photoExistingInput) {
+      removeBtn.addEventListener("click", () => {
+        photoExistingInput.value = "";
+        if (fileInput) fileInput.value = "";
+        photoPrevCont.classList.add("hidden");
+        if (photoPrev) photoPrev.src = "";
+      });
+    }
 
     const cancelBtn = document.getElementById("cancel-edit-btn");
     if (cancelBtn) {

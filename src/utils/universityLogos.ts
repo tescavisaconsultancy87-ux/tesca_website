@@ -106,3 +106,26 @@ export function resolveUniversityLogoUrl(name: string, customUrl?: string | null
   const domain = resolveUniversityDomain(name);
   return `https://logo.clearbit.com/${domain}`;
 }
+
+const COUNTRY_CAMPUS_PHOTOS: Record<string, string> = {
+  uk: "https://images.unsplash.com/photo-1541829070764-84a7d30dd3f3?q=80&w=1200&auto=format&fit=crop",
+  us: "https://images.unsplash.com/photo-1562774053-701939374585?q=80&w=1200&auto=format&fit=crop",
+  ca: "https://images.unsplash.com/photo-1523050854058-8df90110c9f1?q=80&w=1200&auto=format&fit=crop",
+  au: "https://images.unsplash.com/photo-1544717305-2782549b5136?q=80&w=1200&auto=format&fit=crop",
+  de: "https://images.unsplash.com/photo-1592280771190-3e2e4d571952?q=80&w=1200&auto=format&fit=crop",
+  nz: "https://images.unsplash.com/photo-1509062522246-3755977927d7?q=80&w=1200&auto=format&fit=crop",
+  ie: "https://images.unsplash.com/photo-1541829070764-84a7d30dd3f3?q=80&w=1200&auto=format&fit=crop",
+  sg: "https://images.unsplash.com/photo-1523050854058-8df90110c9f1?q=80&w=1200&auto=format&fit=crop",
+  ch: "https://images.unsplash.com/photo-1592280771190-3e2e4d571952?q=80&w=1200&auto=format&fit=crop",
+  my: "https://images.unsplash.com/photo-1544717305-2782549b5136?q=80&w=1200&auto=format&fit=crop",
+  ae: "https://images.unsplash.com/photo-1512453979798-5ea266f8880c?q=80&w=1200&auto=format&fit=crop",
+  eu: "https://images.unsplash.com/photo-1592280771190-3e2e4d571952?q=80&w=1200&auto=format&fit=crop",
+};
+
+export function resolveUniversityCampusPhoto(countryCode?: string | null, customPhoto?: string | null): string {
+  if (customPhoto && customPhoto.trim() !== "") {
+    return customPhoto.trim();
+  }
+  const code = (countryCode || "").toLowerCase().trim();
+  return COUNTRY_CAMPUS_PHOTOS[code] || "https://images.unsplash.com/photo-1523050854058-8df90110c9f1?q=80&w=1200&auto=format&fit=crop";
+}

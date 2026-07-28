@@ -5,6 +5,7 @@ import {
   ArrowRight, ArrowLeft, Loader2, Star, MapPin, Sparkles, AlertCircle, X, ShieldCheck, Check, Info, ChevronDown, CheckCircle2, AlertTriangle
 } from "lucide-react";
 import { DEFAULT_COUNTRY_RULES, convertToIeltsEquivalency, type CountryRule } from "../utils/countryRules";
+import { resolveUniversityCampusPhoto, resolveUniversityLogoUrl, resolveUniversityDomain } from "../utils/universityLogos";
 
 interface University {
   id: number;
@@ -157,13 +158,7 @@ const universityDomainMap: Record<string, string> = {
   "University of Copenhagen": "ku.dk"
 };
 
-function resolveUniversityDomain(name: string): string {
-  if (universityDomainMap[name]) {
-    return universityDomainMap[name];
-  }
-  const clean = name.toLowerCase().replace(/[^a-z0-9\s]/g, "");
-  return clean.split(/\s+/).slice(0, 2).join("") + ".edu";
-}
+
 
 function UniversityLogo({ domain, name }: { domain: string; name: string }) {
   const [imgSrc, setImgSrc] = useState(`https://logo.clearbit.com/${domain}`);
@@ -1403,8 +1398,12 @@ export default function EligibilityForm() {
             </button>
 
             {/* University Cover & Logo */}
-            <div className="h-44 relative bg-gradient-to-r from-slate-900 via-blue-950 to-indigo-950 overflow-hidden border-b border-slate-800">
-              <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-accent-blue/20 via-transparent to-transparent opacity-60"></div>
+            <div className="h-44 relative bg-slate-900 overflow-hidden border-b border-slate-800">
+              <img
+                src={resolveUniversityCampusPhoto(selectedUniversity.code, selectedUniversity.photo)}
+                alt={selectedUniversity.name}
+                className="absolute inset-0 w-full h-full object-cover opacity-50 select-none pointer-events-none"
+              />
               {/* Overlay for text readability */}
               <div className="absolute inset-0 bg-gradient-to-t from-slate-900 via-slate-900/60 to-transparent flex items-end p-6">
                 <div className="flex items-center gap-4 relative z-10 w-full">
