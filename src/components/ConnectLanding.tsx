@@ -1,40 +1,6 @@
-import React, { useState, useEffect } from 'react';
-import { motion } from 'framer-motion';
-import { 
-  GraduationCap, 
-  Calendar, 
-  MessageCircle, 
-  Phone, 
-  MapPin, 
-  Globe, 
-  Award, 
-  CheckCircle2, 
-  ArrowRight, 
-  Star, 
-  Clock, 
-  Sparkles, 
-  UserCheck, 
-  ShieldCheck, 
-  Zap, 
-  Building2,
-  ExternalLink
-} from 'lucide-react';
+import React, { useState, useEffect, useCallback, memo } from 'react';
 
-const InstagramIcon = (props: React.SVGProps<SVGSVGElement>) => (
-  <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round" {...props}><rect x="2" y="2" width="20" height="20" rx="5" ry="5"/><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"/></svg>
-);
-const FacebookIcon = (props: React.SVGProps<SVGSVGElement>) => (
-  <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round" {...props}><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"/></svg>
-);
-const LinkedinIcon = (props: React.SVGProps<SVGSVGElement>) => (
-  <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round" {...props}><path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"/><rect x="2" y="9" width="4" height="12"/><circle cx="4" cy="4" r="2"/></svg>
-);
-const YoutubeIcon = (props: React.SVGProps<SVGSVGElement>) => (
-  <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round" {...props}><path d="M22.54 6.42a2.78 2.78 0 0 0-1.94-2C18.88 4 12 4 12 4s-6.88 0-8.6.46a2.78 2.78 0 0 0-1.94 2A29 29 0 0 0 1 11.75a29 29 0 0 0 .46 5.33A2.78 2.78 0 0 0 3.4 19c1.72.46 8.6.46 8.6.46s6.88 0 8.6-.46a2.78 2.78 0 0 0 1.94-2 29 29 0 0 0 .46-5.25 29 29 0 0 0-.46-5.33z"/><polygon points="9.75 15.02 15.5 11.75 9.75 8.48 9.75 15.02"/></svg>
-);
-
-export default function ConnectLanding() {
-  // Countdown timer for Event
+const CountdownTimer = memo(function CountdownTimer({ onBookSeat }: { onBookSeat: (e: React.MouseEvent) => void }) {
   const [timeLeft, setTimeLeft] = useState({ days: 14, hours: 18, mins: 42, secs: 10 });
 
   useEffect(() => {
@@ -50,18 +16,67 @@ export default function ConnectLanding() {
     return () => clearInterval(timer);
   }, []);
 
+  return (
+    <div className="bg-[#0A2342] rounded-[20px] p-4 text-white text-center min-w-[240px] border border-white/10 shadow-lg">
+      <div className="text-[11px] font-semibold text-slate-300 uppercase tracking-wider mb-2">
+        Fair Starts In
+      </div>
+      <div className="grid grid-cols-4 gap-1.5 font-mono text-center">
+        <div className="bg-white/10 rounded-lg p-1.5">
+          <div className="text-lg font-bold text-[#F97316]">{String(timeLeft.days).padStart(2, '0')}</div>
+          <div className="text-[9px] text-slate-400 font-sans uppercase">Days</div>
+        </div>
+        <div className="bg-white/10 rounded-lg p-1.5">
+          <div className="text-lg font-bold text-white">{String(timeLeft.hours).padStart(2, '0')}</div>
+          <div className="text-[9px] text-slate-400 font-sans uppercase">Hrs</div>
+        </div>
+        <div className="bg-white/10 rounded-lg p-1.5">
+          <div className="text-lg font-bold text-white">{String(timeLeft.mins).padStart(2, '0')}</div>
+          <div className="text-[9px] text-slate-400 font-sans uppercase">Mins</div>
+        </div>
+        <div className="bg-white/10 rounded-lg p-1.5">
+          <div className="text-lg font-bold text-[#F97316]">{String(timeLeft.secs).padStart(2, '0')}</div>
+          <div className="text-[9px] text-slate-400 font-sans uppercase">Secs</div>
+        </div>
+      </div>
+
+      <button
+        onClick={onBookSeat}
+        className="mt-4 w-full bg-[#F97316] hover:bg-[#EA580C] text-white text-xs font-bold py-2.5 px-4 rounded-xl transition-all shadow-md flex items-center justify-center gap-1.5 cursor-pointer"
+      >
+        <span>Book VIP Seat</span>
+        <ArrowRight className="w-3.5 h-3.5" />
+      </button>
+    </div>
+  );
+});
+
+export default function ConnectLanding() {
   // Main site WhatsApp URL (exact message from main site)
   const whatsappUrl = "https://wa.me/919824152731?text=Hello%20TESCA%20Visa%20Consultancy%2C%20I%20am%20visiting%20your%20website%20and%20would%20like%20to%20consult%20about%20your%20visa%20and%20study%20abroad%20services.%20Please%20guide%20me.";
 
   // Open the main site's Speak to Counsellor modal popup
-  const handleOpenCounsellor = (e: React.MouseEvent) => {
+  const handleOpenCounsellor = useCallback((e: React.MouseEvent) => {
     e.preventDefault();
     if (typeof (window as any).openCounsellorForm === 'function') {
       (window as any).openCounsellorForm();
     } else {
       window.location.href = '/inquiry';
     }
-  };
+  }, []);
+
+  // Prefetch slot data on CTA hover/focus to accelerate form opening
+  const prefetchSlots = useCallback(() => {
+    try {
+      const today = new Intl.DateTimeFormat('en-CA', {
+        timeZone: 'Asia/Kolkata',
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit'
+      }).format(new Date());
+      fetch(`/api/slots?date=${today}`).catch(() => {});
+    } catch (e) {}
+  }, []);
 
   return (
     <div className="min-h-screen bg-[#F8FAFC] text-[#1E293B] font-sans antialiased selection:bg-[#F97316] selection:text-white pb-24 md:pb-12">
@@ -87,6 +102,8 @@ export default function ConnectLanding() {
             </a>
             <button 
               onClick={handleOpenCounsellor}
+              onMouseEnter={prefetchSlots}
+              onFocus={prefetchSlots}
               className="text-xs font-bold bg-[#F97316] text-white px-4 py-2 rounded-full hover:bg-[#EA580C] transition-all shadow-md active:scale-95 cursor-pointer"
             >
               Speak to Our Counsellor
@@ -102,44 +119,24 @@ export default function ConnectLanding() {
 
         <div className="max-w-3xl mx-auto text-center relative z-10">
           
-          {/* Trust Badge */}
-          <motion.div 
-            initial={{ opacity: 0, y: 12 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5 }}
-            className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/10 border border-white/15 text-xs font-medium text-slate-200 backdrop-blur-md mb-6"
-          >
+          {/* Trust Badge - Instant Render */}
+          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/10 border border-white/15 text-xs font-medium text-slate-200 backdrop-blur-md mb-6">
             <Sparkles className="w-3.5 h-3.5 text-[#F97316]" />
             <span>Since 2005 • Surat's Premier Visa Consultancy</span>
-          </motion.div>
+          </div>
 
-          {/* Main Title */}
-          <motion.h1 
-            initial={{ opacity: 0, y: 16 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: 0.1 }}
-            className="text-3xl sm:text-5xl font-extrabold tracking-tight leading-tight text-white mb-4"
-          >
+          {/* Main Title - LCP Element (0 Artificial Delay) */}
+          <h1 className="text-3xl sm:text-5xl font-extrabold tracking-tight leading-tight text-white mb-4">
             Start Your <span className="text-[#F97316]">Global Education</span> Journey
-          </motion.h1>
+          </h1>
 
-          {/* Subtitle */}
-          <motion.p 
-            initial={{ opacity: 0, y: 16 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: 0.2 }}
-            className="text-sm sm:text-base text-slate-300 max-w-2xl mx-auto mb-10 font-normal leading-relaxed"
-          >
+          {/* Subtitle - Instant Render */}
+          <p className="text-sm sm:text-base text-slate-300 max-w-2xl mx-auto mb-10 font-normal leading-relaxed">
             Expert Study Abroad Counselling, IELTS Coaching, University Admissions and Visa Guidance — all in one place.
-          </motion.p>
+          </p>
 
           {/* Unified Hero Buttons */}
-          <motion.div 
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: 0.3 }}
-            className="grid grid-cols-2 sm:grid-cols-4 gap-3 max-w-2xl mx-auto"
-          >
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 max-w-2xl mx-auto">
             <a 
               href="#countries" 
               className="flex items-center justify-center gap-2 py-3.5 px-4 rounded-[16px] bg-white/10 hover:bg-white/20 border border-white/20 text-white font-semibold text-xs sm:text-sm transition-all hover:scale-[1.02] active:scale-95 shadow-sm"
@@ -150,6 +147,8 @@ export default function ConnectLanding() {
 
             <button 
               onClick={handleOpenCounsellor}
+              onMouseEnter={prefetchSlots}
+              onFocus={prefetchSlots}
               className="flex items-center justify-center gap-2 py-3.5 px-4 rounded-[16px] bg-[#F97316] hover:bg-[#EA580C] text-white font-bold text-xs sm:text-sm transition-all hover:scale-[1.02] active:scale-95 shadow-lg shadow-[#F97316]/25 cursor-pointer"
             >
               <Calendar className="w-4 h-4" />
@@ -173,7 +172,7 @@ export default function ConnectLanding() {
               <Phone className="w-4 h-4 text-blue-400" />
               <span>Call Now</span>
             </a>
-          </motion.div>
+          </div>
 
         </div>
       </section>
@@ -370,37 +369,7 @@ export default function ConnectLanding() {
             </div>
 
             {/* Countdown Box */}
-            <div className="bg-[#0A2342] rounded-[20px] p-4 text-white text-center min-w-[240px] shrink-0 border border-white/10 shadow-lg">
-              <div className="text-[11px] font-semibold text-slate-300 uppercase tracking-wider mb-2">
-                Fair Starts In
-              </div>
-              <div className="grid grid-cols-4 gap-1.5 font-mono text-center">
-                <div className="bg-white/10 rounded-lg p-1.5">
-                  <div className="text-lg font-bold text-[#F97316]">{String(timeLeft.days).padStart(2, '0')}</div>
-                  <div className="text-[9px] text-slate-400 font-sans uppercase">Days</div>
-                </div>
-                <div className="bg-white/10 rounded-lg p-1.5">
-                  <div className="text-lg font-bold text-white">{String(timeLeft.hours).padStart(2, '0')}</div>
-                  <div className="text-[9px] text-slate-400 font-sans uppercase">Hrs</div>
-                </div>
-                <div className="bg-white/10 rounded-lg p-1.5">
-                  <div className="text-lg font-bold text-white">{String(timeLeft.mins).padStart(2, '0')}</div>
-                  <div className="text-[9px] text-slate-400 font-sans uppercase">Mins</div>
-                </div>
-                <div className="bg-white/10 rounded-lg p-1.5">
-                  <div className="text-lg font-bold text-[#F97316]">{String(timeLeft.secs).padStart(2, '0')}</div>
-                  <div className="text-[9px] text-slate-400 font-sans uppercase">Secs</div>
-                </div>
-              </div>
-
-              <button
-                onClick={handleOpenCounsellor}
-                className="mt-4 w-full bg-[#F97316] hover:bg-[#EA580C] text-white text-xs font-bold py-2.5 px-4 rounded-xl transition-all shadow-md flex items-center justify-center gap-1.5 cursor-pointer"
-              >
-                <span>Book VIP Seat</span>
-                <ArrowRight className="w-3.5 h-3.5" />
-              </button>
-            </div>
+            <CountdownTimer onBookSeat={handleOpenCounsellor} />
           </div>
         </div>
       </section>

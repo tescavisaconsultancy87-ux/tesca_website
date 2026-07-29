@@ -1,5 +1,7 @@
-import React, { useState } from "react";
+import React, { useState, useMemo, useCallback, memo } from "react";
 import { User, Mail, Phone, MapPin, Briefcase, CheckCircle, AlertCircle, Loader2 } from "lucide-react";
+
+const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 export default function PartnerForm() {
   const [fullName, setFullName] = useState("");
@@ -14,16 +16,17 @@ export default function PartnerForm() {
   const [touched, setTouched] = useState<Record<string, boolean>>({});
   const [errorMessage, setErrorMessage] = useState("");
 
-  // Live validation checks
-  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-  const isFormValid =
-    fullName.trim().length >= 3 &&
-    emailRegex.test(email) &&
-    phone.length === 10 &&
-    city.trim().length > 0 &&
-    experience.trim().length > 0;
+  const isFormValid = useMemo(() => {
+    return (
+      fullName.trim().length >= 3 &&
+      EMAIL_REGEX.test(email) &&
+      phone.length === 10 &&
+      city.trim().length > 0 &&
+      experience.trim().length > 0
+    );
+  }, [fullName, email, phone, city, experience]);
 
-  const getErrors = () => {
+  const errors = useMemo(() => {
     const tempErrors: Record<string, string> = {};
 
     if (touched.fullName) {
@@ -33,7 +36,7 @@ export default function PartnerForm() {
 
     if (touched.email) {
       if (!email) tempErrors.email = "Email Address is required.";
-      else if (!emailRegex.test(email)) tempErrors.email = "Invalid email format.";
+      else if (!EMAIL_REGEX.test(email)) tempErrors.email = "Invalid email format.";
     }
 
     if (touched.phone) {
@@ -50,20 +53,18 @@ export default function PartnerForm() {
     }
 
     return tempErrors;
-  };
+  }, [touched, fullName, email, phone, city, experience]);
 
-  const errors = getErrors();
-
-  const handleBlur = (field: string) => {
+  const handleBlur = useCallback((field: string) => {
     setTouched((prev) => ({ ...prev, [field]: true }));
-  };
+  }, []);
 
-  const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handlePhoneChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     const val = e.target.value.replace(/\D/g, ""); // Keep only digits
     if (val.length <= 10) {
       setPhone(val);
     }
-  };
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

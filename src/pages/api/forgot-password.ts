@@ -2,7 +2,7 @@ import type { APIRoute } from 'astro';
 import { getSupabaseAdmin } from '../../utils/supabase';
 import { genericApiError, getClientIP, checkRateLimit, jsonResponse, rejectOversizedJson } from '../../utils/security';
 
-const RATE_LIMIT_WINDOW_MS = 15 * 60 * 1000;
+const RATE_LIMIT_WINDOW_MS = 60 * 60 * 1000; // 1 hour window
 const RATE_LIMIT_MAX = 3;
 
 export const POST: APIRoute = async ({ request }) => {

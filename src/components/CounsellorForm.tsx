@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useMemo, useCallback, memo } from "react";
 import { X, Phone, Mail, User, Globe, CheckCircle, AlertCircle, Loader2, ChevronDown } from "lucide-react";
 import IOSPicker from "./IOSPicker";
 
@@ -82,9 +82,11 @@ export default function CounsellorForm() {
   const [loadingSlots, setLoadingSlots] = useState(false);
   const [bookingStatus, setBookingStatus] = useState<"idle" | "booking" | "success" | "failed">("idle");
 
-  const selectedPhoneCountry = PHONE_COUNTRIES.find(c => c.code === phoneCountry) || PHONE_COUNTRIES[0];
+  const selectedPhoneCountry = useMemo(() => {
+    return PHONE_COUNTRIES.find(c => c.code === phoneCountry) || PHONE_COUNTRIES[0];
+  }, [phoneCountry]);
 
-  const getAvailableDates = () => {
+  const availableDates = useMemo(() => {
     const dates = [];
     for (let i = 0; i < 5; i++) {
       const d = new Date();
@@ -106,7 +108,7 @@ export default function CounsellorForm() {
       });
     }
     return dates;
-  };
+  }, []);
 
   const TIME_SLOTS = [
     "10:00 AM",
@@ -462,12 +464,18 @@ export default function CounsellorForm() {
                       {/* Calendar Day Picker */}
                       <div className="space-y-3 mb-6">
                         <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider font-sans">1. Select Date</label>
-                        <div className="grid grid-cols-5 gap-2">
-                          {getAvailableDates().map((d) => (
+                        <div className="grid grid-cols-3 sm:grid-cols-5 gap-2">
+                          {availableDates.map((d) => (
                             <button
                               key={d.value}
                               type="button"
                               onClick={() => setSelectedDate(d.value)}
+                              onMouseEnter={() => {
+                                try { fetch(`/api/slots?date=${d.value}`).catch(() => {}); } catch(e) {}
+                              }}
+                              onFocus={() => {
+                                try { fetch(`/api/slots?date=${d.value}`).catch(() => {}); } catch(e) {}
+                              }}
                               className={`py-3 rounded-xl border flex flex-col items-center justify-center transition-all cursor-pointer ${
                                 selectedDate === d.value
                                   ? "bg-accent-blue/10 border-accent-blue text-accent-blue font-bold shadow-sm"

@@ -768,7 +768,7 @@ if (Astro.url.pathname.startsWith("/admin")) {
 
 						{/* Mega Menu Dropdown */}
 						<div
-							class="absolute left-0 right-0 mx-auto pt-3 hidden group-hover:block group-[.force-open]:block w-full max-w-[960px] z-50 animate-dropdown-center"
+							class="absolute left-1/2 top-full pt-3 hidden group-hover:block group-[.force-open]:block w-[900px] max-w-[92vw] z-50 animate-dropdown"
 						>
 							<div
 								class="shadow-2xl rounded-2xl p-6 bg-white border border-slate-100 grid grid-cols-12 gap-6 text-slate-800"
@@ -1449,11 +1449,8 @@ if (Astro.url.pathname.startsWith("/admin")) {
 				const isTestMode = urlParams.get("test-modal") === "true";
 				const isModalShown = !isTestMode && localStorage.getItem("softModalShown") === "true";
 
-				console.log("[Soft Modal] isModalShown:", isModalShown, "isTestMode:", isTestMode);
-
 				const showSoftModal = () => {
 					if (window.location.pathname.toLowerCase().includes("review-generator")) return;
-					console.log("[Soft Modal] Showing soft modal.");
 					const modal = document.getElementById("soft-cta-modal");
 					const card = document.getElementById("soft-cta-card");
 					if (modal && card) {
@@ -1466,7 +1463,6 @@ if (Astro.url.pathname.startsWith("/admin")) {
 				};
 
 				const closeSoftModal = () => {
-					console.log("[Soft Modal] Closing soft modal.");
 					const modal = document.getElementById("soft-cta-modal");
 					const card = document.getElementById("soft-cta-card");
 					if (modal && card) {
@@ -1481,7 +1477,6 @@ if (Astro.url.pathname.startsWith("/admin")) {
 
 				const cancelSoftModal = () => {
 					if (softModalTimer) {
-						console.log("[Soft Modal] Timer cancelled.");
 						clearTimeout(softModalTimer);
 						softModalTimer = null;
 					}
@@ -1496,7 +1491,6 @@ if (Astro.url.pathname.startsWith("/admin")) {
 				const isReviewGenerator = window.location.pathname.toLowerCase().includes("review-generator");
 
 				if (!isModalShown && !isAdminRoute && !isReviewGenerator) {
-					console.log("[Soft Modal] Initializing 45s timer.");
 					// Detect standard CTA click
 					handleCtaClick = (e: MouseEvent) => {
 						const target = e.target as HTMLElement;
@@ -1515,7 +1509,6 @@ if (Astro.url.pathname.startsWith("/admin")) {
 								href.includes("whatsapp") ||
 								onclickAttr.includes("openCounsellorForm")
 							) {
-								console.log("[Soft Modal] CTA click detected:", isCta);
 								cancelSoftModal();
 							}
 						}
@@ -1847,7 +1840,7 @@ if (Astro.url.pathname.startsWith("/admin")) {
 					</div>
 
 					{/* Trust stats */}
-					<div class="grid grid-cols-3 gap-4 border-y border-slate-100 py-4 text-center font-sans">
+					<div class="grid grid-cols-2 sm:grid-cols-3 gap-2 sm:gap-4 border-y border-slate-100 py-4 text-center font-sans">
 						<div>
 							<span class="block text-lg font-bold text-slate-800 font-display">30K+</span>
 							<span class="block text-[10px] text-slate-400 font-semibold uppercase tracking-wider">Students Placed</span>

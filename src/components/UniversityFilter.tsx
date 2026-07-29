@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo, useCallback, memo } from "react";
 import { Globe, GraduationCap, ArrowRight, Search, X, Compass, Award, RefreshCw, Star, MapPin, DollarSign, Calendar, BookOpen, ShieldCheck } from "lucide-react";
 
 interface University {
@@ -176,7 +176,7 @@ function resolveUniversityDomain(name: string): string {
   return clean.split(/\s+/).slice(0, 2).join("") + ".edu";
 }
 
-function UniversityLogo({ domain, name }: { domain: string; name: string }) {
+const UniversityLogo = memo(function UniversityLogo({ domain, name }: { domain: string; name: string }) {
   const [imgSrc, setImgSrc] = useState(`https://logo.clearbit.com/${domain}`);
   const [hasError, setHasError] = useState(false);
 
@@ -205,9 +205,10 @@ function UniversityLogo({ domain, name }: { domain: string; name: string }) {
       {name.charAt(0)}
     </span>
   );
-}
+});
 
 const PAGE_SIZE = 12;
+const uniCache = new Map<string, University[]>();
 
 export default function UniversityFilter() {
   const [activeCountry, setActiveCountry] = useState("all");
@@ -244,14 +245,33 @@ export default function UniversityFilter() {
     }
   }, []);
 
+  // Prefetch university data for a country
+  const prefetchCountry = useCallback((code: string) => {
+    if (uniCache.has(code)) return;
+    fetch(`/api/universities?country=${code}`)
+      .then(res => res.ok ? res.json() : null)
+      .then(data => {
+        if (data) uniCache.set(code, data);
+      })
+      .catch(() => {});
+  }, []);
+
   // Fetch universities when country selection changes
   useEffect(() => {
+    if (uniCache.has(activeCountry)) {
+      setUniversities(uniCache.get(activeCountry)!);
+      setIsLoading(false);
+      setVisibleCount(PAGE_SIZE);
+      return;
+    }
+
     const fetchUnis = async () => {
       setIsLoading(true);
       try {
         const res = await fetch(`/api/universities?country=${activeCountry}`);
         if (res.ok) {
           const data = await res.json();
+          uniCache.set(activeCountry, data);
           setUniversities(data);
         } else {
           console.error("Failed to load universities");
@@ -269,7 +289,7 @@ export default function UniversityFilter() {
     setVisibleCount(PAGE_SIZE);
   }, [activeCountry]);
 
-  const handleFilter = (code: string) => {
+  const handleFilter = useCallback((code: string) => {
     setActiveCountry(code);
     const url = new URL(window.location.href);
     if (code === "all") {
@@ -278,32 +298,38 @@ export default function UniversityFilter() {
       url.searchParams.set("country", code);
     }
     window.history.pushState({}, "", url.toString());
-  };
+  }, []);
 
-  const filtered = universities.filter(uni => {
-    const coursesStr = selectedLevel === 'UG'
-      ? (uni.ug_courses || uni.courses || "")
-      : (uni.pg_courses || "");
-    const matchesKeyword = !searchQuery.trim() ||
-      uni.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      coursesStr.toLowerCase().includes(searchQuery.toLowerCase());
+  const filtered = useMemo(() => {
+    const query = searchQuery.trim().toLowerCase();
+    return universities.filter(uni => {
+      const coursesStr = selectedLevel === 'UG'
+        ? (uni.ug_courses || uni.courses || "")
+        : (uni.pg_courses || "");
+      const matchesKeyword = !query ||
+        uni.name.toLowerCase().includes(query) ||
+        coursesStr.toLowerCase().includes(query);
 
-    return matchesKeyword;
-  });
+      return matchesKeyword;
+    });
+  }, [universities, selectedLevel, searchQuery]);
 
-  const displayed = filtered.slice(0, visibleCount);
+  const displayed = useMemo(() => {
+    return filtered.slice(0, visibleCount);
+  }, [filtered, visibleCount]);
+
   const totalPages = Math.ceil(filtered.length / PAGE_SIZE);
   const currentPage = Math.ceil(visibleCount / PAGE_SIZE);
 
-  const handleLoadMore = () => {
+  const handleLoadMore = useCallback(() => {
     setVisibleCount(prev => Math.min(prev + PAGE_SIZE, filtered.length));
-  };
+  }, [filtered.length]);
 
   return (
     <div className="space-y-8">
       
-      {/* Country Filtering Buttons */}
-      <div className="space-y-4 animate-fade-in text-left">
+      {/* Country Filtering Buttons - Instant Render (No Animation Delay) */}
+      <div className="space-y-4 text-left">
         <div className="flex items-center gap-2">
           <Globe className="w-5 h-5 text-accent-blue" />
           <h2 className="text-lg font-bold font-display text-slate-800 tracking-tight">Filter Study Destination</h2>
@@ -314,6 +340,8 @@ export default function UniversityFilter() {
               key={c.code}
               type="button"
               onClick={() => handleFilter(c.code)}
+              onMouseEnter={() => prefetchCountry(c.code)}
+              onFocus={() => prefetchCountry(c.code)}
               className={`px-5 py-2.5 rounded-full text-xs font-bold font-sans transition-all duration-200 border cursor-pointer flex items-center gap-2 ${
                 activeCountry === c.code
                   ? "bg-accent-blue text-white border-accent-blue shadow-md scale-105"

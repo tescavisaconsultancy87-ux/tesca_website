@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useMemo, memo } from "react";
 
 interface D1Story {
   id: number;
@@ -11,27 +11,28 @@ interface D1Story {
   is_video?: boolean;
 }
 
+const COUNTRY_CODE_MAP: Record<string, string> = {
+  canada: "ca",
+  australia: "au",
+  "united kingdom": "gb",
+  uk: "gb",
+  "united states": "us",
+  usa: "us",
+  germany: "de",
+  ireland: "ie",
+  "new zealand": "nz",
+  singapore: "sg",
+  japan: "jp",
+  dubai: "ae",
+  uae: "ae",
+  malaysia: "my",
+  switzerland: "ch",
+  europe: "eu",
+};
+
 const countryToCode = (country: string) => {
   if (!country) return "";
-  const map: Record<string, string> = {
-    canada: "ca",
-    australia: "au",
-    "united kingdom": "gb",
-    uk: "gb",
-    "united states": "us",
-    usa: "us",
-    germany: "de",
-    ireland: "ie",
-    "new zealand": "nz",
-    singapore: "sg",
-    japan: "jp",
-    dubai: "ae",
-    uae: "ae",
-    malaysia: "my",
-    switzerland: "ch",
-    europe: "eu",
-  };
-  return map[country.toLowerCase().trim()] || country.slice(0, 2).toLowerCase();
+  return COUNTRY_CODE_MAP[country.toLowerCase().trim()] || country.slice(0, 2).toLowerCase();
 };
 
 const fallbackStories: D1Story[] = [
@@ -85,14 +86,110 @@ const fallbackStories: D1Story[] = [
   }
 ];
 
-export default function StudentCarousel({ stories = [] }: { stories?: D1Story[] }) {
-  const activeStories = stories && stories.length > 0 ? stories : fallbackStories;
+const StudentCardItem = memo(function StudentCardItem({ student }: { student: D1Story }) {
+  const cardContent = (
+    <div className="flex-shrink-0 w-[260px] rounded-[1.5rem] border border-slate-200 bg-white hover:border-[#0A7880]/30 hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1 text-left relative group shadow-sm flex flex-col overflow-hidden h-full">
+      {/* Photo Box Container */}
+      <div className="relative w-full aspect-[4/5] overflow-hidden bg-slate-50 shrink-0">
+        <img
+          src={student.photo}
+          alt={student.name}
+          className="w-full h-full object-contain group-hover:scale-[1.03] transition-transform duration-550 select-none"
+          loading="lazy"
+        />
+        
+        {/* Play button overlay for video */}
+        {student.is_video && (
+          <div className="absolute inset-0 flex items-center justify-center bg-black/25 group-hover:bg-black/35 transition-colors">
+            <div className="w-12 h-12 rounded-full bg-white/90 flex items-center justify-center shadow-md transform group-hover:scale-110 transition-transform">
+              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="currentColor" className="text-[#0A7880] ml-0.5">
+                <polygon points="5 3 19 12 5 21 5 3"/>
+              </svg>
+            </div>
+          </div>
+        )}
 
-  // Ensure there are enough cards to make infinite scroll smooth
-  let displayStories = [...activeStories];
-  while (displayStories.length < 12 && activeStories.length > 0) {
-    displayStories = [...displayStories, ...activeStories];
+        {/* Country Flag overlay on Top Right corner */}
+        {student.type === "Visa Success" && student.country && (
+          <div className="absolute top-3 right-3 bg-white/90 backdrop-blur-[2px] p-1.5 rounded-xl shadow-xs border border-slate-100 flex items-center justify-center">
+            <img
+              src={`https://flagcdn.com/w40/${countryToCode(student.country)}.png`}
+              alt={`${student.country} flag`}
+              className="w-5 h-3.5 rounded-xs object-cover"
+              loading="lazy"
+            />
+          </div>
+        )}
+      </div>
+
+      {/* Info Text Area (at bottom) */}
+      <div className="p-4 flex flex-col justify-between flex-grow bg-white border-t border-slate-50">
+        <div>
+          <h4 className="text-sm font-bold text-slate-800 font-display truncate leading-snug group-hover:text-[#0A7880] transition-colors">
+            {student.name}
+          </h4>
+          
+          {student.is_video ? (
+            <p className="text-[11px] text-slate-500 font-medium truncate mt-1">
+              Watch Success Video
+            </p>
+          ) : student.type === "Visa Success" ? (
+            <p className="text-[11px] text-slate-500 font-medium truncate mt-1">
+              Visa: {student.country}
+            </p>
+          ) : (
+            <p className="text-[11px] text-slate-500 font-medium truncate mt-1">
+              {student.type} Overall: {student.score}
+            </p>
+          )}
+        </div>
+
+        {/* Score badge at bottom */}
+        <div className="flex items-center justify-between mt-3.5 pt-3 border-t border-slate-100">
+          <span className="text-[12px] font-extrabold text-[#0A7880] font-display">
+            {student.is_video ? "Play ➔" : student.type === "Visa Success" ? "Approved" : student.score}
+          </span>
+          <span className="text-[9.5px] text-slate-400 font-bold uppercase tracking-wider">
+            {student.type}
+          </span>
+        </div>
+      </div>
+    </div>
+  );
+
+  if (student.is_video && student.video_url) {
+    return (
+      <a
+        href={student.video_url}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="no-underline cursor-pointer block hover:no-underline"
+      >
+        {cardContent}
+      </a>
+    );
   }
+
+  return (
+    <div>
+      {cardContent}
+    </div>
+  );
+});
+
+export default function StudentCarousel({ stories = [] }: { stories?: D1Story[] }) {
+  const displayStories = useMemo(() => {
+    const activeStories = stories && stories.length > 0 ? stories : fallbackStories;
+    let list = [...activeStories];
+    while (list.length < 12 && activeStories.length > 0) {
+      list = [...list, ...activeStories];
+    }
+    return list;
+  }, [stories]);
+
+  const carouselItems = useMemo(() => {
+    return [...displayStories, ...displayStories];
+  }, [displayStories]);
 
   return (
     <div className="w-full py-16 bg-white overflow-hidden font-sans border-y border-slate-100 relative">
@@ -116,98 +213,9 @@ export default function StudentCarousel({ stories = [] }: { stories?: D1Story[] 
 
         {/* Scrolling wrapper */}
         <div className="flex w-max gap-6 animate-scroll hover:[animation-play-state:paused]">
-          {/* Double map for seamless loop */}
-          {[...displayStories, ...displayStories].map((student, idx) => {
-            const cardContent = (
-              <div className="flex-shrink-0 w-[260px] rounded-[1.5rem] border border-slate-200 bg-white hover:border-[#0A7880]/30 hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1 text-left relative group shadow-sm flex flex-col overflow-hidden h-full">
-                {/* Photo Box Container */}
-                <div className="relative w-full aspect-[4/5] overflow-hidden bg-slate-50 shrink-0">
-                  <img
-                    src={student.photo}
-                    alt={student.name}
-                    className="w-full h-full object-contain group-hover:scale-[1.03] transition-transform duration-550 select-none"
-                    loading="lazy"
-                  />
-                  
-                  {/* Play button overlay for video */}
-                  {student.is_video && (
-                    <div className="absolute inset-0 flex items-center justify-center bg-black/25 group-hover:bg-black/35 transition-colors">
-                      <div className="w-12 h-12 rounded-full bg-white/90 flex items-center justify-center shadow-md transform group-hover:scale-110 transition-transform">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="currentColor" className="text-[#0A7880] ml-0.5">
-                          <polygon points="5 3 19 12 5 21 5 3"/>
-                        </svg>
-                      </div>
-                    </div>
-                  )}
-
-                  {/* Country Flag overlay on Top Right corner */}
-                  {student.type === "Visa Success" && student.country && (
-                    <div className="absolute top-3 right-3 bg-white/90 backdrop-blur-[2px] p-1.5 rounded-xl shadow-xs border border-slate-100 flex items-center justify-center">
-                      <img
-                        src={`https://flagcdn.com/w40/${countryToCode(student.country)}.png`}
-                        alt={`${student.country} flag`}
-                        className="w-5 h-3.5 rounded-xs object-cover"
-                        loading="lazy"
-                      />
-                    </div>
-                  )}
-                </div>
-
-                {/* Info Text Area (at bottom) */}
-                <div className="p-4 flex flex-col justify-between flex-grow bg-white border-t border-slate-50">
-                  <div>
-                    <h4 className="text-sm font-bold text-slate-800 font-display truncate leading-snug group-hover:text-[#0A7880] transition-colors">
-                      {student.name}
-                    </h4>
-                    
-                    {student.is_video ? (
-                      <p className="text-[11px] text-slate-500 font-medium truncate mt-1">
-                        Watch Success Video
-                      </p>
-                    ) : student.type === "Visa Success" ? (
-                      <p className="text-[11px] text-slate-500 font-medium truncate mt-1">
-                        Visa: {student.country}
-                      </p>
-                    ) : (
-                      <p className="text-[11px] text-slate-500 font-medium truncate mt-1">
-                        {student.type} Overall: {student.score}
-                      </p>
-                    )}
-                  </div>
-
-                  {/* Score badge at bottom */}
-                  <div className="flex items-center justify-between mt-3.5 pt-3 border-t border-slate-100">
-                    <span className="text-[12px] font-extrabold text-[#0A7880] font-display">
-                      {student.is_video ? "Play ➔" : student.type === "Visa Success" ? "Approved" : student.score}
-                    </span>
-                    <span className="text-[9.5px] text-slate-400 font-bold uppercase tracking-wider">
-                      {student.type}
-                    </span>
-                  </div>
-                </div>
-              </div>
-            );
-
-            if (student.is_video && student.video_url) {
-              return (
-                <a
-                  key={`${student.id}-${idx}`}
-                  href={student.video_url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="no-underline cursor-pointer block hover:no-underline"
-                >
-                  {cardContent}
-                </a>
-              );
-            }
-
-            return (
-              <div key={`${student.id}-${idx}`}>
-                {cardContent}
-              </div>
-            );
-          })}
+          {carouselItems.map((student, idx) => (
+            <StudentCardItem key={`${student.id}-${idx}`} student={student} />
+          ))}
         </div>
       </div>
     </div>

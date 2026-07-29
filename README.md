@@ -45,11 +45,13 @@ All commands are run from the root of the project, from a terminal:
 
 Feel free to check [our documentation](https://docs.astro.build) or jump into our [Discord server](https://astro.build/chat).
 
-## 🤖 AI Chat Assistant with PDF Training
+## 🔐 Security & Environment Variables
 
-The website includes a Gemini-powered AI chat assistant. You can feed custom knowledge or "train" the AI on your specific business files by simply dropping a PDF file in the root of the project:
+All sensitive values, credentials, and API keys are stored in environment variables and must **never** be hardcoded anywhere in the codebase.
 
-1. **How to train**: Save or copy your PDF file (e.g. `knowledge.pdf` or `tesca_details.pdf`) directly into the project root directory (`lunar-aurora/`).
-2. **Dynamic Reading**: The server-side API endpoint [chat.ts](file:///c:/Users/dhame/Desktop/TESCA_2005/lunar-aurora/src/pages/api/chat.ts) automatically detects the `.pdf` file in the root, extracts its text, and passes it to the Gemini API as reference context.
-3. **Environment setup**: Make sure your `.env` file contains a valid `GEMINI_API_KEY`.
-4. **Caching**: To ensure fast load times, the parsed PDF content is cached in memory and only re-parsed if the PDF file is updated.
+- **Local Development**: Copy `.env.example` to `.env` and fill in your local credentials.
+- **Production (Cloudflare Workers)**: Set production secrets using `npx wrangler secret put <KEY_NAME>` or via the Cloudflare Dashboard.
+
+> [!WARNING]
+> **Git History Secret Rotation Notice**: If any API key, database token, or app password was previously hardcoded in source files or configuration prior to environment variable migration, **those old secret values remain accessible in past Git commits**. You MUST immediately rotate those secrets in their respective administrative consoles (Supabase, Gmail, Groq, Google Cloud, etc.) to ensure complete infrastructure security.
+

@@ -1,8 +1,14 @@
-const CRM_SUPABASE_URL = 'https://hmganplecvvipxuxvvqn.supabase.co';
-const CRM_SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhtZ2FucGxlY3Z2aXB4dXh2dnFuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQ4NzIxODEsImV4cCI6MjA5NzMzNjYwMX0.j-hocQ1txx-e7ERJkJbAiTn9pJi79pV0Umn0Fyvecxc';
+import { getEnv } from './env';
 
 export async function forwardInquiryToCRM(payload: Record<string, any>): Promise<void> {
   try {
+    const crmUrl = getEnv('CRM_SUPABASE_URL') || import.meta.env.CRM_SUPABASE_URL;
+    const crmAnonKey = getEnv('CRM_SUPABASE_ANON_KEY') || import.meta.env.CRM_SUPABASE_ANON_KEY;
+
+    if (!crmUrl || !crmAnonKey) {
+      console.warn('[CRM Direct Database Insert] CRM_SUPABASE_URL or CRM_SUPABASE_ANON_KEY environment variables not set.');
+      return;
+    }
     const timestamp = Date.now();
     const caseId = `c-${timestamp}`;
     const randomNum = Math.floor(1000 + Math.random() * 9000);
@@ -75,12 +81,12 @@ export async function forwardInquiryToCRM(payload: Record<string, any>): Promise
     };
 
     // Direct REST write to CRM Supabase cases table
-    const dbRes = await fetch(`${CRM_SUPABASE_URL}/rest/v1/cases`, {
+    const dbRes = await fetch(`${crmUrl}/rest/v1/cases`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'apikey': CRM_SUPABASE_ANON_KEY,
-        'Authorization': `Bearer ${CRM_SUPABASE_ANON_KEY}`,
+        'apikey': crmAnonKey,
+        'Authorization': `Bearer ${crmAnonKey}`,
         'Prefer': 'resolution=merge-duplicates'
       },
       body: JSON.stringify({

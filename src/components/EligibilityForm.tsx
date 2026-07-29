@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useMemo, useCallback, memo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { 
   GraduationCap, Award, Globe, Phone, Mail, User, 
@@ -179,7 +179,7 @@ function resolveUniversityDomain(name: string): string {
   return clean.split(/\s+/).slice(0, 2).join("") + ".edu";
 }
 
-function UniversityLogo({ domain, name }: { domain: string; name: string }) {
+const UniversityLogo = memo(function UniversityLogo({ domain, name }: { domain: string; name: string }) {
   const [imgSrc, setImgSrc] = useState(`https://logo.clearbit.com/${domain}`);
   const [hasError, setHasError] = useState(false);
 
@@ -208,7 +208,7 @@ function UniversityLogo({ domain, name }: { domain: string; name: string }) {
       {name.charAt(0)}
     </span>
   );
-}
+});
 
 // Requirements Parsing Helpers
 function parseMinScore(reqStr: string | null | undefined): number {
@@ -359,26 +359,31 @@ export default function EligibilityForm() {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, [showCountryDropdown]);
 
-  const handleCountrySelect = (code: string) => {
-    setSelectedCountry(code);
-    setTimeout(() => setStep(2), 250);
-  };
+  const prefetchCountry = useCallback((code: string) => {
+    try {
+      fetch(`/api/universities?country=${code}`).catch(() => {});
+    } catch (e) {}
+  }, []);
 
-  const handleLevelSelect = (level: 'UG' | 'PG') => {
+  const handleCountrySelect = useCallback((code: string) => {
+    setSelectedCountry(code);
+    prefetchCountry(code);
+    setTimeout(() => setStep(2), 250);
+  }, [prefetchCountry]);
+
+  const handleLevelSelect = useCallback((level: 'UG' | 'PG') => {
     setSelectedLevel(level);
     setTimeout(() => setStep(3), 250);
-  };
+  }, []);
 
-  const handleEnglishSelect = (type: 'MOI' | 'IELTS') => {
+  const handleEnglishSelect = useCallback((type: 'MOI' | 'IELTS') => {
     setEnglishType(type);
     setTimeout(() => setStep(4), 250);
-  };
+  }, []);
 
-  const handleBack = () => {
-    if (step > 1) {
-      setStep(prev => prev - 1);
-    }
-  };
+  const handleBack = useCallback(() => {
+    setStep(prev => (prev > 1 ? prev - 1 : prev));
+  }, []);
 
   const handleScoresSubmit = (e: React.FormEvent) => {
     e.preventDefault();

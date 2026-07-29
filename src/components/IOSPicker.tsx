@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useRef, useEffect, useCallback, memo } from "react";
 import { Check, ChevronDown } from "lucide-react";
 
 interface Option {
@@ -20,7 +20,7 @@ interface Props {
   placement?: "top" | "bottom";
 }
 
-export default function IOSPicker({
+const IOSPickerComponent = function IOSPicker({
   options,
   value,
   onChange,
@@ -49,11 +49,11 @@ export default function IOSPicker({
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, [isOpen]);
 
-  const handleSelect = (val: string) => {
+  const handleSelect = useCallback((val: string) => {
     onChange(val);
     setIsOpen(false);
     triggerRef.current?.focus();
-  };
+  }, [onChange]);
 
   const baseTriggerClass = `w-full bg-white border ${error ? "border-red-400" : "border-slate-200"} rounded-xl px-4 py-3 text-sm text-slate-800 placeholder-slate-400 focus:outline-none focus:border-accent-blue focus:ring-1 focus:ring-accent-blue transition-all duration-200 font-sans font-normal flex items-center gap-2.5 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed ${className}`;
 
@@ -139,4 +139,6 @@ export default function IOSPicker({
       `}</style>
     </div>
   );
-}
+};
+
+export default memo(IOSPickerComponent);

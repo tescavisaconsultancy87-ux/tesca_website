@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useMemo, useCallback, memo } from "react";
 import { DollarSign, Calendar, Briefcase, ChevronRight, ShieldAlert } from "lucide-react";
 
 interface CountryData {
@@ -16,82 +16,127 @@ interface CountryData {
   color: string;
 }
 
-export default function CountrySelector() {
-  const countries: CountryData[] = [
-    {
-      id: "us",
-      name: "United States",
-      flag: "us",
-      tuition: 45000,
-      living: 18000,
-      visaDays: 15,
-      prPathway: "H1B to Green Card (STEM extensions active)",
-      prScore: 55,
-      hiringSectors: ["AI & Software Engineering", "Investment Banking & Fintech", "Biomedical Systems"],
-      avgSalary: "$98,000/yr",
-      tagline: "The global hub for tech innovation and startup capital.",
-      color: "from-blue-50 to-indigo-50/30 border-blue-200"
-    },
-    {
-      id: "uk",
-      name: "United Kingdom",
-      flag: "gb",
-      tuition: 28000,
-      living: 14000,
-      visaDays: 21,
-      prPathway: "Graduate Route (2-year post-study work visa)",
-      prScore: 70,
-      hiringSectors: ["Fintech & Finance", "Healthcare & Biotech", "Management Consulting"],
-      avgSalary: "£46,000/yr",
-      tagline: "Historic universities meets rapid European commercial centers.",
-      color: "from-indigo-55 to-purple-50/30 border-indigo-200"
-    },
-    {
-      id: "ca",
-      name: "Canada",
-      flag: "ca",
-      tuition: 32000,
-      living: 15000,
-      visaDays: 35,
-      prPathway: "Express Entry (highly structured, PGWP up to 3 years)",
-      prScore: 88,
-      hiringSectors: ["Cloud Infrastructure", "Renewable Energy", "Civil & Construction Systems"],
-      avgSalary: "C$72,000/yr",
-      tagline: "Most stable immigration policies with massive tech presence.",
-      color: "from-cyan-50 to-teal-50/30 border-cyan-200"
-    },
-    {
-      id: "au",
-      name: "Australia",
-      flag: "au",
-      tuition: 34000,
-      living: 16000,
-      visaDays: 28,
-      prPathway: "Subclass 189/190 (Points-based regional pathways)",
-      prScore: 82,
-      hiringSectors: ["Mining & Infrastructure", "Data Science & Statistics", "Automated Systems"],
-      avgSalary: "A$78,000/yr",
-      tagline: "Incredible quality of life with strong regional work pathways.",
-      color: "from-violet-50 to-pink-50/30 border-violet-200"
-    },
-    {
-      id: "de",
-      name: "Germany",
-      flag: "de",
-      tuition: 1500,
-      living: 12000,
-      visaDays: 45,
-      prPathway: "Blue Card (Fast-track citizenship, 18-month job search)",
-      prScore: 85,
-      hiringSectors: ["Automotive Engineering", "Industrial IoT Systems", "Embedded Hardware"],
-      avgSalary: "€54,000/yr",
-      tagline: "Virtually zero tuition fees in the powerhouse of European manufacturing.",
-      color: "from-purple-50 to-pink-50/30 border-purple-200"
-    }
-  ];
+const COUNTRIES_DATA: CountryData[] = [
+  {
+    id: "us",
+    name: "United States",
+    flag: "us",
+    tuition: 45000,
+    living: 18000,
+    visaDays: 15,
+    prPathway: "H1B to Green Card (STEM extensions active)",
+    prScore: 55,
+    hiringSectors: ["AI & Software Engineering", "Investment Banking & Fintech", "Biomedical Systems"],
+    avgSalary: "$98,000/yr",
+    tagline: "The global hub for tech innovation and startup capital.",
+    color: "from-blue-50 to-indigo-50/30 border-blue-200"
+  },
+  {
+    id: "uk",
+    name: "United Kingdom",
+    flag: "gb",
+    tuition: 28000,
+    living: 14000,
+    visaDays: 21,
+    prPathway: "Graduate Route (2-year post-study work visa)",
+    prScore: 70,
+    hiringSectors: ["Fintech & Finance", "Healthcare & Biotech", "Management Consulting"],
+    avgSalary: "£46,000/yr",
+    tagline: "Historic universities meets rapid European commercial centers.",
+    color: "from-indigo-55 to-purple-50/30 border-indigo-200"
+  },
+  {
+    id: "ca",
+    name: "Canada",
+    flag: "ca",
+    tuition: 32000,
+    living: 15000,
+    visaDays: 35,
+    prPathway: "Express Entry (highly structured, PGWP up to 3 years)",
+    prScore: 88,
+    hiringSectors: ["Cloud Infrastructure", "Renewable Energy", "Civil & Construction Systems"],
+    avgSalary: "C$72,000/yr",
+    tagline: "Most stable immigration policies with massive tech presence.",
+    color: "from-cyan-50 to-teal-50/30 border-cyan-200"
+  },
+  {
+    id: "au",
+    name: "Australia",
+    flag: "au",
+    tuition: 34000,
+    living: 16000,
+    visaDays: 28,
+    prPathway: "Subclass 189/190 (Points-based regional pathways)",
+    prScore: 82,
+    hiringSectors: ["Mining & Infrastructure", "Data Science & Statistics", "Automated Systems"],
+    avgSalary: "A$78,000/yr",
+    tagline: "Incredible quality of life with strong regional work pathways.",
+    color: "from-violet-50 to-pink-50/30 border-violet-200"
+  },
+  {
+    id: "de",
+    name: "Germany",
+    flag: "de",
+    tuition: 1500,
+    living: 12000,
+    visaDays: 45,
+    prPathway: "Blue Card (Fast-track citizenship, 18-month job search)",
+    prScore: 85,
+    hiringSectors: ["Automotive Engineering", "Industrial IoT Systems", "Embedded Hardware"],
+    avgSalary: "€54,000/yr",
+    tagline: "Virtually zero tuition fees in the powerhouse of European manufacturing.",
+    color: "from-purple-50 to-pink-50/30 border-purple-200"
+  }
+];
 
+const CountryTabButton = memo(function CountryTabButton({
+  c,
+  isActive,
+  onSelect
+}: {
+  c: CountryData;
+  isActive: boolean;
+  onSelect: (id: string) => void;
+}) {
+  return (
+    <button
+      onClick={() => onSelect(c.id)}
+      className={`relative overflow-hidden p-5 rounded-2xl border text-left transition-all duration-500 group outline-none focus-visible:ring-2 focus-visible:ring-accent-blue cursor-pointer ${
+        isActive
+          ? `bg-gradient-to-b ${c.color} shadow-sm border-accent-blue/30 scale-[1.02]`
+          : "bg-white border-slate-200/60 hover:bg-slate-50 hover:border-slate-300 hover:scale-[1.01]"
+      }`}
+    >
+      {isActive && (
+        <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-accent-blue to-transparent animate-pulse"></div>
+      )}
+      
+      <div className="flex items-center justify-between">
+        <img src={`https://flagcdn.com/w40/${c.flag}.png`} alt={`${c.name} flag`} className="w-8 h-6 rounded-sm object-cover shadow-sm" />
+        <span className="text-[10px] font-semibold text-slate-800 bg-accent-blue/10 px-2 py-0.5 rounded-full border border-accent-blue/20 font-sans">
+          {c.id.toUpperCase()}
+        </span>
+      </div>
+      <h4 className="text-base font-bold font-display text-support-white mt-4 flex items-center gap-1 group-hover:text-accent-blue transition-colors">
+        {c.name}
+      </h4>
+      <span className="text-xs text-support-gray/80 line-clamp-1 mt-1 font-display font-bold">
+        {c.avgSalary} Avg Salary
+      </span>
+    </button>
+  );
+});
+
+export default function CountrySelector() {
   const [activeTab, setActiveTab] = useState<string>("us");
-  const selected = countries.find(c => c.id === activeTab) || countries[0];
+
+  const selected = useMemo(() => {
+    return COUNTRIES_DATA.find(c => c.id === activeTab) || COUNTRIES_DATA[0];
+  }, [activeTab]);
+
+  const handleSelectTab = useCallback((id: string) => {
+    setActiveTab(id);
+  }, []);
 
   return (
     <div className="relative w-full max-w-6xl mx-auto rounded-3xl border border-slate-200 bg-gradient-to-b from-primary-navy to-primary-dark p-6 md:p-10 shadow-lg overflow-hidden">
@@ -112,37 +157,14 @@ export default function CountrySelector() {
 
       {/* Floating Countries Selection Track */}
       <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-10">
-        {countries.map(c => {
-          const isActive = c.id === activeTab;
-          return (
-            <button
-              key={c.id}
-              onClick={() => setActiveTab(c.id)}
-              className={`relative overflow-hidden p-5 rounded-2xl border text-left transition-all duration-500 group outline-none focus-visible:ring-2 focus-visible:ring-accent-blue cursor-pointer ${
-                isActive
-                  ? `bg-gradient-to-b ${c.color} shadow-sm border-accent-blue/30 scale-[1.02]`
-                  : "bg-white border-slate-200/60 hover:bg-slate-50 hover:border-slate-300 hover:scale-[1.01]"
-              }`}
-            >
-              {isActive && (
-                <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-accent-blue to-transparent animate-pulse"></div>
-              )}
-              
-              <div className="flex items-center justify-between">
-                <img src={`https://flagcdn.com/w40/${c.flag}.png`} alt={`${c.name} flag`} className="w-8 h-6 rounded-sm object-cover shadow-sm" />
-                <span className="text-[10px] font-semibold text-slate-800 bg-accent-blue/10 px-2 py-0.5 rounded-full border border-accent-blue/20 font-sans">
-                  {c.id.toUpperCase()}
-                </span>
-              </div>
-              <h4 className="text-base font-bold font-display text-support-white mt-4 flex items-center gap-1 group-hover:text-accent-blue transition-colors">
-                {c.name}
-              </h4>
-              <span className="text-xs text-support-gray/80 line-clamp-1 mt-1 font-display font-bold">
-                {c.avgSalary} Avg Salary
-              </span>
-            </button>
-          );
-        })}
+        {COUNTRIES_DATA.map(c => (
+          <CountryTabButton
+            key={c.id}
+            c={c}
+            isActive={c.id === activeTab}
+            onSelect={handleSelectTab}
+          />
+        ))}
       </div>
 
       {/* Detailed Analytics Dashboard Panel */}

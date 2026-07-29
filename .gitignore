@@ -17,8 +17,11 @@ preview.*.log
 # environment variables
 .env
 .env.production
+.env.local
+.env.*.local
 .dev.vars
 .dev.vars.*
+!.env.example
 
 # build/deploy archives (may bundle .dev.vars secrets)
 *.zip

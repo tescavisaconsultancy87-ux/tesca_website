@@ -99,8 +99,19 @@ export function jsonResponse(body: unknown, status = 200, headers: HeadersInit =
   });
 }
 
-export function genericApiError(): Response {
-  return jsonResponse({ error: "Unable to process request. Please try again later." }, 500);
+function generateCorrelationId(): string {
+  if (typeof crypto !== "undefined" && typeof crypto.randomUUID === "function") {
+    return crypto.randomUUID().slice(0, 8);
+  }
+  return Math.random().toString(36).substring(2, 10);
+}
+
+export function genericApiError(customId?: string): Response {
+  const correlationId = customId || generateCorrelationId();
+  return jsonResponse({
+    error: "Unable to process request. Please try again later.",
+    correlationId,
+  }, 500);
 }
 
 // Field names whose values are considered PII / sensitive and must not leave
@@ -132,10 +143,14 @@ export async function reportServerError(
   request: Request,
   locals?: unknown
 ): Promise<Response> {
-  // Full diagnostics (stack trace + raw payload) stay in Cloudflare server logs only.
-  console.error(`[${apiName}] Server Error:`, error, "Payload:", requestPayload);
+  const correlationId = generateCorrelationId();
+  // Sanitized diagnostics: mask PII and credentials from server logs alongside correlationId.
+  console.error(`[${apiName}] [CorrelationId: ${correlationId}] Server Error:`, error, "Payload:", redactPayload(requestPayload));
 
-  return jsonResponse({ error: "Unable to process request. Please try again later." }, 500);
+  return jsonResponse({
+    error: "Unable to process request. Please try again later.",
+    correlationId,
+  }, 500);
 }
 
 export function rejectOversizedJson(request: Request, maxBytes = 64 * 1024): Response | null {

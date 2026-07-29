@@ -30,6 +30,7 @@ import AICounsellor from "../components/AICounsellor";
             src="/images/universities_hero.webp" 
             alt="Check Eligibility" 
             class="object-cover w-full h-full select-none"
+            fetchpriority="high"
             decoding="async"
             width="1920"
             height="1080"
@@ -39,7 +40,7 @@ import AICounsellor from "../components/AICounsellor";
     </div>
 
     <!-- Interactive Finder Form (client-side React) -->
-    <EligibilityForm client:only="react" />
+    <EligibilityForm client:load />
   </section>
 
   <AICounsellor client:only="react" />

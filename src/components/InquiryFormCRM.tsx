@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useMemo, useCallback, memo } from "react";
 import { 
   Check, ChevronLeft, ChevronRight, User, Phone, 
   Mail, Calendar, MapPin, GraduationCap, Info, Lock, X, 
@@ -175,7 +175,9 @@ export default function InquiryFormCRM() {
   const [countrySearch, setCountrySearch] = useState("");
   const countryDropdownRef = useRef<HTMLDivElement>(null);
 
-  const selectedPhoneCountry = PHONE_COUNTRIES.find(c => c.code === phoneCountry) || PHONE_COUNTRIES[0];
+  const selectedPhoneCountry = useMemo(() => {
+    return PHONE_COUNTRIES.find(c => c.code === phoneCountry) || PHONE_COUNTRIES[0];
+  }, [phoneCountry]);
 
   // Generate Lead ID
   const generateLeadId = () => {
@@ -266,7 +268,6 @@ export default function InquiryFormCRM() {
           event_category: 'engagement',
           lead_id: formData.leadId
         });
-        console.log(`[Tracking] GA4 application_start fired: ${formData.leadId}`);
       }
     }
 
@@ -501,7 +502,6 @@ Comments/Additional Info: ${formData.comments || "None"}`;
             event_category: 'conversion',
             lead_id: formData.leadId
           });
-          console.log(`[Tracking] GA4 application_submit fired: ${formData.leadId}`);
         }
         if ((window as any).showToast) {
           (window as any).showToast("Inquiry submitted successfully! We'll contact you within 24 hours.", "success");

@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useCallback, memo } from "react";
 import { MessageSquare, X, Send, Mic, Loader2 } from "lucide-react";
 const QA_DATABASE = [
   {
@@ -151,6 +151,14 @@ const QA_DATABASE = [
   }
 ];
 
+const INITIAL_SUGGESTIONS = [
+  "What is TESCA's visa success rate?",
+  "How do I book an appointment?",
+  "Do you provide IELTS coaching?",
+  "What is a Germany Blocked Account?",
+  "Can I work while studying?"
+];
+
 const renderSafeText = (text: string): React.ReactNode[] => {
   const clean = text.replace(/<[^>]*>/g, "");
   const lines = clean.split('\n');
@@ -194,6 +202,84 @@ interface Message {
   originalQuery?: string;
 }
 
+const ChatMessageItem = memo(function ChatMessageItem({ m, onClose }: { m: Message; onClose: () => void }) {
+  return (
+    <div className={`flex ${m.sender === "user" ? "justify-end" : "justify-start"}`}>
+      <div className={`max-w-[85%] rounded-xl px-4 py-2.5 text-xs leading-relaxed ${
+        m.sender === "user"
+          ? "bg-accent-blue text-white font-semibold rounded-tr-none shadow-sm font-sans"
+          : "bg-slate-50 border border-slate-200/50 text-support-slate rounded-tl-none space-y-1 shadow-sm font-sans"
+      }`}>
+        {m.sender === "user" ? (
+          <div className="space-y-2 font-normal whitespace-pre-wrap">{m.text}</div>
+        ) : (
+          <div className="space-y-2 font-normal">{renderSafeText(m.text)}</div>
+        )}
+        {m.showFallbackForm && (
+          <div className="mt-2.5">
+            <button
+              type="button"
+              onClick={() => {
+                onClose();
+                if (typeof (window as any).openCounsellorForm === "function") {
+                  (window as any).openCounsellorForm();
+                }
+              }}
+              className="w-full py-2.5 bg-[#F08A00] hover:bg-[#C06E00] text-white font-semibold text-xs rounded-xl shadow-md transition-colors cursor-pointer flex items-center justify-center gap-1.5 font-sans"
+            >
+              📞 Speak with a Counsellor
+            </button>
+          </div>
+        )}
+        <span className="block text-[9px] text-right mt-1 opacity-50 font-sans">
+          {m.timestamp}
+        </span>
+      </div>
+    </div>
+  );
+});
+
+const ChatInput = memo(function ChatInput({ onSend }: { onSend: (text: string) => void }) {
+  const [inputVal, setInputVal] = useState("");
+
+  const handleSendClick = () => {
+    if (!inputVal.trim()) return;
+    onSend(inputVal);
+    setInputVal("");
+  };
+
+  return (
+    <div className="p-3 border-t border-slate-100 bg-slate-50 flex items-center gap-2 font-sans">
+      <button
+        onClick={() => {}}
+        aria-label="Voice input not available"
+        title="Voice input not available"
+        disabled
+        className="p-2.5 rounded-xl bg-white border border-slate-200/80 text-support-gray/40 cursor-not-allowed shadow-sm"
+      >
+        <Mic className="w-4 h-4" />
+      </button>
+      
+      <input
+        type="text"
+        placeholder="Ask about visas, costs, or schools…"
+        value={inputVal}
+        onChange={e => setInputVal(e.target.value)}
+        onKeyDown={e => e.key === "Enter" && handleSendClick()}
+        className="flex-grow bg-white border border-slate-200/80 rounded-xl px-3.5 py-2.5 text-xs text-support-slate placeholder-support-gray/55 focus:outline-none focus:border-accent-blue focus:ring-1 focus:ring-accent-blue shadow-sm font-sans font-normal"
+      />
+      
+      <button
+        onClick={handleSendClick}
+        aria-label="Send message"
+        className="p-2.5 rounded-xl bg-accent-blue text-white font-bold hover:scale-[1.01] transition-transform cursor-pointer"
+      >
+        <Send className="w-4 h-4" />
+      </button>
+    </div>
+  );
+});
+
 export default function AICounsellor() {
   const [isOpen, setIsOpen] = useState(false);
   const [messages, setMessages] = useState<Message[]>([
@@ -203,18 +289,9 @@ export default function AICounsellor() {
       timestamp: "14:40"
     }
   ]);
-  const [inputVal, setInputVal] = useState("");
   const [isTyping, setIsTyping] = useState(false);
   const scrollRef = useRef<HTMLDivElement | null>(null);
 
-  // Suggestions
-  const INITIAL_SUGGESTIONS = [
-    "What is TESCA's visa success rate?",
-    "How do I book an appointment?",
-    "Do you provide IELTS coaching?",
-    "What is a Germany Blocked Account?",
-    "Can I work while studying?"
-  ];
   const [currentSuggestions, setCurrentSuggestions] = useState<string[]>(INITIAL_SUGGESTIONS);
 
   // Lock body scroll and intercept touch/wheel events when chat is open
@@ -258,7 +335,11 @@ export default function AICounsellor() {
     }
   }, [messages, isTyping]);
 
-  const handleSend = async (text: string) => {
+  const handleClose = useCallback(() => {
+    setIsOpen(false);
+  }, []);
+
+  const handleSend = useCallback(async (text: string) => {
     if (!text.trim()) return;
 
     const newMsg: Message = {
@@ -268,7 +349,6 @@ export default function AICounsellor() {
     };
 
     setMessages(prev => [...prev, newMsg]);
-    setInputVal("");
     setIsTyping(true);
 
     // Simulate natural typing delay for a premium interactive experience
@@ -345,7 +425,7 @@ export default function AICounsellor() {
 
       setIsTyping(false);
     }, 600);
-  };
+  }, []);
 
   const whatsappNumber = "919824152731";
   const whatsappMsg = encodeURIComponent(
@@ -425,38 +505,7 @@ export default function AICounsellor() {
           {/* Messages body */}
           <div ref={scrollRef} className="flex-1 min-h-0 p-4 overflow-y-auto space-y-4 scrollbar-thin scrollbar-thumb-slate-200 font-sans" style={{ overscrollBehavior: 'contain' }}>
             {messages.map((m, idx) => (
-              <div key={idx} className={`flex ${m.sender === "user" ? "justify-end" : "justify-start"}`}>
-                <div className={`max-w-[85%] rounded-xl px-4 py-2.5 text-xs leading-relaxed ${
-                  m.sender === "user"
-                    ? "bg-accent-blue text-white font-semibold rounded-tr-none shadow-sm font-sans"
-                    : "bg-slate-50 border border-slate-200/50 text-support-slate rounded-tl-none space-y-1 shadow-sm font-sans"
-                }`}>
-                  {m.sender === "user" ? (
-                    <div className="space-y-2 font-normal whitespace-pre-wrap">{m.text}</div>
-                  ) : (
-                    <div className="space-y-2 font-normal">{renderSafeText(m.text)}</div>
-                  )}
-                  {m.showFallbackForm && (
-                    <div className="mt-2.5">
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setIsOpen(false);
-                          if (typeof (window as any).openCounsellorForm === "function") {
-                            (window as any).openCounsellorForm();
-                          }
-                        }}
-                        className="w-full py-2.5 bg-[#F08A00] hover:bg-[#C06E00] text-white font-semibold text-xs rounded-xl shadow-md transition-colors cursor-pointer flex items-center justify-center gap-1.5 font-sans"
-                      >
-                        📞 Speak with a Counsellor
-                      </button>
-                    </div>
-                  )}
-                  <span className="block text-[9px] text-right mt-1 opacity-50 font-sans">
-                    {m.timestamp}
-                  </span>
-                </div>
-              </div>
+              <ChatMessageItem key={idx} m={m} onClose={handleClose} />
             ))}
 
             {isTyping && (
@@ -490,34 +539,7 @@ export default function AICounsellor() {
           )}
 
           {/* Input control panel */}
-          <div className="p-3 border-t border-slate-100 bg-slate-50 flex items-center gap-2 font-sans">
-            <button
-              onClick={() => {}}
-              aria-label="Voice input not available"
-              title="Voice input not available"
-              disabled
-              className="p-2.5 rounded-xl bg-white border border-slate-200/80 text-support-gray/40 cursor-not-allowed shadow-sm"
-            >
-              <Mic className="w-4 h-4" />
-            </button>
-            
-            <input
-              type="text"
-              placeholder="Ask about visas, costs, or schools…"
-              value={inputVal}
-              onChange={e => setInputVal(e.target.value)}
-              onKeyDown={e => e.key === "Enter" && handleSend(inputVal)}
-              className="flex-grow bg-white border border-slate-200/80 rounded-xl px-3.5 py-2.5 text-xs text-support-slate placeholder-support-gray/55 focus:outline-none focus:border-accent-blue focus:ring-1 focus:ring-accent-blue shadow-sm font-sans font-normal"
-            />
-            
-            <button
-              onClick={() => handleSend(inputVal)}
-              aria-label="Send message"
-              className="p-2.5 rounded-xl bg-accent-blue text-white font-bold hover:scale-[1.01] transition-transform cursor-pointer"
-            >
-              <Send className="w-4 h-4" />
-            </button>
-          </div>
+          <ChatInput onSend={handleSend} />
         </div>
       )}
 

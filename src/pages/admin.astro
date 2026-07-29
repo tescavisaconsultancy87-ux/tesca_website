@@ -22,8 +22,8 @@ const csrfToken = ensureCsrfToken(Astro.cookies);
 if (Astro.request.method === "POST") {
   try {
     const clientIP = getClientIP(Astro.request);
-    if (await checkRateLimit(`admin-login:${clientIP}`, 10, 15 * 60 * 1000)) {
-      errorMessage = "Too many attempts. Please wait a few minutes and try again.";
+    if (await checkRateLimit(`admin-login:${clientIP}`, 5, 60 * 1000)) {
+      errorMessage = "Too many login attempts. Please wait 1 minute before trying again.";
     } else {
     const formData = await Astro.request.formData();
     const action = formData.get("action");

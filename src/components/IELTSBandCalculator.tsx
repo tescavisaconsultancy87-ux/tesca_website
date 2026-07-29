@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useCallback, memo } from "react";
 import { Calculator, RotateCcw } from "lucide-react";
 import IOSPicker from "./IOSPicker";
 
@@ -33,6 +33,48 @@ const bandColors: Record<string, string> = {
   "5.0": "text-red-500 bg-red-50",
 };
 
+const BandSectionPicker = memo(function BandSectionPicker({
+  label,
+  id,
+  val,
+  calculated,
+  color,
+  bandLabel,
+  onChange
+}: {
+  label: string;
+  id: string;
+  val: string;
+  calculated: boolean;
+  color: string;
+  bandLabel: string;
+  onChange: (id: string, val: string) => void;
+}) {
+  const handleChange = useCallback((v: string) => {
+    onChange(id, v);
+  }, [id, onChange]);
+
+  return (
+    <div className="p-4 rounded-xl bg-white/80 border border-[#E6F2F3] space-y-2">
+      <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider font-sans">
+        {label}
+      </label>
+      {calculated ? (
+        <div className={`flex items-center justify-between px-4 py-3 rounded-xl ${color} font-semibold text-sm`}>
+          <span>{bandLabel}</span>
+          <span className="font-bold text-base">{val}</span>
+        </div>
+      ) : (
+        <IOSPicker
+          options={BAND_OPTIONS}
+          value={val}
+          onChange={handleChange}
+        />
+      )}
+    </div>
+  );
+});
+
 export default function IELTSBandCalculator() {
   const [scores, setScores] = useState<Record<string, string>>({
     listening: "7.5",
@@ -43,11 +85,11 @@ export default function IELTSBandCalculator() {
   const [calculated, setCalculated] = useState(false);
   const [overall, setOverall] = useState(0);
 
-  const setScore = (id: string, val: string) => {
+  const setScore = useCallback((id: string, val: string) => {
     setScores(prev => ({ ...prev, [id]: val }));
-  };
+  }, []);
 
-  const calculate = () => {
+  const calculate = useCallback(() => {
     const l = parseFloat(scores.listening);
     const r = parseFloat(scores.reading);
     const w = parseFloat(scores.writing);
@@ -55,11 +97,11 @@ export default function IELTSBandCalculator() {
     const avg = (l + r + w + s) / 4;
     setOverall(Math.round(avg * 2) / 2);
     setCalculated(true);
-  };
+  }, [scores]);
 
-  const reset = () => {
+  const reset = useCallback(() => {
     setCalculated(false);
-  };
+  }, []);
 
   const getBandLabel = (val: string) => BAND_OPTIONS.find(o => o.value === val)?.label ?? val;
 
@@ -70,23 +112,16 @@ export default function IELTSBandCalculator() {
           const val = scores[section.id];
           const color = bandColors[val] ?? "text-slate-700 bg-slate-100";
           return (
-            <div key={section.id} className="p-4 rounded-xl bg-white/80 border border-[#E6F2F3] space-y-2">
-              <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider font-sans">
-                {section.label}
-              </label>
-              {calculated ? (
-                <div className={`flex items-center justify-between px-4 py-3 rounded-xl ${color} font-semibold text-sm`}>
-                  <span>{getBandLabel(val)}</span>
-                  <span className="font-bold text-base">{val}</span>
-                </div>
-              ) : (
-                <IOSPicker
-                  options={BAND_OPTIONS}
-                  value={val}
-                  onChange={(v) => setScore(section.id, v)}
-                />
-              )}
-            </div>
+            <BandSectionPicker
+              key={section.id}
+              id={section.id}
+              label={section.label}
+              val={val}
+              calculated={calculated}
+              color={color}
+              bandLabel={getBandLabel(val)}
+              onChange={setScore}
+            />
           );
         })}
       </div>
