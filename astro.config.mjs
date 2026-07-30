@@ -24,8 +24,7 @@ export default defineConfig({
       dedupe: ['react', 'react-dom'],
     },
     optimizeDeps: {
-      // Add lucide-react to exclude if Vite continues to struggle optimizing it
-      exclude: ['audit', 'xray', 'lucide-react'], 
+      include: ['lucide-react', 'framer-motion', '@supabase/supabase-js', 'react', 'react-dom'],
     },
     build: {
       rollupOptions: {

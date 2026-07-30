@@ -82,6 +82,14 @@ if (Astro.url.pathname.startsWith("/admin")) {
 <!doctype html>
 <html lang="en">
 	<head>
+		<!-- Handle Vite dynamic import preload failures (stale chunk hashes during dev/deploy) -->
+		<script is:inline>
+			window.addEventListener('vite:preloadError', (event) => {
+				event.preventDefault();
+				window.location.reload();
+			});
+		</script>
+
 		<!-- Integrated Google Analytics (GA4) -->
 		<script is:inline define:vars={{ gaId }}>
 			window.PUBLIC_GA4_ID = gaId;
