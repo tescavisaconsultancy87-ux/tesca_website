@@ -331,7 +331,7 @@ export default function CounsellorForm() {
         (window as any).trackLeadEvent("counsellor");
       }
       
-      const dates = getAvailableDates();
+      const dates = availableDates;
       if (dates.length > 0) {
         setSelectedDate(dates[0].value);
       }
@@ -570,7 +570,7 @@ export default function CounsellorForm() {
                             throw new Error(data.error || "Failed to book slot.");
                           }
 
-                          const dates = getAvailableDates();
+                          const dates = availableDates;
                           const formattedDate = dates.find(d => d.value === selectedDate)?.label || selectedDate;
                           const visaPart = visaType ? ` for ${visaType}` : "";
                           const message = `Hello TESCA, I have booked a consultation slot${visaPart} for ${formattedDate} at ${selectedTime}. Please confirm my slot!`;

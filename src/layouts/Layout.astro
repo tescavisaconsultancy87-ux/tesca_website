@@ -230,7 +230,10 @@ if (Astro.url.pathname.startsWith("/admin")) {
 						'the transition was aborted',
 						'invalid state',
 						'aborterror',
-						'the user aborted a request'
+						'the user aborted a request',
+						'The object can not be found here',
+						'NotFoundError: Failed to execute',
+						'NotFoundError'
 					];
 					
 					const errorStr = `${message} ${stack || ''}`.toLowerCase();
