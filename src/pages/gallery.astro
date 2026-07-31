@@ -117,13 +117,16 @@ const campusPhotos = (hasDbImages && dbCampusImages.length > 0)
       <div class="max-w-4xl mx-auto">
         <div class="relative aspect-[16/9] rounded-[2rem] overflow-hidden bg-slate-900 border border-slate-200/60 shadow-xl group">
           <video 
-            src="/VIDEO/Tesca%20Office%20Reel.mp4" 
             poster="/images/office_photo.jpg"
-            preload="none" 
+            preload="metadata" 
             controls 
             playsinline 
             class="w-full h-full object-cover select-none"
-          ></video>
+          >
+            <source src="/VIDEO/tesca-office-reel.mp4" type="video/mp4" />
+            <source src="/VIDEO/Tesca%20Office%20Reel.mp4" type="video/mp4" />
+            Your browser does not support the video tag.
+          </video>
         </div>
       </div>
     </div>
