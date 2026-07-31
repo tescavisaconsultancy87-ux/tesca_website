@@ -349,7 +349,8 @@ export default function CounsellorForm() {
           visaType
         });
       }
-      showToast("Something went wrong. Please try again or contact us via WhatsApp.", "error");
+      const isWarning = err.message && err.message.toLowerCase().includes("already exists");
+      showToast(err.message || "Something went wrong. Please try again or contact us via WhatsApp.", isWarning ? "warning" : "error");
       setStatus("idle");
     }
   };
@@ -605,7 +606,8 @@ export default function CounsellorForm() {
                               selectedTime
                             });
                           }
-                          showToast("Booking failed. Please try again or reach out via WhatsApp.", "error");
+                          const isWarning = err.message && err.message.toLowerCase().includes("already exists");
+                          showToast(err.message || "Booking failed. Please try again or reach out via WhatsApp.", isWarning ? "warning" : "error");
                         } finally {
                           setBookingStatus("idle");
                         }

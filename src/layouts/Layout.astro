@@ -233,7 +233,11 @@ if (Astro.url.pathname.startsWith("/admin")) {
 						'the user aborted a request',
 						'The object can not be found here',
 						'NotFoundError: Failed to execute',
-						'NotFoundError'
+						'NotFoundError',
+						'already exists',
+						'active booking or inquiry',
+						'active session',
+						'invalid or expired booking token'
 					];
 					
 					const errorStr = `${message} ${stack || ''}`.toLowerCase();
