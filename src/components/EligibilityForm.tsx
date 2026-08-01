@@ -572,7 +572,7 @@ export default function EligibilityForm() {
               </div>
             </div>
 
-            <p className="text-sm text-slate-500 font-sans mb-8">
+            <p className="text-base sm:text-lg font-semibold text-slate-900 font-sans mb-8">
               Select your target country to search for admissions matching your eligibility constraints.
             </p>
 
@@ -625,7 +625,7 @@ export default function EligibilityForm() {
               </div>
             </div>
 
-            <p className="text-sm text-slate-500 font-sans mb-8">
+            <p className="text-base sm:text-lg font-semibold text-slate-900 font-sans mb-8">
               Are you looking for Undergraduate (Bachelors/Diplomas) or Postgraduate (Masters/MBA) studies?
             </p>
 
@@ -643,8 +643,8 @@ export default function EligibilityForm() {
                   <GraduationCap className="w-8 h-8" />
                 </div>
                 <div>
-                  <h3 className="font-bold text-slate-800 text-lg font-display">Undergraduate (UG)</h3>
-                  <p className="text-xs text-slate-400 font-sans mt-1">Bachelors, Diplomas, and Foundation courses</p>
+                  <h3 className="font-bold text-slate-900 text-lg font-display">Undergraduate (UG)</h3>
+                  <p className="text-sm text-slate-700 font-sans font-medium mt-1">Bachelors, Diplomas, and Foundation courses</p>
                 </div>
               </button>
 
@@ -661,8 +661,8 @@ export default function EligibilityForm() {
                   <Award className="w-8 h-8" />
                 </div>
                 <div>
-                  <h3 className="font-bold text-slate-800 text-lg font-display">Postgraduate (PG)</h3>
-                  <p className="text-xs text-slate-400 font-sans mt-1">Masters, MBA, and PhD courses</p>
+                  <h3 className="font-bold text-slate-900 text-lg font-display">Postgraduate (PG)</h3>
+                  <p className="text-sm text-slate-700 font-sans font-medium mt-1">Masters, MBA, and PhD courses</p>
                 </div>
               </button>
             </div>
@@ -689,7 +689,7 @@ export default function EligibilityForm() {
               </div>
             </div>
 
-            <p className="text-sm text-slate-500 font-sans mb-8">
+            <p className="text-base sm:text-lg font-semibold text-slate-900 font-sans mb-8">
               Select how you would like to prove your English language proficiency.
             </p>
 
@@ -707,8 +707,8 @@ export default function EligibilityForm() {
                   <ShieldCheck className="w-8 h-8" />
                 </div>
                 <div>
-                  <h3 className="font-bold text-slate-800 text-lg font-display">MOI Waiver Accepted</h3>
-                  <p className="text-xs text-slate-400 font-sans mt-1">Check universities accepting Medium of Instruction waiver certificate</p>
+                  <h3 className="font-bold text-slate-900 text-lg font-display">MOI Waiver Accepted</h3>
+                  <p className="text-sm text-slate-700 font-sans font-medium mt-1">Check universities accepting Medium of Instruction waiver certificate</p>
                 </div>
               </button>
 
@@ -726,7 +726,7 @@ export default function EligibilityForm() {
                 </div>
                 <div>
                   <h3 className="font-bold text-slate-800 text-lg font-display">IELTS / PTE Academic</h3>
-                  <p className="text-xs text-slate-400 font-sans mt-1">Input your overall test score to evaluate specific university thresholds</p>
+                  <p className="text-sm text-slate-700 font-sans font-medium mt-1">Input your overall test score to evaluate specific university thresholds</p>
                 </div>
               </button>
             </div>
@@ -758,7 +758,7 @@ export default function EligibilityForm() {
               {/* If English Exam selected, show exam scores */}
               {englishType === 'IELTS' && (
                 <div className="space-y-4 bg-slate-50 p-6 rounded-2xl border border-slate-100">
-                  <label className="text-xs font-bold text-slate-700 uppercase tracking-wider font-sans block">Select English Test & Score</label>
+                  <label className="text-xs sm:text-sm font-extrabold text-slate-900 uppercase tracking-wider font-sans block">Select English Test & Score</label>
                   
                   <div className="flex gap-2">
                     <button
@@ -767,7 +767,7 @@ export default function EligibilityForm() {
                       className={`flex-1 py-2 rounded-xl text-xs font-bold transition-all ${
                         englishScoreType === 'IELTS'
                           ? "bg-accent-blue text-white shadow-sm"
-                          : "bg-white border border-slate-200 text-slate-500 hover:bg-slate-100"
+                          : "bg-white border border-slate-200 text-slate-700 hover:bg-slate-100"
                       }`}
                     >
                       IELTS Academic
@@ -778,7 +778,7 @@ export default function EligibilityForm() {
                       className={`flex-1 py-2 rounded-xl text-xs font-bold transition-all ${
                         englishScoreType === 'PTE'
                           ? "bg-accent-blue text-white shadow-sm"
-                          : "bg-white border border-slate-200 text-slate-500 hover:bg-slate-100"
+                          : "bg-white border border-slate-200 text-slate-700 hover:bg-slate-100"
                       }`}
                     >
                       PTE Academic
@@ -786,7 +786,7 @@ export default function EligibilityForm() {
                   </div>
 
                   <div className="space-y-1.5">
-                    <label htmlFor="english-score" className="text-[10px] text-slate-400 uppercase tracking-wider font-semibold">
+                    <label htmlFor="english-score" className="text-xs text-slate-800 uppercase tracking-wider font-bold block">
                       {englishScoreType === 'IELTS' ? "Overall IELTS Band Score (e.g. 6.5)" : "Overall PTE Academic Score (e.g. 58)"}
                     </label>
                     <input
@@ -805,7 +805,7 @@ export default function EligibilityForm() {
 
               {/* Academic Score details */}
               <div className="space-y-4 bg-slate-50 p-6 rounded-2xl border border-slate-100">
-                <label className="text-xs font-bold text-slate-700 uppercase tracking-wider font-sans block">Academic Score</label>
+                <label className="text-xs sm:text-sm font-extrabold text-slate-900 uppercase tracking-wider font-sans block">Academic Score</label>
                 
                 <div className="flex gap-2">
                   <button
@@ -814,7 +814,7 @@ export default function EligibilityForm() {
                     className={`flex-1 py-2 rounded-xl text-xs font-bold transition-all ${
                       !isCgpa
                         ? "bg-accent-blue text-white shadow-sm"
-                        : "bg-white border border-slate-200 text-slate-500 hover:bg-slate-100"
+                        : "bg-white border border-slate-200 text-slate-700 hover:bg-slate-100"
                     }`}
                   >
                     Percentage (%)
@@ -825,7 +825,7 @@ export default function EligibilityForm() {
                     className={`flex-1 py-2 rounded-xl text-xs font-bold transition-all ${
                       isCgpa
                         ? "bg-accent-blue text-white shadow-sm"
-                        : "bg-white border border-slate-200 text-slate-500 hover:bg-slate-100"
+                        : "bg-white border border-slate-200 text-slate-700 hover:bg-slate-100"
                     }`}
                   >
                     CGPA / GPA (10 pt)
@@ -833,7 +833,7 @@ export default function EligibilityForm() {
                 </div>
 
                 <div className="space-y-1.5">
-                  <label htmlFor="academic-score" className="text-[10px] text-slate-400 uppercase tracking-wider font-semibold">
+                  <label htmlFor="academic-score" className="text-xs text-slate-800 uppercase tracking-wider font-bold block">
                     {!isCgpa ? "Academic Score Percentage (e.g. 75)" : "CGPA Score (e.g. 7.5)"}
                   </label>
                   <input
@@ -885,7 +885,7 @@ export default function EligibilityForm() {
               
               {/* Full Name */}
               <div className="space-y-1.5">
-                <label htmlFor="lead-name" className="text-xs font-bold text-slate-700 uppercase tracking-wider font-sans">Full Name</label>
+                <label htmlFor="lead-name" className="text-xs font-extrabold text-slate-900 uppercase tracking-wider font-sans">Full Name</label>
                 <div className="relative">
                   <User className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
                   <input
@@ -902,7 +902,7 @@ export default function EligibilityForm() {
 
               {/* Email Address */}
               <div className="space-y-1.5">
-                <label htmlFor="lead-email" className="text-xs font-bold text-slate-700 uppercase tracking-wider font-sans">Email Address</label>
+                <label htmlFor="lead-email" className="text-xs font-extrabold text-slate-900 uppercase tracking-wider font-sans">Email Address</label>
                 <div className="relative">
                   <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
                   <input
@@ -919,7 +919,7 @@ export default function EligibilityForm() {
 
               {/* Mobile Number */}
               <div className="space-y-1.5">
-                <label htmlFor="lead-phone" className="text-xs font-bold text-slate-700 uppercase tracking-wider font-sans">Mobile Number</label>
+                <label htmlFor="lead-phone" className="text-xs font-extrabold text-slate-900 uppercase tracking-wider font-sans">Mobile Number</label>
                 <div className="flex gap-0 relative" ref={countryDropdownRef}>
                   {/* Country Code Picker Button */}
                   <button
