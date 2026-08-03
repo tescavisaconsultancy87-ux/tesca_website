@@ -21,50 +21,7 @@ let socialCauses = [];
 let successMessage = "";
 let errorMessage = "";
 
-// Helper to upload file to Supabase Storage
-const IMAGE_MAGIC_BYTES: Record<string, { magic: number[]; mime: string }> = {
-  jpeg: { magic: [0xFF, 0xD8, 0xFF], mime: 'image/jpeg' },
-  png: { magic: [0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A], mime: 'image/png' },
-  webp: { magic: [0x52, 0x49, 0x46, 0x46], mime: 'image/webp' },
-};
-
-const detectImageType = (buffer: ArrayBuffer): string | null => {
-  const bytes = new Uint8Array(buffer);
-  for (const [ext, sig] of Object.entries(IMAGE_MAGIC_BYTES)) {
-    if (sig.magic.every((b, i) => bytes[i] === b)) {
-      return ext;
-    }
-  }
-  return null;
-};
-
-const uploadImageToSupabase = async (photoFile: File): Promise<string> => {
-  const sb = supabase;
-  const buffer = await photoFile.arrayBuffer();
-
-  const detectedExt = detectImageType(buffer);
-  if (!detectedExt) {
-    throw new Error("Invalid image file. Only JPEG, PNG, and WEBP formats are accepted.");
-  }
-
-  const mime = IMAGE_MAGIC_BYTES[detectedExt].mime;
-  const key = `social-causes/${crypto.randomUUID()}.${detectedExt}`;
-
-  const { error } = await sb.storage
-    .from('tesca-assets')
-    .upload(key, buffer, {
-      contentType: mime,
-      upsert: false,
-    });
-
-  if (error) {
-    console.error("Storage upload failed:", error.message);
-    throw new Error("Failed to upload image. Please try again.");
-  }
-
-  const { data } = sb.storage.from('tesca-assets').getPublicUrl(key);
-  return data.publicUrl;
-};
+import { uploadImageToSupabase } from "../../utils/supabaseStorage";
 
 // Handle server actions (Add / Update / Delete)
 if (Astro.request.method === "POST") {
@@ -94,7 +51,7 @@ if (Astro.request.method === "POST") {
         } else if (!["image/jpeg", "image/png", "image/jpg", "image/webp"].includes(photoFile.type)) {
           errorMessage = "Only JPEG, JPG, WEBP and PNG images are allowed.";
         } else {
-          thumbnailUrl = await uploadImageToSupabase(photoFile);
+          thumbnailUrl = await uploadImageToSupabase(photoFile, 'social-causes');
         }
       } else {
         errorMessage = "Thumbnail image is required.";
@@ -130,7 +87,7 @@ if (Astro.request.method === "POST") {
         } else if (!["image/jpeg", "image/png", "image/jpg", "image/webp"].includes(photoFile.type)) {
           errorMessage = "Only JPEG, JPG, WEBP and PNG images are allowed.";
         } else {
-          thumbnailUrl = await uploadImageToSupabase(photoFile);
+          thumbnailUrl = await uploadImageToSupabase(photoFile, 'social-causes');
         }
       }
 
