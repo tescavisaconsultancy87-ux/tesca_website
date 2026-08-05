@@ -409,6 +409,42 @@ export default function EligibilityForm() {
   const [reachUnis, setReachUnis] = useState<University[]>([]);
   const [selectedUniversity, setSelectedUniversity] = useState<University | null>(null);
 
+  // Country universities for MOI check
+  const [countryUnis, setCountryUnis] = useState<University[]>([]);
+  const [isLoadingCountryUnis, setIsLoadingCountryUnis] = useState<boolean>(false);
+
+  useEffect(() => {
+    if (!selectedCountry) {
+      setCountryUnis([]);
+      return;
+    }
+    setIsLoadingCountryUnis(true);
+    fetch(`/api/universities?country=${selectedCountry}`)
+      .then(res => res.ok ? res.json() : [])
+      .then(data => {
+        if (Array.isArray(data)) {
+          setCountryUnis(data);
+        }
+      })
+      .catch(err => console.error("Error loading country universities:", err))
+      .finally(() => setIsLoadingCountryUnis(false));
+  }, [selectedCountry]);
+
+  const isMoiAcceptedForCountry = useMemo(() => {
+    if (!selectedCountry) return true;
+    if (countryUnis.length === 0) {
+      // Fallback default: Germany has no MOI accepted
+      if (selectedCountry === "de") return false;
+      return true;
+    }
+    return countryUnis.some(uni => {
+      const moiStr = selectedLevel === 'UG'
+        ? (uni.ug_moi || uni.ug_moi_accepted || uni.moi_accepted || "")
+        : (uni.pg_moi || uni.pg_moi_accepted || uni.moi_accepted || "");
+      return moiStr.trim().toLowerCase() === "yes";
+    });
+  }, [countryUnis, selectedCountry, selectedLevel]);
+
   useEffect(() => {
     if (selectedUniversity) {
       document.body.style.overflow = "hidden";
@@ -794,19 +830,38 @@ export default function EligibilityForm() {
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 max-w-2xl mx-auto">
               <button
                 type="button"
-                onClick={() => handleEnglishSelect('MOI')}
-                className={`p-8 rounded-[2rem] border transition-all duration-300 cursor-pointer flex flex-col items-center justify-center gap-4 text-center group hover:-translate-y-1 ${
-                  englishType === 'MOI'
-                    ? "bg-amber-50/50 border-amber-500 shadow-md"
-                    : "bg-white border-slate-200 hover:border-amber-500 hover:shadow-lg"
+                disabled={!isMoiAcceptedForCountry}
+                onClick={() => {
+                  if (isMoiAcceptedForCountry) {
+                    handleEnglishSelect('MOI');
+                  }
+                }}
+                className={`p-8 rounded-[2rem] border transition-all duration-300 flex flex-col items-center justify-center gap-4 text-center group ${
+                  !isMoiAcceptedForCountry
+                    ? "bg-slate-100/90 border-slate-200 opacity-70 cursor-not-allowed"
+                    : englishType === 'MOI'
+                      ? "bg-amber-50/50 border-amber-500 shadow-md cursor-pointer hover:-translate-y-1"
+                      : "bg-white border-slate-200 hover:border-amber-500 hover:shadow-lg cursor-pointer hover:-translate-y-1"
                 }`}
               >
-                <div className="w-14 h-14 rounded-2xl bg-amber-50 text-amber-600 flex items-center justify-center shrink-0 shadow-sm group-hover:scale-105 transition-transform duration-300">
+                <div className={`w-14 h-14 rounded-2xl flex items-center justify-center shrink-0 shadow-sm transition-transform duration-300 ${
+                  !isMoiAcceptedForCountry ? "bg-slate-200 text-slate-400" : "bg-amber-50 text-amber-600 group-hover:scale-105"
+                }`}>
                   <ShieldCheck className="w-8 h-8" />
                 </div>
                 <div>
                   <h3 className="font-bold text-slate-900 text-lg font-display">MOI Waiver Accepted</h3>
-                  <p className="text-sm text-slate-700 font-sans font-medium mt-1">Check universities accepting Medium of Instruction waiver certificate</p>
+                  <p className="text-sm text-slate-700 font-sans font-medium mt-1">
+                    {!isMoiAcceptedForCountry
+                      ? `MOI is not accepted for ${countryLabels[selectedCountry || ""] || selectedCountry || "this country"}`
+                      : "Check universities accepting Medium of Instruction waiver certificate"}
+                  </p>
+                  {!isMoiAcceptedForCountry && (
+                    <div className="mt-3 px-3 py-1.5 bg-rose-100 border border-rose-200 rounded-xl text-xs font-bold text-rose-800 flex items-center justify-center gap-1.5">
+                      <AlertCircle className="w-4 h-4 text-rose-600 shrink-0" />
+                      <span>MOI is not accepted in this country</span>
+                    </div>
+                  )}
                 </div>
               </button>
 
