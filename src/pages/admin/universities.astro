@@ -51,6 +51,13 @@ if (Astro.request.method === "POST") {
       const pgIelts = formData.get("pg_ielts_pte")?.toString().trim() || null;
       const ugMoi = formData.get("ug_moi")?.toString().trim();
       const pgMoi = formData.get("pg_moi")?.toString().trim();
+      const ugToefl = formData.get("ug_toefl")?.toString().trim() || null;
+      const pgToefl = formData.get("pg_toefl")?.toString().trim() || null;
+      const ugDuolingo = formData.get("ug_duolingo")?.toString().trim() || null;
+      const pgDuolingo = formData.get("pg_duolingo")?.toString().trim() || null;
+      const ugGerman = formData.get("ug_german")?.toString().trim() || null;
+      const pgGerman = formData.get("pg_german")?.toString().trim() || null;
+
       const ugIntakes = formData.get("ug_intakes")?.toString().trim();
       const pgIntakes = formData.get("pg_intakes")?.toString().trim();
       const ugCourses = formData.get("ug_courses")?.toString().trim();
@@ -77,7 +84,10 @@ if (Astro.request.method === "POST") {
             name, country, code, min_cgpa_percent: minCgpaPercent,
             tuition_fees: ugTuitionFees, intake: ugIntakes, ielts_pte_req: ugIelts, moi_accepted: ugMoi, courses: ugCourses, photo: imageUrl,
             ug_fees: ugTuitionFees, pg_fees: pgTuitionFees, ug_ielts_pte_req: ugIelts, pg_ielts_pte_req: pgIelts, ug_moi_accepted: ugMoi, pg_moi_accepted: pgMoi, ug_intake: ugIntakes, pg_intake: pgIntakes, ug_courses: ugCourses, pg_courses: pgCourses,
-            image_url: imageUrl, ug_tuition_fees: ugTuitionFees, ug_intakes: ugIntakes, ug_ielts_pte: ugIelts, ug_moi: ugMoi, pg_tuition_fees: pgTuitionFees, pg_intakes: pgIntakes, pg_ielts_pte: pgIelts, pg_moi: pgMoi
+            image_url: imageUrl, ug_tuition_fees: ugTuitionFees, ug_intakes: ugIntakes, ug_ielts_pte: ugIelts, ug_moi: ugMoi,
+            ug_toefl: ugToefl, ug_duolingo: ugDuolingo, ug_german: ugGerman,
+            pg_tuition_fees: pgTuitionFees, pg_intakes: pgIntakes, pg_ielts_pte: pgIelts, pg_moi: pgMoi,
+            pg_toefl: pgToefl, pg_duolingo: pgDuolingo, pg_german: pgGerman
           });
 
         if (error) throw error;
@@ -97,6 +107,13 @@ if (Astro.request.method === "POST") {
       const pgIelts = formData.get("pg_ielts_pte")?.toString().trim() || null;
       const ugMoi = formData.get("ug_moi")?.toString().trim();
       const pgMoi = formData.get("pg_moi")?.toString().trim();
+      const ugToefl = formData.get("ug_toefl")?.toString().trim() || null;
+      const pgToefl = formData.get("pg_toefl")?.toString().trim() || null;
+      const ugDuolingo = formData.get("ug_duolingo")?.toString().trim() || null;
+      const pgDuolingo = formData.get("pg_duolingo")?.toString().trim() || null;
+      const ugGerman = formData.get("ug_german")?.toString().trim() || null;
+      const pgGerman = formData.get("pg_german")?.toString().trim() || null;
+
       const ugIntakes = formData.get("ug_intakes")?.toString().trim();
       const pgIntakes = formData.get("pg_intakes")?.toString().trim();
       const ugCourses = formData.get("ug_courses")?.toString().trim();
@@ -124,7 +141,10 @@ if (Astro.request.method === "POST") {
             name, country, code, min_cgpa_percent: minCgpaPercent,
             tuition_fees: ugTuitionFees, intake: ugIntakes, ielts_pte_req: ugIelts, moi_accepted: ugMoi, courses: ugCourses, photo: imageUrl,
             ug_fees: ugTuitionFees, pg_fees: pgTuitionFees, ug_ielts_pte_req: ugIelts, pg_ielts_pte_req: pgIelts, ug_moi_accepted: ugMoi, pg_moi_accepted: pgMoi, ug_intake: ugIntakes, pg_intake: pgIntakes, ug_courses: ugCourses, pg_courses: pgCourses,
-            image_url: imageUrl, ug_tuition_fees: ugTuitionFees, ug_intakes: ugIntakes, ug_ielts_pte: ugIelts, ug_moi: ugMoi, pg_tuition_fees: pgTuitionFees, pg_intakes: pgIntakes, pg_ielts_pte: pgIelts, pg_moi: pgMoi
+            image_url: imageUrl, ug_tuition_fees: ugTuitionFees, ug_intakes: ugIntakes, ug_ielts_pte: ugIelts, ug_moi: ugMoi,
+            ug_toefl: ugToefl, ug_duolingo: ugDuolingo, ug_german: ugGerman,
+            pg_tuition_fees: pgTuitionFees, pg_intakes: pgIntakes, pg_ielts_pte: pgIelts, pg_moi: pgMoi,
+            pg_toefl: pgToefl, pg_duolingo: pgDuolingo, pg_german: pgGerman
           })
           .eq('id', id);
 
@@ -263,16 +283,43 @@ try {
                 </div>
               </div>
 
+              <div class="p-3 bg-indigo-50/50 rounded-xl border border-indigo-100 flex items-center justify-between">
+                <div>
+                  <div class="text-xs font-bold text-indigo-950">UG MOI Acceptance Toggle</div>
+                  <div class="text-[10px] text-indigo-600">Medium of Instruction allowed for UG</div>
+                </div>
+                <select id="ug-moi" name="ug_moi" class="px-3 py-1.5 rounded-lg border border-indigo-200 bg-white text-xs font-bold text-indigo-900 focus:outline-none focus:ring-1 focus:ring-indigo-500 cursor-pointer">
+                  <option value="Yes">Yes (Accepted)</option>
+                  <option value="No">No (Not Accepted)</option>
+                </select>
+              </div>
+
               <div class="grid grid-cols-2 gap-3">
                 <div class="space-y-1.5">
-                  <label for="ug-ielts" class="text-[10px] text-slate-500 uppercase tracking-wide">UG IELTS/PTE (Optional)</label>
-                  <input type="text" id="ug-ielts" name="ug_ielts_pte" class="w-full px-3 py-2.5 rounded-lg border border-slate-200 bg-slate-50 text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-1 focus:ring-indigo-500" placeholder="e.g. 6.0 overall" />
+                  <label for="ug-ielts" class="text-[10px] text-slate-500 uppercase tracking-wide">UG IELTS / PTE Score</label>
+                  <input type="text" id="ug-ielts" name="ug_ielts_pte" class="w-full px-3 py-2.5 rounded-lg border border-slate-200 bg-slate-50 text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-1 focus:ring-indigo-500 text-xs" placeholder="e.g. 6.0 overall" />
                 </div>
                 <div class="space-y-1.5">
-                  <label for="ug-moi" class="text-[10px] text-slate-500 uppercase tracking-wide">UG MOI Accepted *</label>
-                  <select id="ug-moi" name="ug_moi" class="w-full px-3 py-2.5 rounded-lg border border-slate-200 bg-slate-50 text-slate-800 focus:outline-none focus:ring-1 focus:ring-indigo-500">
-                    <option value="Yes">Yes</option>
-                    <option value="No">No</option>
+                  <label for="ug-toefl" class="text-[10px] text-slate-500 uppercase tracking-wide">UG TOEFL iBT (Max 120)</label>
+                  <input type="text" id="ug-toefl" name="ug_toefl" class="w-full px-3 py-2.5 rounded-lg border border-slate-200 bg-slate-50 text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-1 focus:ring-indigo-500 text-xs" placeholder="e.g. 60 (auto-derived)" />
+                </div>
+              </div>
+
+              <div class="grid grid-cols-2 gap-3">
+                <div class="space-y-1.5">
+                  <label for="ug-duolingo" class="text-[10px] text-slate-500 uppercase tracking-wide">UG Duolingo DET (Max 160)</label>
+                  <input type="text" id="ug-duolingo" name="ug_duolingo" class="w-full px-3 py-2.5 rounded-lg border border-slate-200 bg-slate-50 text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-1 focus:ring-indigo-500 text-xs" placeholder="e.g. 105 (auto-derived)" />
+                </div>
+                <div class="space-y-1.5">
+                  <label for="ug-german" class="text-[10px] text-slate-500 uppercase tracking-wide">UG German Level (Add-on)</label>
+                  <select id="ug-german" name="ug_german" class="w-full px-3 py-2.5 rounded-lg border border-slate-200 bg-slate-50 text-slate-800 text-xs focus:outline-none focus:ring-1 focus:ring-indigo-500">
+                    <option value="">None / Not Required</option>
+                    <option value="A1">A1 Beginner</option>
+                    <option value="A2">A2 Elementary</option>
+                    <option value="B1">B1 Intermediate</option>
+                    <option value="B2">B2 Upper Intermediate</option>
+                    <option value="C1">C1 Advanced</option>
+                    <option value="C2">C2 Mastery</option>
                   </select>
                 </div>
               </div>
@@ -296,16 +343,43 @@ try {
                 </div>
               </div>
 
+              <div class="p-3 bg-indigo-50/50 rounded-xl border border-indigo-100 flex items-center justify-between">
+                <div>
+                  <div class="text-xs font-bold text-indigo-950">PG MOI Acceptance Toggle</div>
+                  <div class="text-[10px] text-indigo-600">Medium of Instruction allowed for PG</div>
+                </div>
+                <select id="pg-moi" name="pg_moi" class="px-3 py-1.5 rounded-lg border border-indigo-200 bg-white text-xs font-bold text-indigo-900 focus:outline-none focus:ring-1 focus:ring-indigo-500 cursor-pointer">
+                  <option value="Yes">Yes (Accepted)</option>
+                  <option value="No">No (Not Accepted)</option>
+                </select>
+              </div>
+
               <div class="grid grid-cols-2 gap-3">
                 <div class="space-y-1.5">
-                  <label for="pg-ielts" class="text-[10px] text-slate-500 uppercase tracking-wide">PG IELTS/PTE (Optional)</label>
-                  <input type="text" id="pg-ielts" name="pg_ielts_pte" class="w-full px-3 py-2.5 rounded-lg border border-slate-200 bg-slate-50 text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-1 focus:ring-indigo-500" placeholder="e.g. 6.5 overall" />
+                  <label for="pg-ielts" class="text-[10px] text-slate-500 uppercase tracking-wide">PG IELTS / PTE Score</label>
+                  <input type="text" id="pg-ielts" name="pg_ielts_pte" class="w-full px-3 py-2.5 rounded-lg border border-slate-200 bg-slate-50 text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-1 focus:ring-indigo-500 text-xs" placeholder="e.g. 6.5 overall" />
                 </div>
                 <div class="space-y-1.5">
-                  <label for="pg-moi" class="text-[10px] text-slate-500 uppercase tracking-wide">PG MOI Accepted *</label>
-                  <select id="pg-moi" name="pg_moi" class="w-full px-3 py-2.5 rounded-lg border border-slate-200 bg-slate-50 text-slate-800 focus:outline-none focus:ring-1 focus:ring-indigo-500">
-                    <option value="Yes">Yes</option>
-                    <option value="No">No</option>
+                  <label for="pg-toefl" class="text-[10px] text-slate-500 uppercase tracking-wide">PG TOEFL iBT (Max 120)</label>
+                  <input type="text" id="pg-toefl" name="pg_toefl" class="w-full px-3 py-2.5 rounded-lg border border-slate-200 bg-slate-50 text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-1 focus:ring-indigo-500 text-xs" placeholder="e.g. 79 (auto-derived)" />
+                </div>
+              </div>
+
+              <div class="grid grid-cols-2 gap-3">
+                <div class="space-y-1.5">
+                  <label for="pg-duolingo" class="text-[10px] text-slate-500 uppercase tracking-wide">PG Duolingo DET (Max 160)</label>
+                  <input type="text" id="pg-duolingo" name="pg_duolingo" class="w-full px-3 py-2.5 rounded-lg border border-slate-200 bg-slate-50 text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-1 focus:ring-indigo-500 text-xs" placeholder="e.g. 115 (auto-derived)" />
+                </div>
+                <div class="space-y-1.5">
+                  <label for="pg-german" class="text-[10px] text-slate-500 uppercase tracking-wide">PG German Level (Add-on)</label>
+                  <select id="pg-german" name="pg_german" class="w-full px-3 py-2.5 rounded-lg border border-slate-200 bg-slate-50 text-slate-800 text-xs focus:outline-none focus:ring-1 focus:ring-indigo-500">
+                    <option value="">None / Not Required</option>
+                    <option value="A1">A1 Beginner</option>
+                    <option value="A2">A2 Elementary</option>
+                    <option value="B1">B1 Intermediate</option>
+                    <option value="B2">B2 Upper Intermediate</option>
+                    <option value="C1">C1 Advanced</option>
+                    <option value="C2">C2 Mastery</option>
                   </select>
                 </div>
               </div>
@@ -433,11 +507,17 @@ try {
                             data-ug-intakes={u.ug_intakes || u.ug_intake || u.intake || ""}
                             data-ug-ielts-pte={u.ug_ielts_pte || u.ug_ielts_pte_req || u.ielts_pte_req || ""}
                             data-ug-moi={u.ug_moi || u.ug_moi_accepted || u.moi_accepted || "Yes"}
+                            data-ug-toefl={u.ug_toefl || ""}
+                            data-ug-duolingo={u.ug_duolingo || ""}
+                            data-ug-german={u.ug_german || ""}
                             data-ug-courses={u.ug_courses || u.courses || ""}
                             data-pg-tuition-fees={u.pg_tuition_fees || u.pg_fees || ""}
                             data-pg-intakes={u.pg_intakes || u.pg_intake || ""}
                             data-pg-ielts-pte={u.pg_ielts_pte || u.pg_ielts_pte_req || ""}
                             data-pg-moi={u.pg_moi || u.pg_moi_accepted || "Yes"}
+                            data-pg-toefl={u.pg_toefl || ""}
+                            data-pg-duolingo={u.pg_duolingo || ""}
+                            data-pg-german={u.pg_german || ""}
                             data-pg-courses={u.pg_courses || ""}
                             aria-label={`Edit ${u.name}`}
                           >
@@ -522,6 +602,60 @@ try {
       });
     }
 
+    // Auto Score Calculation for IELTS -> TOEFL/Duolingo
+    const getAutoScores = (valStr: string) => {
+      const match = valStr.match(/(\d+(\.\d+)?)/);
+      if (!match) return null;
+      const score = parseFloat(match[1]);
+      if (score <= 5.0) return { toefl: "35", duolingo: "85" };
+      if (score <= 5.5) return { toefl: "46", duolingo: "95" };
+      if (score <= 6.0) return { toefl: "60", duolingo: "105" };
+      if (score <= 6.5) return { toefl: "79", duolingo: "115" };
+      if (score <= 7.0) return { toefl: "94", duolingo: "125" };
+      if (score <= 7.5) return { toefl: "102", duolingo: "135" };
+      return { toefl: "110", duolingo: "145" };
+    };
+
+    const ugIeltsEl = document.getElementById("ug-ielts") as HTMLInputElement;
+    const ugToeflEl = document.getElementById("ug-toefl") as HTMLInputElement;
+    const ugDuolingoEl = document.getElementById("ug-duolingo") as HTMLInputElement;
+
+    if (ugIeltsEl && ugToeflEl && ugDuolingoEl) {
+      ugIeltsEl.addEventListener("input", () => {
+        const derived = getAutoScores(ugIeltsEl.value);
+        if (derived) {
+          if (!ugToeflEl.value || ugToeflEl.dataset.autoderived === "true") {
+            ugToeflEl.value = derived.toefl;
+            ugToeflEl.dataset.autoderived = "true";
+          }
+          if (!ugDuolingoEl.value || ugDuolingoEl.dataset.autoderived === "true") {
+            ugDuolingoEl.value = derived.duolingo;
+            ugDuolingoEl.dataset.autoderived = "true";
+          }
+        }
+      });
+    }
+
+    const pgIeltsEl = document.getElementById("pg-ielts") as HTMLInputElement;
+    const pgToeflEl = document.getElementById("pg-toefl") as HTMLInputElement;
+    const pgDuolingoEl = document.getElementById("pg-duolingo") as HTMLInputElement;
+
+    if (pgIeltsEl && pgToeflEl && pgDuolingoEl) {
+      pgIeltsEl.addEventListener("input", () => {
+        const derived = getAutoScores(pgIeltsEl.value);
+        if (derived) {
+          if (!pgToeflEl.value || pgToeflEl.dataset.autoderived === "true") {
+            pgToeflEl.value = derived.toefl;
+            pgToeflEl.dataset.autoderived = "true";
+          }
+          if (!pgDuolingoEl.value || pgDuolingoEl.dataset.autoderived === "true") {
+            pgDuolingoEl.value = derived.duolingo;
+            pgDuolingoEl.dataset.autoderived = "true";
+          }
+        }
+      });
+    }
+
     // Photo preview functionality
     const photoInput = document.getElementById("uni-photo") as HTMLInputElement;
     const photoPreviewContainer = document.getElementById("photo-preview-container");
@@ -588,12 +722,18 @@ try {
         const ugIntakeInput = document.querySelector('[name="ug_intakes"]') as HTMLInputElement;
         const ugIeltsInput = document.querySelector('[name="ug_ielts_pte"]') as HTMLInputElement;
         const ugMoiSelect = document.querySelector('[name="ug_moi"]') as HTMLSelectElement;
+        const ugToeflInput = document.querySelector('[name="ug_toefl"]') as HTMLInputElement;
+        const ugDuolingoInput = document.querySelector('[name="ug_duolingo"]') as HTMLInputElement;
+        const ugGermanSelect = document.querySelector('[name="ug_german"]') as HTMLSelectElement;
         const ugCoursesInput = document.querySelector('[name="ug_courses"]') as HTMLTextAreaElement;
 
         const pgFeesInput = document.querySelector('[name="pg_tuition_fees"]') as HTMLInputElement;
         const pgIntakeInput = document.querySelector('[name="pg_intakes"]') as HTMLInputElement;
         const pgIeltsInput = document.querySelector('[name="pg_ielts_pte"]') as HTMLInputElement;
         const pgMoiSelect = document.querySelector('[name="pg_moi"]') as HTMLSelectElement;
+        const pgToeflInput = document.querySelector('[name="pg_toefl"]') as HTMLInputElement;
+        const pgDuolingoInput = document.querySelector('[name="pg_duolingo"]') as HTMLInputElement;
+        const pgGermanSelect = document.querySelector('[name="pg_german"]') as HTMLSelectElement;
         const pgCoursesInput = document.querySelector('[name="pg_courses"]') as HTMLTextAreaElement;
 
         const ds = (btn as HTMLElement).dataset;
@@ -607,12 +747,18 @@ try {
         if (ugIntakeInput) ugIntakeInput.value = getValue(ds.ugIntakes);
         if (ugIeltsInput) ugIeltsInput.value = getValue(ds.ugIeltsPte);
         if (ugMoiSelect) ugMoiSelect.value = getValue(ds.ugMoi);
+        if (ugToeflInput) ugToeflInput.value = getValue(ds.ugToefl);
+        if (ugDuolingoInput) ugDuolingoInput.value = getValue(ds.ugDuolingo);
+        if (ugGermanSelect) ugGermanSelect.value = getValue(ds.ugGerman);
         if (ugCoursesInput) ugCoursesInput.value = getValue(ds.ugCourses);
 
         if (pgFeesInput) pgFeesInput.value = getValue(ds.pgTuitionFees);
         if (pgIntakeInput) pgIntakeInput.value = getValue(ds.pgIntakes);
         if (pgIeltsInput) pgIeltsInput.value = getValue(ds.pgIeltsPte);
         if (pgMoiSelect) pgMoiSelect.value = getValue(ds.pgMoi);
+        if (pgToeflInput) pgToeflInput.value = getValue(ds.pgToefl);
+        if (pgDuolingoInput) pgDuolingoInput.value = getValue(ds.pgDuolingo);
+        if (pgGermanSelect) pgGermanSelect.value = getValue(ds.pgGerman);
         if (pgCoursesInput) pgCoursesInput.value = getValue(ds.pgCourses);
 
         if (photoExistingInput && photoPreview && photoPreviewContainer) {

@@ -34,11 +34,17 @@ interface University {
   ug_intakes?: string | null;
   ug_ielts_pte?: string | null;
   ug_moi?: string | null;
+  ug_toefl?: string | null;
+  ug_duolingo?: string | null;
+  ug_german?: string | null;
   ug_courses?: string | null;
   pg_tuition_fees?: string | null;
   pg_intakes?: string | null;
   pg_ielts_pte?: string | null;
   pg_moi?: string | null;
+  pg_toefl?: string | null;
+  pg_duolingo?: string | null;
+  pg_german?: string | null;
   pg_courses?: string | null;
 }
 
@@ -248,6 +254,77 @@ function parsePte(reqStr: string | null | undefined): number {
   return 80;
 }
 
+function parseToefl(reqStr: string | null | undefined, toeflField?: string | null): number {
+  if (toeflField && toeflField.trim()) {
+    const num = parseFloat(toeflField);
+    if (!isNaN(num) && num > 0) return num;
+  }
+  const ieltsVal = parseIelts(reqStr);
+  if (ieltsVal <= 5.0) return 35;
+  if (ieltsVal <= 5.5) return 46;
+  if (ieltsVal <= 6.0) return 60;
+  if (ieltsVal <= 6.5) return 79;
+  if (ieltsVal <= 7.0) return 94;
+  if (ieltsVal <= 7.5) return 102;
+  return 110;
+}
+
+function parseDuolingo(reqStr: string | null | undefined, duolingoField?: string | null): number {
+  if (duolingoField && duolingoField.trim()) {
+    const num = parseFloat(duolingoField);
+    if (!isNaN(num) && num > 0) return num;
+  }
+  const ieltsVal = parseIelts(reqStr);
+  if (ieltsVal <= 5.0) return 85;
+  if (ieltsVal <= 5.5) return 95;
+  if (ieltsVal <= 6.0) return 105;
+  if (ieltsVal <= 6.5) return 115;
+  if (ieltsVal <= 7.0) return 125;
+  if (ieltsVal <= 7.5) return 135;
+  return 145;
+}
+
+const GERMAN_LEVEL_RANK: Record<string, number> = {
+  "": 0,
+  "None": 0,
+  "A1": 1,
+  "A2": 2,
+  "B1": 3,
+  "B2": 4,
+  "C1": 5,
+  "C2": 6
+};
+
+function validateEnglishScoreInput(value: string, type: 'IELTS' | 'PTE' | 'TOEFL' | 'DUOLINGO'): string {
+  if (!value) return "";
+  let cleaned = value.replace(/[^0-9.]/g, "");
+  const parts = cleaned.split(".");
+  if (parts.length > 2) {
+    cleaned = parts[0] + "." + parts.slice(1).join("");
+  }
+  if (type === 'IELTS') {
+    let val = parseFloat(cleaned);
+    if (!isNaN(val) && val > 10) return "10";
+    const [b, a] = cleaned.split(".");
+    let r = (b || "").slice(0, 2);
+    if (a !== undefined) r += "." + a.slice(0, 1);
+    return r;
+  } else if (type === 'PTE') {
+    let val = parseInt(cleaned, 10);
+    if (!isNaN(val) && val > 90) return "90";
+    return cleaned.split(".")[0].slice(0, 2);
+  } else if (type === 'TOEFL') {
+    let val = parseInt(cleaned, 10);
+    if (!isNaN(val) && val > 120) return "120";
+    return cleaned.split(".")[0].slice(0, 3);
+  } else if (type === 'DUOLINGO') {
+    let val = parseInt(cleaned, 10);
+    if (!isNaN(val) && val > 160) return "160";
+    return cleaned.split(".")[0].slice(0, 3);
+  }
+  return cleaned;
+}
+
 // Validate score input: max 2 digits before decimal, max 2 digits after
 function validateScoreInput(value: string): string {
   // Allow empty
@@ -310,7 +387,8 @@ export default function EligibilityForm() {
   const [selectedCountry, setSelectedCountry] = useState<string | null>(null);
   const [selectedLevel, setSelectedLevel] = useState<'UG' | 'PG' | null>(null);
   const [englishType, setEnglishType] = useState<'MOI' | 'IELTS' | null>(null);
-  const [englishScoreType, setEnglishScoreType] = useState<'IELTS' | 'PTE'>('IELTS');
+  const [englishScoreType, setEnglishScoreType] = useState<'IELTS' | 'PTE' | 'TOEFL' | 'DUOLINGO'>('IELTS');
+  const [germanLevel, setGermanLevel] = useState<string>("");
   const [englishScore, setEnglishScore] = useState<string>("");
   const [isCgpa, setIsCgpa] = useState<boolean>(false);
   const [academicScore, setAcademicScore] = useState<string>("");
@@ -485,19 +563,37 @@ export default function EligibilityForm() {
           englishMatchesDirect = acceptsMoi;
           englishMatchesReach = acceptsMoi;
         } else {
-          // IELTS/PTE
+          // English test evaluation
           const reqStr = selectedLevel === 'UG'
             ? (uni.ug_ielts_pte || uni.ug_ielts_pte_req || uni.ielts_pte_req || "")
-            : (uni.pg_ielts_pte || uni.pg_ielts_pte_req || uni.ielts_pte_req || "")
+            : (uni.pg_ielts_pte || uni.pg_ielts_pte_req || uni.ielts_pte_req || "");
           
           if (englishScoreType === 'IELTS') {
             const reqIelts = parseIelts(reqStr);
             englishMatchesDirect = parsedUserEngScore >= reqIelts;
             englishMatchesReach = parsedUserEngScore >= (reqIelts - 0.5);
-          } else {
+          } else if (englishScoreType === 'PTE') {
             const reqPte = parsePte(reqStr);
             englishMatchesDirect = parsedUserEngScore >= reqPte;
             englishMatchesReach = parsedUserEngScore >= (reqPte - 5);
+          } else if (englishScoreType === 'TOEFL') {
+            const reqToefl = parseToefl(reqStr, selectedLevel === 'UG' ? uni.ug_toefl : uni.pg_toefl);
+            englishMatchesDirect = parsedUserEngScore >= reqToefl;
+            englishMatchesReach = parsedUserEngScore >= (reqToefl - 10);
+          } else if (englishScoreType === 'DUOLINGO') {
+            const reqDuolingo = parseDuolingo(reqStr, selectedLevel === 'UG' ? uni.ug_duolingo : uni.pg_duolingo);
+            englishMatchesDirect = parsedUserEngScore >= reqDuolingo;
+            englishMatchesReach = parsedUserEngScore >= (reqDuolingo - 10);
+          }
+        }
+
+        // German language level requirement check if applicable
+        const reqGerman = selectedLevel === 'UG' ? (uni.ug_german || "") : (uni.pg_german || "");
+        if (reqGerman && reqGerman !== "None") {
+          const reqRank = GERMAN_LEVEL_RANK[reqGerman] || 0;
+          const userRank = GERMAN_LEVEL_RANK[germanLevel] || 0;
+          if (userRank < reqRank) {
+            englishMatchesDirect = false;
           }
         }
 
@@ -542,6 +638,8 @@ export default function EligibilityForm() {
     setSelectedCountry(null);
     setSelectedLevel(null);
     setEnglishType(null);
+    setEnglishScoreType('IELTS');
+    setGermanLevel("");
     setEnglishScore("");
     setAcademicScore("");
     setMatchingUnis([]);
@@ -725,8 +823,8 @@ export default function EligibilityForm() {
                   <Globe className="w-8 h-8" />
                 </div>
                 <div>
-                  <h3 className="font-bold text-slate-800 text-lg font-display">IELTS / PTE Academic</h3>
-                  <p className="text-sm text-slate-700 font-sans font-medium mt-1">Input your overall test score to evaluate specific university thresholds</p>
+                  <h3 className="font-bold text-slate-800 text-lg font-display">English Proficiency Test</h3>
+                  <p className="text-sm text-slate-700 font-sans font-medium mt-1">IELTS, PTE, TOEFL iBT, or Duolingo English Test (DET)</p>
                 </div>
               </button>
             </div>
@@ -760,46 +858,97 @@ export default function EligibilityForm() {
                 <div className="space-y-4 bg-slate-50 p-6 rounded-2xl border border-slate-100">
                   <label className="text-xs sm:text-sm font-extrabold text-slate-900 uppercase tracking-wider font-sans block">Select English Test & Score</label>
                   
-                  <div className="flex gap-2">
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
                     <button
                       type="button"
                       onClick={() => { setEnglishScoreType('IELTS'); setEnglishScore(""); }}
-                      className={`flex-1 py-2 rounded-xl text-xs font-bold transition-all ${
+                      className={`py-2 px-1 rounded-xl text-[11px] font-bold transition-all ${
                         englishScoreType === 'IELTS'
                           ? "bg-accent-blue text-white shadow-sm"
                           : "bg-white border border-slate-200 text-slate-700 hover:bg-slate-100"
                       }`}
                     >
-                      IELTS Academic
+                      IELTS
                     </button>
                     <button
                       type="button"
                       onClick={() => { setEnglishScoreType('PTE'); setEnglishScore(""); }}
-                      className={`flex-1 py-2 rounded-xl text-xs font-bold transition-all ${
+                      className={`py-2 px-1 rounded-xl text-[11px] font-bold transition-all ${
                         englishScoreType === 'PTE'
                           ? "bg-accent-blue text-white shadow-sm"
                           : "bg-white border border-slate-200 text-slate-700 hover:bg-slate-100"
                       }`}
                     >
-                      PTE Academic
+                      PTE
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => { setEnglishScoreType('TOEFL'); setEnglishScore(""); }}
+                      className={`py-2 px-1 rounded-xl text-[11px] font-bold transition-all ${
+                        englishScoreType === 'TOEFL'
+                          ? "bg-accent-blue text-white shadow-sm"
+                          : "bg-white border border-slate-200 text-slate-700 hover:bg-slate-100"
+                      }`}
+                    >
+                      TOEFL
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => { setEnglishScoreType('DUOLINGO'); setEnglishScore(""); }}
+                      className={`py-2 px-1 rounded-xl text-[11px] font-bold transition-all ${
+                        englishScoreType === 'DUOLINGO'
+                          ? "bg-accent-blue text-white shadow-sm"
+                          : "bg-white border border-slate-200 text-slate-700 hover:bg-slate-100"
+                      }`}
+                    >
+                      Duolingo
                     </button>
                   </div>
 
                   <div className="space-y-1.5">
                     <label htmlFor="english-score" className="text-xs text-slate-800 uppercase tracking-wider font-bold block">
-                      {englishScoreType === 'IELTS' ? "Overall IELTS Band Score (e.g. 6.5)" : "Overall PTE Academic Score (e.g. 58)"}
+                      {englishScoreType === 'IELTS' && "Overall IELTS Band Score (e.g. 6.5, max 9.0)"}
+                      {englishScoreType === 'PTE' && "Overall PTE Academic Score (e.g. 58, max 90)"}
+                      {englishScoreType === 'TOEFL' && "Overall TOEFL iBT Score (e.g. 79, max 120)"}
+                      {englishScoreType === 'DUOLINGO' && "Overall Duolingo DET Score (e.g. 115, max 160)"}
                     </label>
                     <input
                       id="english-score"
                       type="text"
                       inputMode="decimal"
                       value={englishScore}
-                      onChange={(e) => setEnglishScore(validateScoreInput(e.target.value))}
-                      placeholder={englishScoreType === 'IELTS' ? "6.5" : "58"}
+                      onChange={(e) => setEnglishScore(validateEnglishScoreInput(e.target.value, englishScoreType))}
+                      placeholder={
+                        englishScoreType === 'IELTS' ? "6.5" :
+                        englishScoreType === 'PTE' ? "58" :
+                        englishScoreType === 'TOEFL' ? "79" : "115"
+                      }
                       required
                       className="w-full bg-white border border-slate-200 rounded-xl px-4 py-2.5 text-sm text-slate-800 placeholder-slate-400 focus:outline-none focus:border-accent-blue focus:ring-1 focus:ring-accent-blue"
                     />
                   </div>
+
+                  {(selectedCountry === "de" || selectedCountry === "eu" || selectedCountry === "ch") && (
+                    <div className="space-y-1.5 mt-3 pt-3 border-t border-slate-200">
+                      <label htmlFor="german-level" className="text-xs text-slate-800 uppercase tracking-wider font-bold block">
+                        🇩🇪 German Language Level (Optional Add-on)
+                      </label>
+                      <select
+                        id="german-level"
+                        value={germanLevel}
+                        onChange={(e) => setGermanLevel(e.target.value)}
+                        className="w-full bg-white border border-slate-200 rounded-xl px-4 py-2 text-xs font-semibold text-slate-800 focus:outline-none focus:border-accent-blue focus:ring-1 focus:ring-accent-blue cursor-pointer"
+                      >
+                        <option value="">None / English Taught Program</option>
+                        <option value="A1">A1 Beginner</option>
+                        <option value="A2">A2 Elementary</option>
+                        <option value="B1">B1 Intermediate</option>
+                        <option value="B2">B2 Upper Intermediate</option>
+                        <option value="C1">C1 Advanced</option>
+                        <option value="C2">C2 Mastery</option>
+                      </select>
+                    </div>
+                  )}
                 </div>
               )}
 

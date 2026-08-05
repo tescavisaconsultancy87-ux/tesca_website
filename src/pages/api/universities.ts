@@ -36,11 +36,17 @@ export const GET: APIRoute = async ({ request }) => {
       ug_intakes: u.ug_intakes || u.ug_intake || u.intake || "",
       ug_ielts_pte: u.ug_ielts_pte || u.ug_ielts_pte_req || u.ielts_pte_req || "",
       ug_moi: u.ug_moi || u.ug_moi_accepted || u.moi_accepted || "",
+      ug_toefl: u.ug_toefl || "",
+      ug_duolingo: u.ug_duolingo || "",
+      ug_german: u.ug_german || "",
       ug_courses: u.ug_courses || u.courses || "",
       pg_tuition_fees: u.pg_tuition_fees || u.pg_fees || "",
       pg_intakes: u.pg_intakes || u.pg_intake || "",
       pg_ielts_pte: u.pg_ielts_pte || u.pg_ielts_pte_req || "",
       pg_moi: u.pg_moi || u.pg_moi_accepted || "",
+      pg_toefl: u.pg_toefl || "",
+      pg_duolingo: u.pg_duolingo || "",
+      pg_german: u.pg_german || "",
       pg_courses: u.pg_courses || ""
     }));
 

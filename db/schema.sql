@@ -29,10 +29,16 @@ CREATE TABLE universities (
     ug_intakes TEXT, -- new field
     ug_ielts_pte TEXT, -- new field
     ug_moi TEXT, -- new field
+    ug_toefl TEXT, -- new field
+    ug_duolingo TEXT, -- new field
+    ug_german TEXT, -- new field
     pg_tuition_fees TEXT, -- new field
     pg_intakes TEXT, -- new field
     pg_ielts_pte TEXT, -- new field
-    pg_moi TEXT -- new field
+    pg_moi TEXT, -- new field
+    pg_toefl TEXT, -- new field
+    pg_duolingo TEXT, -- new field
+    pg_german TEXT -- new field
 );
 
 -- 2. Success Stories Table
