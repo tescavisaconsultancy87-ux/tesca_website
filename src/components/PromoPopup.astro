@@ -63,7 +63,7 @@
             id: 999,
             title: "Test Popup Slide 1",
             subtitle: "Visual validation popup.",
-            image_url: "/images/Hero/main1.webp",
+            image_url: "/images/Hero/main.webp",
             button_text: "Enquire Now",
             delay_seconds: 2,
             is_active: true
@@ -229,7 +229,6 @@
 
   document.addEventListener("astro:page-load", handlePromoInit);
   if (!hasTriggered && !window.location.pathname.toLowerCase().includes("review-generator")) {
-    hasTriggered = true;
     if (document.readyState === 'complete' || document.readyState === 'interactive') {
       initPromoPopup();
     } else {
