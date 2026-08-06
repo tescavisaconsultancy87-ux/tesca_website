@@ -88,8 +88,10 @@
         const activeClasses = idx === 0 
           ? "relative block opacity-100 z-10" 
           : "absolute inset-0 opacity-0 pointer-events-none z-0";
+        const redirectAttr = p.redirect_to_link ? 'true' : 'false';
+        const linkUrlAttr = p.link_url ? p.link_url.replace(/"/g, '&quot;') : '';
         return `
-          <div class="promo-slide w-full h-auto transition-all duration-300 cursor-pointer ${activeClasses}" data-index="${idx}" data-popup-id="${p.id}">
+          <div class="promo-slide w-full h-auto transition-all duration-300 cursor-pointer ${activeClasses}" data-index="${idx}" data-popup-id="${p.id}" data-redirect="${redirectAttr}" data-link-url="${linkUrlAttr}">
             <img src="${p.image_url}" alt="${p.title}" class="w-full h-auto block pointer-events-none select-none" />
           </div>
         `;
@@ -158,14 +160,26 @@
         nextBtn?.addEventListener("click", () => updateSlider(currentIdx + 1));
       }
 
-      // Slide click listener - navigate to the dedicated promo landing page
+      // Slide click listener - navigate to custom link if configured or default to dedicated promo landing page
       container.addEventListener("click", (e) => {
         const target = e.target as HTMLElement;
         const slide = target.closest(".promo-slide");
         if (slide) {
           const popupId = slide.getAttribute("data-popup-id");
+          const isRedirect = slide.getAttribute("data-redirect") === "true";
+          const linkUrl = slide.getAttribute("data-link-url")?.trim();
+
           closePopup();
-          window.location.href = `/promo/${popupId}`;
+
+          if (isRedirect && linkUrl) {
+            let finalUrl = linkUrl;
+            if (!finalUrl.startsWith("http://") && !finalUrl.startsWith("https://") && !finalUrl.startsWith("/")) {
+              finalUrl = "https://" + finalUrl;
+            }
+            window.location.href = finalUrl;
+          } else {
+            window.location.href = `/promo/${popupId}`;
+          }
         }
       });
 

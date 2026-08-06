@@ -54,6 +54,7 @@ if (Astro.request.method === "POST") {
       const id = formData.get("id")?.toString();
       const is_active = formData.get("is_active") === "true";
       const lead_capture_enabled = formData.get("lead_capture_enabled") === "true";
+      const redirect_to_link = formData.get("redirect_to_link") === "true";
       const required_fields_raw = formData.getAll("required_fields");
       const final_required_fields = ["name", "phone"];
       if (required_fields_raw.includes("email")) {
@@ -83,6 +84,10 @@ if (Astro.request.method === "POST") {
         throw new Error("Popup Photo / Image is required.");
       }
 
+      if (redirect_to_link && !link_url) {
+        throw new Error("Custom Redirect Link URL is required when redirect toggle is ON.");
+      }
+
       if (action === "edit-popup") {
         if (!id) throw new Error("Popup ID is required for editing.");
         const { error } = await supabase
@@ -95,6 +100,7 @@ if (Astro.request.method === "POST") {
             delay_seconds,
             button_text,
             link_url,
+            redirect_to_link,
             lead_capture_enabled,
             required_fields,
             updated_at: new Date().toISOString()
@@ -113,6 +119,7 @@ if (Astro.request.method === "POST") {
             delay_seconds,
             button_text,
             link_url,
+            redirect_to_link,
             lead_capture_enabled,
             required_fields
           });
@@ -122,7 +129,7 @@ if (Astro.request.method === "POST") {
     }
   } catch (err: any) {
     console.error("Action error on admin/popup page:", err);
-    errorMessage = "Action failed. Please try again.";
+    errorMessage = err?.message || "Action failed. Please try again.";
   }
 }
 
@@ -205,6 +212,42 @@ try {
                 />
                 <div class="w-10 h-6 bg-slate-200 rounded-full peer peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-0.5 after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-indigo-600"></div>
               </label>
+            </div>
+
+            {/* Redirect to Custom Link Toggle Switch */}
+            <div class="flex items-center justify-between p-3.5 bg-slate-50 border border-slate-200/65 rounded-xl">
+              <div class="space-y-0.5">
+                <span class="block text-xs font-bold text-slate-700">Redirect to Custom Link</span>
+                <span class="block text-[10px] text-slate-450 font-normal">Redirect user to external/custom link when popup is clicked.</span>
+              </div>
+              <label class="relative inline-flex items-center cursor-pointer select-none">
+                <input 
+                  type="checkbox" 
+                  id="redirect_to_link_toggle" 
+                  class="sr-only peer"
+                />
+                <input 
+                  type="hidden" 
+                  name="redirect_to_link" 
+                  id="redirect_to_link_value" 
+                  value="false" 
+                />
+                <div class="w-10 h-6 bg-slate-200 rounded-full peer peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-0.5 after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-indigo-600"></div>
+              </label>
+            </div>
+
+            {/* Custom Link URL Input Field */}
+            <div id="custom-link-container" class="space-y-1.5 p-3.5 bg-slate-50 border border-slate-200/65 rounded-xl hidden">
+              <label for="link-url" class="text-[10px] text-slate-500 uppercase tracking-wide">Custom Redirect Link / URL *</label>
+              <input 
+                type="text" 
+                id="link-url" 
+                name="link_url" 
+                class="w-full px-3 py-2.5 rounded-lg border border-slate-200 bg-white text-slate-800 focus:outline-none focus:ring-1 focus:ring-indigo-500 font-sans text-xs" 
+                placeholder="e.g. https://example.com/register or /study-uk" 
+                value="" 
+              />
+              <span class="block text-[10px] text-slate-450 font-normal">Clicking the popup will open this URL instead of the lead form page.</span>
             </div>
 
             {/* Capture Leads Toggle Switch */}
@@ -359,10 +402,19 @@ try {
                       <div class="min-w-0 text-left">
                         <p class="text-xs font-bold text-slate-850 truncate">{p.title}</p>
                         <p class="text-[10px] text-slate-500 truncate mt-0.5">{p.subtitle}</p>
-                        <div class="flex items-center gap-2 mt-1">
+                        <div class="flex items-center gap-2 mt-1 flex-wrap">
                           <span class={`text-[8px] font-extrabold uppercase px-2 py-0.5 rounded-full border ${p.is_active ? 'bg-emerald-50 text-emerald-700 border-emerald-200' : 'bg-slate-100 text-slate-500 border-slate-200'}`}>
                             {p.is_active ? 'Active' : 'Inactive'}
                           </span>
+                          {p.redirect_to_link ? (
+                            <span class="text-[8px] font-extrabold uppercase px-2 py-0.5 rounded-full bg-blue-50 text-blue-700 border border-blue-200 truncate max-w-[160px]" title={p.link_url}>
+                              Link: {p.link_url || 'Custom Link'}
+                            </span>
+                          ) : (
+                            <span class="text-[8px] font-extrabold uppercase px-2 py-0.5 rounded-full bg-purple-50 text-purple-700 border border-purple-200">
+                              Lead Form Page
+                            </span>
+                          )}
                           <span class="text-[9px] text-slate-400 font-medium">{p.delay_seconds}s delay</span>
                         </div>
                       </div>
@@ -503,6 +555,26 @@ try {
       }
     });
 
+    const redirectToggle = document.getElementById("redirect_to_link_toggle") as HTMLInputElement;
+    const redirectValue = document.getElementById("redirect_to_link_value") as HTMLInputElement;
+    const customLinkContainer = document.getElementById("custom-link-container");
+    const linkUrlInput = document.getElementById("link-url") as HTMLInputElement;
+
+    redirectToggle?.addEventListener("change", () => {
+      if (redirectValue) {
+        redirectValue.value = redirectToggle.checked ? "true" : "false";
+      }
+      if (customLinkContainer) {
+        if (redirectToggle.checked) {
+          customLinkContainer.classList.remove("hidden");
+          if (linkUrlInput) linkUrlInput.required = true;
+        } else {
+          customLinkContainer.classList.add("hidden");
+          if (linkUrlInput) linkUrlInput.required = false;
+        }
+      }
+    });
+
     // Realtime preview sync
     const inputTitle = document.getElementById("popup-title") as HTMLInputElement;
     const previewTitle = document.getElementById("preview-title");
@@ -602,6 +674,13 @@ try {
             leadCaptureToggle.dispatchEvent(new Event("change"));
           }
           if (leadCaptureValue) leadCaptureValue.value = popup.lead_capture_enabled ? "true" : "false";
+
+          if (redirectToggle) {
+            redirectToggle.checked = !!popup.redirect_to_link;
+            redirectToggle.dispatchEvent(new Event("change"));
+          }
+          if (redirectValue) redirectValue.value = popup.redirect_to_link ? "true" : "false";
+          if (linkUrlInput) linkUrlInput.value = popup.link_url || "";
           
           const reqEmailCheckbox = document.getElementById("req_field_email") as HTMLInputElement;
           if (reqEmailCheckbox) {
@@ -671,6 +750,11 @@ try {
         leadCaptureToggle.checked = false;
         leadCaptureToggle.dispatchEvent(new Event("change"));
       }
+      if (redirectToggle) {
+        redirectToggle.checked = false;
+        redirectToggle.dispatchEvent(new Event("change"));
+      }
+      if (linkUrlInput) linkUrlInput.value = "";
       const reqEmailCheckbox = document.getElementById("req_field_email") as HTMLInputElement;
       if (reqEmailCheckbox) reqEmailCheckbox.checked = false;
       if (imageUrlHidden) imageUrlHidden.value = "";
