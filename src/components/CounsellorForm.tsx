@@ -1,6 +1,8 @@
 import React, { useState, useEffect, useRef, useMemo, useCallback, memo } from "react";
 import { X, Phone, Mail, User, Globe, CheckCircle, AlertCircle, Loader2, ChevronDown } from "lucide-react";
 import IOSPicker from "./IOSPicker";
+import AirplaneIcon from "./icons/AirplaneIcon";
+import type { AnimatedIconHandle } from "./icons/types";
 
 const COUNTRIES = [
   { value: "Australia", label: "Australia", flag: "au" },
@@ -73,6 +75,7 @@ export default function CounsellorForm() {
   const [status, setStatus] = useState<"idle" | "sending" | "success" | "failed">("idle");
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [submitError, setSubmitError] = useState("");
+  const airplaneRef = useRef<AnimatedIconHandle>(null);
   const [showSlotPicker, setShowSlotPicker] = useState(false);
   const [selectedDate, setSelectedDate] = useState("");
   const [selectedTime, setSelectedTime] = useState("");
@@ -904,7 +907,9 @@ export default function CounsellorForm() {
                     <button
                       type="submit"
                       disabled={status === "sending" || !firstName.trim() || !lastName.trim() || !email.trim() || !phone.trim() || !mode || !visaType}
-                      className="w-full py-3 bg-[#F08A00] hover:bg-[#C06E00] disabled:bg-[#F08A00]/60 disabled:cursor-not-allowed text-white font-semibold text-sm rounded-xl shadow-md hover:scale-[1.01] disabled:scale-100 transition-all duration-200 cursor-pointer font-sans tracking-wide mt-2 flex items-center justify-center gap-2"
+                      className="w-full py-3 bg-[#F08A00] hover:bg-[#C06E00] disabled:bg-[#F08A00]/60 disabled:cursor-not-allowed text-white font-semibold text-sm rounded-xl shadow-md hover:scale-[1.01] disabled:scale-100 transition-all duration-200 cursor-pointer font-sans tracking-wide mt-2 flex items-center justify-center gap-2 group"
+                      onMouseEnter={() => airplaneRef.current?.startAnimation()}
+                      onMouseLeave={() => airplaneRef.current?.stopAnimation()}
                     >
                       {status === "sending" ? (
                         <>
@@ -912,7 +917,10 @@ export default function CounsellorForm() {
                           Sending...
                         </>
                       ) : (
-                        "Submit Enquiry"
+                        <>
+                          <span>Submit Enquiry</span>
+                          <AirplaneIcon ref={airplaneRef} size={18} className="text-white" />
+                        </>
                       )}
                     </button>
 

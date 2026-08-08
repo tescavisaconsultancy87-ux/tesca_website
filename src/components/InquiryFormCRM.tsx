@@ -4,6 +4,8 @@ import {
   Mail, Calendar, MapPin, GraduationCap, Info, Lock, X, 
   AlertCircle, CheckCircle, Clock, MessageSquare, Shield, Loader2, Globe, ChevronDown, RotateCcw, Trash2
 } from "lucide-react";
+import AirplaneIcon from "./icons/AirplaneIcon";
+import type { AnimatedIconHandle } from "./icons/types";
 
 // Types
 interface FormData {
@@ -168,6 +170,7 @@ export default function InquiryFormCRM() {
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
+  const airplaneRef = useRef<AnimatedIconHandle>(null);
 
   // Phone Country Code Selector
   const [phoneCountry, setPhoneCountry] = useState("IN");
@@ -1524,7 +1527,9 @@ Comments/Additional Info: ${formData.comments || "None"}`;
               type="button"
               onClick={handleSubmit}
               disabled={isSubmitting}
-              className="px-7 py-3 bg-[#F08A00] hover:bg-[#C06E00] disabled:bg-[#F08A00]/60 text-white font-bold text-xs uppercase tracking-wider rounded-full flex items-center gap-1.5 transition-all cursor-pointer shadow-md disabled:cursor-not-allowed"
+              className="px-7 py-3 bg-[#F08A00] hover:bg-[#C06E00] disabled:bg-[#F08A00]/60 text-white font-bold text-xs uppercase tracking-wider rounded-full flex items-center gap-2 transition-all cursor-pointer shadow-md disabled:cursor-not-allowed group"
+              onMouseEnter={() => airplaneRef.current?.startAnimation()}
+              onMouseLeave={() => airplaneRef.current?.stopAnimation()}
             >
               {isSubmitting ? (
                 <>
@@ -1532,7 +1537,8 @@ Comments/Additional Info: ${formData.comments || "None"}`;
                 </>
               ) : (
                 <>
-                  🚀 Submit Inquiry
+                  <span>Submit Inquiry</span>
+                  <AirplaneIcon ref={airplaneRef} size={18} className="text-white" />
                 </>
               )}
             </button>
