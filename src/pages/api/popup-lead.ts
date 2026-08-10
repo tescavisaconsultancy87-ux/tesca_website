@@ -6,7 +6,7 @@ import { reportServerError, getClientIP, checkRateLimit, jsonResponse, rateLimit
 import { runInBackground } from '../../utils/background';
 
 const RATE_LIMIT_WINDOW_MS = 10 * 60 * 1000;
-const RATE_LIMIT_MAX = 5; // Allow max 5 submissions per 10 mins per IP
+const RATE_LIMIT_MAX = 30; // Allow max 30 submissions per 10 mins per IP
 
 export const POST: APIRoute = async ({ request, locals }) => {
   const oversized = rejectOversizedJson(request);

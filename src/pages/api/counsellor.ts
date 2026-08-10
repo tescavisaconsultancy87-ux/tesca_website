@@ -8,7 +8,7 @@ import { counsellorBookingEmail } from '../../utils/emailTemplates';
 import { runInBackground } from '../../utils/background';
 
 const RATE_LIMIT_WINDOW_MS = 10 * 60 * 1000;
-const RATE_LIMIT_MAX = 8;
+const RATE_LIMIT_MAX = 30;
 const createBookingToken = (): string => {
   const bytes = new Uint8Array(32);
   crypto.getRandomValues(bytes);

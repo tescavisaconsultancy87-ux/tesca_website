@@ -8,7 +8,7 @@ import { runInBackground } from '../../utils/background';
 import { reportServerError, getClientIP, checkRateLimit, jsonResponse, rateLimitResponse, rejectOversizedJson } from '../../utils/security';
 
 const RATE_LIMIT_WINDOW_MS = 10 * 60 * 1000;
-const RATE_LIMIT_MAX = 5;
+const RATE_LIMIT_MAX = 30;
 
 export const POST: APIRoute = async ({ request, locals }) => {
   const oversized = rejectOversizedJson(request);
