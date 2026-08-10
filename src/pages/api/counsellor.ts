@@ -384,33 +384,6 @@ export const POST: APIRoute = async ({ request, locals }) => {
       runInBackground(locals, () => fetch(`${googleSheetUrl}?${params.toString()}`, { method: "GET" }), "google-sheets-counsellor");
     }
 
-    // Send user confirmation email if email provided
-    if (cleanEmail) {
-      const { subject, html } = counsellorBookingEmail({
-        firstName: cleanFirstName,
-        lastName: cleanLastName,
-        phone: cleanPhone,
-        email: cleanEmail,
-        mode: cleanMode,
-        destination: cleanDestination,
-        visaType: cleanVisaType,
-      });
-      runInBackground(locals, () => sendMail({ to: cleanEmail, subject, html }), "counsellor-initial-user-email");
-    }
-
-    // Send admin notification email
-    const adminEmail = getEnv('OWNER_EMAIL') || getEnv('GMAIL_USER') || "tescavisaconsultancy87@gmail.com";
-    const { subject: adminSubj, html: adminHtml } = counsellorAdminNotificationEmail({
-      name: fullName,
-      email: cleanEmail || undefined,
-      phone: cleanPhone,
-      mode: cleanMode,
-      visaType: cleanVisaType,
-      destination: cleanDestination,
-      leadId: insertedData?.id,
-    });
-    runInBackground(locals, () => sendMail({ to: adminEmail, subject: adminSubj, html: adminHtml }), "counsellor-initial-admin-email");
-
     return jsonResponse({
       success: true,
       leadId: insertedData?.id || null,
