@@ -406,21 +406,32 @@ try {
     }
   }
 
-  async function handleResponse(res: Response, successMsg: string) {
+  async function handleResponse(res: Response, successMsg: string, targetRow?: HTMLElement | null) {
     if (res.ok) {
-      const htmlText = await res.text();
-      const parser = new DOMParser();
-      const doc = parser.parseFromString(htmlText, "text/html");
-      const errorBanner = doc.querySelector(".admin-alert-banner.bg-rose-50");
-      if (errorBanner) {
-        alert("Error: " + errorBanner.textContent.trim());
-        return false;
+      if (targetRow) {
+        targetRow.style.transition = "all 0.3s ease";
+        targetRow.style.opacity = "0";
+        targetRow.style.transform = "scale(0.95)";
+        setTimeout(() => targetRow.remove(), 300);
+      } else {
+        const htmlText = await res.text();
+        const parser = new DOMParser();
+        const doc = parser.parseFromString(htmlText, "text/html");
+        const errorBanner = doc.querySelector(".admin-alert-banner.bg-rose-50");
+        if (errorBanner) {
+          alert("Error: " + errorBanner.textContent.trim());
+          return false;
+        }
+        const currentContainer = document.querySelector("main");
+        const newContainer = doc.querySelector("main");
+        if (currentContainer && newContainer) {
+          currentContainer.innerHTML = newContainer.innerHTML;
+          setupGalleryEdit();
+        }
       }
-      sessionStorage.setItem("admin_alert", JSON.stringify({
-        type: "success",
-        message: successMsg
-      }));
-      window.location.href = window.location.href;
+      if ((window as any).showToast) {
+        (window as any).showToast(successMsg, "success");
+      }
       return true;
     }
     alert("Request failed. Please try again.");
