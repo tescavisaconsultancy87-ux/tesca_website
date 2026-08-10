@@ -3,6 +3,7 @@ import Layout from "../../layouts/Layout.astro";
 import AdminHeader from "../../components/AdminHeader.astro";
 import { checkAdminAuth } from "../../utils/adminAuth";
 import { supabase } from "../../utils/supabase";
+import { getEnv } from "../../utils/env";
 // Inline SVG helpers — no lucide-react in .astro (SSR hook errors)
 const _s = (d: string) => `<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${d}</svg>`;
 const SVG = {
@@ -25,6 +26,72 @@ let leads = [];
 let successMessage = "";
 let errorMessage = "";
 
+// Release a booked slot on Google Calendar when a lead is removed or its booking becomes inactive.
+// Best-effort: never throws, so lead deletion always proceeds even if the calendar call fails.
+async function releaseBookedSlot(leadId: number): Promise<void> {
+  try {
+    const { data: lead } = await supabase
+      .from('leads')
+      .select('status, details')
+      .eq('id', leadId)
+      .single();
+
+    if (!lead || lead.status !== 'booked') return;
+
+    let details: any = {};
+    if (lead.details) {
+      try {
+        details = typeof lead.details === 'string' ? JSON.parse(lead.details) : lead.details;
+      } catch (e) {
+        details = {};
+      }
+    }
+
+    const selectedDate = details.selectedDate;
+    const selectedTime = details.selectedTime;
+    if (!selectedDate || !selectedTime) return;
+
+    const googleSheetUrl = getEnv('GOOGLE_SHEET_URL') || import.meta.env.GOOGLE_SHEET_URL;
+    if (!googleSheetUrl) {
+      console.warn("[admin-leads] GOOGLE_SHEET_URL not set — cannot release calendar slot for lead", leadId);
+      return;
+    }
+
+    const params = new URLSearchParams({
+      action: "cancelSlot",
+      date: selectedDate,
+      time: selectedTime,
+      reason: "Booking released from admin panel"
+    });
+
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 8000);
+    let res: Response;
+    try {
+      res = await fetch(`${googleSheetUrl}?${params.toString()}`, { signal: controller.signal });
+    } finally {
+      clearTimeout(timeout);
+    }
+    if (!res.ok) {
+      console.warn(`[admin-leads] cancelSlot returned status ${res.status} for lead`, leadId);
+      return;
+    }
+    const text = await res.text();
+    let data: any;
+    try {
+      data = JSON.parse(text);
+    } catch (e) {
+      console.warn("[admin-leads] cancelSlot returned non-JSON response:", text.slice(0, 200));
+      return;
+    }
+    if (!data.success) {
+      console.warn("[admin-leads] cancelSlot failed:", data.error);
+    }
+  } catch (err) {
+    console.warn("[admin-leads] Failed to release booked slot:", err);
+  }
+}
+
 // Handle server actions (e.g. delete lead, update status)
 if (Astro.request.method === "POST") {
   try {
@@ -33,6 +100,10 @@ if (Astro.request.method === "POST") {
 
     if (action === "delete-lead") {
       const id = formData.get("id")?.toString() || "";
+      const leadId = parseInt(id, 10);
+      if (!isNaN(leadId)) {
+        await releaseBookedSlot(leadId);
+      }
       const { error } = await supabase
         .from('leads')
         .delete()
@@ -45,6 +116,12 @@ if (Astro.request.method === "POST") {
       const ids = idsStr.split(",").map(id => id.trim()).filter(id => id);
       
       if (ids.length > 0) {
+        for (const rawId of ids) {
+          const leadId = parseInt(rawId, 10);
+          if (!isNaN(leadId)) {
+            await releaseBookedSlot(leadId);
+          }
+        }
         const { error } = await supabase
           .from('leads')
           .delete()
@@ -63,6 +140,12 @@ if (Astro.request.method === "POST") {
         throw new Error("Invalid lead status.");
       }
       const completionReason = formData.get("completion_reason")?.toString().trim();
+
+      // If the lead is currently booked and its status is changing, release its calendar slot
+      const leadId = parseInt(id, 10);
+      if (!isNaN(leadId)) {
+        await releaseBookedSlot(leadId);
+      }
       
       if (status === "completed" && completionReason) {
         // Fetch current details JSON
@@ -599,21 +682,32 @@ try {
     });
   }
 
-  async function handleResponse(res: Response, successMsg: string) {
+  async function handleResponse(res: Response, successMsg: string, targetRow?: HTMLElement | null) {
     if (res.ok) {
-      const htmlText = await res.text();
-      const parser = new DOMParser();
-      const doc = parser.parseFromString(htmlText, "text/html");
-      const errorBanner = doc.querySelector(".admin-alert-banner.bg-rose-50");
-      if (errorBanner) {
-        alert("Error: " + errorBanner.textContent.trim());
-        return false;
+      if (targetRow) {
+        targetRow.style.transition = "all 0.3s ease";
+        targetRow.style.opacity = "0";
+        targetRow.style.transform = "scale(0.95)";
+        setTimeout(() => targetRow.remove(), 300);
+      } else {
+        const htmlText = await res.text();
+        const parser = new DOMParser();
+        const doc = parser.parseFromString(htmlText, "text/html");
+        const errorBanner = doc.querySelector(".admin-alert-banner.bg-rose-50");
+        if (errorBanner) {
+          alert("Error: " + errorBanner.textContent.trim());
+          return false;
+        }
+        const currentContainer = document.querySelector("#leads-table-container") || document.querySelector("main");
+        const newContainer = doc.querySelector("#leads-table-container") || doc.querySelector("main");
+        if (currentContainer && newContainer) {
+          currentContainer.innerHTML = newContainer.innerHTML;
+          setupLeadsPage();
+        }
       }
-      sessionStorage.setItem("admin_alert", JSON.stringify({
-        type: "success",
-        message: successMsg
-      }));
-      window.location.href = window.location.href;
+      if ((window as any).showToast) {
+        (window as any).showToast(successMsg, "success");
+      }
       return true;
     }
     alert("Request failed. Please try again.");
