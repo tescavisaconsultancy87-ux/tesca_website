@@ -4,7 +4,7 @@ import { validateEmail, validatePhone, validateName, sanitizeText } from '../../
 import { reportServerError, getClientIP, checkRateLimit, jsonResponse, rateLimitResponse, rejectOversizedJson } from '../../utils/security';
 import { getEnv } from '../../utils/env';
 import { sendMail } from '../../utils/mailer';
-import { inquiryConfirmationEmail } from '../../utils/emailTemplates';
+import { inquiryConfirmationEmail, inquiryAdminNotificationEmail } from '../../utils/emailTemplates';
 import { runInBackground } from '../../utils/background';
 import { forwardInquiryToCRM } from '../../utils/crmWebhook';
 
@@ -211,6 +211,18 @@ export const POST: APIRoute = async ({ request, locals }) => {
       });
       runInBackground(locals, () => sendMail({ to: cleanEmail, subject, html }), "inquiry-confirmation-email");
     }
+
+    // Send admin notification email
+    const adminEmail = getEnv('OWNER_EMAIL') || getEnv('GMAIL_USER') || "tescavisaconsultancy87@gmail.com";
+    const { subject: adminSubj, html: adminHtml } = inquiryAdminNotificationEmail({
+      name: cleanFullName,
+      email: cleanEmail || undefined,
+      phone: cleanMobile,
+      inquiryTypes: Array.isArray(cleanDetails.inquiryType) ? cleanDetails.inquiryType : [],
+      preferredCountries: cleanPreferredCountries,
+      leadId: insertedData?.id || cleanLeadId,
+    });
+    runInBackground(locals, () => sendMail({ to: adminEmail, subject: adminSubj, html: adminHtml }), "inquiry-admin-email");
 
     return jsonResponse({
       success: true,

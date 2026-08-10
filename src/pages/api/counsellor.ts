@@ -4,7 +4,7 @@ import { validateEmail, validatePhone, validateName, sanitizeText } from '../../
 import { getEnv } from '../../utils/env';
 import { reportServerError, getClientIP, checkRateLimit, jsonResponse, rateLimitResponse, rejectOversizedJson } from '../../utils/security';
 import { sendMail } from '../../utils/mailer';
-import { counsellorBookingEmail } from '../../utils/emailTemplates';
+import { counsellorBookingEmail, counsellorAdminNotificationEmail } from '../../utils/emailTemplates';
 import { runInBackground } from '../../utils/background';
 
 const RATE_LIMIT_WINDOW_MS = 10 * 60 * 1000;
@@ -236,6 +236,21 @@ export const POST: APIRoute = async ({ request, locals }) => {
         runInBackground(locals, () => sendMail({ to: lead.email, subject, html }), "counsellor-booking-email");
       }
 
+      // Send admin notification email
+      const adminEmail = getEnv('OWNER_EMAIL') || getEnv('GMAIL_USER') || "tescavisaconsultancy87@gmail.com";
+      const { subject: adminSubj, html: adminHtml } = counsellorAdminNotificationEmail({
+        name: lead.name || 'Student',
+        email: lead.email,
+        phone: lead.phone || '',
+        mode: details.mode,
+        visaType: details.visaType,
+        destination: details.destination,
+        bookingDate: selectedDate,
+        bookingTime: selectedTime,
+        leadId: leadId,
+      });
+      runInBackground(locals, () => sendMail({ to: adminEmail, subject: adminSubj, html: adminHtml }), "counsellor-booking-admin-email");
+
       return jsonResponse({
         success: true,
         message: "Slot booked successfully on Google Calendar and updated in database."
@@ -368,6 +383,33 @@ export const POST: APIRoute = async ({ request, locals }) => {
       });
       runInBackground(locals, () => fetch(`${googleSheetUrl}?${params.toString()}`, { method: "GET" }), "google-sheets-counsellor");
     }
+
+    // Send user confirmation email if email provided
+    if (cleanEmail) {
+      const { subject, html } = counsellorBookingEmail({
+        firstName: cleanFirstName,
+        lastName: cleanLastName,
+        phone: cleanPhone,
+        email: cleanEmail,
+        mode: cleanMode,
+        destination: cleanDestination,
+        visaType: cleanVisaType,
+      });
+      runInBackground(locals, () => sendMail({ to: cleanEmail, subject, html }), "counsellor-initial-user-email");
+    }
+
+    // Send admin notification email
+    const adminEmail = getEnv('OWNER_EMAIL') || getEnv('GMAIL_USER') || "tescavisaconsultancy87@gmail.com";
+    const { subject: adminSubj, html: adminHtml } = counsellorAdminNotificationEmail({
+      name: fullName,
+      email: cleanEmail || undefined,
+      phone: cleanPhone,
+      mode: cleanMode,
+      visaType: cleanVisaType,
+      destination: cleanDestination,
+      leadId: insertedData?.id,
+    });
+    runInBackground(locals, () => sendMail({ to: adminEmail, subject: adminSubj, html: adminHtml }), "counsellor-initial-admin-email");
 
     return jsonResponse({
       success: true,

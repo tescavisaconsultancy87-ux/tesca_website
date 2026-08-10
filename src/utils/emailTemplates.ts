@@ -838,3 +838,147 @@ export function partnerNotificationEmail({
     html: baseWrapper(content, `New partner registration from ${name} for the ${partnershipModel} program.`),
   };
 }
+
+// ─────────────────────────────────────────────────────────────────────────────
+// 8. COUNSELLOR / BOOKING ADMIN NOTIFICATION EMAIL
+// ─────────────────────────────────────────────────────────────────────────────
+export function counsellorAdminNotificationEmail({
+  name,
+  email,
+  phone,
+  mode,
+  visaType,
+  destination,
+  bookingDate,
+  bookingTime,
+  leadId,
+}: {
+  name: string;
+  email?: string;
+  phone: string;
+  mode?: string;
+  visaType?: string;
+  destination?: string;
+  bookingDate?: string;
+  bookingTime?: string;
+  leadId?: string | number;
+}) {
+  const isBookedSlot = !!(bookingDate && bookingTime);
+  const subject = isBookedSlot
+    ? `📅 CONSULTATION SLOT BOOKED: ${name} (${bookingDate} @ ${bookingTime})`
+    : `🔔 NEW CONSULTATION LEAD: ${name} (${visaType || 'Visa Advice'})`;
+
+  const content = `
+  ${header()}
+  <tr>
+    <td style="background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%); padding: 44px 40px 36px; text-align:left;" class="hero-section">
+      <div style="display:inline-block; background:rgba(240,138,0,0.18); border:1px solid rgba(240,138,0,0.5); border-radius:30px; padding:5px 16px; margin-bottom:16px;">
+        <span style="font-size:11px; font-weight:700; color:#fbbf24; letter-spacing:1.5px; text-transform:uppercase;">
+          ${isBookedSlot ? '📅 Slot Booked Alert' : '🔔 New Consultation Request'}
+        </span>
+      </div>
+      <h1 style="font-size:26px; font-weight:800; color:#ffffff; margin:0 0 10px; line-height:1.25;">
+        ${isBookedSlot ? `Slot Booked: ${name}` : `Consultation Request: ${name}`}
+      </h1>
+      <p style="font-size:14px; color:rgba(255,255,255,0.78); margin:0; line-height:1.65;">
+        ${isBookedSlot ? `A student has booked a consultation session slot on Google Calendar.` : `A new consultation request has been submitted on the website.`}
+      </p>
+      ${leadId ? `<div style="margin-top:12px; display:inline-block; background:rgba(255,255,255,0.1); border:1px solid rgba(255,255,255,0.2); border-radius:8px; padding:6px 14px;">
+        <span style="font-size:11px; font-weight:700; color:rgba(255,255,255,0.6);">Lead ID:</span>
+        <span style="font-size:12px; font-weight:800; color:#ffffff; font-family:monospace;">${leadId}</span>
+      </div>` : ''}
+    </td>
+  </tr>
+
+  <tr>
+    <td style="padding:32px 40px;" class="email-card">
+      <table width="100%" cellpadding="0" cellspacing="0" style="border:1.5px solid #e2e8f0; border-radius:14px; overflow:hidden;">
+        ${[
+          ['Student Name', name],
+          ['Phone Number', phone],
+          ['Email Address', email || 'Not provided'],
+          ['Counselling Mode', mode || 'Not specified'],
+          ['Visa Type', visaType || 'Not specified'],
+          ['Target Country', destination || 'Not specified'],
+          ...(isBookedSlot ? [
+            ['Booked Date', bookingDate],
+            ['Booked Time Slot', bookingTime],
+          ] : []),
+        ].map(([label, value], i) => `
+        <tr style="background:${i % 2 === 0 ? '#f8fafc' : '#ffffff'};">
+          <td style="padding:14px 20px; font-size:13px; font-weight:600; color:#475569; width:40%; border-bottom:1px solid #f1f5f9;">${label}</td>
+          <td style="padding:14px 20px; font-size:13px; font-weight:700; color:${BRAND_DARK}; border-bottom:1px solid #f1f5f9;">${value}</td>
+        </tr>`).join('')}
+      </table>
+    </td>
+  </tr>`;
+
+  return {
+    subject,
+    html: baseWrapper(content, `${name} has ${isBookedSlot ? `booked a slot for ${bookingDate} at ${bookingTime}` : `submitted a consultation request`}.`),
+  };
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// 9. INQUIRY ADMIN NOTIFICATION EMAIL
+// ─────────────────────────────────────────────────────────────────────────────
+export function inquiryAdminNotificationEmail({
+  name,
+  email,
+  phone,
+  inquiryTypes,
+  preferredCountries,
+  leadId,
+}: {
+  name: string;
+  email?: string;
+  phone: string;
+  inquiryTypes?: string[];
+  preferredCountries?: string[];
+  leadId?: string | number;
+}) {
+  const subject = `📩 NEW INQUIRY: ${name} (${(preferredCountries || [])[0] || 'Study Abroad'})`;
+
+  const content = `
+  ${header()}
+  <tr>
+    <td style="background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%); padding: 44px 40px 36px; text-align:left;" class="hero-section">
+      <div style="display:inline-block; background:rgba(240,138,0,0.18); border:1px solid rgba(240,138,0,0.5); border-radius:30px; padding:5px 16px; margin-bottom:16px;">
+        <span style="font-size:11px; font-weight:700; color:#fbbf24; letter-spacing:1.5px; text-transform:uppercase;">📩 New Inquiry Received</span>
+      </div>
+      <h1 style="font-size:26px; font-weight:800; color:#ffffff; margin:0 0 10px; line-height:1.25;">
+        Inquiry Submission: ${name}
+      </h1>
+      <p style="font-size:14px; color:rgba(255,255,255,0.78); margin:0; line-height:1.65;">
+        A student has submitted the main inquiry form on the website.
+      </p>
+      ${leadId ? `<div style="margin-top:12px; display:inline-block; background:rgba(255,255,255,0.1); border:1px solid rgba(255,255,255,0.2); border-radius:8px; padding:6px 14px;">
+        <span style="font-size:11px; font-weight:700; color:rgba(255,255,255,0.6);">Lead ID:</span>
+        <span style="font-size:12px; font-weight:800; color:#ffffff; font-family:monospace;">${leadId}</span>
+      </div>` : ''}
+    </td>
+  </tr>
+
+  <tr>
+    <td style="padding:32px 40px;" class="email-card">
+      <table width="100%" cellpadding="0" cellspacing="0" style="border:1.5px solid #e2e8f0; border-radius:14px; overflow:hidden;">
+        ${[
+          ['Full Name', name],
+          ['Phone Number', phone],
+          ['Email Address', email || 'Not provided'],
+          ['Inquiry Types', (inquiryTypes || []).join(', ') || 'Not specified'],
+          ['Preferred Countries', (preferredCountries || []).join(', ') || 'Not specified'],
+        ].map(([label, value], i) => `
+        <tr style="background:${i % 2 === 0 ? '#f8fafc' : '#ffffff'};">
+          <td style="padding:14px 20px; font-size:13px; font-weight:600; color:#475569; width:40%; border-bottom:1px solid #f1f5f9;">${label}</td>
+          <td style="padding:14px 20px; font-size:13px; font-weight:700; color:${BRAND_DARK}; border-bottom:1px solid #f1f5f9;">${value}</td>
+        </tr>`).join('')}
+      </table>
+    </td>
+  </tr>`;
+
+  return {
+    subject,
+    html: baseWrapper(content, `New inquiry submitted by ${name}.`),
+  };
+}
