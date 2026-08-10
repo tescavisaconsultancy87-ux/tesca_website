@@ -35,15 +35,16 @@ const ogImage = new URL(image, "https://tescavisa.com").href;
 // and local "near me" search for the Surat branches).
 const structuredData = {
 	"@context": "https://schema.org",
-	"@type": "EducationalOrganization",
+	"@type": ["EducationalOrganization", "LocalBusiness"],
 	name: "TESCA Visa Consultancy",
 	url: "https://tescavisa.com",
 	logo: "https://tescavisa.com/images/Tesca_logo.png",
 	image: "https://tescavisa.com/images/Tesca_logo.png",
-	description: "Study abroad, university admissions, IELTS/PTE coaching, education loan assistance and student-visa services since 2005.",
+	description: "Study abroad, university admissions, IELTS/PTE coaching, education loan assistance and student-visa services in Surat since 2005.",
 	foundingDate: "2005",
 	telephone: "+91-9824152731",
 	email: "tescavisaconsultancy87@gmail.com",
+	priceRange: "₹₹",
 	address: [
 		{
 			"@type": "PostalAddress",
@@ -60,6 +61,18 @@ const structuredData = {
 			addressRegion: "Gujarat",
 			postalCode: "394101",
 			addressCountry: "IN",
+		},
+	],
+	geo: [
+		{
+			"@type": "GeoCoordinates",
+			latitude: "21.2144",
+			longitude: "72.8885",
+		},
+		{
+			"@type": "GeoCoordinates",
+			latitude: "21.2335",
+			longitude: "72.8715",
 		},
 	],
 	sameAs: [
@@ -375,6 +388,12 @@ if (Astro.url.pathname.startsWith("/admin")) {
 		<meta name="twitter:title" content={title} />
 		<meta name="twitter:description" content={description} />
 		<meta name="twitter:image" content={ogImage} />
+
+		<!-- Local Geo Meta Tags (Surat, Gujarat, India) -->
+		<meta name="geo.region" content="IN-GJ" />
+		<meta name="geo.placename" content="Surat" />
+		<meta name="geo.position" content="21.2144;72.8885" />
+		<meta name="ICBM" content="21.2144, 72.8885" />
 
 		<!-- Structured data (Organization / local business) -->
 		<script type="application/ld+json" is:inline set:html={JSON.stringify(structuredData)} />
