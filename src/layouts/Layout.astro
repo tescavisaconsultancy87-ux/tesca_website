@@ -323,6 +323,7 @@ if (Astro.url.pathname.startsWith("/admin")) {
 					autocapture: true,
 					capture_pageview: false, // Explicitly managed for Astro View Transitions
 					capture_pageleave: true,  // Tracks exit rates and time on page
+					disable_session_recording: false,
 					enable_recording_console_log: true,
 					session_recording: {
 						maskAllInputs: false,
@@ -332,6 +333,7 @@ if (Astro.url.pathname.startsWith("/admin")) {
 					},
 					loaded: (ph) => {
 						(window as any).posthog = ph;
+						ph.startSessionRecording();
 					}
 				});
 				(window as any).posthog = posthog;
