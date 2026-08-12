@@ -132,6 +132,10 @@ if (Astro.url.pathname.startsWith("/admin")) {
 						form_name: source
 					});
 				}
+				if (window.posthog) {
+					window.posthog.capture('generate_lead', { source });
+					window.posthog.capture('consultation_form_submit', { form_name: source });
+				}
 			};
 
 			window.trackClickEvent = function(type, destination) {
@@ -140,6 +144,9 @@ if (Astro.url.pathname.startsWith("/admin")) {
 						event_category: 'engagement',
 						destination: destination
 					});
+				}
+				if (window.posthog) {
+					window.posthog.capture(type === 'whatsapp' ? 'whatsapp_click' : 'phone_call_click', { destination });
 				}
 			};
 
@@ -300,6 +307,65 @@ if (Astro.url.pathname.startsWith("/admin")) {
 				}
 				window.reportClientError('Unhandled Promise Rejection', event.reason);
 			});
+		</script>
+
+		<!-- PostHog Analytics, Heatmaps & A/B Testing Integration -->
+		<script>
+			import posthog from 'posthog-js';
+
+			const posthogKey = import.meta.env.PUBLIC_POSTHOG_KEY;
+			const posthogHost = import.meta.env.PUBLIC_POSTHOG_HOST || 'https://us.i.posthog.com';
+
+			if (posthogKey) {
+				posthog.init(posthogKey, {
+					api_host: posthogHost,
+					person_profiles: 'always',
+					autocapture: true,
+					capture_pageview: false, // Explicitly managed for Astro View Transitions
+					capture_pageleave: true,  // Tracks exit rates and time on page
+					enable_recording_console_log: true,
+					session_recording: {
+						maskAllInputs: false,
+						maskInputOptions: {
+							password: true,
+						},
+					},
+					loaded: (ph) => {
+						(window as any).posthog = ph;
+					}
+				});
+				(window as any).posthog = posthog;
+
+				// Scroll Depth & Page Navigation Tracking
+				let trackedThresholds = new Set<number>();
+
+				const trackScrollDepth = () => {
+					const scrollTop = window.scrollY || document.documentElement.scrollTop;
+					const docHeight = document.documentElement.scrollHeight - document.documentElement.clientHeight;
+					if (docHeight <= 0) return;
+					
+					const scrollPercent = Math.round((scrollTop / docHeight) * 100);
+					const thresholds = [25, 50, 75, 90, 100];
+
+					thresholds.forEach((threshold) => {
+						if (scrollPercent >= threshold && !trackedThresholds.has(threshold)) {
+							trackedThresholds.add(threshold);
+							posthog.capture('scroll_depth', {
+								depth_percent: threshold,
+								pathname: window.location.pathname,
+							});
+						}
+					});
+				};
+
+				// Reset on page navigation & attach listeners
+				document.addEventListener('astro:page-load', () => {
+					trackedThresholds.clear();
+					posthog.capture('$pageview');
+					window.removeEventListener('scroll', trackScrollDepth);
+					window.addEventListener('scroll', trackScrollDepth, { passive: true });
+				});
+			}
 		</script>
 		<script>
 			// Premium Toast Notification System
