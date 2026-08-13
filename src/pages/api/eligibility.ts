@@ -62,8 +62,8 @@ body = await request.json();
       });
     }
 
-    if (!validateScoreRange(ielts, 0, 9)) {
-      return new Response(JSON.stringify({ error: "IELTS score must be a band value between 0 and 9." }), {
+    if (!validateScoreRange(ielts, 0, 160)) {
+      return new Response(JSON.stringify({ error: "English score must be a valid score between 0 and 160." }), {
         status: 400,
         headers: { "Content-Type": "application/json" }
       });

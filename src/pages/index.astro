@@ -575,33 +575,33 @@ if (causesRes.error) {
       {/* Blog Title: General Sans 700, Headings 48-64px */}
       {visaUpdates.length > 0 && (
         <>
-          <div class="flex flex-col sm:flex-row sm:items-end justify-between gap-6 mb-12">
-            <div class="space-y-3">
-              <span class="text-[13px] font-bold font-sans tracking-widest text-cyan-400 bg-cyan-950/55 px-3.5 py-1.5 rounded-full border border-cyan-800/35 inline-block uppercase shadow-inner">
+          <div class="flex flex-col sm:flex-row sm:items-end justify-between gap-4 sm:gap-6 mb-8 sm:mb-12">
+            <div class="space-y-2 sm:space-y-3">
+              <span class="text-[12px] sm:text-[13px] font-bold font-sans tracking-widest text-cyan-400 bg-cyan-950/55 px-3.5 py-1.5 rounded-full border border-cyan-800/35 inline-block uppercase shadow-inner">
                Insights & Updates 
               </span>
-              <h2 class="text-[28px] sm:text-[34px] lg:text-[38px] xl:text-[44px] font-extrabold font-display leading-tight text-white drop-shadow-sm">
+              <h2 class="text-[24px] sm:text-[34px] lg:text-[38px] xl:text-[44px] font-extrabold font-display leading-tight text-white drop-shadow-sm">
                 Latest Study Abroad & Visa Updates
               </h2>
             </div>
-            <a href="/updates" class="text-[15px] font-semibold font-sans tracking-wide px-5 py-2.5 border border-white/20 rounded-full hover:bg-white/10 text-white hover:text-cyan-300 transition-all duration-300 no-underline shadow-sm hover:scale-[1.02]">
+            <a href="/updates" class="text-[14px] sm:text-[15px] font-semibold font-sans tracking-wide px-5 py-2.5 border border-white/20 rounded-full hover:bg-white/10 text-white hover:text-cyan-300 transition-all duration-300 no-underline shadow-sm hover:scale-[1.02] shrink-0 w-fit self-start sm:self-auto">
               View All Updates →
             </a>
           </div>
 
           {/* Beautiful premium Filter tabs */}
           {uniqueYears.length > 0 && (
-            <div class="flex flex-wrap gap-2.5 mb-8 pb-3 border-b border-white/10">
+            <div class="flex flex-nowrap sm:flex-wrap overflow-x-auto gap-2 sm:gap-2.5 mb-8 pb-3 border-b border-white/10 scrollbar-none -mx-4 px-4 sm:mx-0 sm:px-0">
               <button
                 data-filter-year="all"
-                class="home-filter-btn px-4.5 py-1.5 rounded-full text-[12px] sm:text-[13px] font-bold font-sans border transition-all duration-300 cursor-pointer shadow-sm hover:scale-[1.02] bg-gradient-to-r from-cyan-500 to-emerald-500 text-slate-950 border-transparent shadow-[0_0_12px_rgba(6,182,212,0.3)]"
+                class="home-filter-btn px-4 py-1.5 rounded-full text-[12px] sm:text-[13px] font-bold font-sans border transition-all duration-300 cursor-pointer shadow-sm shrink-0 hover:scale-[1.02] bg-gradient-to-r from-cyan-500 to-emerald-500 text-slate-950 border-transparent shadow-[0_0_12px_rgba(6,182,212,0.3)]"
               >
                 All Bulletins
               </button>
               {uniqueYears.map(year => (
                 <button
                   data-filter-year={year}
-                  class="home-filter-btn px-4.5 py-1.5 rounded-full text-[12px] sm:text-[13px] font-semibold font-sans border transition-all duration-300 cursor-pointer shadow-sm hover:scale-[1.02] bg-white/5 text-slate-300 border-white/10 hover:bg-white/10 hover:text-white"
+                  class="home-filter-btn px-4 py-1.5 rounded-full text-[12px] sm:text-[13px] font-semibold font-sans border transition-all duration-300 cursor-pointer shadow-sm shrink-0 hover:scale-[1.02] bg-white/5 text-slate-300 border-white/10 hover:bg-white/10 hover:text-white"
                 >
                   {year}
                 </button>
@@ -614,21 +614,21 @@ if (causesRes.error) {
             {visaUpdates.map((item, idx) => (
               <div 
                 data-year={item._year}
-                class="home-bulletin-item py-5 border-b border-white/10 flex flex-col sm:flex-row sm:items-center justify-between gap-4 hover:bg-white/5 transition-all duration-300 px-4 rounded-lg"
+                class="home-bulletin-item py-4 sm:py-5 border-b border-white/10 flex flex-row items-center justify-between gap-3 sm:gap-4 hover:bg-white/5 transition-all duration-300 px-3 sm:px-4 rounded-xl group"
                 style="opacity: 1; transform: translateY(0); transition: opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1), transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), background-color 0.2s ease;"
               >
-                <div class="flex flex-col sm:flex-row sm:items-center gap-4 sm:gap-6 min-w-0">
-                  <div class="flex items-center gap-4 shrink-0">
-                    <span class="text-[14px] font-sans font-medium text-slate-400 whitespace-nowrap">{item.date}</span>
-                    <span class={`text-[11px] font-bold font-sans uppercase tracking-wider px-2 py-0.5 rounded border whitespace-nowrap ${item.tagBg}`}>
+                <div class="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-6 min-w-0 flex-1">
+                  <div class="flex items-center gap-2.5 sm:gap-4 shrink-0">
+                    <span class="text-[12px] sm:text-[14px] font-sans font-medium text-slate-400 whitespace-nowrap">{item.date}</span>
+                    <span class={`text-[10px] sm:text-[11px] font-bold font-sans uppercase tracking-wider px-2 py-0.5 rounded border whitespace-nowrap ${item.tagBg}`}>
                       {item.tag}
                     </span>
                   </div>
-                  <a href={item.link} class="text-[16px] lg:text-[18px] font-bold font-display text-white/95 hover:text-cyan-400 transition-colors text-left no-underline truncate min-w-0">
+                  <a href={item.link} class="text-[14px] sm:text-[16px] lg:text-[18px] font-bold font-display text-white/95 group-hover:text-cyan-400 transition-colors text-left no-underline line-clamp-2 sm:line-clamp-1 break-words min-w-0 leading-snug">
                     {item.title}
                   </a>
                 </div>
-                <a href={item.link} class="p-1.5 rounded-full bg-white/10 hover:bg-white/20 text-white hover:text-cyan-300 shrink-0 self-end sm:self-auto flex items-center justify-center transition-colors">
+                <a href={item.link} class="p-2 sm:p-2 rounded-full bg-white/10 group-hover:bg-white/20 text-white group-hover:text-cyan-300 shrink-0 flex items-center justify-center transition-colors">
                   <span set:html={SVG.ArrowRight} />
                 </a>
               </div>

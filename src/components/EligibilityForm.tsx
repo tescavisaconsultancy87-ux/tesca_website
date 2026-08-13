@@ -393,6 +393,23 @@ export default function EligibilityForm() {
   const [isCgpa, setIsCgpa] = useState<boolean>(false);
   const [academicScore, setAcademicScore] = useState<string>("");
   
+  // Container height lock ref to eliminate scroll jumping on step transitions
+  const formContainerRef = useRef<HTMLDivElement>(null);
+  const [containerMinHeight, setContainerMinHeight] = useState<number | undefined>(undefined);
+
+  useEffect(() => {
+    if (formContainerRef.current) {
+      const currentH = formContainerRef.current.offsetHeight;
+      if (currentH > 0) {
+        setContainerMinHeight(currentH);
+        const timer = setTimeout(() => {
+          setContainerMinHeight(undefined);
+        }, 400);
+        return () => clearTimeout(timer);
+      }
+    }
+  }, [step]);
+  
   // Lead Info
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
@@ -683,17 +700,21 @@ export default function EligibilityForm() {
   };
 
   return (
-    <div className="w-full max-w-4xl mx-auto min-h-[500px]">
+    <div 
+      ref={formContainerRef}
+      style={{ minHeight: containerMinHeight ? `${containerMinHeight}px` : undefined }}
+      className="w-full max-w-4xl mx-auto min-h-[500px] transition-[min-height] duration-300 ease-out"
+    >
       <AnimatePresence mode="wait">
         
         {/* STEP 1: CHOOSE DESTINATION COUNTRY */}
         {step === 1 && (
           <motion.div
             key="step1"
-            initial={{ opacity: 0, y: 15 }}
+            initial={{ opacity: 0, y: 8 }}
             animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -15 }}
-            transition={{ duration: 0.3 }}
+            exit={{ opacity: 0, y: -8 }}
+            transition={{ duration: 0.2 }}
             className="glass-card rounded-[2.5rem] p-8 md:p-12 border border-slate-200/80 bg-white shadow-xl text-left"
           >
             <div className="flex items-center gap-3 mb-6">
@@ -743,10 +764,10 @@ export default function EligibilityForm() {
         {step === 2 && (
           <motion.div
             key="step2"
-            initial={{ opacity: 0, y: 15 }}
+            initial={{ opacity: 0, y: 8 }}
             animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -15 }}
-            transition={{ duration: 0.3 }}
+            exit={{ opacity: 0, y: -8 }}
+            transition={{ duration: 0.2 }}
             className="glass-card rounded-[2.5rem] p-8 md:p-12 border border-slate-200/80 bg-white shadow-xl text-left"
           >
             <div className="flex items-center gap-3 mb-6">
@@ -807,10 +828,10 @@ export default function EligibilityForm() {
         {step === 3 && (
           <motion.div
             key="step3"
-            initial={{ opacity: 0, y: 15 }}
+            initial={{ opacity: 0, y: 8 }}
             animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -15 }}
-            transition={{ duration: 0.3 }}
+            exit={{ opacity: 0, y: -8 }}
+            transition={{ duration: 0.2 }}
             className="glass-card rounded-[2.5rem] p-8 md:p-12 border border-slate-200/80 bg-white shadow-xl text-left"
           >
             <div className="flex items-center gap-3 mb-6">
@@ -890,10 +911,10 @@ export default function EligibilityForm() {
         {step === 4 && (
           <motion.div
             key="step4"
-            initial={{ opacity: 0, y: 15 }}
+            initial={{ opacity: 0, y: 8 }}
             animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -15 }}
-            transition={{ duration: 0.3 }}
+            exit={{ opacity: 0, y: -8 }}
+            transition={{ duration: 0.2 }}
             className="glass-card rounded-[2.5rem] p-8 md:p-12 border border-slate-200/80 bg-white shadow-xl text-left max-w-xl mx-auto"
           >
             <div className="flex items-center gap-3 mb-6">
@@ -1069,10 +1090,10 @@ export default function EligibilityForm() {
         {step === 5 && (
           <motion.div
             key="step5"
-            initial={{ opacity: 0, y: 15 }}
+            initial={{ opacity: 0, y: 8 }}
             animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -15 }}
-            transition={{ duration: 0.3 }}
+            exit={{ opacity: 0, y: -8 }}
+            transition={{ duration: 0.2 }}
             className="glass-card rounded-[2.5rem] p-8 md:p-12 border border-slate-200/80 bg-white shadow-xl text-left max-w-xl mx-auto"
           >
             <div className="flex items-center gap-3 mb-6">
