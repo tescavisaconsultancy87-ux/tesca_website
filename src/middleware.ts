@@ -9,11 +9,11 @@ import { ensureCsrfToken, validateAdminCsrf } from "./utils/csrf";
 // - connect (XHR/fetch): Supabase, Google Apps Script, Web3Forms, EmailJS, GA
 const CSP = [
   "default-src 'self'",
-  "script-src 'self' 'unsafe-inline' https://www.googletagmanager.com https://www.google-analytics.com https://cdn.jsdelivr.net https://static.cloudflareinsights.com",
+  "script-src 'self' 'unsafe-inline' https://www.googletagmanager.com https://www.google-analytics.com https://cdn.jsdelivr.net https://static.cloudflareinsights.com https://us.i.posthog.com https://*.posthog.com",
   "style-src 'self' 'unsafe-inline' https://api.fontshare.com https://fonts.googleapis.com https://cdn.jsdelivr.net",
   "font-src 'self' data: https://*.fontshare.com https://fonts.gstatic.com",
-  "img-src 'self' data: blob: https://flagcdn.com https://*.supabase.co https://www.google-analytics.com https://www.googletagmanager.com",
-  "connect-src 'self' https://*.supabase.co https://script.google.com https://api.web3forms.com https://api.emailjs.com https://www.google-analytics.com https://analytics.google.com https://*.analytics.google.com https://*.google-analytics.com https://www.google.com https://*.google.com https://cdn.jsdelivr.net",
+  "img-src 'self' data: blob: https://flagcdn.com https://*.supabase.co https://www.google-analytics.com https://www.googletagmanager.com https://www.google.com https://*.google.com https://www.google.co.in https://*.google.co.in",
+  "connect-src 'self' https://*.supabase.co https://script.google.com https://api.web3forms.com https://api.emailjs.com https://www.google-analytics.com https://analytics.google.com https://*.analytics.google.com https://*.google-analytics.com https://www.google.com https://*.google.com https://cdn.jsdelivr.net https://us.i.posthog.com https://*.posthog.com https://app.posthog.com",
   "frame-ancestors 'none'",
   "base-uri 'self'",
   "form-action 'self' https://script.google.com",
@@ -82,7 +82,7 @@ export const onRequest = defineMiddleware(async (context, next) => {
   // assets are served by Cloudflare's asset layer *before* this middleware runs,
   // so a Cloudflare Redirect Rule (see Phase 5 notes) is required to fully fence
   // those off the admin subdomain.
-  const ADMIN_APIS = new Set(["/api/set-session", "/api/forgot-password", "/api/leads-count", "/api/announcements"]);
+  const isApiRoute = reqPath.startsWith("/api/");
   // Static assets must ALWAYS be served (never redirected) so the admin UI loads:
   // hashed build output (/_astro/*), images, fonts, and any file with an extension
   // (favicon.ico, robots.txt, manifest.*, sitemap.xml, *.css, *.js, ...). Real pages
@@ -94,7 +94,7 @@ export const onRequest = defineMiddleware(async (context, next) => {
     reqPath.startsWith("/bank/") ||
     reqPath.startsWith("/material/") ||
     /\.[a-zA-Z0-9]+$/.test(reqPath);
-  const isAllowedOnAdminHost = isAdminPath || ADMIN_APIS.has(reqPath) || isStaticAsset;
+  const isAllowedOnAdminHost = isAdminPath || isApiRoute || isStaticAsset;
   if (isAdminHost && !isAllowedOnAdminHost) {
     if (reqPath === "/") {
       return Response.redirect("https://admin.tescavisa.com/admin", 301);
