@@ -35,7 +35,6 @@ try {
     <AdminHeader activeTab="announcements" />
 
     <main class="flex-1 px-4 md:px-8 py-10 overflow-y-auto text-left lg:ml-64">
-      {/* Header */}
       <div class="mb-8">
         <h1 class="text-3xl font-extrabold font-display tracking-tight text-slate-800">
           Announcement Alert Bar
@@ -43,8 +42,7 @@ try {
         <p class="text-slate-500 text-xs mt-1">Configure alerts rotating dynamically in the header strip at the top of the website.</p>
       </div>
 
-      {/* Realtime React Management Component */}
-      <AnnouncementsManager client:load initialAnnouncements={announcements} />
+      <AnnouncementsManager client:only="react" initialAnnouncements={announcements} />
     </main>
   </div>
 </Layout>

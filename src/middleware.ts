@@ -9,7 +9,7 @@ import { ensureCsrfToken, validateAdminCsrf } from "./utils/csrf";
 // - connect (XHR/fetch): Supabase, Google Apps Script, Web3Forms, EmailJS, GA
 const CSP = [
   "default-src 'self'",
-  "script-src 'self' 'unsafe-inline' https://www.googletagmanager.com https://www.google-analytics.com https://cdn.jsdelivr.net https://static.cloudflareinsights.com https://us.i.posthog.com https://*.posthog.com",
+  "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://www.googletagmanager.com https://www.google-analytics.com https://cdn.jsdelivr.net https://static.cloudflareinsights.com https://us.i.posthog.com https://*.posthog.com",
   "style-src 'self' 'unsafe-inline' https://api.fontshare.com https://fonts.googleapis.com https://cdn.jsdelivr.net",
   "font-src 'self' data: https://*.fontshare.com https://fonts.gstatic.com",
   "img-src 'self' data: blob: https://flagcdn.com https://*.supabase.co https://www.google-analytics.com https://www.googletagmanager.com https://www.google.com https://*.google.com https://www.google.co.in https://*.google.co.in",
