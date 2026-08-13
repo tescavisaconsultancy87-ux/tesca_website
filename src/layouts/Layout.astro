@@ -87,7 +87,8 @@ const structuredData = {
 const gaId = import.meta.env.PUBLIC_GA4_ID || "G-2HW0JXMF2Y";
 
 let csrfToken = "";
-if (Astro.url.pathname.startsWith("/admin")) {
+const isAdminPage = Astro.url.pathname.startsWith("/admin") || Astro.url.hostname.startsWith("admin.");
+if (isAdminPage) {
 	csrfToken = ensureCsrfToken(Astro.cookies);
 }
 ---
@@ -2013,6 +2014,6 @@ if (Astro.url.pathname.startsWith("/admin")) {
 			</div>
 		</div>
 
-		<PromoPopup />
+		{!isAdminPage && <PromoPopup />}
 	</body>
 </html>

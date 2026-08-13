@@ -41,8 +41,14 @@
 <script>
   let hasTriggered = false;
 
+  function isAdminOrExcludedPath() {
+    const path = window.location.pathname.toLowerCase();
+    const host = window.location.hostname.toLowerCase();
+    return path.startsWith("/admin") || host.startsWith("admin.") || path.includes("review-generator");
+  }
+
   async function initPromoPopup() {
-    if (window.location.pathname.toLowerCase().includes("review-generator")) return;
+    if (isAdminOrExcludedPath()) return;
     const urlParams = new URLSearchParams(window.location.search);
     const isTestMode = urlParams.get("test-popup") === "true";
     if (hasTriggered && !isTestMode) return;
@@ -187,7 +193,7 @@
       const delayMs = (isTestMode ? 1 : popups[0].delay_seconds || 5) * 1000;
 
       setTimeout(() => {
-        if (window.location.pathname.toLowerCase().includes("review-generator")) return;
+        if (isAdminOrExcludedPath()) return;
         if (sessionStorage.getItem("promo_popup_closed") === "true" && !isTestMode) return;
         
         overlay.classList.remove("pointer-events-none", "opacity-0");
@@ -223,12 +229,12 @@
 
   // Handle load & page navigation in Astro (with View Transitions)
   function handlePromoInit() {
-    if (window.location.pathname.toLowerCase().includes("review-generator")) return;
+    if (isAdminOrExcludedPath()) return;
     initPromoPopup();
   }
 
   document.addEventListener("astro:page-load", handlePromoInit);
-  if (!hasTriggered && !window.location.pathname.toLowerCase().includes("review-generator")) {
+  if (!hasTriggered && !isAdminOrExcludedPath()) {
     if (document.readyState === 'complete' || document.readyState === 'interactive') {
       initPromoPopup();
     } else {
