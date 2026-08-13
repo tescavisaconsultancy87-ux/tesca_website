@@ -317,7 +317,10 @@ if (isAdminPage) {
 			const posthogKey = import.meta.env.PUBLIC_POSTHOG_KEY || 'phc_sgHhTrBHqVHjkwUsJTgziS7v4W6x4gpBXmRL8eHaQtuJ';
 			const posthogHost = import.meta.env.PUBLIC_POSTHOG_HOST || 'https://us.i.posthog.com';
 
-			if (posthogKey) {
+			// Exclude admin routes and admin subdomains to preserve PostHog free tier quota
+			const isAdminRoute = window.location.pathname.startsWith('/admin') || window.location.hostname.includes('admin');
+
+			if (posthogKey && !isAdminRoute) {
 				posthog.init(posthogKey, {
 					api_host: posthogHost,
 					person_profiles: 'always',
