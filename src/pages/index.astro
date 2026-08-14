@@ -785,31 +785,20 @@ if (causesRes.error) {
               "bg-gradient-to-br from-indigo-50 to-violet-50/60 border-indigo-100"
             ];
             return (
-            <div class={`p-4 rounded-xl border ${tints[idx]} space-y-2 shadow-xs`}>
+            <div class={`home-faq-item p-4 rounded-xl border ${tints[idx]} space-y-2 shadow-xs`}>
               <button 
-                class="w-full flex justify-between items-center text-[16px] font-bold text-slate-800 text-left outline-none font-display leading-snug cursor-pointer"
-                onclick={`
-                  const ans = document.getElementById('faq-ans-${idx}');
-                  const isOpen = ans.classList.contains('grid-rows-[1fr]');
-                  
-                  document.querySelectorAll('[id^="faq-ans-"]').forEach(el => {
-                    el.classList.remove('grid-rows-[1fr]');
-                    el.classList.add('grid-rows-[0fr]');
-                  });
-                  document.querySelectorAll('[id^="faq-chevron-"]').forEach(el => el.classList.remove('rotate-180'));
-                  
-                  if (!isOpen) {
-                    ans.classList.remove('grid-rows-[0fr]');
-                    ans.classList.add('grid-rows-[1fr]');
-                    document.getElementById('faq-chevron-${idx}')?.classList.add('rotate-180');
-                  }
-                `}
+                type="button"
+                class="home-faq-toggle w-full flex justify-between items-center text-[16px] font-bold text-slate-800 text-left outline-none font-display leading-snug cursor-pointer group"
+                aria-expanded="false"
+                aria-controls={`faq-ans-${idx}`}
               >
                 <span>{faq.q}</span>
-                <span set:html={SVG.ChevronDown(`faq-chevron-${idx}`, "w-4 h-4 text-slate-400 shrink-0 transition-transform duration-200")} />
+                <span id={`faq-chevron-${idx}`} class="shrink-0 ml-2 transition-transform duration-300">
+                  <span set:html={SVG.ChevronDown("", "w-4 h-4 text-slate-400 group-hover:text-slate-600 transition-colors")} />
+                </span>
               </button>
-              <div id={`faq-ans-${idx}`} class="grid grid-rows-[0fr] transition-all duration-300 ease-in-out overflow-hidden">
-                <p class="min-h-0 text-[16px] text-slate-600 leading-relaxed pt-1 font-sans font-normal">
+              <div id={`faq-ans-${idx}`} class="home-faq-answer overflow-hidden max-h-0 transition-all duration-300 ease-in-out">
+                <p class="text-[16px] text-slate-600 leading-relaxed pt-2 border-t border-slate-200/50 mt-2 font-sans font-normal">
                   {faq.a}
                 </p>
               </div>
@@ -1080,10 +1069,52 @@ Expert guidance, top universities, and visa success—everything you need to tak
     }
   }
 
+  function initHomeFAQ() {
+    const faqItems = document.querySelectorAll('.home-faq-item');
+    faqItems.forEach((item) => {
+      const toggle = item.querySelector('.home-faq-toggle') as HTMLElement;
+      const answer = item.querySelector('.home-faq-answer') as HTMLElement;
+      const chevron = item.querySelector('[id^="faq-chevron-"]') as HTMLElement;
+
+      if (!toggle || !answer) return;
+
+      toggle.onclick = (e) => {
+        e.preventDefault();
+        const isOpen = toggle.getAttribute('aria-expanded') === 'true';
+
+        // Close all other items
+        faqItems.forEach((otherItem) => {
+          if (otherItem !== item) {
+            const otherToggle = otherItem.querySelector('.home-faq-toggle') as HTMLElement;
+            const otherAnswer = otherItem.querySelector('.home-faq-answer') as HTMLElement;
+            const otherChevron = otherItem.querySelector('[id^="faq-chevron-"]') as HTMLElement;
+
+            otherToggle?.setAttribute('aria-expanded', 'false');
+            if (otherAnswer) otherAnswer.style.maxHeight = '0';
+            if (otherChevron) otherChevron.style.transform = 'rotate(0deg)';
+          }
+        });
+
+        // Toggle current item
+        if (isOpen) {
+          toggle.setAttribute('aria-expanded', 'false');
+          answer.style.maxHeight = '0';
+          if (chevron) chevron.style.transform = 'rotate(0deg)';
+        } else {
+          toggle.setAttribute('aria-expanded', 'true');
+          answer.style.maxHeight = answer.scrollHeight + 'px';
+          if (chevron) chevron.style.transform = 'rotate(180deg)';
+        }
+      };
+    });
+  }
+
   // Bind to page load event
   document.addEventListener('astro:page-load', () => {
     initHeroSlider();
     initSocialSlider();
     loadGoogleRating();
+    initHomeFAQ();
   });
+  initHomeFAQ();
 </script>
