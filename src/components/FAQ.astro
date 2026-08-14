@@ -56,14 +56,15 @@ const faqSchema = {
 		{items.map((item, index) => (
 			<div class="faq-item border border-slate-200 rounded-2xl overflow-hidden bg-white hover:border-slate-300 transition-colors" data-faq-index={index}>
 				<button
-					class="faq-toggle w-full flex items-center justify-between px-6 py-5 text-left cursor-pointer group"
+					type="button"
+					class="faq-toggle w-full flex items-center justify-between px-6 py-5 text-left cursor-pointer group select-none"
 					aria-expanded="false"
 					aria-controls={`faq-answer-${index}`}
 				>
-					<span class="text-sm md:text-base font-semibold text-slate-800 font-sans pr-4 leading-relaxed">
+					<span class="text-sm md:text-base font-semibold text-slate-800 font-sans pr-4 leading-relaxed pointer-events-none">
 						{item.question}
 					</span>
-					<span class="faq-chevron shrink-0 w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center transition-transform duration-300 group-hover:bg-accent-blue/10">
+					<span class="faq-chevron shrink-0 w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center transition-transform duration-300 group-hover:bg-accent-blue/10 pointer-events-none">
 						<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="text-slate-500 transition-transform duration-300"><path d="m6 9 6 6 6-6"/></svg>
 					</span>
 				</button>
@@ -85,37 +86,44 @@ const faqSchema = {
 			const answer = item.querySelector('.faq-answer') as HTMLElement;
 			const chevron = item.querySelector('.faq-chevron') as HTMLElement;
 
-			toggle?.addEventListener('click', () => {
+			if (!toggle || !answer) return;
+
+			toggle.onclick = (e) => {
+				e.preventDefault();
 				const isOpen = toggle.getAttribute('aria-expanded') === 'true';
 
-				// Close all others
+				// Close all other items
 				faqItems.forEach((otherItem) => {
 					if (otherItem !== item) {
 						const otherToggle = otherItem.querySelector('.faq-toggle') as HTMLElement;
 						const otherAnswer = otherItem.querySelector('.faq-answer') as HTMLElement;
-						const otherChevron = otherItem.querySelector('.faq-chevron svg') as HTMLElement;
+						const otherChevronSvg = otherItem.querySelector('.faq-chevron svg') as HTMLElement;
+						
 						otherToggle?.setAttribute('aria-expanded', 'false');
-						if (otherAnswer) otherAnswer.style.maxHeight = '0';
-						if (otherChevron) otherChevron.style.transform = 'rotate(0deg)';
+						if (otherAnswer) otherAnswer.style.maxHeight = '0px';
+						if (otherChevronSvg) (otherChevronSvg as HTMLElement).style.transform = 'rotate(0deg)';
 					}
 				});
 
-				// Toggle current
-				const svg = chevron?.querySelector('svg');
+				// Toggle current item
+				const svg = chevron?.querySelector('svg') as HTMLElement;
 				if (isOpen) {
 					toggle.setAttribute('aria-expanded', 'false');
-					answer.style.maxHeight = '0';
-					if (svg) (svg as any).style.transform = 'rotate(0deg)';
+					answer.style.maxHeight = '0px';
+					if (svg) svg.style.transform = 'rotate(0deg)';
 				} else {
 					toggle.setAttribute('aria-expanded', 'true');
 					answer.style.maxHeight = answer.scrollHeight + 'px';
-					if (svg) (svg as any).style.transform = 'rotate(180deg)';
+					if (svg) svg.style.transform = 'rotate(180deg)';
 				}
-			});
+			};
 		});
 	}
 
 	document.addEventListener('astro:page-load', initFAQ);
-	// Also run on initial load
-	initFAQ();
+	if (document.readyState === 'loading') {
+		document.addEventListener('DOMContentLoaded', initFAQ);
+	} else {
+		initFAQ();
+	}
 </script>

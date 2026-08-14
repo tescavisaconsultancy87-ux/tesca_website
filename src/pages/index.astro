@@ -1116,5 +1116,18 @@ Expert guidance, top universities, and visa success—everything you need to tak
     loadGoogleRating();
     initHomeFAQ();
   });
-  initHomeFAQ();
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', () => {
+      initHeroSlider();
+      initSocialSlider();
+      loadGoogleRating();
+      initHomeFAQ();
+    });
+  } else {
+    initHeroSlider();
+    initSocialSlider();
+    loadGoogleRating();
+    initHomeFAQ();
+  }
 </script>
