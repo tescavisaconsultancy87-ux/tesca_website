@@ -611,7 +611,11 @@ try {
       // 1. Validate File Size (< 600 KB)
       const maxBytes = 600 * 1024;
       if (file.size > maxBytes) {
-        alert("Error: File size exceeds the 600KB limit.");
+        if ((window as any).showToast) {
+          (window as any).showToast("Error: File size exceeds the 600KB limit.", "warning");
+        } else {
+          alert("Error: File size exceeds the 600KB limit.");
+        }
         fileInput.value = ""; // Clear file input
         return;
       }
@@ -621,7 +625,12 @@ try {
       img.src = URL.createObjectURL(file);
       img.onload = () => {
         if (img.width !== img.height) {
-          alert(`Error: Photo must be a 1:1 square. Selected image resolution is ${img.width}x${img.height}.`);
+          const msg = `Error: Photo must be a 1:1 square. Selected image resolution is ${img.width}x${img.height}.`;
+          if ((window as any).showToast) {
+            (window as any).showToast(msg, "warning");
+          } else {
+            alert(msg);
+          }
           fileInput.value = ""; // Clear file input
           URL.revokeObjectURL(img.src);
           return;
@@ -812,7 +821,11 @@ try {
           await handleResponse(res, "Promo popup deleted successfully.");
         } catch (err) {
           console.error("AJAX error:", err);
-          alert("An error occurred. Please try again.");
+          if ((window as any).showToast) {
+            (window as any).showToast("An error occurred. Please try again.", "error");
+          } else {
+            alert("An error occurred. Please try again.");
+          }
         } finally {
           if (btn) {
             (window as any).hideBtnLoader?.(btn);

@@ -66,7 +66,18 @@ export default function AnnouncementsManager({ initialAnnouncements }: Announcem
 
   // --- Single Delete ---
   const handleDeleteSingle = async (id: number) => {
-    if (!confirm("Are you sure you want to delete this announcement?")) return;
+    const confirmed = typeof window !== "undefined" && (window as any).showConfirmDialog
+      ? await (window as any).showConfirmDialog({
+          title: "Delete Announcement?",
+          description: "Are you sure you want to delete this announcement? This action cannot be undone.",
+          actionText: "Delete",
+          cancelText: "Cancel",
+          variant: "destructive",
+          from: "bottom"
+        })
+      : confirm("Are you sure you want to delete this announcement?");
+
+    if (!confirmed) return;
 
     setDeletingId(id);
     setNotification(null);
@@ -87,8 +98,14 @@ export default function AnnouncementsManager({ initialAnnouncements }: Announcem
       setAnnouncements((prev) => prev.filter((item) => item.id !== id));
       setSelectedIds((prev) => prev.filter((i) => i !== id));
       showNotification("success", "Announcement removed successfully.");
+      if (typeof window !== "undefined" && (window as any).showToast) {
+        (window as any).showToast("Announcement removed successfully.", "success");
+      }
     } catch (err: any) {
       showNotification("error", err.message || "Failed to delete item.");
+      if (typeof window !== "undefined" && (window as any).showToast) {
+        (window as any).showToast(err.message || "Failed to delete item.", "error");
+      }
     } finally {
       setDeletingId(null);
     }
@@ -97,7 +114,18 @@ export default function AnnouncementsManager({ initialAnnouncements }: Announcem
   // --- Bulk Delete ---
   const handleBulkDelete = async () => {
     if (selectedIds.length === 0) return;
-    if (!confirm(`Are you sure you want to delete ${selectedIds.length} selected announcements?`)) return;
+    const confirmed = typeof window !== "undefined" && (window as any).showConfirmDialog
+      ? await (window as any).showConfirmDialog({
+          title: "Delete Selected Announcements?",
+          description: `Are you sure you want to delete ${selectedIds.length} selected announcements? This action cannot be undone.`,
+          actionText: "Delete",
+          cancelText: "Cancel",
+          variant: "destructive",
+          from: "bottom"
+        })
+      : confirm(`Are you sure you want to delete ${selectedIds.length} selected announcements?`);
+
+    if (!confirmed) return;
 
     setIsBulkDeleting(true);
     setNotification(null);
@@ -119,8 +147,14 @@ export default function AnnouncementsManager({ initialAnnouncements }: Announcem
       setAnnouncements((prev) => prev.filter((item) => !toRemove.has(item.id)));
       setSelectedIds([]);
       showNotification("success", `${selectedIds.length} announcements deleted successfully.`);
+      if (typeof window !== "undefined" && (window as any).showToast) {
+        (window as any).showToast(`${selectedIds.length} announcements deleted successfully.`, "success");
+      }
     } catch (err: any) {
       showNotification("error", err.message || "Failed to bulk delete.");
+      if (typeof window !== "undefined" && (window as any).showToast) {
+        (window as any).showToast(err.message || "Failed to bulk delete.", "error");
+      }
     } finally {
       setIsBulkDeleting(false);
     }

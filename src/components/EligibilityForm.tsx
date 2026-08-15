@@ -533,7 +533,12 @@ export default function EligibilityForm() {
     e.preventDefault();
     const digitsOnly = phone.replace(/[^\d]/g, "");
     if (digitsOnly.length < selectedPhoneCountry.minDigits || digitsOnly.length > selectedPhoneCountry.maxDigits) {
-      alert(`Please enter a valid phone number (${selectedPhoneCountry.minDigits} to ${selectedPhoneCountry.maxDigits} digits for ${selectedPhoneCountry.name}).`);
+      const msg = `Please enter a valid phone number (${selectedPhoneCountry.minDigits} to ${selectedPhoneCountry.maxDigits} digits for ${selectedPhoneCountry.name}).`;
+      if (typeof window !== "undefined" && (window as any).showToast) {
+        (window as any).showToast(msg, "warning");
+      } else {
+        alert(msg);
+      }
       return;
     }
 
@@ -680,7 +685,12 @@ export default function EligibilityForm() {
           phone
         });
       }
-      alert("Something went wrong while evaluating your eligibility profile. Please check your connection and try again, or contact us directly via WhatsApp.");
+      const errMsg = "Something went wrong while evaluating your eligibility profile. Please check your connection and try again, or contact us directly via WhatsApp.";
+      if (typeof window !== "undefined" && (window as any).showToast) {
+        (window as any).showToast(errMsg, "error");
+      } else {
+        alert(errMsg);
+      }
     } finally {
       setIsSubmitting(false);
     }

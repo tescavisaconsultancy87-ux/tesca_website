@@ -97,7 +97,7 @@ const faqSchema = {
 					if (otherItem !== item) {
 						const otherToggle = otherItem.querySelector('.faq-toggle') as HTMLElement;
 						const otherAnswer = otherItem.querySelector('.faq-answer') as HTMLElement;
-						const otherChevronSvg = otherItem.querySelector('.faq-chevron svg') as HTMLElement;
+						const otherChevronSvg = otherItem.querySelector('.faq-chevron svg') as unknown as HTMLElement;
 						
 						otherToggle?.setAttribute('aria-expanded', 'false');
 						if (otherAnswer) otherAnswer.style.maxHeight = '0px';
@@ -106,7 +106,7 @@ const faqSchema = {
 				});
 
 				// Toggle current item
-				const svg = chevron?.querySelector('svg') as HTMLElement;
+				const svg = chevron?.querySelector('svg') as unknown as HTMLElement;
 				if (isOpen) {
 					toggle.setAttribute('aria-expanded', 'false');
 					answer.style.maxHeight = '0px';

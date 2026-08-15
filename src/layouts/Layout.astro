@@ -1415,7 +1415,8 @@ if (isAdminPage) {
 					});
 				});
 				document.addEventListener('click', function(e) {
-					if (!e.target.closest('[data-mega-nav]')) {
+					const target = e.target as HTMLElement | null;
+					if (!target?.closest('[data-mega-nav]')) {
 						document.querySelectorAll('[data-mega-nav].force-open').forEach(function(el) {
 							el.classList.remove('force-open');
 						});

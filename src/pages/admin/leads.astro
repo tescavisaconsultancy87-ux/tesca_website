@@ -731,6 +731,7 @@ try {
       if (!container) return;
 
       function updateSliderVisibility() {
+        if (!container) return;
         const maxScroll = container.scrollWidth - container.clientWidth;
         const hasOverflow = maxScroll > 5;
         
@@ -746,6 +747,7 @@ try {
       }
 
       function syncSlidersFromScroll() {
+        if (!container) return;
         const maxScroll = container.scrollWidth - container.clientWidth;
         if (maxScroll <= 0) return;
         const pct = Math.round((container.scrollLeft / maxScroll) * 100);
@@ -754,11 +756,13 @@ try {
       }
 
       function scrollTableToPct(pct: number) {
+        if (!container) return;
         const maxScroll = container.scrollWidth - container.clientWidth;
         container.scrollLeft = (pct / 100) * maxScroll;
       }
 
       function scrollByOffset(offset: number) {
+        if (!container) return;
         container.scrollBy({ left: offset, behavior: "smooth" });
       }
 

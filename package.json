@@ -9,7 +9,10 @@
     "dev": "astro dev",
     "build": "astro build && node scripts/remove-kv.js",
     "preview": "astro preview",
-    "astro": "astro"
+    "astro": "astro",
+    "typecheck": "astro check",
+    "check": "astro check",
+    "validate": "npm run typecheck && npm run build"
   },
   "dependencies": {
     "@astrojs/check": "^0.9.9",

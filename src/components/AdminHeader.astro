@@ -83,6 +83,7 @@ const logoutSvgSm = `<svg ${svgSm}><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-
       return (
         <a
           href={item.href}
+          data-astro-reload
           class={`flex items-center justify-between px-4 py-3 rounded-xl text-sm font-bold transition-all shrink-0 ${
             isActive
               ? "bg-slate-800 text-indigo-400 border border-slate-700/60"
@@ -108,22 +109,23 @@ const logoutSvgSm = `<svg ${svgSm}><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-
       <button 
         type="submit" 
         class="w-full flex items-center gap-3 px-4 py-3 rounded-xl bg-rose-600/10 hover:bg-rose-600/20 text-rose-400 font-bold text-sm transition-all cursor-pointer border border-rose-600/20 logout-button"
+        title="Sign Out"
       >
-        <span set:html={logoutSvgBase} /> <span class="sidebar-text-label">Sign Out</span>
+        <span set:html={logoutSvgBase} class="shrink-0 logout-icon" /> <span class="sidebar-text-label">Sign Out</span>
       </button>
     </form>
   </div>
 </aside>
 
 <!-- Mobile Top Bar -->
-<header class="lg:hidden w-full bg-slate-900 border-b border-slate-800 text-white select-none">
+<header class="lg:hidden bg-slate-900 border-b border-slate-800 text-white select-none sticky top-0 z-30">
   <div class="max-w-7xl mx-auto px-4">
     <div class="flex items-center justify-between h-16">
       <div class="flex items-center gap-4">
-        <a href="/admin/dashboard" class="flex items-center gap-2.5 outline-none">
+        <a href="/admin/dashboard" data-astro-reload class="flex items-center gap-2.5 outline-none">
           <img src="/images/Tesca_logo.png" alt="TESCA" class="h-7 w-auto object-contain" />
         </a>
-        <a href="/admin/leads" class="relative text-slate-400 hover:text-white transition-colors" title="View Leads">
+        <a href="/admin/leads" data-astro-reload class="relative text-slate-400 hover:text-white transition-colors" title="View Leads">
           <span set:html={bellSvg} />
           <span class="leads-nav-badge hidden absolute -top-1 -right-1 w-2 h-2 rounded-full bg-rose-500 ring-2 ring-rose-500/20 animate-pulse"></span>
         </a>
@@ -147,6 +149,7 @@ const logoutSvgSm = `<svg ${svgSm}><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-
       return (
         <a
           href={item.href}
+          data-astro-reload
           class={`flex items-center gap-1.5 px-3 py-2 rounded-lg text-[11px] font-bold whitespace-nowrap transition-all shrink-0 relative ${
             isActive
               ? "bg-slate-800 text-indigo-400 border border-slate-700/60"
