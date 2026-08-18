@@ -1,6 +1,7 @@
 import type { APIRoute } from "astro";
 import { getSupabase } from "../utils/supabase";
 import { blogPosts as staticBlogPosts } from "../data/blog";
+import { documents } from "../data/documents";
 
 export const prerender = false;
 
@@ -24,6 +25,7 @@ const STATIC_PAGES: { url: string; changefreq: string; priority: string }[] = [
   { url: "/contact", changefreq: "monthly", priority: "0.8" },
   { url: "/connect", changefreq: "monthly", priority: "0.7" },
   { url: "/inquiry", changefreq: "monthly", priority: "0.5" },
+  { url: "/documents", changefreq: "weekly", priority: "0.8" },
 
   // Service sub-pages
   { url: "/services/testprep", changefreq: "weekly", priority: "0.7" },
@@ -146,6 +148,16 @@ export const GET: APIRoute = async () => {
     if (post.lastmod) {
       xml += `    <lastmod>${post.lastmod}</lastmod>\n`;
     }
+    xml += `    <changefreq>weekly</changefreq>\n`;
+    xml += `    <priority>0.7</priority>\n`;
+    xml += `  </url>\n`;
+  }
+
+  // Individual PDF document pages
+  for (const doc of documents) {
+    xml += `  <url>\n`;
+    xml += `    <loc>${SITE}/documents/${escapeXml(doc.slug)}</loc>\n`;
+    xml += `    <lastmod>${doc.updatedAt || today}</lastmod>\n`;
     xml += `    <changefreq>weekly</changefreq>\n`;
     xml += `    <priority>0.7</priority>\n`;
     xml += `  </url>\n`;

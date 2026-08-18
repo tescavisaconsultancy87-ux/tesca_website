@@ -44,7 +44,7 @@
   function isAdminOrExcludedPath() {
     const path = window.location.pathname.toLowerCase();
     const host = window.location.hostname.toLowerCase();
-    return path.startsWith("/admin") || host.startsWith("admin.") || path.includes("review-generator");
+    return path.startsWith("/admin") || host.startsWith("admin.") || path.includes("review-generator") || path.startsWith("/documents") || path.startsWith("/document");
   }
 
   async function initPromoPopup() {
