@@ -27,7 +27,7 @@ const shareWhatsappText = encodeURIComponent(
 const otherDocs = documents.filter((d) => d.slug !== doc.slug).slice(0, 3);
 ---
 
-<Layout title={pageTitle} description={pageDescription}>
+<Layout title={pageTitle} description={pageDescription} showNavFooter={false}>
   <!-- OpenGraph and Twitter Share Metadata -->
   <Fragment slot="head">
     <meta property="og:title" content={doc.title} />
