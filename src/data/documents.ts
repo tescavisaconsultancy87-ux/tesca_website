@@ -65,19 +65,6 @@ export const documents: DocumentItem[] = [
     featured: true,
     author: 'TESCA Visa Advisory Desk',
   },
-  {
-    id: 'hitesh-vadadoraiya',
-    slug: 'hitesh-vadadoraiya',
-    title: 'Hitesh Vadadoraiya - Profile & Document File',
-    description: 'Official document file for Hitesh Vadadoraiya.',
-    category: 'General Brochure',
-    pdfUrl: '/material/Hitesh-Vadadoraiya.pdf',
-    fileSize: '229 KB',
-    updatedAt: '2026-08-18',
-    tags: ['Profile', 'Credentials', 'TESCA'],
-    featured: true,
-    author: 'TESCA Team',
-  },
 ];
 
 export function getDocumentBySlug(slug: string): DocumentItem | undefined {
