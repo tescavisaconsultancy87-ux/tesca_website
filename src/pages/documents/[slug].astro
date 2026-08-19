@@ -313,14 +313,29 @@ const otherDocs = documents.filter((d) => d.slug !== doc.slug).slice(0, 3);
 
 <!-- Copy Link Interactive Client Script -->
 <script>
-  const copyBtn = document.getElementById("copyLinkBtn");
-  const copyText = document.getElementById("copyLinkText");
+  function setupCopyLink() {
+    const copyBtn = document.getElementById("copyLinkBtn");
+    const copyText = document.getElementById("copyLinkText");
+    if (!copyBtn || !copyText) return;
 
-  if (copyBtn && copyText) {
+    if ((copyBtn as any)._boundCopy) return;
+    (copyBtn as any)._boundCopy = true;
+
     copyBtn.addEventListener("click", async () => {
       const url = copyBtn.getAttribute("data-url") || window.location.href;
       try {
-        await navigator.clipboard.writeText(url);
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+          await navigator.clipboard.writeText(url);
+        } else {
+          const textarea = document.createElement("textarea");
+          textarea.value = url;
+          textarea.style.position = "fixed";
+          textarea.style.opacity = "0";
+          document.body.appendChild(textarea);
+          textarea.select();
+          document.execCommand("copy");
+          document.body.removeChild(textarea);
+        }
         copyText.textContent = "Copied Link! ✓";
         copyBtn.classList.remove("bg-slate-800");
         copyBtn.classList.add("bg-emerald-600");
@@ -334,4 +349,7 @@ const otherDocs = documents.filter((d) => d.slug !== doc.slug).slice(0, 3);
       }
     });
   }
+
+  setupCopyLink();
+  document.addEventListener("astro:page-load", setupCopyLink);
 </script>
