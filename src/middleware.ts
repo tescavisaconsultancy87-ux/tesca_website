@@ -29,20 +29,61 @@ export const onRequest = defineMiddleware(async (context, next) => {
     // Fallback/ignore during local development or build time
   }
 
+  // --- 1. Block requests with empty / missing User-Agent (bot spam protection) ---
+  const userAgent = context.request.headers.get("user-agent");
+  if (!userAgent || userAgent.trim() === "") {
+    return new Response("Bad Request: Missing User-Agent header", {
+      status: 400,
+      headers: { "Content-Type": "text/plain; charset=utf-8" },
+    });
+  }
+
   const { hostname, pathname: reqPath, search } = context.url;
+  const lowerPath = reqPath.toLowerCase();
+
+  // --- 2. Fast-path reject automated bot vulnerability probes ---
+  // Blocks common PHP/CMS probes (.php, wp-login, xmlrpc, settings.json, api/env, etc.)
+  // with a lightweight text 404 before triggering Astro SSR rendering overhead.
+  const isProbePath =
+    lowerPath.endsWith(".php") ||
+    lowerPath.includes("wp-login") ||
+    lowerPath.includes("xmlrpc") ||
+    lowerPath.includes("wp-admin") ||
+    lowerPath.includes("phpmyadmin") ||
+    lowerPath === "/settings.json" ||
+    lowerPath === "/api/env" ||
+    lowerPath === "/fetch" ||
+    lowerPath === "/proxy" ||
+    lowerPath.startsWith("/.env") ||
+    lowerPath.startsWith("/.git");
+
+  if (isProbePath) {
+    return new Response("Not Found", {
+      status: 404,
+      headers: {
+        "Content-Type": "text/plain; charset=utf-8",
+        "X-Robots-Tag": "noindex, nofollow",
+      },
+    });
+  }
+
   const isLocalHost = hostname === "localhost" || hostname === "127.0.0.1";
   const isPreviewHost = hostname.endsWith(".pages.dev") || hostname.endsWith(".workers.dev");
   const isPublicHost = hostname === "tescavisa.com" || hostname === "www.tescavisa.com";
   const isAdminHost = hostname === "admin.tescavisa.com";
 
-  // Canonicalize any stray/probed subdomain that is still routed to this Worker.
-  // Cloudflare analytics showed heavy scanner traffic against hosts like
-  // oauth/app/signup/manage/dashboard/signin/user/account.tescavisa.com. Sending
-  // those to the public home page prevents the app/router from turning every
-  // malicious probe path into another 404 while keeping local and preview hosts
-  // usable.
+  // --- 3. Handle stray / probed subdomains cleanly ---
+  // Cloudflare analytics showed heavy scanner traffic against arbitrary subdomains
+  // (e.g. itrustvisa.tescavisa.com, admin-console.tescavisa.com). Returning a direct 404
+  // stops redirect loops and prevents inflating 3xx redirect analytics.
   if (!isPublicHost && !isAdminHost && !isLocalHost && !isPreviewHost) {
-    return Response.redirect("https://tescavisa.com/", 301);
+    return new Response("Host Not Found", {
+      status: 404,
+      headers: {
+        "Content-Type": "text/plain; charset=utf-8",
+        "X-Robots-Tag": "noindex, nofollow",
+      },
+    });
   }
 
   // --- Canonicalize www to apex domain ---
@@ -128,10 +169,8 @@ export const onRequest = defineMiddleware(async (context, next) => {
   }
 
   // --- Edge caching for public HTML pages ---
-  // Only cache safe, anonymous GET HTML on public routes. Never cache admin/api,
-  // anything that sets a cookie, or non-GET requests. s-maxage lets Cloudflare
-  // serve from the edge for 30 min; stale-while-revalidate keeps it instant while
-  // refreshing in the background, so public content updates appear within ~30 min.
+  // Cache safe, anonymous GET HTML on public routes. s-maxage=3600 lets Cloudflare
+  // serve from edge for 1h; stale-while-revalidate keeps it instant while refreshing.
   const isGet = context.request.method === "GET";
   const contentType = response.headers.get("content-type") || "";
   const isHtml = contentType.includes("text/html");
@@ -140,7 +179,7 @@ export const onRequest = defineMiddleware(async (context, next) => {
   if (isGet && isHtml && !isAdmin && !isApi && !setsCookie && response.status === 200) {
     response.headers.set(
       "Cache-Control",
-      "public, max-age=0, s-maxage=1800, stale-while-revalidate=86400"
+      "public, max-age=300, s-maxage=3600, stale-while-revalidate=86400"
     );
   }
 
