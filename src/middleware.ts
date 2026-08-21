@@ -22,16 +22,18 @@ const CSP = [
 ].join("; ");
 
 export const onRequest = defineMiddleware(async (context, next) => {
+  // Populate the runtime env store used by getEnv(). On Astro v6 +
+  // @astrojs/cloudflare v13, `Astro.locals.runtime.env` was removed; the
+  // canonical source for the Worker env is now `import { env } from
+  // "cloudflare:workers"`. This module is externalized in astro.config.mjs,
+  // so the dynamic import resolves to the live Worker env at runtime and
+  // rejects in Node/build contexts (caught here). Idempotent per request.
   try {
-    const cfEnv = (context.locals as any)?.runtime?.env || (context as any)?.env;
-    if (cfEnv) {
-      setRuntimeEnv(cfEnv);
-    } else {
-      const workerEnv = await import("cloudflare:workers").catch(() => null);
-      if (workerEnv?.env) setRuntimeEnv(workerEnv.env);
-    }
+    const workerEnv = await import("cloudflare:workers").catch(() => null as any);
+    if (workerEnv?.env) setRuntimeEnv(workerEnv.env);
   } catch (e) {
-    // Fallback/ignore during local development or build time
+    // Non-worker context (local Node / build) — getEnv() falls back to
+    // process.env / import.meta.env in that case, so this is a no-op.
   }
 
   // --- 1. Block requests with empty / missing User-Agent (bot spam protection) ---
