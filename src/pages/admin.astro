@@ -42,17 +42,23 @@ if (Astro.request.method === "POST") {
         });
 
         if (data?.session && data.user) {
-          // Verify email is allowlisted as admin in database
-          const sbAdmin = getSupabaseAdmin();
-          const { data: adminRecord, error: dbError } = await sbAdmin
-            .from('admins')
-            .select('email')
-            .eq('email', data.user.email)
-            .maybeSingle();
+          const ownerEmail = (getEnv("OWNER_EMAIL") || (typeof import.meta !== 'undefined' ? import.meta.env?.OWNER_EMAIL : undefined) || "tescavisaconsultancy87@gmail.com").toLowerCase();
+          const userEmail = (data.user.email || "").toLowerCase();
 
           let isAllowed = false;
-          if (!dbError && adminRecord) {
+          if (userEmail && userEmail === ownerEmail) {
             isAllowed = true;
+          } else {
+            const sbAdmin = getSupabaseAdmin();
+            const { data: adminRecord, error: dbError } = await sbAdmin
+              .from('admins')
+              .select('email')
+              .eq('email', data.user.email)
+              .maybeSingle();
+
+            if (!dbError && adminRecord) {
+              isAllowed = true;
+            }
           }
 
           if (isAllowed) {

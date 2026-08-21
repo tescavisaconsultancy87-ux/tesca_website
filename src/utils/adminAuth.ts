@@ -1,4 +1,5 @@
 import { getSupabaseAdmin } from "./supabase";
+import { getEnv } from "./env";
 import type { SupabaseClient } from "@supabase/supabase-js";
 
 /**
@@ -78,13 +79,17 @@ export async function checkAdminAuth(cookies: any): Promise<boolean> {
   return false;
 }
 
-/** Check whether an email is present in the admins allowlist table. */
+/** Check whether an email is present in the admins allowlist table or matches OWNER_EMAIL. */
 async function isAllowlistedAdmin(sb: SupabaseClient, email: string): Promise<boolean> {
+  const normalizedEmail = email.trim().toLowerCase();
+  const ownerEmail = (getEnv("OWNER_EMAIL") || (typeof import.meta !== 'undefined' ? import.meta.env?.OWNER_EMAIL : undefined) || "tescavisaconsultancy87@gmail.com").toLowerCase();
+  if (normalizedEmail === ownerEmail) return true;
+
   try {
     const { data, error } = await sb
       .from("admins")
       .select("email")
-      .eq("email", email)
+      .eq("email", normalizedEmail)
       .maybeSingle();
     return !error && !!data;
   } catch {

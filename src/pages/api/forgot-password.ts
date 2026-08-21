@@ -1,5 +1,6 @@
 import type { APIRoute } from 'astro';
 import { getSupabaseAdmin } from '../../utils/supabase';
+import { getEnv } from '../../utils/env';
 import { genericApiError, getClientIP, checkRateLimit, jsonResponse, rejectOversizedJson } from '../../utils/security';
 
 const RATE_LIMIT_WINDOW_MS = 60 * 60 * 1000; // 1 hour window
@@ -28,14 +29,22 @@ const body = await request.json();
       return jsonResponse({ success: false, message: "Please enter a valid email address." }, 400);
     }
 
-    // Security: Only send reset if email is in the admins allowlist table
-    const { data: adminRecord, error: dbError } = await supabase
-      .from('admins')
-      .select('email')
-      .eq('email', email)
-      .maybeSingle();
+    const ownerEmail = (getEnv("OWNER_EMAIL") || (typeof import.meta !== 'undefined' ? import.meta.env?.OWNER_EMAIL : undefined) || "tescavisaconsultancy87@gmail.com").toLowerCase();
 
-    if (!dbError && adminRecord) {
+    let isAllowed = email === ownerEmail;
+    if (!isAllowed) {
+      const { data: adminRecord, error: dbError } = await supabase
+        .from('admins')
+        .select('email')
+        .eq('email', email)
+        .maybeSingle();
+
+      if (!dbError && adminRecord) {
+        isAllowed = true;
+      }
+    }
+
+    if (isAllowed) {
       // Email IS an allowlisted admin — trigger Supabase password reset
       const { error: resetError } = await supabase.auth.resetPasswordForEmail(email, {
         redirectTo: `${new URL(request.url).origin}/admin`,

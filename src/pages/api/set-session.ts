@@ -1,5 +1,6 @@
 import type { APIRoute } from 'astro';
 import { getSupabaseAdmin } from '../../utils/supabase';
+import { getEnv } from '../../utils/env';
 import { genericApiError, getClientIP, checkRateLimit, jsonResponse, rateLimitResponse, rejectOversizedJson } from '../../utils/security';
 
 const RATE_LIMIT_WINDOW_MS = 10 * 60 * 1000;
@@ -26,13 +27,25 @@ const { access_token, refresh_token, expires_in } = await request.json();
       return jsonResponse({ success: false, message: "Invalid session" }, 401);
     }
 
-    const { data: adminRecord, error: dbError } = await supabase
-      .from('admins')
-      .select('email')
-      .eq('email', user.email)
-      .maybeSingle();
+    const ownerEmail = (getEnv("OWNER_EMAIL") || (typeof import.meta !== 'undefined' ? import.meta.env?.OWNER_EMAIL : undefined) || "tescavisaconsultancy87@gmail.com").toLowerCase();
+    const userEmail = (user.email || "").toLowerCase();
 
-    if (dbError || !adminRecord) {
+    let isAllowed = false;
+    if (userEmail && userEmail === ownerEmail) {
+      isAllowed = true;
+    } else {
+      const { data: adminRecord, error: dbError } = await supabase
+        .from('admins')
+        .select('email')
+        .eq('email', user.email)
+        .maybeSingle();
+
+      if (!dbError && adminRecord) {
+        isAllowed = true;
+      }
+    }
+
+    if (!isAllowed) {
       return jsonResponse({ success: false, message: "Unauthorized" }, 403);
     }
 
