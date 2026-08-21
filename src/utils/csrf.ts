@@ -17,7 +17,7 @@ export function ensureCsrfToken(cookies: any): string {
       path: "/admin",
       httpOnly: true,
       secure: true,
-      sameSite: "strict",
+      sameSite: "lax",
       maxAge: 60 * 60 * 12,
     });
   }

@@ -19,6 +19,13 @@ export function getEnv(key: string): string | undefined {
   if (nodeEnv?.[key]) {
     return nodeEnv[key];
   }
+
+  // 3. Fallback to import.meta.env
+  try {
+    if (typeof import.meta !== 'undefined' && import.meta.env && (import.meta.env as any)[key]) {
+      return (import.meta.env as any)[key];
+    }
+  } catch (e) {}
   
   return undefined;
 }

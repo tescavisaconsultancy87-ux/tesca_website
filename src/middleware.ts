@@ -23,8 +23,13 @@ const CSP = [
 
 export const onRequest = defineMiddleware(async (context, next) => {
   try {
-    const { env } = await import("cloudflare:workers");
-    if (env) setRuntimeEnv(env);
+    const cfEnv = (context.locals as any)?.runtime?.env || (context as any)?.env;
+    if (cfEnv) {
+      setRuntimeEnv(cfEnv);
+    } else {
+      const workerEnv = await import("cloudflare:workers").catch(() => null);
+      if (workerEnv?.env) setRuntimeEnv(workerEnv.env);
+    }
   } catch (e) {
     // Fallback/ignore during local development or build time
   }

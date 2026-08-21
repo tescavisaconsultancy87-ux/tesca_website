@@ -52,14 +52,14 @@ export async function checkAdminAuth(cookies: any): Promise<boolean> {
             path: "/",
             httpOnly: true,
             secure: true,
-            sameSite: "strict",
+            sameSite: "lax",
             maxAge: data.session.expires_in || 3600,
           });
           cookies.set("sb-refresh-token", data.session.refresh_token, {
             path: "/",
             httpOnly: true,
             secure: true,
-            sameSite: "strict",
+            sameSite: "lax",
             maxAge: 60 * 60 * 24 * 30, // 30 days
           });
           return true;

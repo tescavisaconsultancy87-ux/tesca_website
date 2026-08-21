@@ -40,7 +40,7 @@ const { access_token, refresh_token, expires_in } = await request.json();
       path: "/",
       httpOnly: true,
       secure: true,
-      sameSite: "strict",
+      sameSite: "lax",
       maxAge: expires_in || 3600,
     });
 
@@ -48,7 +48,7 @@ const { access_token, refresh_token, expires_in } = await request.json();
       path: "/",
       httpOnly: true,
       secure: true,
-      sameSite: "strict",
+      sameSite: "lax",
       maxAge: 60 * 60 * 24 * 30, // 30 days — outlives the short-lived access token
     });
 

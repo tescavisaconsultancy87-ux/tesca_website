@@ -34,14 +34,16 @@ if (Astro.request.method === "POST") {
 
       if (email && password) {
         // 1. Try Supabase Auth
-        const { data, error } = await supabase.auth.signInWithPassword({
+        const sbClient = getSupabase();
+        const { data, error } = await sbClient.auth.signInWithPassword({
           email,
           password
         });
 
         if (data?.session && data.user) {
           // Verify email is allowlisted as admin in database
-          const { data: adminRecord, error: dbError } = await supabase
+          const sbAdmin = getSupabaseAdmin();
+          const { data: adminRecord, error: dbError } = await sbAdmin
             .from('admins')
             .select('email')
             .eq('email', data.user.email)
@@ -57,20 +59,20 @@ if (Astro.request.method === "POST") {
               path: "/",
               httpOnly: true,
               secure: true,
-              sameSite: "strict",
+              sameSite: "lax",
               maxAge: data.session.expires_in,
             });
             Astro.cookies.set("sb-refresh-token", data.session.refresh_token, {
               path: "/",
               httpOnly: true,
               secure: true,
-              sameSite: "strict",
+              sameSite: "lax",
               maxAge: 60 * 60 * 24 * 30, // 30 days — outlives the short-lived access token
             });
             Astro.cookies.delete("admin_session", { path: "/" });
             return Astro.redirect("/admin/dashboard");
           } else {
-            await supabase.auth.signOut();
+            await sbClient.auth.signOut();
             errorMessage = "Access denied: Your email is not registered as an administrator.";
           }
         } else {
@@ -589,27 +591,40 @@ if (isAuthenticated) {
 
       try {
         const formData = new FormData(loginForm);
+        const csrfVal = (formData.get("csrf_token") || "").toString();
+
         const res = await fetch(window.location.href, {
           method: 'POST',
+          headers: {
+            'x-csrf-token': csrfVal,
+          },
           body: formData
         });
 
         if (res.redirected) {
-          // Success: server redirected us to dashboard
           window.location.href = res.url;
           return;
         }
 
-        // Failure: get the page content to find the error message
-        const htmlText = await res.text();
-        const parser = new DOMParser();
-        const doc = parser.parseFromString(htmlText, 'text/html');
-
-        // Look for the error message container inside the returned HTML
-        const returnedErrorEl = doc.querySelector('.text-rose-600 span:not(.shrink-0), .bg-rose-50 span:not(.shrink-0)');
+        const contentType = res.headers.get("content-type") || "";
         let errorText = "";
-        if (returnedErrorEl) {
-          errorText = returnedErrorEl.textContent?.trim() || "";
+
+        if (contentType.includes("application/json")) {
+          const json = await res.json().catch(() => ({}));
+          errorText = json.error || json.message || "";
+        } else {
+          const htmlText = await res.text();
+          const parser = new DOMParser();
+          const doc = parser.parseFromString(htmlText, 'text/html');
+          const returnedErrorEl = doc.querySelector('.text-rose-600 span:not(.shrink-0), .bg-rose-50 span:not(.shrink-0)');
+          if (returnedErrorEl) {
+            errorText = returnedErrorEl.textContent?.trim() || "";
+          }
+        }
+
+        if (res.ok && !errorText) {
+          window.location.href = "/admin/dashboard";
+          return;
         }
 
         // Clean up and translate technical terms for a friendly user experience

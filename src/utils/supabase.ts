@@ -19,15 +19,15 @@ export function getSupabase(): SupabaseClient {
 }
 
 export function getSupabaseAdmin(): SupabaseClient {
-  const serviceKey = getEnv('SUPABASE_SERVICE_ROLE_KEY') || import.meta.env.SUPABASE_SERVICE_ROLE_KEY;
+  const serviceKey = getEnv('SUPABASE_SERVICE_ROLE_KEY') || (typeof import.meta !== 'undefined' ? import.meta.env?.SUPABASE_SERVICE_ROLE_KEY : undefined);
   if (!serviceKey) {
-    throw new Error("Missing Supabase environment variable: SUPABASE_SERVICE_ROLE_KEY. Access blocked.");
+    return getSupabase();
   }
 
   if (!_supabaseAdmin) {
-    const supabaseUrl = getEnv('PUBLIC_SUPABASE_URL') || import.meta.env.PUBLIC_SUPABASE_URL;
+    const supabaseUrl = getEnv('PUBLIC_SUPABASE_URL') || (typeof import.meta !== 'undefined' ? import.meta.env?.PUBLIC_SUPABASE_URL : undefined);
     if (!supabaseUrl) {
-      throw new Error("Missing Supabase environment variable: PUBLIC_SUPABASE_URL");
+      return getSupabase();
     }
 
     _supabaseAdmin = createClient(supabaseUrl, serviceKey, {
