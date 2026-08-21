@@ -14,7 +14,7 @@ export function ensureCsrfToken(cookies: any, isSecure: boolean = import.meta.en
   if (!token || !/^[a-f0-9]{64}$/.test(token)) {
     token = randomToken();
     cookies.set(CSRF_COOKIE, token, {
-      path: "/admin",
+      path: "/",
       httpOnly: true,
       secure: isSecure,
       sameSite: "lax",

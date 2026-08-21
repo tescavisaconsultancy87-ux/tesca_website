@@ -105,15 +105,23 @@ export const onRequest = defineMiddleware(async (context, next) => {
   // (*.pages.dev) are intentionally left alone so admin development still works there.
   const isApexHost = isPublicHost;
   const isAdminPath = reqPath === "/admin" || reqPath.startsWith("/admin/");
+
+  // Apex-host admin URLs must redirect to the dedicated admin subdomain BEFORE
+  // any CSRF mint/validate runs. CSRF cookies are host-scoped, so minting on
+  // the apex host and then redirecting to admin.tescavisa.com desyncs the token
+  // in the DOM from the cookie on the new host, causing a silent 403 on submit.
+  if (isApexHost && isAdminPath) {
+    return Response.redirect(`https://admin.tescavisa.com${reqPath}${search}`, 301);
+  }
+
+  // Only the canonical admin subdomain (and local/preview hosts) do CSRF from
+  // here on — the apex host never touches CSRF, it just redirects.
   if (isAdminPath) {
     ensureCsrfToken(context.cookies);
     if (context.request.method === "POST") {
       const csrfError = await validateAdminCsrf(context.request, context.cookies);
       if (csrfError) return csrfError;
     }
-  }
-  if (isApexHost && isAdminPath) {
-    return Response.redirect(`https://admin.tescavisa.com${reqPath}${search}`, 301);
   }
 
   // --- Harden the admin subdomain: serve ONLY admin pages + required admin APIs ---
