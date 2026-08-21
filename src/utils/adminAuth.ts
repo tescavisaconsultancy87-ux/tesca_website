@@ -47,18 +47,18 @@ export async function checkAdminAuth(cookies: any): Promise<boolean> {
 
       if (!error && data.session && data.user?.email) {
         if (await isAllowlistedAdmin(sb, data.user.email)) {
-          // Persist refreshed tokens with the same security attributes
+          const isSecure = import.meta.env.PROD;
           cookies.set("sb-access-token", data.session.access_token, {
             path: "/",
             httpOnly: true,
-            secure: true,
+            secure: isSecure,
             sameSite: "lax",
             maxAge: data.session.expires_in || 3600,
           });
           cookies.set("sb-refresh-token", data.session.refresh_token, {
             path: "/",
             httpOnly: true,
-            secure: true,
+            secure: isSecure,
             sameSite: "lax",
             maxAge: 60 * 60 * 24 * 30, // 30 days
           });

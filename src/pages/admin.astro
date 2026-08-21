@@ -15,8 +15,9 @@ import { ensureCsrfToken } from "../utils/csrf";
 const serverSupabaseUrl = getEnv("PUBLIC_SUPABASE_URL") || import.meta.env.PUBLIC_SUPABASE_URL;
 const serverSupabaseKey = getEnv("PUBLIC_SUPABASE_ANON_KEY") || import.meta.env.PUBLIC_SUPABASE_ANON_KEY;
 
+const isSecure = Astro.url.protocol === "https:" || import.meta.env.PROD;
 let errorMessage = "";
-const csrfToken = ensureCsrfToken(Astro.cookies);
+const csrfToken = ensureCsrfToken(Astro.cookies, isSecure);
 
 // Handle Login/Logout request
 if (Astro.request.method === "POST") {
@@ -58,14 +59,14 @@ if (Astro.request.method === "POST") {
             Astro.cookies.set("sb-access-token", data.session.access_token, {
               path: "/",
               httpOnly: true,
-              secure: true,
+              secure: isSecure,
               sameSite: "lax",
               maxAge: data.session.expires_in,
             });
             Astro.cookies.set("sb-refresh-token", data.session.refresh_token, {
               path: "/",
               httpOnly: true,
-              secure: true,
+              secure: isSecure,
               sameSite: "lax",
               maxAge: 60 * 60 * 24 * 30, // 30 days — outlives the short-lived access token
             });

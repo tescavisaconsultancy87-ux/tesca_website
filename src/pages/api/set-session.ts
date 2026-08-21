@@ -36,10 +36,11 @@ const { access_token, refresh_token, expires_in } = await request.json();
       return jsonResponse({ success: false, message: "Unauthorized" }, 403);
     }
 
+    const isSecure = new URL(request.url).protocol === "https:" || import.meta.env.PROD;
     cookies.set("sb-access-token", access_token, {
       path: "/",
       httpOnly: true,
-      secure: true,
+      secure: isSecure,
       sameSite: "lax",
       maxAge: expires_in || 3600,
     });
@@ -47,7 +48,7 @@ const { access_token, refresh_token, expires_in } = await request.json();
     cookies.set("sb-refresh-token", refresh_token, {
       path: "/",
       httpOnly: true,
-      secure: true,
+      secure: isSecure,
       sameSite: "lax",
       maxAge: 60 * 60 * 24 * 30, // 30 days — outlives the short-lived access token
     });

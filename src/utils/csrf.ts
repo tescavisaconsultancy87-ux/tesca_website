@@ -9,14 +9,14 @@ function randomToken(): string {
   return Array.from(bytes, (b) => b.toString(16).padStart(2, "0")).join("");
 }
 
-export function ensureCsrfToken(cookies: any): string {
+export function ensureCsrfToken(cookies: any, isSecure: boolean = import.meta.env.PROD): string {
   let token = cookies.get(CSRF_COOKIE)?.value;
   if (!token || !/^[a-f0-9]{64}$/.test(token)) {
     token = randomToken();
     cookies.set(CSRF_COOKIE, token, {
       path: "/admin",
       httpOnly: true,
-      secure: true,
+      secure: isSecure,
       sameSite: "lax",
       maxAge: 60 * 60 * 12,
     });
