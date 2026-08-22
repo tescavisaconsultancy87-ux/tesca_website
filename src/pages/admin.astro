@@ -17,6 +17,7 @@ const serverSupabaseKey = getEnv("PUBLIC_SUPABASE_ANON_KEY") || import.meta.env.
 
 const isSecure = Astro.url.protocol === "https:" || import.meta.env.PROD;
 let errorMessage = "";
+let submittedEmail = "";
 const csrfToken = ensureCsrfToken(Astro.cookies, isSecure);
 
 // Handle Login/Logout request
@@ -30,8 +31,9 @@ if (Astro.request.method === "POST") {
     const action = formData.get("action");
 
     if (action === "login") {
-      const email = formData.get("email")?.toString();
-      const password = formData.get("password")?.toString();
+      const email = formData.get("email")?.toString()?.trim() || "";
+      const password = formData.get("password")?.toString() || "";
+      submittedEmail = email;
 
       if (email && password) {
         // 1. Try Supabase Auth
@@ -174,6 +176,7 @@ if (isAuthenticated) {
               type="email" 
               id="email" 
               name="email" 
+              value={submittedEmail}
               required 
               class="w-full px-4 py-3 rounded-xl border border-slate-200 bg-slate-50 text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/30 focus:border-indigo-500 font-sans text-sm transition-all"
               placeholder="admin@example.com"
@@ -571,112 +574,32 @@ if (isAuthenticated) {
   function setupLoginForm() {
     const loginForm = document.getElementById('login-form') as HTMLFormElement;
     const loginBtn = document.getElementById('admin-login-btn') as HTMLButtonElement;
-    const clientErrorContainer = document.getElementById('client-error-container');
-    const clientErrorMessage = document.getElementById('client-error-message');
 
-    if (!loginForm || !loginBtn || !clientErrorContainer || !clientErrorMessage) return;
+    if (!loginForm || !loginBtn) return;
     if ((loginForm as any)._bound) return;
     (loginForm as any)._bound = true;
 
-    loginForm.addEventListener('submit', async (e) => {
-      e.preventDefault();
-
-      // Clear any previous error messages
-      clientErrorContainer.classList.add('hidden');
-      clientErrorMessage.textContent = '';
-
-      // Hide the server-side error element if it exists in the DOM to avoid showing duplicate errors
-      const serverErrorEl = document.querySelector('.flex.items-center.gap-3.p-4.bg-rose-50.border-rose-200.text-rose-600');
-      if (serverErrorEl) {
-        (serverErrorEl as HTMLElement).style.display = 'none';
-      }
-
-      // Show loading state
-      loginBtn.disabled = true;
-      const originalText = loginBtn.textContent;
-      loginBtn.textContent = 'Authenticating...';
-
-      try {
-        const formData = new FormData(loginForm);
-        const csrfVal = (formData.get("csrf_token") || "").toString();
-
-        // Use redirect:'manual' so we intercept the server 302 before fetch
-        // auto-follows it. Without this, fetch follows 302→/admin/dashboard,
-        // dashboard auth fails (race on cookie delivery), redirects back to
-        // /admin, and res.url ends up as the login page — a silent loop.
-        const res = await fetch(window.location.href, {
-          method: 'POST',
-          headers: {
-            'x-csrf-token': csrfVal,
-          },
-          body: formData,
-          redirect: 'manual',
-        });
-
-        // opaqueredirect = server issued a 3xx redirect (login succeeded).
-        // Navigate directly to the dashboard — the session cookies were already
-        // set by the server in the Set-Cookie header of the 302 response.
-        if (res.type === 'opaqueredirect' || res.status === 0 || (res.status >= 300 && res.status < 400)) {
-          window.location.href = '/admin/dashboard';
-          return;
-        }
-
-        const contentType = res.headers.get("content-type") || "";
-        let errorText = "";
-
-        if (contentType.includes("application/json")) {
-          const json = await res.json().catch(() => ({}));
-          errorText = json.error || json.message || "";
-        } else {
-          const htmlText = await res.text();
-          const parser = new DOMParser();
-          const doc = parser.parseFromString(htmlText, 'text/html');
-          const returnedErrorEl = doc.querySelector('.text-rose-600 span:not(.shrink-0), .bg-rose-50 span:not(.shrink-0)');
-          if (returnedErrorEl) {
-            errorText = returnedErrorEl.textContent?.trim() || "";
-          }
-        }
-
-        if (res.ok && !errorText) {
-          // 200 OK with no error text — shouldn't normally happen on the login
-          // page after a successful POST, but navigate to dashboard as fallback.
-          window.location.href = "/admin/dashboard";
-          return;
-        }
-
-        // Clean up and translate technical terms for a friendly user experience
-        let displayError = "Incorrect email or password. Please verify your credentials and try again.";
-        if (errorText) {
-          const lowerText = errorText.toLowerCase();
-          if (lowerText.includes("invalid login credentials") || lowerText.includes("invalid_credentials")) {
-            displayError = "Incorrect password or email address. Please check and try again.";
-          } else if (lowerText.includes("not registered as an administrator")) {
-            displayError = "This email is not registered as an administrator.";
-          } else if (lowerText.includes("too many login attempts")) {
-            displayError = "Too many login attempts. Please wait 1 minute before trying again.";
-          } else {
-            displayError = errorText;
-          }
-        }
-
-        clientErrorMessage.textContent = displayError;
-        clientErrorContainer.classList.remove('hidden');
-
-      } catch (err) {
-        console.error("AJAX login error:", err);
-        clientErrorMessage.textContent = "A connection error occurred. Please check your internet connection.";
-        clientErrorContainer.classList.remove('hidden');
-      } finally {
-        loginBtn.disabled = false;
-        loginBtn.textContent = originalText;
-      }
+    loginForm.addEventListener('submit', () => {
+      // Allow native browser form submission so session cookies and 302 redirects
+      // are processed natively by the browser networking stack without opaque redirect drops.
+      setTimeout(() => {
+        loginBtn.disabled = true;
+        loginBtn.textContent = 'Authenticating...';
+      }, 0);
     });
   }
 
-  document.addEventListener('astro:page-load', () => {
+  function initAdminPortal() {
     setupForgotPassword();
     setupRecoveryFlow();
     setupLoginForm();
-  });
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initAdminPortal);
+  } else {
+    initAdminPortal();
+  }
+  document.addEventListener('astro:page-load', initAdminPortal);
 </script>
 
