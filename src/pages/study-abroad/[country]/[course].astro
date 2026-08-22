@@ -1,0 +1,119 @@
+---
+export const prerender = true;
+import Layout from "../../../layouts/Layout.astro";
+import AICounsellor from "../../../components/AICounsellor";
+import VisaApprovalCalculator from "../../../components/VisaApprovalCalculator";
+
+export async function getStaticPaths() {
+  const countries = [
+    { slug: 'canada', name: 'Canada', flag: '🇨🇦' },
+    { slug: 'uk', name: 'United Kingdom', flag: '🇬🇧' },
+    { slug: 'australia', name: 'Australia', flag: '🇦🇺' },
+    { slug: 'usa', name: 'USA', flag: '🇺🇸' },
+    { slug: 'germany', name: 'Germany', flag: '🇩🇪' },
+    { slug: 'ireland', name: 'Ireland', flag: '🇮🇪' }
+  ];
+
+  const courses = [
+    { slug: 'data-science', title: 'Data Science & AI', duration: '1–2 Years', avgFee: '₹12L – ₹28L / yr', psw: '2–3 Years PSW' },
+    { slug: 'nursing', title: 'Nursing & Healthcare', duration: '2–3 Years', avgFee: '₹14L – ₹30L / yr', psw: 'High PR Demand' },
+    { slug: 'computer-science', title: 'Computer Science & Software', duration: '1–2 Years', avgFee: '₹15L – ₹35L / yr', psw: '2–3 Years PSW' },
+    { slug: 'business-analytics', title: 'Business Analytics & Finance', duration: '1–2 Years', avgFee: '₹14L – ₹32L / yr', psw: '2–3 Years PSW' },
+    { slug: 'cyber-security', title: 'Cyber Security & Cloud', duration: '1–2 Years', avgFee: '₹13L – ₹29L / yr', psw: '2–3 Years PSW' },
+    { slug: 'engineering', title: 'Engineering & Technology', duration: '2–4 Years', avgFee: '₹12L – ₹34L / yr', psw: '2–3 Years PSW' },
+    { slug: 'mba', title: 'MBA & Executive Management', duration: '1–2 Years', avgFee: '₹18L – ₹45L / yr', psw: '2–3 Years PSW' }
+  ];
+
+  const paths: any[] = [];
+  for (const c of countries) {
+    for (const cr of courses) {
+      paths.push({
+        params: { country: c.slug, course: cr.slug },
+        props: { countryObj: c, courseObj: cr }
+      });
+    }
+  }
+  return paths;
+}
+
+const { countryObj, courseObj } = Astro.props;
+
+const pageTitle = `Study ${courseObj.title} in ${countryObj.name} (2026 Admissions) | TESCA`;
+const pageDescription = `Complete guide for Indian students to study ${courseObj.title} in ${countryObj.name}. Tuition fees, university shortlists, post-study work permits, and 97% visa success guarantee by TESCA Surat.`;
+
+const structuredCourseData = {
+  "@context": "https://schema.org",
+  "@type": "Course",
+  "name": `${courseObj.title} in ${countryObj.name}`,
+  "description": pageDescription,
+  "provider": {
+    "@type": "EducationalOrganization",
+    "name": "TESCA Visa Consultancy",
+    "sameAs": "https://tescavisa.com"
+  }
+};
+---
+
+<Layout title={pageTitle} description={pageDescription}>
+  <script type="application/ld+json" set:html={JSON.stringify(structuredCourseData)} />
+
+  <div class="bg-slate-950 text-white py-12 md:py-20 px-6 md:px-8 relative overflow-hidden font-sans border-b border-slate-800">
+    <div class="max-w-7xl mx-auto relative z-10 space-y-6">
+      
+      <div class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white/10 text-accent-cyan border border-white/15 text-xs font-semibold uppercase tracking-wider">
+        <span>{countryObj.flag}</span>
+        <span>2026 Destination Guide</span>
+      </div>
+
+      <h1 class="text-3xl sm:text-5xl lg:text-6xl font-extrabold font-display tracking-tight text-white leading-tight">
+        Study <span class="text-accent-cyan">{courseObj.title}</span> in {countryObj.name}
+      </h1>
+
+      <p class="text-slate-300 text-base md:text-xl max-w-3xl font-normal leading-relaxed">
+        Get direct university shortlists, scholarship eligibility evaluations, and visa documentation support from Surat's #1 Visa Consultancy.
+      </p>
+
+      {/* Key Stats Bar */}
+      <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 pt-6 border-t border-white/15 max-w-4xl">
+        <div class="bg-white/5 p-4 rounded-2xl border border-white/10">
+          <div class="text-xs text-slate-400 font-medium uppercase">Course Duration</div>
+          <div class="text-lg font-bold text-white mt-1">{courseObj.duration}</div>
+        </div>
+        <div class="bg-white/5 p-4 rounded-2xl border border-white/10">
+          <div class="text-xs text-slate-400 font-medium uppercase">Est. Tuition Fee</div>
+          <div class="text-lg font-bold text-white mt-1">{courseObj.avgFee}</div>
+        </div>
+        <div class="bg-white/5 p-4 rounded-2xl border border-white/10">
+          <div class="text-xs text-slate-400 font-medium uppercase">Work Permit</div>
+          <div class="text-lg font-bold text-accent-cyan mt-1">{courseObj.psw}</div>
+        </div>
+        <div class="bg-white/5 p-4 rounded-2xl border border-white/10">
+          <div class="text-xs text-slate-400 font-medium uppercase">Visa Approval</div>
+          <div class="text-lg font-bold text-emerald-400 mt-1">97% (SLA)</div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  {/* Main Content & Interactive Evaluator */}
+  <section class="max-w-7xl mx-auto px-6 md:px-8 py-12 md:py-16 space-y-12 text-left font-sans">
+    
+    <div class="space-y-4 max-w-3xl">
+      <h2 class="text-2xl sm:text-3xl font-bold font-display text-slate-900 tracking-tight">
+        Why Choose {countryObj.name} for {courseObj.title}?
+      </h2>
+      <p class="text-slate-600 text-base leading-relaxed">
+        {countryObj.name} remains one of the top destinations for Indian students seeking degree qualifications in {courseObj.title}. With world-renowned faculty, state-of-the-art research labs, and extensive post-graduation work opportunities, graduates enjoy high career placement rates across tech, management, and global industries.
+      </p>
+    </div>
+
+    {/* Integrated Interactive Visa Odds Calculator */}
+    <div class="pt-6">
+      <VisaApprovalCalculator client:only="react" />
+    </div>
+
+  </section>
+
+  <AICounsellor client:idle />
+</Layout>

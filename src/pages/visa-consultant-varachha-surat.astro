@@ -1,0 +1,47 @@
+---
+export const prerender = true;
+import Layout from "../layouts/Layout.astro";
+import AICounsellor from "../components/AICounsellor";
+import VisaApprovalCalculator from "../components/VisaApprovalCalculator";
+
+const pageTitle = "Best Student Visa Agent in Varachha & Mota Varachha Surat | TESCA";
+const pageDescription = "TESCA's Mota Varachha office offers study abroad admissions counseling, Canada PR, UK student visa, Australia higher education, and offline IELTS/PTE classes in Varachha, Surat.";
+---
+
+<Layout title={pageTitle} description={pageDescription}>
+  <section class="max-w-7xl mx-auto px-6 md:px-8 pt-8 pb-16 text-left font-sans">
+    
+    <a href="/" class="inline-flex items-center gap-1.5 text-sm font-semibold text-accent-blue hover:underline mb-8">
+      ← Back to Home
+    </a>
+
+    <div class="glass-card rounded-[2.5rem] overflow-hidden bg-slate-50/80 border border-slate-200/60 shadow-lg p-8 md:p-12 relative mb-12">
+      <div class="max-w-3xl space-y-6 relative z-10 font-sans">
+        <span class="inline-flex items-center gap-1.5 text-xs font-semibold tracking-wider text-slate-800 bg-accent-blue/10 px-4 py-1.5 rounded-full border border-accent-blue/20 uppercase">
+          Mota Varachha Branch Office
+        </span>
+        <h1 class="text-3xl sm:text-5xl lg:text-6xl font-extrabold font-display text-slate-900 tracking-tight leading-tight">
+          Study Visa Consultant & Agent in Mota Varachha, Surat
+        </h1>
+        <p class="text-base md:text-[18px] text-slate-600 font-normal leading-relaxed">
+          Visit our flagship branch at Ambika Pinnacle, Lajamni Chowk, Mota Varachha. TESCA provides personalized profile evaluations, fast-track visa filing, bank loan assistance, and structured IELTS/PTE coaching for students in Varachha, Kamrej, Sarthana, and Simada.
+        </p>
+
+        <div class="flex items-center gap-2 pt-2">
+          <div class="flex text-amber-400 text-lg">★★★★★</div>
+          <span class="text-xs text-slate-600 font-medium">
+            <strong>900+</strong> Google Reviews (4.9 Stars Rating)
+          </span>
+        </div>
+      </div>
+    </div>
+
+    {/* Integrated Calculator */}
+    <div class="mb-12">
+      <VisaApprovalCalculator client:only="react" />
+    </div>
+
+  </section>
+
+  <AICounsellor client:idle />
+</Layout>

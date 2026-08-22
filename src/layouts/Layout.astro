@@ -2,6 +2,7 @@
 import "../styles/global.css";
 import CounsellorForm from "../components/CounsellorForm";
 import PromoPopup from "../components/PromoPopup.astro";
+import LiveSocialProofTicker from "../components/LiveSocialProofTicker";
 import { ClientRouter } from "astro:transitions";
 import { ensureCsrfToken } from "../utils/csrf";
 import { Icons as NavIcons } from "../utils/icons";
@@ -2060,5 +2061,6 @@ if (isAdminPage) {
 		</div>
 
 		{!isAdminPage && <PromoPopup />}
+		{!isAdminPage && <LiveSocialProofTicker client:only="react" />}
 	</body>
 </html>
