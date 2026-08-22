@@ -50,6 +50,13 @@ export function setRuntimeEnv(env: Record<string, any> | null | undefined) {
   }
 }
 
+const DEFAULT_FALLBACKS: Record<string, string> = {
+  PUBLIC_SUPABASE_URL: "https://zlsauoosumpnbyouhdfk.supabase.co",
+  PUBLIC_SUPABASE_ANON_KEY: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inpsc2F1b29zdW1wbmJ5b3VoZGZrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE3NjA2MDEsImV4cCI6MjA5NzMzNjYwMX0.JV5mmtfIGmPvA83H-vr173GDcqXoLG13gR7BJlXZ-SY",
+  SUPABASE_SERVICE_ROLE_KEY: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inpsc2F1b29zdW1wbmJ5b3VoZGZrIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc4MTc2MDYwMSwiZXhwIjoyMDk3MzM2NjAxfQ.f2L5m36JHa6Esz5IHDpy1rcu28ck80_yK3ErHEaiDhk",
+  OWNER_EMAIL: "tescavisaconsultancy87@gmail.com",
+};
+
 export function getEnv(key: string): string | undefined {
   // 1. Runtime env captured from the Cloudflare Worker at module load.
   if (_env[key]) {
@@ -70,6 +77,11 @@ export function getEnv(key: string): string | undefined {
       return (import.meta.env as any)[key];
     }
   } catch (e) {}
+
+  // 4. Default fallback constant for critical application configurations
+  if (DEFAULT_FALLBACKS[key]) {
+    return DEFAULT_FALLBACKS[key];
+  }
 
   return undefined;
 }
