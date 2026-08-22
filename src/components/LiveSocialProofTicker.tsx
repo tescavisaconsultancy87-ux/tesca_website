@@ -103,11 +103,11 @@ export default function LiveSocialProofTicker() {
 
   return (
     <div
-      className={`fixed bottom-6 left-6 z-40 max-w-xs sm:max-w-sm transition-all duration-500 transform font-sans ${
+      className={`fixed bottom-[88px] md:bottom-6 left-3 sm:left-6 z-40 max-w-[calc(100vw-5.5rem)] sm:max-w-xs md:max-w-sm transition-all duration-500 transform font-sans ${
         visible ? 'translate-y-0 opacity-100' : 'translate-y-6 opacity-0 pointer-events-none'
       }`}
     >
-      <div className="bg-white/95 backdrop-blur-md border border-slate-200/90 rounded-2xl p-3.5 shadow-xl flex items-start gap-3 relative overflow-hidden group">
+      <div className="bg-white/95 backdrop-blur-md border border-slate-200/90 rounded-2xl p-2.5 sm:p-3.5 shadow-xl flex items-start gap-2.5 sm:gap-3 relative overflow-hidden group">
         
         {/* Left Icon Badge */}
         <div className={`p-2.5 rounded-xl text-white shrink-0 shadow-sm ${

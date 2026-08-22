@@ -434,7 +434,7 @@ export default function AICounsellor() {
   const whatsappUrl = `https://wa.me/${whatsappNumber}?text=${whatsappMsg}`;
 
   return (
-    <div className="fixed bottom-20 md:bottom-6 right-6 z-50 font-sans pointer-events-auto text-left">
+    <div className="fixed bottom-[88px] md:bottom-6 right-3 sm:right-6 z-50 font-sans pointer-events-auto text-left">
       
       {/* Floating Buttons Stack */}
       {!isOpen && (
@@ -477,7 +477,7 @@ export default function AICounsellor() {
         <div 
           id="ai-chat-window-panel"
           data-lenis-prevent
-          className="w-[300px] sm:w-[340px] h-[440px] rounded-2xl border border-slate-200 bg-white/95 backdrop-blur-xl shadow-2xl flex flex-col justify-between overflow-hidden overscroll-contain animate-[chatOpen_0.3s_cubic-bezier(0.16,1,0.3,1)]"
+          className="w-[calc(100vw-2rem)] xs:w-[300px] sm:w-[340px] max-h-[calc(100vh-110px)] h-[440px] rounded-2xl border border-slate-200 bg-white/95 backdrop-blur-xl shadow-2xl flex flex-col justify-between overflow-hidden overscroll-contain animate-[chatOpen_0.3s_cubic-bezier(0.16,1,0.3,1)]"
         >
           
           {/* Header */}
