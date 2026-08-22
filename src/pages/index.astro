@@ -5,7 +5,6 @@ import CountrySelector from "../components/CountrySelector";
 import StudentCarousel from "../components/StudentCarousel";
 import AICounsellor from "../components/AICounsellor";
 import FAQ from "../components/FAQ.astro";
-import VisaApprovalCalculator from "../components/VisaApprovalCalculator";
 
 // Homepage FAQ — powers Google Featured Snippets + AI Overviews (AEO)
 const homeFaqItems = [
@@ -228,11 +227,6 @@ if (causesRes.error) {
 
       </div>
     </div>
-  </section>
-
-  {/* ==================== AI VISA APPROVAL ODDS CALCULATOR SECTION ==================== */}
-  <section class="max-w-7xl mx-auto px-6 md:px-8 -mt-6 sm:-mt-10 py-8 font-sans relative z-30">
-    <VisaApprovalCalculator client:only="react" />
   </section>
 
   {/* ==================== SECTION 2: WHY CHOOSE US (LIGHT BACKGROUND) ==================== */}
