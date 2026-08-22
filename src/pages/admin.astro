@@ -600,16 +600,24 @@ if (isAuthenticated) {
         const formData = new FormData(loginForm);
         const csrfVal = (formData.get("csrf_token") || "").toString();
 
+        // Use redirect:'manual' so we intercept the server 302 before fetch
+        // auto-follows it. Without this, fetch follows 302→/admin/dashboard,
+        // dashboard auth fails (race on cookie delivery), redirects back to
+        // /admin, and res.url ends up as the login page — a silent loop.
         const res = await fetch(window.location.href, {
           method: 'POST',
           headers: {
             'x-csrf-token': csrfVal,
           },
-          body: formData
+          body: formData,
+          redirect: 'manual',
         });
 
-        if (res.redirected) {
-          window.location.href = res.url;
+        // opaqueredirect = server issued a 3xx redirect (login succeeded).
+        // Navigate directly to the dashboard — the session cookies were already
+        // set by the server in the Set-Cookie header of the 302 response.
+        if (res.type === 'opaqueredirect' || res.status === 0 || (res.status >= 300 && res.status < 400)) {
+          window.location.href = '/admin/dashboard';
           return;
         }
 
@@ -630,6 +638,8 @@ if (isAuthenticated) {
         }
 
         if (res.ok && !errorText) {
+          // 200 OK with no error text — shouldn't normally happen on the login
+          // page after a successful POST, but navigate to dashboard as fallback.
           window.location.href = "/admin/dashboard";
           return;
         }
@@ -642,6 +652,8 @@ if (isAuthenticated) {
             displayError = "Incorrect password or email address. Please check and try again.";
           } else if (lowerText.includes("not registered as an administrator")) {
             displayError = "This email is not registered as an administrator.";
+          } else if (lowerText.includes("too many login attempts")) {
+            displayError = "Too many login attempts. Please wait 1 minute before trying again.";
           } else {
             displayError = errorText;
           }
