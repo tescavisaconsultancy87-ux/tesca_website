@@ -269,6 +269,21 @@ if (isAdminPage) {
 						return;
 					}
 
+					// Report exception to PostHog if initialized
+					if ((window as any).posthog) {
+						try {
+							(window as any).posthog.capture('$exception', {
+								$exception_type: type,
+								$exception_message: message,
+								$exception_stack_trace_raw: stack,
+								$exception_personURL: window.location.href,
+								context: context
+							});
+						} catch (phErr) {
+							console.warn('PostHog exception capture failed:', phErr);
+						}
+					}
+
 					fetch('/api/report-client-error', {
 						method: 'POST',
 						headers: { 'Content-Type': 'application/json' },
@@ -344,30 +359,46 @@ if (isAdminPage) {
 
 				// Scroll Depth & Page Navigation Tracking
 				let trackedThresholds = new Set<number>();
+				let lastTrackedPath = '';
+				let lastTrackedTime = 0;
+				let scrollThrottleTimeout: ReturnType<typeof setTimeout> | null = null;
 
 				const trackScrollDepth = () => {
-					const scrollTop = window.scrollY || document.documentElement.scrollTop;
-					const docHeight = document.documentElement.scrollHeight - document.documentElement.clientHeight;
-					if (docHeight <= 0) return;
-					
-					const scrollPercent = Math.round((scrollTop / docHeight) * 100);
-					const thresholds = [25, 50, 75, 90, 100];
+					if (scrollThrottleTimeout) return;
+					scrollThrottleTimeout = setTimeout(() => {
+						scrollThrottleTimeout = null;
+						const scrollTop = window.scrollY || document.documentElement.scrollTop;
+						const docHeight = document.documentElement.scrollHeight - document.documentElement.clientHeight;
+						if (docHeight <= 0) return;
+						
+						const scrollPercent = Math.round((scrollTop / docHeight) * 100);
+						const thresholds = [25, 50, 75, 90, 100];
 
-					thresholds.forEach((threshold) => {
-						if (scrollPercent >= threshold && !trackedThresholds.has(threshold)) {
-							trackedThresholds.add(threshold);
-							posthog.capture('scroll_depth', {
-								depth_percent: threshold,
-								pathname: window.location.pathname,
-							});
-						}
-					});
+						thresholds.forEach((threshold) => {
+							if (scrollPercent >= threshold && !trackedThresholds.has(threshold)) {
+								trackedThresholds.add(threshold);
+								posthog.capture('scroll_depth', {
+									depth_percent: threshold,
+									pathname: window.location.pathname,
+								});
+							}
+						});
+					}, 150);
 				};
 
-				// Reset on page navigation & attach listeners
+				// Reset on page navigation & attach listeners with deduplication
 				document.addEventListener('astro:page-load', () => {
 					trackedThresholds.clear();
-					posthog.capture('$pageview');
+					const currentPath = window.location.pathname + window.location.search;
+					const now = Date.now();
+
+					// Prevent duplicate pageview triggers on fast re-navigations / transitions within 300ms
+					if (currentPath !== lastTrackedPath || (now - lastTrackedTime) > 300) {
+						lastTrackedPath = currentPath;
+						lastTrackedTime = now;
+						posthog.capture('$pageview');
+					}
+
 					window.removeEventListener('scroll', trackScrollDepth);
 					window.addEventListener('scroll', trackScrollDepth, { passive: true });
 				});
@@ -1552,6 +1583,15 @@ if (isAdminPage) {
 				const isTestMode = urlParams.get("test-modal") === "true";
 				const isModalShown = !isTestMode && localStorage.getItem("softModalShown") === "true";
 
+				// Detect social campaign traffic (IG/FB referral or utm parameters)
+				const isSocialAdTraffic = urlParams.has("fbclid") ||
+					urlParams.get("utm_source") === "ig" ||
+					urlParams.get("utm_medium") === "social" ||
+					document.referrer.includes("instagram.com") ||
+					document.referrer.includes("facebook.com");
+
+				const modalDelay = isSocialAdTraffic ? 12000 : 45000;
+
 				const showSoftModal = () => {
 					if (window.location.pathname.toLowerCase().includes("review-generator")) return;
 					const modal = document.getElementById("soft-cta-modal");
@@ -1627,7 +1667,7 @@ if (isAdminPage) {
 						if (!hasClickedCTA) {
 							showSoftModal();
 						}
-					}, 45000);
+					}, modalDelay);
 
 					// Close handles
 					const closeBtn = document.getElementById("soft-cta-close");
