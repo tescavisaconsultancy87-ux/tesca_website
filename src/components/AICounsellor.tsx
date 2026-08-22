@@ -409,10 +409,10 @@ export default function AICounsellor() {
         }
         setCurrentSuggestions(related);
       } else {
-        // No matching question found in database
+        // No matching question found
         setMessages(prev => [...prev, {
           sender: "ai",
-          text: "I couldn't find a direct answer in our Q&A database. 📞 For specialized assistance, please contact our senior advisors directly at **+91 98241 52731** or fill out our enquiry form by clicking the **Speak with a Counsellor** button below.",
+          text: "I couldn't find a direct answer to your question. 📞 For specialized assistance, please contact our senior advisors directly at **+91 98241 52731** or fill out our enquiry form by clicking the **Speak with a Counsellor** button below.",
           timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
           showFallbackForm: true,
           originalQuery: text

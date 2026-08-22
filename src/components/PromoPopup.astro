@@ -39,22 +39,38 @@
 </style>
 
 <script>
-  let hasTriggered = false;
+  let popupTimer: ReturnType<typeof setTimeout> | null = null;
 
   function isAdminOrExcludedPath() {
     const path = window.location.pathname.toLowerCase();
     const host = window.location.hostname.toLowerCase();
-    return path.startsWith("/admin") || host.startsWith("admin.") || path.includes("review-generator") || path.startsWith("/documents") || path.startsWith("/document");
+    return (
+      path.startsWith("/admin") ||
+      host.startsWith("admin.") ||
+      path.includes("review-generator") ||
+      path.startsWith("/documents") ||
+      path.startsWith("/document") ||
+      path.startsWith("/promo")
+    );
   }
 
   async function initPromoPopup() {
+    // Clear any pending timer from a previous page view
+    if (popupTimer) {
+      clearTimeout(popupTimer);
+      popupTimer = null;
+    }
+
     if (isAdminOrExcludedPath()) return;
+
     const urlParams = new URLSearchParams(window.location.search);
     const isTestMode = urlParams.get("test-popup") === "true";
-    if (hasTriggered && !isTestMode) return;
-    hasTriggered = true;
+
+    if (isTestMode) {
+      sessionStorage.removeItem("promo_popup_closed");
+    }
+
     const isClosedInSession = sessionStorage.getItem("promo_popup_closed");
-    
     if (isClosedInSession === "true" && !isTestMode) return;
 
     try {
@@ -89,13 +105,12 @@
       if (!overlay || !card || !container) return;
 
       // Injects slide elements
-      container.innerHTML = popups.map((p, idx) => {
-        // Active slide is relative flow so container dynamically scales to flyer aspect ratio. Inactive slides are absolute & hidden.
+      container.innerHTML = popups.map((p: any, idx: number) => {
         const activeClasses = idx === 0 
           ? "relative block opacity-100 z-10" 
           : "absolute inset-0 opacity-0 pointer-events-none z-0";
         const redirectAttr = p.redirect_to_link ? 'true' : 'false';
-        const linkUrlAttr = p.link_url ? p.link_url.replace(/"/g, '&quot;') : '';
+        const linkUrlAttr = p.link_url ? String(p.link_url).replace(/"/g, '&quot;') : '';
         return `
           <div class="promo-slide w-full h-auto transition-all duration-300 cursor-pointer ${activeClasses}" data-index="${idx}" data-popup-id="${p.id}" data-redirect="${redirectAttr}" data-link-url="${linkUrlAttr}">
             <img src="${p.image_url}" alt="${p.title}" class="w-full h-auto block pointer-events-none select-none" />
@@ -108,7 +123,6 @@
       const slides = container.querySelectorAll(".promo-slide");
 
       const updateSlider = (newIdx: number) => {
-        // Range validation
         if (newIdx < 0) newIdx = popups.length - 1;
         if (newIdx >= popups.length) newIdx = 0;
         
@@ -122,7 +136,6 @@
           }
         });
 
-        // Update dots
         if (indicatorsContainer) {
           const dots = indicatorsContainer.querySelectorAll(".indicator-dot");
           dots.forEach((dot, idx) => {
@@ -145,29 +158,44 @@
         nextBtn?.classList.remove("hidden");
         indicatorsContainer?.classList.remove("hidden");
 
-        // Inject dots
         if (indicatorsContainer) {
-          indicatorsContainer.innerHTML = popups.map((_, idx) => {
+          indicatorsContainer.innerHTML = popups.map((_: any, idx: number) => {
             const widthClass = idx === 0 ? "w-4 bg-indigo-600" : "w-1.5 bg-slate-200";
             return `<button type="button" class="indicator-dot h-1.5 rounded-full transition-all duration-300 ${widthClass}" data-slide="${idx}" aria-label="Go to slide ${idx + 1}"></button>`;
           }).join("");
 
-          // Dot click listeners
           indicatorsContainer.querySelectorAll(".indicator-dot").forEach((dot) => {
-            dot.addEventListener("click", () => {
+            (dot as HTMLElement).onclick = () => {
               const slideIdx = parseInt(dot.getAttribute("data-slide") || "0", 10);
               updateSlider(slideIdx);
-            });
+            };
           });
         }
 
-        // Arrow click listeners
-        prevBtn?.addEventListener("click", () => updateSlider(currentIdx - 1));
-        nextBtn?.addEventListener("click", () => updateSlider(currentIdx + 1));
+        if (prevBtn) prevBtn.onclick = () => updateSlider(currentIdx - 1);
+        if (nextBtn) nextBtn.onclick = () => updateSlider(currentIdx + 1);
       }
 
-      // Slide click listener - navigate to custom link if configured or default to dedicated promo landing page
-      container.addEventListener("click", (e) => {
+      // Close handler
+      const closePopup = () => {
+        if (!isTestMode) {
+          sessionStorage.setItem("promo_popup_closed", "true");
+        }
+        
+        const currentOverlay = document.getElementById("promo-popup-overlay");
+        const currentCard = document.getElementById("promo-popup-card");
+        if (currentCard) {
+          currentCard.classList.remove("opacity-100", "scale-100", "translate-y-0");
+          currentCard.classList.add("opacity-0", "scale-95", "translate-y-4");
+        }
+        if (currentOverlay) {
+          currentOverlay.classList.remove("opacity-100");
+          currentOverlay.classList.add("opacity-0", "pointer-events-none");
+        }
+      };
+
+      // Slide click listener
+      container.onclick = (e: MouseEvent) => {
         const target = e.target as HTMLElement;
         const slide = target.closest(".promo-slide");
         if (slide) {
@@ -187,58 +215,40 @@
             window.location.href = `/promo/${popupId}`;
           }
         }
-      });
+      };
 
-      // Show modal after the delay from first popup (or 5 seconds)
+      const closeBtn = document.getElementById("promo-popup-close");
+      if (closeBtn) closeBtn.onclick = closePopup;
+      overlay.onclick = (e) => {
+        if (e.target === overlay) closePopup();
+      };
+
+      // Show modal after delay_seconds from first active popup (default 5 seconds)
       const delayMs = (isTestMode ? 1 : popups[0].delay_seconds || 5) * 1000;
 
-      setTimeout(() => {
+      popupTimer = setTimeout(() => {
         if (isAdminOrExcludedPath()) return;
         if (sessionStorage.getItem("promo_popup_closed") === "true" && !isTestMode) return;
         
-        overlay.classList.remove("pointer-events-none", "opacity-0");
-        overlay.classList.add("opacity-100");
+        const liveOverlay = document.getElementById("promo-popup-overlay");
+        const liveCard = document.getElementById("promo-popup-card");
 
-        card.classList.remove("opacity-0", "scale-95", "translate-y-4");
-        card.classList.add("opacity-100", "scale-100", "translate-y-0");
-      }, delayMs);
+        if (liveOverlay && liveCard) {
+          liveOverlay.classList.remove("pointer-events-none", "opacity-0");
+          liveOverlay.classList.add("opacity-100");
 
-      // Handle close
-      const closePopup = () => {
-        if (!isTestMode) {
-          sessionStorage.getItem("promo_popup_closed");
-          sessionStorage.setItem("promo_popup_closed", "true");
+          liveCard.classList.remove("opacity-0", "scale-95", "translate-y-4");
+          liveCard.classList.add("opacity-100", "scale-100", "translate-y-0");
         }
-        
-        card.classList.remove("opacity-100", "scale-100", "translate-y-0");
-        card.classList.add("opacity-0", "scale-95", "translate-y-4");
-
-        overlay.classList.remove("opacity-100");
-        overlay.classList.add("opacity-0", "pointer-events-none");
-      };
-
-      document.getElementById("promo-popup-close")?.addEventListener("click", closePopup);
-      overlay.addEventListener("click", (e) => {
-        if (e.target === overlay) closePopup();
-      });
+      }, delayMs);
 
     } catch (e) {
       console.error("Failed to load promo popup settings:", e);
     }
   }
 
-  // Handle load & page navigation in Astro (with View Transitions)
-  function handlePromoInit() {
-    if (isAdminOrExcludedPath()) return;
+  // Handle initial page load & Astro View Transitions
+  document.addEventListener("astro:page-load", () => {
     initPromoPopup();
-  }
-
-  document.addEventListener("astro:page-load", handlePromoInit);
-  if (!hasTriggered && !isAdminOrExcludedPath()) {
-    if (document.readyState === 'complete' || document.readyState === 'interactive') {
-      initPromoPopup();
-    } else {
-      document.addEventListener('DOMContentLoaded', initPromoPopup);
-    }
-  }
+  });
 </script>
