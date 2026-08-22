@@ -105,9 +105,16 @@ if (Astro.request.method === "POST") {
       return Astro.redirect("/admin");
     }
     }
-  } catch (err) {
+  } catch (err: any) {
     console.error("Login process error:", err);
-    errorMessage = "An unexpected error occurred during login.";
+    const msg = err?.message || "";
+    if (msg.includes("fetch") || msg.includes("network") || msg.includes("Failed to fetch")) {
+      errorMessage = "Connection error: Unable to reach authentication server. Please try again.";
+    } else if (msg) {
+      errorMessage = msg;
+    } else {
+      errorMessage = "An unexpected error occurred during login. Please try again.";
+    }
   }
 }
 
