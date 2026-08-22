@@ -270,9 +270,10 @@ if (isAdminPage) {
 					}
 
 					// Report exception to PostHog if initialized
-					if ((window as any).posthog) {
+					const ph = window['posthog'];
+					if (ph && typeof ph.capture === 'function') {
 						try {
-							(window as any).posthog.capture('$exception', {
+							ph.capture('$exception', {
 								$exception_type: type,
 								$exception_message: message,
 								$exception_stack_trace_raw: stack,
