@@ -342,58 +342,16 @@ export default function AICounsellor() {
   const handleSend = useCallback(async (text: string) => {
     if (!text.trim()) return;
 
-    const timestamp = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
     const newMsg: Message = {
       sender: "user",
       text: text,
-      timestamp: timestamp
+      timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
     };
 
     setMessages(prev => [...prev, newMsg]);
     setIsTyping(true);
 
-    try {
-      // 1. Attempt Cloudflare Worker 24/7 API call
-      const res = await fetch("https://openwebapi.dhameliyaavadh592.workers.dev/v1/chat/completions", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "Authorization": "Bearer sk-test"
-        },
-        body: JSON.stringify({
-          model: "gemini-3.5-flash",
-          messages: [
-            {
-              role: "system",
-              content: "You are TESCA Assistant, an expert study abroad and visa counsellor for TESCA Visa Consultancy in Surat, Gujarat (20+ years experience, 30,000+ students placed, 97% visa approval rate). Be helpful, encouraging, and provide clear concise answers about study abroad visas, IELTS/PTE prep, intake dates, and university admissions."
-            },
-            ...messages.map(m => ({
-              role: m.sender === "user" ? "user" : "assistant",
-              content: m.text
-            })),
-            { role: "user", content: text }
-          ]
-        })
-      });
-
-      if (res.ok) {
-        const data = await res.json();
-        const replyText = data?.choices?.[0]?.message?.content;
-        if (replyText && !data.error) {
-          setMessages(prev => [...prev, {
-            sender: "ai",
-            text: replyText,
-            timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-          }]);
-          setIsTyping(false);
-          return;
-        }
-      }
-    } catch (err) {
-      console.warn("Cloudflare Worker API unavailable, using local Q&A engine:", err);
-    }
-
-    // 2. Seamless Fallback to local Q&A engine if Cloudflare API key is pending or offline
+    // Simulate natural typing delay for a premium interactive experience
     setTimeout(() => {
       const cleanQuery = text.toLowerCase().replace(/[?.,\/#!$%\^&\*;:{}=\-_`~()]/g, "");
       const words = cleanQuery.split(/\s+/).filter(w => w.length > 2);
@@ -466,8 +424,8 @@ export default function AICounsellor() {
       }
 
       setIsTyping(false);
-    }, 500);
-  }, [messages]);
+    }, 600);
+  }, []);
 
   const whatsappNumber = "919824152731";
   const whatsappMsg = encodeURIComponent(
