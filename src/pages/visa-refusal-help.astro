@@ -252,8 +252,12 @@ const SVG = {
           }
         }
 
-        document.addEventListener('DOMContentLoaded', initRefusalDiagnostic);
         document.addEventListener('astro:page-load', initRefusalDiagnostic);
+        if (document.readyState === 'loading') {
+          document.addEventListener('DOMContentLoaded', initRefusalDiagnostic);
+        } else {
+          initRefusalDiagnostic();
+        }
       </script>
 
     </div>

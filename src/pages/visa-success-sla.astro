@@ -326,8 +326,12 @@ const SVG = {
         }
       }
 
-      document.addEventListener('DOMContentLoaded', initSlaCalculator);
       document.addEventListener('astro:page-load', initSlaCalculator);
+      if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', initSlaCalculator);
+      } else {
+        initSlaCalculator();
+      }
     </script>
 
   </section>

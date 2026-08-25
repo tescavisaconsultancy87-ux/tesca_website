@@ -173,19 +173,24 @@ const uniqueYears = Array.from(new Set(visaUpdates.map(u => u._year)))
     )}
 
     <script>
-      document.addEventListener('DOMContentLoaded', () => {
+      function initUpdatesFilter() {
         const buttons = document.querySelectorAll('.update-filter-btn');
         const cards = document.querySelectorAll('.update-card') as NodeListOf<HTMLElement>;
+
+        if (!buttons.length) return;
+
+        const activeClass = "update-filter-btn px-4 py-1.5 rounded-full text-[12px] sm:text-[13px] font-bold font-sans border transition-all duration-300 cursor-pointer shadow-sm shrink-0 hover:scale-[1.01] bg-indigo-600 text-white border-transparent shadow-md shadow-indigo-100";
+        const inactiveClass = "update-filter-btn px-4 py-1.5 rounded-full text-[12px] sm:text-[13px] font-semibold font-sans border transition-all duration-300 cursor-pointer shadow-sm shrink-0 hover:scale-[1.01] bg-slate-50 border-slate-200 text-slate-600 hover:bg-slate-100 hover:text-slate-800";
 
         buttons.forEach(btn => {
           btn.addEventListener('click', () => {
             // Reset styling for all buttons
             buttons.forEach(b => {
-              b.className = "update-filter-btn px-4.5 py-1.5 rounded-full text-[12px] sm:text-[13px] font-semibold font-sans border transition-all duration-300 cursor-pointer shadow-sm hover:scale-[1.01] bg-slate-50 border-slate-200 text-slate-600 hover:bg-slate-100 hover:text-slate-800";
+              b.className = inactiveClass;
             });
 
             // Apply active styling to the clicked button
-            btn.className = "update-filter-btn px-4.5 py-1.5 rounded-full text-[12px] sm:text-[13px] font-bold font-sans border transition-all duration-300 cursor-pointer shadow-sm hover:scale-[1.01] bg-indigo-600 text-white border-transparent shadow-md shadow-indigo-100";
+            btn.className = activeClass;
 
             const yearFilter = btn.getAttribute('data-filter-year');
 
@@ -212,7 +217,14 @@ const uniqueYears = Array.from(new Set(visaUpdates.map(u => u._year)))
             });
           });
         });
-      });
+      }
+
+      document.addEventListener('astro:page-load', initUpdatesFilter);
+      if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', initUpdatesFilter);
+      } else {
+        initUpdatesFilter();
+      }
     </script>
   </section>
 
