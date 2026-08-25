@@ -162,7 +162,7 @@ export default function AnnouncementsManager({ initialAnnouncements }: Announcem
 
   // Filtered list
   const filteredAnnouncements = announcements.filter((item) =>
-    item.text.toLowerCase().includes(searchQuery.toLowerCase())
+    (item?.text || "").toLowerCase().includes(searchQuery.toLowerCase())
   );
 
   const isAllSelected =

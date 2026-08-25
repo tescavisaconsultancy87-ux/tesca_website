@@ -179,9 +179,9 @@ export default function VisaUpdatesManager({ initialUpdates }: VisaUpdatesManage
 
   const filteredUpdates = updates.filter(
     (item) =>
-      item.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      item.tag.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      item.date.toLowerCase().includes(searchQuery.toLowerCase())
+      (item?.title || "").toLowerCase().includes(searchQuery.toLowerCase()) ||
+      (item?.tag || "").toLowerCase().includes(searchQuery.toLowerCase()) ||
+      (item?.date || "").toLowerCase().includes(searchQuery.toLowerCase())
   );
 
   const isAllSelected =
@@ -401,21 +401,23 @@ export default function VisaUpdatesManager({ initialUpdates }: VisaUpdatesManage
                         />
                         <div className="space-y-1 min-w-0">
                           <div className="flex items-center gap-2 flex-wrap">
-                            <span className={`px-2 py-0.5 rounded-md text-[10px] font-bold border ${item.tag_bg || "bg-amber-100 text-amber-700"}`}>
-                              {item.tag}
+                            <span className={`px-2 py-0.5 rounded-md text-[10px] font-bold border ${item?.tag_bg || "bg-amber-100 text-amber-700"}`}>
+                              {item?.tag || "BULLETIN"}
                             </span>
-                            <span className="text-[10px] text-slate-400 font-semibold">{item.date}</span>
+                            <span className="text-[10px] text-slate-400 font-semibold">{item?.date || ""}</span>
                           </div>
-                          <p className="text-xs font-semibold text-slate-800 leading-snug">{item.title}</p>
-                          <a
-                            href={item.link}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="text-[11px] text-indigo-600 hover:underline inline-flex items-center gap-1 font-medium"
-                          >
-                            <span>{item.link}</span>
-                            <ExternalLink className="w-3 h-3" />
-                          </a>
+                          <p className="text-xs font-semibold text-slate-800 leading-snug">{item?.title || ""}</p>
+                          {item?.link && (
+                            <a
+                              href={item.link}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="text-[11px] text-indigo-600 hover:underline inline-flex items-center gap-1 font-medium"
+                            >
+                              <span>{item.link}</span>
+                              <ExternalLink className="w-3 h-3" />
+                            </a>
+                          )}
                         </div>
                       </div>
 

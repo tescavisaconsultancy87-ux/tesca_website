@@ -46,6 +46,29 @@ const structuredData = {
 	telephone: "+91-9824152731",
 	email: "tescavisaconsultancy87@gmail.com",
 	priceRange: "₹₹",
+	areaServed: [
+		{ "@type": "City", name: "Surat" },
+		{ "@type": "State", name: "Gujarat" },
+		{ "@type": "Country", name: "India" }
+	],
+	openingHoursSpecification: [
+		{
+			"@type": "OpeningHoursSpecification",
+			dayOfWeek: ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"],
+			opens: "10:00",
+			closes: "19:00"
+		}
+	],
+	hasOfferCatalog: {
+		"@type": "OfferCatalog",
+		name: "Visa & Study Abroad Services",
+		itemListElement: [
+			{ "@type": "Offer", itemOffered: { "@type": "Service", name: "Student Visa Processing" } },
+			{ "@type": "Offer", itemOffered: { "@type": "Service", name: "University Admissions Guidance" } },
+			{ "@type": "Offer", itemOffered: { "@type": "Service", name: "IELTS & PTE Coaching" } },
+			{ "@type": "Offer", itemOffered: { "@type": "Service", name: "Education Loan Assistance" } }
+		]
+	},
 	address: [
 		{
 			"@type": "PostalAddress",
@@ -1817,14 +1840,13 @@ if (isAdminPage) {
 						(btn as any)._originalHTML = btn.innerHTML;
 					}
 					btn.innerHTML = SPINNER_HTML + (label ? ' ' + label : '');
-					setTimeout(() => {
-						(btn as HTMLButtonElement).disabled = true;
-					}, 0);
+					btn.style.pointerEvents = 'none';
 				};
 
 				(window as any).hideBtnLoader = function(btn: HTMLElement) {
 					if (!btn) return;
 					(btn as HTMLButtonElement).disabled = false;
+					btn.style.pointerEvents = '';
 					const orig = (btn as any)._originalHTML;
 					if (orig) {
 						btn.innerHTML = orig;

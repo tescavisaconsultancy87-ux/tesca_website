@@ -511,15 +511,22 @@ try {
 
 <script>
   async function handleResponse(res: Response, successMsg: string) {
+    if (res.redirected || (res.url && res.url.includes("/admin") && !window.location.pathname.endsWith("/admin"))) {
+      window.location.href = res.url || "/admin";
+      return;
+    }
     if (res.ok) {
       const htmlText = await res.text();
       const parser = new DOMParser();
       const doc = parser.parseFromString(htmlText, "text/html");
       const currentContainer = document.querySelector("main");
       const newContainer = doc.querySelector("main");
-      if (currentContainer && newContainer) {
+      if (currentContainer && newContainer && newContainer.children.length > 0) {
         currentContainer.innerHTML = newContainer.innerHTML;
         setupPopupAdmin();
+      } else {
+        window.location.reload();
+        return;
       }
       if ((window as any).showToast) {
         (window as any).showToast(successMsg, "success");

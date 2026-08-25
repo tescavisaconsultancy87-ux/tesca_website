@@ -407,6 +407,10 @@ try {
   }
 
   async function handleResponse(res: Response, successMsg: string, targetRow?: HTMLElement | null) {
+    if (res.redirected || (res.url && res.url.includes("/admin") && !window.location.pathname.endsWith("/admin"))) {
+      window.location.href = res.url || "/admin";
+      return false;
+    }
     if (res.ok) {
       if (targetRow) {
         targetRow.style.transition = "all 0.3s ease";
@@ -419,14 +423,17 @@ try {
         const doc = parser.parseFromString(htmlText, "text/html");
         const errorBanner = doc.querySelector(".admin-alert-banner.bg-rose-50");
         if (errorBanner) {
-          alert("Error: " + errorBanner.textContent.trim());
+          alert("Error: " + (errorBanner.textContent?.trim() || "An error occurred"));
           return false;
         }
         const currentContainer = document.querySelector("main");
         const newContainer = doc.querySelector("main");
-        if (currentContainer && newContainer) {
+        if (currentContainer && newContainer && newContainer.children.length > 0) {
           currentContainer.innerHTML = newContainer.innerHTML;
           setupGalleryEdit();
+        } else {
+          window.location.reload();
+          return true;
         }
       }
       if ((window as any).showToast) {
