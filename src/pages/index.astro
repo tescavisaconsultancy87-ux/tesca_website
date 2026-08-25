@@ -401,13 +401,13 @@ if (causesRes.error) {
           </button>
 
           <!-- Scrollable container -->
-          <div id="social-slider" class="flex gap-6 overflow-x-auto scroll-smooth [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden pb-6 px-2 select-none">
+          <div id="social-slider" class="flex gap-4 sm:gap-6 overflow-x-auto scroll-smooth snap-x snap-mandatory [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden pb-6 px-4 sm:px-2 select-none">
             {socialCauses.map((cause) => (
               <a 
                 href={cause.link_url} 
                 target="_blank" 
                 rel="noopener noreferrer"
-                class="flex-shrink-0 w-[230px] h-[350px] rounded-[1.5rem] border border-slate-200 bg-white hover:border-[#0A7880]/30 hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1 text-left relative group shadow-sm flex flex-col overflow-hidden no-underline"
+                class="flex-shrink-0 w-[calc(100vw-4rem)] max-w-[280px] sm:w-[230px] h-[360px] sm:h-[350px] rounded-[1.5rem] border border-slate-200 bg-white hover:border-[#0A7880]/30 hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1 text-left relative group shadow-sm flex flex-col overflow-hidden no-underline snap-center"
               >
                 {/* Photo Box Container */}
                 <div class="relative w-full aspect-square overflow-hidden bg-slate-50 shrink-0">
@@ -1018,15 +1018,22 @@ Expert guidance, top universities, and visa success—everything you need to tak
     const prevButton = prevBtn;
     const nextButton = nextBtn;
 
-    // Amount to scroll: card width (230px) + gap (24px) = 254px
-    const scrollAmount = 254;
+    const getScrollAmount = () => {
+      const firstChild = sliderEl.firstElementChild as HTMLElement | null;
+      if (firstChild) {
+        const style = window.getComputedStyle(sliderEl);
+        const gap = parseFloat(style.gap) || 16;
+        return firstChild.offsetWidth + gap;
+      }
+      return 254;
+    };
 
     prevButton.addEventListener("click", () => {
-      sliderEl.scrollBy({ left: -scrollAmount, behavior: "smooth" });
+      sliderEl.scrollBy({ left: -getScrollAmount(), behavior: "smooth" });
     });
 
     nextButton.addEventListener("click", () => {
-      sliderEl.scrollBy({ left: scrollAmount, behavior: "smooth" });
+      sliderEl.scrollBy({ left: getScrollAmount(), behavior: "smooth" });
     });
 
     function toggleButtons() {
