@@ -1,6 +1,5 @@
 import { getEnv } from "./env";
 import { getSupabaseAdmin } from "./supabase";
-import { runInBackground } from "./background";
 
 type RateLimitEntry = {
   count: number;
@@ -140,8 +139,8 @@ export async function reportServerError(
   apiName: string,
   error: any,
   requestPayload: any,
-  request: Request,
-  locals?: unknown
+  _request?: Request,
+  _locals?: unknown
 ): Promise<Response> {
   const correlationId = generateCorrelationId();
   // Sanitized diagnostics: mask PII and credentials from server logs alongside correlationId.

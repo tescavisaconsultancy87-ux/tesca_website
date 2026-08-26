@@ -127,8 +127,8 @@ const SVG = {
   title={`${resolvedPost.title} | TESCA Blog`}
   description={resolvedPost.desc}
 >
-  <script type="application/ld+json" set:html={JSON.stringify(articleSchema)} />
-  {faqSchema && <script type="application/ld+json" set:html={JSON.stringify(faqSchema)} />}
+  <script is:inline type="application/ld+json" set:html={JSON.stringify(articleSchema)} />
+  {faqSchema && <script is:inline type="application/ld+json" set:html={JSON.stringify(faqSchema)} />}
 
   <section class="max-w-4xl mx-auto px-6 pt-8 pb-16 text-left font-sans">
     

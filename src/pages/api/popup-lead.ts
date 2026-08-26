@@ -90,7 +90,6 @@ export const POST: APIRoute = async ({ request, locals }) => {
     const cleanPopupId = popupId ? parseInt(popupId, 10) : null;
 
     // 3. Deduplication (check for active popup lead with same email or phone)
-    let hasExisting = false;
     if (cleanPhone || cleanEmail) {
       const phoneDigits = cleanPhone ? cleanPhone.replace(/\D/g, '') : '';
       const last10Digits = phoneDigits.length >= 10 ? phoneDigits.slice(-10) : phoneDigits;

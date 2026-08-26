@@ -1,5 +1,4 @@
 ---
-import { supabase } from "../utils/supabase";
 import { ensureCsrfToken } from "../utils/csrf";
 
 interface Props {
@@ -7,9 +6,8 @@ interface Props {
 }
 
 const { activeTab } = Astro.props;
-const csrfToken = ensureCsrfToken(Astro.cookies);
+ensureCsrfToken(Astro.cookies);
 
-// Inline SVG icons base
 const svgBase = `xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"`;
 
 const navItems = [
@@ -27,18 +25,6 @@ const navItems = [
   { id: "admins", label: "Manage Admins", href: "/admin/admins", iconSvg: `<svg ${svgBase}><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>` },
 ];
 
-let totalLeadsCount = 0;
-try {
-  const { count, error } = await supabase
-    .from('leads')
-    .select('*', { count: 'exact', head: true })
-    .neq('lead_type', 'partner');
-
-  if (!error) totalLeadsCount = count || 0;
-} catch (err) {
-  console.error("Failed to query leads count in AdminHeader:", err);
-}
-
 const bellSvg = `<svg ${svgBase} class="w-5 h-5"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg>`;
 const logoutSvg = `<svg ${svgBase} class="w-5 h-5"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" x2="9" y1="12" y2="12"/></svg>`;
 ---
@@ -49,10 +35,10 @@ const logoutSvg = `<svg ${svgBase} class="w-5 h-5"><path d="M9 21H5a2 2 0 0 1-2-
   }
 </script>
 
-<div id="admin-header-data" class="hidden" data-total-leads={totalLeadsCount} data-csrf-token={csrfToken}></div>
+<div id="admin-header-data" class="hidden" data-total-leads="0"></div>
 
 <!-- Desktop Sidebar -->
-<aside class="hidden lg:flex flex-col w-64 bg-slate-900 border-r border-slate-800 text-white select-none shrink-0 fixed left-0 top-0 bottom-0 z-30">
+<aside class="hidden lg:flex flex-col w-64 bg-slate-900 border-r border-slate-800 text-white select-none shrink-0 fixed left-0 top-0 bottom-0 z-30 transition-all duration-200">
   <!-- Brand & Bell -->
   <div class="flex items-center justify-between px-6 h-16 border-b border-slate-800 shrink-0 sidebar-header-container">
     <a href="/admin/dashboard" class="flex items-center gap-2.5 outline-none brand-logo-link">
@@ -164,34 +150,28 @@ const logoutSvg = `<svg ${svgBase} class="w-5 h-5"><path d="M9 21H5a2 2 0 0 1-2-
 </header>
 
 <script>
-  let pollInterval: any = null;
+  let pollInterval: ReturnType<typeof setInterval> | null = null;
 
   function showBadges(show: boolean) {
     document.querySelectorAll(".leads-nav-badge").forEach(badge => badge.classList.toggle("hidden", !show));
   }
 
-  function checkNewLeads() {
+  async function checkNewLeads() {
     const lastViewed = Number(localStorage.getItem("lastViewedLeadsCount") || 0);
-    const currentTotal = Number(document.getElementById("admin-header-data")?.getAttribute("data-total-leads") || 0);
     const isLeadsPage = window.location.pathname === "/admin/leads";
 
     if (isLeadsPage) {
       showBadges(false);
-      const total = document.querySelector("main")?.getAttribute("data-total-leads") || String(currentTotal);
-      localStorage.setItem("lastViewedLeadsCount", total);
-    } else {
-      showBadges(currentTotal > lastViewed);
     }
 
     if (pollInterval) clearInterval(pollInterval);
 
-    pollInterval = setInterval(async () => {
+    const fetchLeadsCount = async () => {
       if (document.hidden) return;
       try {
         const res = await fetch("/api/leads-count");
         if (res.status === 401) {
-          clearInterval(pollInterval);
-          pollInterval = null;
+          if (pollInterval) clearInterval(pollInterval);
           return;
         }
         if (res.ok) {
@@ -199,18 +179,21 @@ const logoutSvg = `<svg ${svgBase} class="w-5 h-5"><path d="M9 21H5a2 2 0 0 1-2-
           const latestCount = Number(data.count || 0);
           document.getElementById("admin-header-data")?.setAttribute("data-total-leads", String(latestCount));
 
-          const updatedLastViewed = Number(localStorage.getItem("lastViewedLeadsCount") || 0);
           if (window.location.pathname === "/admin/leads") {
             localStorage.setItem("lastViewedLeadsCount", String(latestCount));
             showBadges(false);
           } else {
+            const updatedLastViewed = Number(localStorage.getItem("lastViewedLeadsCount") || 0);
             showBadges(latestCount > updatedLastViewed);
           }
         }
       } catch (err) {
         console.error("Failed to poll leads count:", err);
       }
-    }, 12000);
+    };
+
+    await fetchLeadsCount();
+    pollInterval = setInterval(fetchLeadsCount, 12000);
   }
 
   document.addEventListener("astro:before-preparation", () => {
@@ -221,28 +204,31 @@ const logoutSvg = `<svg ${svgBase} class="w-5 h-5"><path d="M9 21H5a2 2 0 0 1-2-
   });
 
   function setupLogoutConfirm() {
-    document.querySelectorAll(".logout-form").forEach(form => {
-      if ((form as any)._bound) return;
-      (form as any)._bound = true;
+    document.querySelectorAll<HTMLFormElement>(".logout-form").forEach(form => {
+      if (form.dataset.logoutBound === "true") return;
+      form.dataset.logoutBound = "true";
       form.addEventListener("submit", async (e) => {
         e.preventDefault();
-        const confirmed = await (window as any).showConfirmDialog({
-          title: "Sign Out?",
-          description: "Are you sure you want to sign out of the administrative session?",
-          actionText: "Sign Out",
-          cancelText: "Cancel",
-          variant: "destructive",
-          from: "bottom"
-        });
-        if (confirmed) (form as HTMLFormElement).submit();
+        const confirmFn = (window as unknown as { showConfirmDialog?: (opts: Record<string, unknown>) => Promise<boolean> }).showConfirmDialog;
+        const confirmed = confirmFn
+          ? await confirmFn({
+              title: "Sign Out?",
+              description: "Are you sure you want to sign out of the administrative session?",
+              actionText: "Sign Out",
+              cancelText: "Cancel",
+              variant: "destructive",
+              from: "bottom"
+            })
+          : confirm("Are you sure you want to sign out?");
+        if (confirmed) form.submit();
       });
     });
   }
 
   function setupSidebarToggle() {
     const toggleBtn = document.getElementById("sidebar-toggle");
-    if (!toggleBtn || (toggleBtn as any)._boundToggle) return;
-    (toggleBtn as any)._boundToggle = true;
+    if (!toggleBtn || toggleBtn.dataset.toggleBound === "true") return;
+    toggleBtn.dataset.toggleBound = "true";
 
     const updateToggleUI = () => {
       const isCollapsed = document.body.classList.contains("admin-sidebar-collapsed");
@@ -275,16 +261,14 @@ const logoutSvg = `<svg ${svgBase} class="w-5 h-5"><path d="M9 21H5a2 2 0 0 1-2-
   .scrollbar-none::-webkit-scrollbar { display: none; }
   .scrollbar-none { -ms-overflow-style: none; scrollbar-width: none; }
 
-  /* Sidebar Transition and Collapse Override Styles */
   @media (min-width: 1024px) {
     aside.hidden.lg\:flex {
-      transition: width 0.25s cubic-bezier(0.4, 0, 0.2, 1) !important;
+      transition: width 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
     }
     main.lg\:ml-64 {
-      transition: margin-left 0.25s cubic-bezier(0.4, 0, 0.2, 1) !important;
+      transition: margin-left 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
     }
 
-    /* Collapsed Sidebar Styles */
     body.admin-sidebar-collapsed aside.hidden.lg\:flex {
       width: 5rem !important;
     }
@@ -292,7 +276,6 @@ const logoutSvg = `<svg ${svgBase} class="w-5 h-5"><path d="M9 21H5a2 2 0 0 1-2-
       margin-left: 5rem !important;
     }
 
-    /* Header adjustments in collapsed sidebar */
     body.admin-sidebar-collapsed .brand-logo-expanded { display: none !important; }
     body.admin-sidebar-collapsed .brand-logo-collapsed { display: block !important; }
     body.admin-sidebar-collapsed .sidebar-bell { display: none !important; }
@@ -309,7 +292,6 @@ const logoutSvg = `<svg ${svgBase} class="w-5 h-5"><path d="M9 21H5a2 2 0 0 1-2-
       gap: 0.5rem !important;
     }
 
-    /* Nav items adjustments in collapsed sidebar */
     body.admin-sidebar-collapsed aside nav {
       padding-left: 0.5rem !important;
       padding-right: 0.5rem !important;
@@ -338,7 +320,6 @@ const logoutSvg = `<svg ${svgBase} class="w-5 h-5"><path d="M9 21H5a2 2 0 0 1-2-
       height: 0.5rem !important;
     }
 
-    /* Logout adjustments in collapsed sidebar */
     body.admin-sidebar-collapsed .logout-container {
       padding-left: 0.5rem !important;
       padding-right: 0.5rem !important;

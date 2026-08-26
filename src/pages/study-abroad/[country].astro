@@ -416,7 +416,7 @@ const SVG = {
   description={data.description}
 >
   <!-- Inject Structured Schema for SEO -->
-  <script type="application/ld+json" set:html={JSON.stringify(faqSchema)} />
+  <script is:inline type="application/ld+json" set:html={JSON.stringify(faqSchema)} />
 
   <section class="max-w-7xl mx-auto px-6 md:px-8 pt-8 pb-16 text-left">
     

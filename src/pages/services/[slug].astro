@@ -1,7 +1,7 @@
 ---
 import Layout from "../../layouts/Layout.astro";
 import AICounsellor from "../../components/AICounsellor";
-import { SERVICES, getServiceBySlug } from "../../data/services";
+import { SERVICES } from "../../data/services";
 const _s = (d: string) => `<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-8 h-8">${d}</svg>`;
 const iconMap: Record<string, string> = {
   User: _s('<path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/>'),
