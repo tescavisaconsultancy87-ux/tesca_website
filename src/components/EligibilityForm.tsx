@@ -571,7 +571,8 @@ export default function EligibilityForm() {
         score: academicScore,
         ielts: englishType === 'MOI' ? "0" : englishScore,
         budget: "30",
-        destination: selectedCountry
+        destination: selectedCountry,
+        level: selectedLevel
       };
       
       const elRes = await fetch("/api/eligibility", {

@@ -141,12 +141,15 @@ const detailsStr = JSON.stringify({
       }
     }
 
+    // Parse optional level from request body
+    const selectedLevel: 'UG' | 'PG' = (body.level === 'PG' || body.level === 'pg') ? 'PG' : 'UG';
+
     // Conversion rate: 1 Lakh INR is approx $1,200 USD (broad average for tuition match)
-    const budgetUSD = budgetLakhsNum * 1200;
+    const budgetUSD = budgetLakhsNum > 0 ? budgetLakhsNum * 1200 : 999999;
 
     // Fetch all universities or filter by destination code
     let query = supabase.from('universities').select('*');
-    if (destination && destination !== "all") {
+    if (destination && destination !== "all" && destination !== "Any") {
       query = query.eq('code', destination);
     }
     const { data: allUniversities, error: queryErr } = await query.order('name', { ascending: true });
@@ -154,12 +157,25 @@ const detailsStr = JSON.stringify({
       throw queryErr;
     }
 
-
-    // Helper to map and parse D1 rows
+    // Helper to map and parse D1 / Supabase rows
     const parseIelts = (req: string | null | undefined): number => {
       if (!req) return 0;
       const match = req.match(/(\d+(\.\d+)?)/);
       return match ? parseFloat(match[1]) : 0;
+    };
+
+    const parseMinGpaPercent = (reqStr: string | null | undefined): number => {
+      if (!reqStr) return 0;
+      const percentMatch = reqStr.match(/(\d+(?:\.\d+)?)\s*%/);
+      if (percentMatch) return parseFloat(percentMatch[1]);
+      const cgpaMatch = reqStr.match(/(\d+(?:\.\d+)?)\s*(?:CGPA|GPA)/i);
+      if (cgpaMatch) return parseFloat(cgpaMatch[1]) * 10;
+      const numMatch = reqStr.match(/(\d+(?:\.\d+)?)/);
+      if (numMatch) {
+        const val = parseFloat(numMatch[1]);
+        return val <= 10 ? val * 10 : val;
+      }
+      return 0;
     };
 
     const parseTuitionUSD = (feeStr: string | null | undefined, countryCode: string): { min: number; max: number } => {
@@ -184,16 +200,24 @@ const detailsStr = JSON.stringify({
       return { min: minVal * rate, max: maxVal * rate };
     };
 
-    // Map rows to normalized values & parse requirements
-    const mappedUniversities = allUniversities.map((u: any) => {
-      const ugTuition = u.ug_tuition_fees || u.ug_fees || u.tuition_fees || "";
-      const ugIelts = u.ug_ielts_pte || u.ug_ielts_pte_req || u.ielts_pte_req || "";
-      const ugIntake = u.ug_intakes || u.ug_intake || u.intake || "Sep";
-      const ugCourses = u.ug_courses || u.courses || "Various";
+    // Map rows to normalized values & parse requirements according to study level
+    const mappedUniversities = (allUniversities || []).map((u: any) => {
+      const tuitionStr = selectedLevel === 'UG'
+        ? (u.ug_tuition_fees || u.ug_fees || u.tuition_fees || "")
+        : (u.pg_tuition_fees || u.pg_fees || u.tuition_fees || "");
+      const ieltsStr = selectedLevel === 'UG'
+        ? (u.ug_ielts_pte || u.ug_ielts_pte_req || u.ielts_pte_req || "")
+        : (u.pg_ielts_pte || u.pg_ielts_pte_req || u.ielts_pte_req || "");
+      const intakeStr = selectedLevel === 'UG'
+        ? (u.ug_intakes || u.ug_intake || u.intake || "Sep")
+        : (u.pg_intakes || u.pg_intake || u.intake || "Sep");
+      const coursesStr = selectedLevel === 'UG'
+        ? (u.ug_courses || u.courses || "Various")
+        : (u.pg_courses || u.courses || "Various");
       
-      const { min: feeMin, max: feeMax } = parseTuitionUSD(ugTuition, u.code);
-      const minIelts = parseIelts(ugIelts);
-      const minGpa = parseFloat(u.min_cgpa_percent) || 0;
+      const { min: feeMin, max: feeMax } = parseTuitionUSD(tuitionStr, u.code);
+      const minIelts = parseIelts(ieltsStr);
+      const minGpa = parseMinGpaPercent(u.min_cgpa_percent);
       
       // Auto-generate domain based on university name if missing
       const cleanName = u.name.toLowerCase().replace(/[^a-z0-9\s]/g, "");
@@ -204,8 +228,8 @@ const detailsStr = JSON.stringify({
       
       const city = u.country === "United Kingdom" ? "London" : u.country === "USA" ? "Boston" : "Main Campus";
       const highlights = JSON.stringify([
-        `Intake: ${ugIntake}`,
-        `Courses: ${ugCourses.split(",").slice(0, 2).join(", ")}`
+        `Intake: ${intakeStr}`,
+        `Courses: ${coursesStr.split(",").slice(0, 2).join(", ")}`
       ]);
 
       return {
@@ -224,23 +248,23 @@ const detailsStr = JSON.stringify({
     });
 
     // Filter by criteria
-    // Exact Matches:
+    // Exact Matches: (academic score matches and IELTS matches, budget within flexible margin 1.25x)
     const matches = mappedUniversities.filter(uni => {
-      return uni.min_gpa_percent <= academicScoreNum &&
-             uni.min_ielts <= ieltsScoreNum &&
-             uni.tuition_fee_max <= budgetUSD;
+      const academicMatch = academicScoreNum >= uni.min_gpa_percent;
+      const ieltsMatch = ieltsScoreNum <= 0 || ieltsScoreNum >= uni.min_ielts;
+      const feeMatch = budgetLakhsNum <= 0 || uni.tuition_fee_min <= budgetUSD * 1.35;
+      return academicMatch && ieltsMatch && feeMatch;
     }).slice(0, 15);
 
-    // Reach Matches (only if no exact matches, or less than 3)
+    // Reach Matches (only if no exact matches, or less than 5)
     let reachResults: any[] = [];
-    if (matches.length < 3) {
+    if (matches.length < 5) {
       reachResults = mappedUniversities.filter(uni => {
-        // Must not be in exact matches
         if (matches.some(m => m.id === uni.id)) return false;
         
-        const gpaEligible = uni.min_gpa_percent <= academicScoreNum * 1.15;
-        const ieltsEligible = uni.min_ielts <= ieltsScoreNum + 0.5;
-        const feeEligible = uni.tuition_fee_max <= budgetUSD * 1.35;
+        const gpaEligible = academicScoreNum >= (uni.min_gpa_percent - 10);
+        const ieltsEligible = ieltsScoreNum <= 0 || ieltsScoreNum >= (uni.min_ielts - 0.5);
+        const feeEligible = budgetLakhsNum <= 0 || uni.tuition_fee_min <= budgetUSD * 1.5;
         
         return gpaEligible && ieltsEligible && feeEligible;
       }).slice(0, 5);
