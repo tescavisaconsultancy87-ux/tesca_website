@@ -187,12 +187,10 @@ const SVG = {
       <!-- Script for Refusal Diagnostic -->
       <script is:inline>
         function runRefusalDiagnostic() {
-          const country = document.getElementById('ref-country').value;
-          const reason = document.getElementById('ref-reason').value;
-          const count = document.getElementById('ref-count').value;
-          
-          const notesRadio = document.querySelector('input[name="ref-notes"]:checked');
-          const hasNotes = notesRadio ? notesRadio.value === 'yes' : false;
+          const country = document.getElementById('ref-country')?.value;
+          const reason = document.getElementById('ref-reason')?.value;
+          const count = document.getElementById('ref-count')?.value;
+          const hasNotes = document.querySelector('input[name="ref-notes"]:checked')?.value === 'yes';
 
           const statusEl = document.getElementById('ref-status-display');
           const remedyEl = document.getElementById('ref-remedy-text');
@@ -207,57 +205,47 @@ const SVG = {
           } else if (count === '2') {
             feasibility = "Moderate Risk (Needs Preparation)";
             remedy = "Requires restructuring SOP from scratch and gathering stronger ties or seasoned funds.";
-          } else {
-            // 1 refusal cases
-            if (reason === 'ties') {
-              feasibility = "Good Re-filing Viability (75%+)";
-              remedy = "Requires a fortified statement of purpose (SOP) explaining home ties, career goals, and assets in India.";
-            } else if (reason === 'funds') {
-              feasibility = "Good Re-filing Viability (80%+)";
-              remedy = "Requires seasoning funds for 3-6 months or securing an education loan sanction letter to prove credibility.";
-            } else if (reason === 'study') {
-              feasibility = "Moderate Viability (65%+)";
-              remedy = "Requires course progression justification. An explanation letter should link the new course to past studies.";
-            } else if (reason === 'docs') {
-              feasibility = "High Success Probability (90%+)";
-              remedy = "Simply re-file by compiling correct documents matching embassy checklist guidelines.";
-            }
+          } else if (reason === 'ties') {
+            feasibility = "Good Re-filing Viability (75%+)";
+            remedy = "Requires a fortified statement of purpose (SOP) explaining home ties, career goals, and assets in India.";
+          } else if (reason === 'funds') {
+            feasibility = "Good Re-filing Viability (80%+)";
+            remedy = "Requires seasoning funds for 3-6 months or securing an education loan sanction letter to prove credibility.";
+          } else if (reason === 'study') {
+            feasibility = "Moderate Viability (65%+)";
+            remedy = "Requires course progression justification. An explanation letter should link the new course to past studies.";
+          } else if (reason === 'docs') {
+            feasibility = "High Success Probability (90%+)";
+            remedy = "Simply re-file by compiling correct documents matching embassy checklist guidelines.";
           }
 
-          // Override for Canada/USA if no GCMS notes
           if ((country === 'ca' || country === 'usa') && !hasNotes && count !== '3') {
             feasibility = "Order Notes First";
-            remedy = "For " + (country === 'ca' ? 'Canada' : 'USA') + " files, we recommend ordering GCMS/CAIPS notes first to see exact officer concerns.";
+            remedy = `For ${country === 'ca' ? 'Canada' : 'USA'} files, we recommend ordering GCMS/CAIPS notes first to see exact officer concerns.`;
           }
 
           if (statusEl) statusEl.textContent = feasibility;
           if (remedyEl) remedyEl.textContent = remedy;
 
           if (actionsBox) {
-            if (feasibility.includes("High") || feasibility.includes("Good")) {
-              actionsBox.className = "text-[10px] bg-emerald-50 border border-emerald-100 text-emerald-800 p-2.5 rounded-lg space-y-1";
-            } else if (feasibility.includes("Risky") || feasibility.includes("Complex") || feasibility.includes("Order")) {
-              actionsBox.className = "text-[10px] bg-red-50 border border-red-100 text-red-800 p-2.5 rounded-lg space-y-1";
-            } else {
-              actionsBox.className = "text-[10px] bg-amber-50 border border-amber-100 text-amber-800 p-2.5 rounded-lg space-y-1";
-            }
+            const isGood = feasibility.includes("High") || feasibility.includes("Good");
+            const isBad = feasibility.includes("Risky") || feasibility.includes("Complex") || feasibility.includes("Order");
+            const theme = isGood ? "bg-emerald-50 border-emerald-100 text-emerald-800" : isBad ? "bg-red-50 border-red-100 text-red-800" : "bg-amber-50 border-amber-100 text-amber-800";
+            actionsBox.className = `text-[10px] border p-2.5 rounded-lg space-y-1 ${theme}`;
           }
         }
 
         function initRefusalDiagnostic() {
           const form = document.getElementById('refusal-form');
-          if (form) {
+          if (form && !form._bound) {
+            form._bound = true;
             form.addEventListener('change', runRefusalDiagnostic);
             runRefusalDiagnostic();
           }
         }
 
         document.addEventListener('astro:page-load', initRefusalDiagnostic);
-        if (document.readyState === 'loading') {
-          document.addEventListener('DOMContentLoaded', initRefusalDiagnostic);
-        } else {
-          initRefusalDiagnostic();
-        }
+        initRefusalDiagnostic();
       </script>
 
     </div>

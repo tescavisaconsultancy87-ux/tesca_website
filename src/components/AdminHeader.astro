@@ -9,9 +9,8 @@ interface Props {
 const { activeTab } = Astro.props;
 const csrfToken = ensureCsrfToken(Astro.cookies);
 
-// Inline SVG icons - no lucide-react (causes SSR hook errors)
-const svgBase = `xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"`;
-const svgSm = `xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"`;
+// Inline SVG icons base
+const svgBase = `xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"`;
 
 const navItems = [
   { id: "dashboard", label: "Dashboard", href: "/admin/dashboard", iconSvg: `<svg ${svgBase}><rect width="7" height="9" x="3" y="3" rx="1"/><rect width="7" height="5" x="14" y="3" rx="1"/><rect width="7" height="9" x="14" y="12" rx="1"/><rect width="7" height="5" x="3" y="16" rx="1"/></svg>` },
@@ -35,15 +34,13 @@ try {
     .select('*', { count: 'exact', head: true })
     .neq('lead_type', 'partner');
 
-  if (error) throw error;
-  totalLeadsCount = count || 0;
+  if (!error) totalLeadsCount = count || 0;
 } catch (err) {
   console.error("Failed to query leads count in AdminHeader:", err);
 }
 
-const bellSvg = `<svg ${svgBase}><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg>`;
-const logoutSvgBase = `<svg ${svgBase}><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" x2="9" y1="12" y2="12"/></svg>`;
-const logoutSvgSm = `<svg ${svgSm}><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" x2="9" y1="12" y2="12"/></svg>`;
+const bellSvg = `<svg ${svgBase} class="w-5 h-5"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg>`;
+const logoutSvg = `<svg ${svgBase} class="w-5 h-5"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" x2="9" y1="12" y2="12"/></svg>`;
 ---
 
 <script is:inline>
@@ -54,7 +51,7 @@ const logoutSvgSm = `<svg ${svgSm}><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-
 
 <div id="admin-header-data" class="hidden" data-total-leads={totalLeadsCount} data-csrf-token={csrfToken}></div>
 
-  <!-- Desktop Sidebar -->
+<!-- Desktop Sidebar -->
 <aside class="hidden lg:flex flex-col w-64 bg-slate-900 border-r border-slate-800 text-white select-none shrink-0 fixed left-0 top-0 bottom-0 z-30">
   <!-- Brand & Bell -->
   <div class="flex items-center justify-between px-6 h-16 border-b border-slate-800 shrink-0 sidebar-header-container">
@@ -91,7 +88,7 @@ const logoutSvgSm = `<svg ${svgSm}><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-
           }`}
         >
           <div class="flex items-center gap-3">
-            <span set:html={item.iconSvg} class="shrink-0" />
+            <span set:html={item.iconSvg} class="shrink-0 [&_svg]:w-5 [&_svg]:h-5" />
             <span class="sidebar-text-label">{item.label}</span>
           </div>
           {item.id === "leads" && (
@@ -111,7 +108,7 @@ const logoutSvgSm = `<svg ${svgSm}><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-
         class="w-full flex items-center gap-3 px-4 py-3 rounded-xl bg-rose-600/10 hover:bg-rose-600/20 text-rose-400 font-bold text-sm transition-all cursor-pointer border border-rose-600/20 logout-button"
         title="Sign Out"
       >
-        <span set:html={logoutSvgBase} class="shrink-0 logout-icon" /> <span class="sidebar-text-label">Sign Out</span>
+        <span set:html={logoutSvg} class="shrink-0 logout-icon [&_svg]:w-5 [&_svg]:h-5" /> <span class="sidebar-text-label">Sign Out</span>
       </button>
     </form>
   </div>
@@ -136,7 +133,7 @@ const logoutSvgSm = `<svg ${svgSm}><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-
           type="submit" 
           class="flex items-center gap-2 px-4 py-2 bg-rose-600/10 hover:bg-rose-600/20 text-rose-400 font-bold text-xs rounded-xl transition-all cursor-pointer border border-rose-600/20"
         >
-          <span set:html={logoutSvgSm} /> Sign Out
+          <span set:html={logoutSvg} class="[&_svg]:w-3.5 [&_svg]:h-3.5" /> Sign Out
         </button>
       </form>
     </div>
@@ -145,7 +142,6 @@ const logoutSvgSm = `<svg ${svgSm}><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-
   <div class="overflow-x-auto pb-3 px-4 gap-1 select-none scrollbar-none flex">
     {navItems.map((item) => {
       const isActive = activeTab === item.id;
-      const iconSmSvg = item.iconSvg.replace(/width="20" height="20"/g, 'width="14" height="14"');
       return (
         <a
           href={item.href}
@@ -156,7 +152,7 @@ const logoutSvgSm = `<svg ${svgSm}><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-
               : "text-slate-400 hover:bg-slate-800/40 hover:text-white border border-transparent"
           }`}
         >
-          <span set:html={iconSmSvg} />
+          <span set:html={item.iconSvg} class="[&_svg]:w-3.5 [&_svg]:h-3.5" />
           {item.label}
           {item.id === "leads" && (
             <span class="leads-nav-badge hidden absolute -top-1 -right-1 w-2 h-2 rounded-full bg-rose-500 ring-2 ring-rose-500/20 animate-pulse"></span>
@@ -170,47 +166,30 @@ const logoutSvgSm = `<svg ${svgSm}><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-
 <script>
   let pollInterval: any = null;
 
+  function showBadges(show: boolean) {
+    document.querySelectorAll(".leads-nav-badge").forEach(badge => badge.classList.toggle("hidden", !show));
+  }
+
   function checkNewLeads() {
     const lastViewed = Number(localStorage.getItem("lastViewedLeadsCount") || 0);
-    const totalLeadsAttr = document.getElementById("admin-header-data")?.getAttribute("data-total-leads");
-    const currentTotal = Number(totalLeadsAttr || 0);
-
-    const showBadges = (show: boolean) => {
-      document.querySelectorAll(".leads-nav-badge").forEach(badge => {
-        if (show) {
-          badge.classList.remove("hidden");
-        } else {
-          badge.classList.add("hidden");
-        }
-      });
-    };
-
+    const currentTotal = Number(document.getElementById("admin-header-data")?.getAttribute("data-total-leads") || 0);
     const isLeadsPage = window.location.pathname === "/admin/leads";
+
     if (isLeadsPage) {
       showBadges(false);
-      const mainEl = document.querySelector("main");
-      if (mainEl) {
-        const total = mainEl.getAttribute("data-total-leads") || String(currentTotal);
-        localStorage.setItem("lastViewedLeadsCount", total);
-      }
+      const total = document.querySelector("main")?.getAttribute("data-total-leads") || String(currentTotal);
+      localStorage.setItem("lastViewedLeadsCount", total);
     } else {
-      if (currentTotal > lastViewed) {
-        showBadges(true);
-      } else {
-        showBadges(false);
-      }
+      showBadges(currentTotal > lastViewed);
     }
 
-    if (pollInterval) {
-      clearInterval(pollInterval);
-    }
+    if (pollInterval) clearInterval(pollInterval);
 
     pollInterval = setInterval(async () => {
       if (document.hidden) return;
       try {
         const res = await fetch("/api/leads-count");
         if (res.status === 401) {
-          console.warn("[AdminHeader] Unauthorized (401) response. Clearing poll interval.");
           clearInterval(pollInterval);
           pollInterval = null;
           return;
@@ -218,24 +197,14 @@ const logoutSvgSm = `<svg ${svgSm}><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-
         if (res.ok) {
           const data = await res.json();
           const latestCount = Number(data.count || 0);
-          
-          const headerData = document.getElementById("admin-header-data");
-          if (headerData) {
-            headerData.setAttribute("data-total-leads", String(latestCount));
-          }
+          document.getElementById("admin-header-data")?.setAttribute("data-total-leads", String(latestCount));
 
           const updatedLastViewed = Number(localStorage.getItem("lastViewedLeadsCount") || 0);
-          const isLeadsPageNow = window.location.pathname === "/admin/leads";
-          
-          if (isLeadsPageNow) {
+          if (window.location.pathname === "/admin/leads") {
             localStorage.setItem("lastViewedLeadsCount", String(latestCount));
             showBadges(false);
           } else {
-            if (latestCount > updatedLastViewed) {
-              showBadges(true);
-            } else {
-              showBadges(false);
-            }
+            showBadges(latestCount > updatedLastViewed);
           }
         }
       } catch (err) {
@@ -251,10 +220,8 @@ const logoutSvgSm = `<svg ${svgSm}><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-
     }
   });
 
-  // Intercept logout forms for custom confirm dialog
   function setupLogoutConfirm() {
-    const logoutForms = document.querySelectorAll(".logout-form");
-    logoutForms.forEach(form => {
+    document.querySelectorAll(".logout-form").forEach(form => {
       if ((form as any)._bound) return;
       (form as any)._bound = true;
       form.addEventListener("submit", async (e) => {
@@ -267,18 +234,14 @@ const logoutSvgSm = `<svg ${svgSm}><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-
           variant: "destructive",
           from: "bottom"
         });
-        if (confirmed) {
-          (form as HTMLFormElement).submit();
-        }
+        if (confirmed) (form as HTMLFormElement).submit();
       });
     });
   }
 
   function setupSidebarToggle() {
     const toggleBtn = document.getElementById("sidebar-toggle");
-    if (!toggleBtn) return;
-
-    if ((toggleBtn as any)._boundToggle) return;
+    if (!toggleBtn || (toggleBtn as any)._boundToggle) return;
     (toggleBtn as any)._boundToggle = true;
 
     const updateToggleUI = () => {
@@ -286,16 +249,11 @@ const logoutSvgSm = `<svg ${svgSm}><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-
       toggleBtn.setAttribute("title", isCollapsed ? "Expand Sidebar" : "Collapse Sidebar");
       const icon = toggleBtn.querySelector(".sidebar-toggle-icon");
       if (icon) {
-        if (isCollapsed) {
-          icon.innerHTML = `<rect width="18" height="18" x="3" y="3" rx="2"/><path d="M15 3v18"/>`;
-        } else {
-          icon.innerHTML = `<rect width="18" height="18" x="3" y="3" rx="2"/><path d="M9 3v18"/>`;
-        }
+        icon.innerHTML = `<rect width="18" height="18" x="3" y="3" rx="2"/><path d="${isCollapsed ? 'M15 3v18' : 'M9 3v18'}"/>`;
       }
     };
 
     updateToggleUI();
-
     toggleBtn.addEventListener("click", () => {
       const isCollapsed = document.body.classList.toggle("admin-sidebar-collapsed");
       localStorage.setItem("admin-sidebar-collapsed", String(isCollapsed));
@@ -303,21 +261,14 @@ const logoutSvgSm = `<svg ${svgSm}><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-
     });
   }
 
-  // Handle sidebar recovery on swap/transitions
-  document.addEventListener("astro:after-swap", () => {
-    if (localStorage.getItem("admin-sidebar-collapsed") === "true") {
-      document.body.classList.add("admin-sidebar-collapsed");
-    }
-  });
-
-  checkNewLeads();
-  setupLogoutConfirm();
-  setupSidebarToggle();
-  document.addEventListener("astro:page-load", () => {
+  function init() {
     checkNewLeads();
     setupLogoutConfirm();
     setupSidebarToggle();
-  });
+  }
+
+  init();
+  document.addEventListener("astro:page-load", init);
 </script>
 
 <style is:global>
@@ -335,32 +286,23 @@ const logoutSvgSm = `<svg ${svgSm}><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-
 
     /* Collapsed Sidebar Styles */
     body.admin-sidebar-collapsed aside.hidden.lg\:flex {
-      width: 5rem !important; /* 80px */
+      width: 5rem !important;
     }
     body.admin-sidebar-collapsed main.lg\:ml-64 {
       margin-left: 5rem !important;
     }
 
     /* Header adjustments in collapsed sidebar */
-    body.admin-sidebar-collapsed .brand-logo-expanded {
-      display: none !important;
-    }
-    body.admin-sidebar-collapsed .brand-logo-collapsed {
-      display: block !important;
-    }
-    body.admin-sidebar-collapsed .sidebar-bell {
-      display: none !important;
-    }
+    body.admin-sidebar-collapsed .brand-logo-expanded { display: none !important; }
+    body.admin-sidebar-collapsed .brand-logo-collapsed { display: block !important; }
+    body.admin-sidebar-collapsed .sidebar-bell { display: none !important; }
     body.admin-sidebar-collapsed .sidebar-header-container {
       flex-direction: column !important;
       justify-content: center !important;
       align-items: center !important;
       gap: 0.75rem !important;
-      padding-left: 0.5rem !important;
-      padding-right: 0.5rem !important;
+      padding: 1.25rem 0.5rem !important;
       height: auto !important;
-      padding-top: 1.25rem !important;
-      padding-bottom: 1.25rem !important;
     }
     body.admin-sidebar-collapsed .sidebar-header-actions {
       flex-direction: column !important;
@@ -387,9 +329,7 @@ const logoutSvgSm = `<svg ${svgSm}><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-
       justify-content: center !important;
       gap: 0 !important;
     }
-    body.admin-sidebar-collapsed aside nav a .sidebar-text-label {
-      display: none !important;
-    }
+    body.admin-sidebar-collapsed aside nav a .sidebar-text-label { display: none !important; }
     body.admin-sidebar-collapsed aside nav a .leads-nav-badge {
       position: absolute !important;
       top: 0.6rem !important;
@@ -409,8 +349,7 @@ const logoutSvgSm = `<svg ${svgSm}><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-
       padding-right: 0 !important;
       width: 3.25rem !important;
       height: 3.25rem !important;
-      margin-left: auto !important;
-      margin-right: auto !important;
+      margin: 0 auto !important;
       gap: 0 !important;
     }
   }

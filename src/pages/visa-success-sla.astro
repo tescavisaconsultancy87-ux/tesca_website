@@ -320,18 +320,15 @@ const SVG = {
 
       function initSlaCalculator() {
         const form = document.getElementById('sla-form');
-        if (form) {
+        if (form && !form._bound) {
+          form._bound = true;
           form.addEventListener('change', calculateSla);
           calculateSla();
         }
       }
 
       document.addEventListener('astro:page-load', initSlaCalculator);
-      if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', initSlaCalculator);
-      } else {
-        initSlaCalculator();
-      }
+      initSlaCalculator();
     </script>
 
   </section>
