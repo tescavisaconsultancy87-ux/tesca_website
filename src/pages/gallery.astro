@@ -3,65 +3,37 @@ import Layout from "../layouts/Layout.astro";
 import AICounsellor from "../components/AICounsellor";
 import { supabase } from "../utils/supabase";
 
-const SVG = {
-  Users: `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-6 h-6"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>`,
-  GraduationCap: `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-6 h-6"><path d="M21.42 10.922a1 1 0 0 0-.019-1.838L12.83 5.18a2 2 0 0 0-1.66 0L2.6 9.08a1 1 0 0 0 0 1.832l8.57 3.908a2 2 0 0 0 1.66 0z"/><path d="M6 12v5c0 2 2 3 6 3s6-1 6-3v-5"/></svg>`
+const COUNTRY_CODE_MAP: Record<string, string> = {
+  canada: "ca", australia: "au", "united kingdom": "gb", uk: "gb",
+  "united states": "us", usa: "us", germany: "de", ireland: "ie",
+  "new zealand": "nz", singapore: "sg", japan: "jp", dubai: "ae",
+  uae: "ae", malaysia: "my", switzerland: "ch", europe: "eu",
 };
 
-let dbClassroomImages = [];
-let dbCampusImages = [];
-let hasDbImages = false;
+const countryToCode = (country: string) => {
+  if (!country) return "";
+  return COUNTRY_CODE_MAP[country.toLowerCase().trim()] || country.slice(0, 2).toLowerCase();
+};
+
+let stories: any[] = [];
 
 try {
   const { data, error } = await supabase
-    .from('gallery_images')
+    .from('success_stories')
     .select('*')
-    .order('id', { ascending: true });
+    .order('id', { ascending: false });
 
-  if (!error && data && data.length > 0) {
-    dbClassroomImages = data.filter(img => img.category === 'classroom');
-    dbCampusImages = data.filter(img => img.category === 'campus');
-    hasDbImages = true;
+  if (!error && data) {
+    stories = data;
   }
 } catch (err) {
-  console.error("Failed to load gallery images from Supabase:", err);
+  console.error("Failed to load success stories from Supabase:", err);
 }
-
-// Fallbacks if database is empty or not yet created
-const classroomPhotos = (hasDbImages && dbClassroomImages.length > 0) 
-  ? dbClassroomImages.map(img => ({ title: img.title, desc: img.description || "", img: img.image_url }))
-  : [
-      { title: "Personal Career Counselling", desc: "One-on-one guidance to help students choose the right country, university, and career pathway.", img: "/images/consultation_gallery.webp" },
-      { title: "Student Departure Support", desc: "Comprehensive assistance for travel planning, documentation checks, and departure readiness.", img: "/images/student_abroad_new.webp" },
-      { title: "Pre-Visa Preparation", desc: "Expert guidance on visa requirements, documentation, and interview preparation.", img: "/images/services_hero_gallery.webp" },
-      { title: "Academic Profile Evaluation", desc: "Detailed assessment of academic records and eligibility for study abroad opportunities.", img: "/images/consultation_new.webp" },
-      { title: "IELTS Practice & Assessment", desc: "Real exam-style mock tests designed to improve language proficiency and exam readiness.", img: "/images/testprep_hero_new.webp" },
-      { title: "University Admission Support", desc: "Professional assistance with university selection, applications, and admission processes.", img: "/images/university_support.webp" },
-      { title: "Visa Documentation Support", desc: "Step-by-step help with SOPs, financial documents, and visa application requirements.", img: "/images/visa_support.webp" },
-      { title: "Scholarship Guidance Services", desc: "Helping students identify and apply for scholarships to reduce study costs.", img: "/images/scholarship_new.webp" },
-      { title: "Study Abroad Workshops", desc: "Informative seminars covering admissions, visas, scholarships, and student life abroad.", img: "/images/workshop_new.webp" },
-      { title: "Career Planning Sessions", desc: "Personalized advice to align education choices with long-term career goals.", img: "/images/consultation.webp" }
-    ];
-
-const campusPhotos = (hasDbImages && dbCampusImages.length > 0)
-  ? dbCampusImages.map(img => ({ title: img.title, desc: img.description || "", img: img.image_url }))
-  : [
-      { title: "Successful Student Placements", desc: "Celebrating students who achieved admissions and visa approvals for their dream destinations.", img: "/images/graduating_students_new.webp" },
-      { title: "Global Education Opportunities", desc: "Exploring international study destinations and future career possibilities worldwide.", img: "/images/global_new.webp" },
-      { title: "Pre-Departure Orientation", desc: "Preparing students for life abroad through practical guidance and support sessions.", img: "/images/pre_new.webp" },
-      { title: "Admission Success Milestones", desc: "Supporting students from application submission to receiving university offer letters.", img: "/images/milestone_new.webp" },
-      { title: "International Student Network", desc: "Connecting aspiring students with alumni and current international students for guidance.", img: "/images/mock_new.webp" },
-      { title: "Application Review Support", desc: "Ensuring applications are complete, accurate, and ready for university submission.", img: "/images/support_new.webp" },
-      { title: "English Language Training", desc: "Expert coaching for IELTS, PTE, TOEFL, and Spoken English improvement.", img: "/images/training_new.webp" },
-      { title: "Visa Interview Coaching", desc: "Mock interviews and confidence-building sessions for successful visa outcomes.", img: "/images/coaching_new.webp" },
-      { title: "Student Success Community", desc: "A supportive environment where students share experiences and achievements.", img: "/images/community_new.webp" },
-      { title: "Global Study Pathways", desc: "Guiding students toward internationally recognized qualifications and career growth.", img: "/images/pathways_new.webp" }
-    ];
 ---
 
 <Layout 
-  title="TESCA Gallery | Classroom Moments & Campus Success"
-  description="Take a virtual tour of TESCA Visa Consultancy. Browse pictures of student career counseling, IELTS coaching, pre-departure orientations, and successful student placements."
+  title="TESCA Gallery | Success Stories & Office Tour"
+  description="Browse TESCA Visa Consultancy's success gallery — visa approvals, IELTS & PTE achievements, and a virtual office tour of our Surat campus."
 >
   <section class="max-w-7xl mx-auto px-6 md:px-8 py-12">
     
@@ -77,10 +49,10 @@ const campusPhotos = (hasDbImages && dbCampusImages.length > 0)
           Our Gallery
         </span>
         <h1 class="text-[36px] sm:text-[48px] lg:text-[56px] font-extrabold font-display text-support-white tracking-tight leading-none">
-          Institute & Student Life
+          Success Stories & Office Tour
         </h1>
         <p class="text-base md:text-[18px] text-support-gray font-sans font-normal leading-relaxed max-w-xl">
-          Take a virtual tour of our state-of-the-art facilities, classrooms, and vibrant student community.
+          Browse real visa approvals, IELTS & PTE achievements from our students, and take a virtual tour of our Surat office.
         </p>
       </div>
 
@@ -89,7 +61,7 @@ const campusPhotos = (hasDbImages && dbCampusImages.length > 0)
         <div class="relative w-full max-w-[320px] md:max-w-[400px] flex items-center aspect-[4/3] rounded-2xl overflow-hidden shadow-md border border-accent-blue/15">
           <img 
             src="/images/gallery_hero.webp" 
-            alt="Institute and student life gallery" 
+            alt="TESCA success gallery" 
             class="object-cover w-full h-full select-none"
             decoding="async"
             width="1920"
@@ -130,79 +102,96 @@ const campusPhotos = (hasDbImages && dbCampusImages.length > 0)
       </div>
     </div>
 
-    {/* Class Photos Section */}
-    <div class="mb-20">
-      <div class="flex items-center gap-3 mb-10">
-        <div class="p-3 rounded-xl bg-blue-100 text-blue-600 flex items-center justify-center">
-          <span set:html={SVG.Users} />
-        </div>
-        <div>
-          <h2 class="text-[28px] sm:text-[32px] font-bold text-slate-800 font-display tracking-tight">Classroom Moments</h2>
-          <p class="text-sm text-slate-500 font-sans font-normal">Training sessions, workshops & student interactions</p>
-        </div>
-      </div>
-
-      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {classroomPhotos.map((item) => (
-          <div class="rounded-2xl overflow-hidden border border-slate-200 bg-white shadow-sm hover:-translate-y-1 transition-all duration-300 group text-left">
-            <div class="aspect-[4/3] relative overflow-hidden bg-slate-50">
-              <img 
-                src={item.img} 
-                alt={item.title} 
-                class="w-full h-full object-cover group-hover:scale-[1.02] transition-transform duration-550 select-none"
-                loading="lazy"
-                decoding="async"
-                width="768"
-                height="512"
-              />
-              <div class="absolute inset-0 bg-accent-blue/0 group-hover:bg-accent-blue/5 transition-colors duration-300"></div>
-            </div>
-            <div class="p-5 border-t border-slate-100">
-              <h3 class="text-base font-bold text-slate-800 font-display leading-snug">{item.title}</h3>
-              <p class="text-xs text-slate-500 font-sans font-normal mt-1.5 leading-relaxed">{item.desc}</p>
-            </div>
-          </div>
-        ))}
-      </div>
-    </div>
-
-    {/* Infrastructure Section */}
+    {/* Success Gallery Section */}
     <div class="mb-20">
       <div class="flex items-center gap-3 mb-10">
         <div class="p-3 rounded-xl bg-emerald-100 text-emerald-600 flex items-center justify-center">
-          <span set:html={SVG.GraduationCap} />
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-6 h-6"><path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c3 3 10 3 12 0v-5"/></svg>
         </div>
         <div>
-          <h2 class="text-[28px] sm:text-[32px] font-bold text-slate-800 font-display tracking-tight">Global Placements & Campus Success</h2>
-          <p class="text-sm text-slate-500 font-sans font-normal">Visa success milestones, pre-departure orientations & student network</p>
+          <h2 class="text-[28px] sm:text-[32px] font-bold text-slate-800 font-display tracking-tight">Success Gallery</h2>
+          <p class="text-sm text-slate-500 font-sans font-normal">Real visa approvals, IELTS & PTE achievements from our students</p>
         </div>
       </div>
 
-      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {campusPhotos.map((item) => (
-          <div class="rounded-2xl overflow-hidden border border-slate-200 bg-white shadow-sm hover:-translate-y-1 transition-all duration-300 group text-left">
-            <div class="aspect-[16/10] relative overflow-hidden bg-slate-50">
-              <img 
-                src={item.img} 
-                alt={item.title} 
-                class="w-full h-full object-cover group-hover:scale-[1.02] transition-transform duration-550 select-none"
-                loading="lazy"
-                decoding="async"
-                width="768"
-                height="512"
-              />
-              <div class="absolute inset-0 bg-accent-blue/0 group-hover:bg-accent-blue/5 transition-colors duration-300"></div>
-            </div>
-            <div class="p-5 border-t border-slate-100">
-              <h3 class="text-base font-bold text-slate-800 font-display leading-snug">{item.title}</h3>
-              <p class="text-xs text-slate-500 font-sans font-normal mt-1.5 leading-relaxed">{item.desc}</p>
-            </div>
+      {stories.length === 0 ? (
+        <div class="bg-white rounded-3xl border border-slate-200/80 p-12 text-center space-y-4 shadow-sm">
+          <div class="w-16 h-16 rounded-2xl bg-emerald-50 text-emerald-600 mx-auto flex items-center justify-center text-3xl">
+            🎓
           </div>
-        ))}
-      </div>
+          <h3 class="text-xl font-bold text-slate-900 font-display">Success Stories Coming Soon</h3>
+          <p class="text-sm text-slate-500 font-sans max-w-md mx-auto leading-relaxed">
+            Our success gallery is being updated. Check back soon to see our students' achievements!
+          </p>
+        </div>
+      ) : (
+        <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 md:gap-5">
+          {stories.map((student) => {
+            const isVisa = student.type === "Visa Success";
+            const cc = student.country ? countryToCode(student.country) : "";
+            
+            return (
+              <div class="rounded-2xl overflow-hidden border border-slate-200 bg-white shadow-sm hover:-translate-y-1 hover:shadow-md transition-all duration-300 group text-left flex flex-col">
+                {/* Photo */}
+                <div class="relative w-full aspect-[4/5] overflow-hidden bg-slate-50 shrink-0">
+                  <img 
+                    src={student.photo} 
+                    alt={student.name} 
+                    class="w-full h-full object-contain group-hover:scale-[1.03] transition-transform duration-500 select-none"
+                    loading="lazy"
+                    decoding="async"
+                    width="400"
+                    height="500"
+                  />
+
+                  {/* Country flag for visa success */}
+                  {isVisa && cc && (
+                    <div class="absolute top-2.5 right-2.5 bg-white/90 backdrop-blur-[2px] p-1.5 rounded-xl shadow-xs border border-slate-100 flex items-center justify-center">
+                      <img
+                        src={`https://flagcdn.com/w40/${cc}.png`}
+                        alt={`${student.country} flag`}
+                        class="w-5 h-3.5 rounded-xs object-cover"
+                        loading="lazy"
+                      />
+                    </div>
+                  )}
+
+                  {/* Type badge overlay */}
+                  <div class="absolute bottom-2.5 left-2.5">
+                    <span class:list={[
+                      "text-[10px] font-bold uppercase tracking-wider px-2.5 py-1 rounded-lg shadow-sm backdrop-blur-sm",
+                      isVisa ? "bg-emerald-500/90 text-white" : student.type === "IELTS" ? "bg-blue-500/90 text-white" : "bg-purple-500/90 text-white"
+                    ]}>
+                      {student.type}
+                    </span>
+                  </div>
+                </div>
+
+                {/* Info */}
+                <div class="p-3.5 border-t border-slate-100 flex-grow flex flex-col justify-between">
+                  <div>
+                    <h3 class="text-sm font-bold text-slate-800 font-display truncate leading-snug group-hover:text-[#0A7880] transition-colors">
+                      {student.name}
+                    </h3>
+                    <p class="text-[11px] text-slate-500 font-medium mt-1 truncate">
+                      {isVisa ? `Visa: ${student.country}` : `${student.type} Overall: ${student.score}`}
+                    </p>
+                  </div>
+                  <div class="flex items-center justify-between mt-3 pt-2.5 border-t border-slate-100">
+                    <span class="text-[12px] font-extrabold text-[#0A7880] font-display">
+                      {isVisa ? "Approved ✓" : student.score}
+                    </span>
+                  </div>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      )}
     </div>
 
   </section>
 
   <AICounsellor client:only="react" />
 </Layout>
+
