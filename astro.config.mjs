@@ -24,7 +24,27 @@ export default defineConfig({
       dedupe: ['react', 'react-dom'],
     },
     optimizeDeps: {
-      include: ['lucide-react', 'framer-motion', '@supabase/supabase-js', 'react', 'react-dom'],
+      include: [
+        'react',
+        'react-dom',
+        'react-dom/server',
+        'react/jsx-runtime',
+        'react/jsx-dev-runtime',
+        'lucide-react',
+        'framer-motion',
+        'posthog-js',
+        'lenis',
+        'nodemailer',
+        'react-hook-form',
+        '@supabase/supabase-js'
+      ],
+      exclude: ['astro:compiler-runtime', 'astro:virtual-modules/transitions.js']
+    },
+    ssr: {
+      optimizeDeps: {
+        noDiscovery: true,
+        include: []
+      }
     },
     build: {
       rollupOptions: {
