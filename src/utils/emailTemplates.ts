@@ -48,7 +48,7 @@ function baseWrapper(content: string, previewText = '') {
             © ${new Date().getFullYear()} TESCA Visa Consultancy. All rights reserved.<br/>
             110-112, Royal Arcade, Simada Naka, Surat, Gujarat 395013<br/>
             <a href="mailto:tescavisaconsultancy87@gmail.com" style="color:#${BRAND_BLUE.replace('#','')};">tescavisaconsultancy87@gmail.com</a> &nbsp;|&nbsp; 
-            <a href="tel:9824152731" style="color:#${BRAND_BLUE.replace('#','')};">+91 98241 52731</a>
+            <a href="tel:+919824152731" style="color:#${BRAND_BLUE.replace('#','')};">+91 98241 52731</a>
           </p>
           <p style="font-size:11px; color:#cbd5e1; margin-top:12px;">This email was sent because you interacted with TESCA Visa Consultancy website.</p>
         </td></tr>
@@ -495,7 +495,7 @@ export function inquiryConfirmationEmail({
         <h2 style="font-size:20px; font-weight:800; color:#ffffff; margin:0 0 10px;">Need Immediate Help?</h2>
         <p style="font-size:13px; color:rgba(255,255,255,0.75); margin:0 0 20px;">Our counselors are available 9 AM – 7 PM (IST) on WhatsApp and Phone.</p>
         <a href="https://wa.me/919824152731" style="display:inline-block; background:#25D366; color:#ffffff; font-size:14px; font-weight:800; padding:13px 30px; border-radius:50px; margin-right:10px;">💬 WhatsApp</a>
-        <a href="tel:9824152731" style="display:inline-block; background:rgba(255,255,255,0.15); color:#ffffff; font-size:14px; font-weight:800; padding:13px 30px; border-radius:50px; border:1px solid rgba(255,255,255,0.25);">📞 Call Us</a>
+        <a href="tel:+919824152731" style="display:inline-block; background:rgba(255,255,255,0.15); color:#ffffff; font-size:14px; font-weight:800; padding:13px 30px; border-radius:50px; border:1px solid rgba(255,255,255,0.25);">📞 Call Us</a>
       </div>
     </td>
   </tr>
