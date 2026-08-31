@@ -1,7 +1,6 @@
 import type { APIRoute } from "astro";
 import { getSupabase } from "../utils/supabase";
 import { blogPosts as staticBlogPosts } from "../data/blog";
-import { documents } from "../data/documents";
 
 export const prerender = false;
 
@@ -148,16 +147,6 @@ export const GET: APIRoute = async () => {
     if (post.lastmod) {
       xml += `    <lastmod>${post.lastmod}</lastmod>\n`;
     }
-    xml += `    <changefreq>weekly</changefreq>\n`;
-    xml += `    <priority>0.7</priority>\n`;
-    xml += `  </url>\n`;
-  }
-
-  // Individual PDF document pages
-  for (const doc of documents) {
-    xml += `  <url>\n`;
-    xml += `    <loc>${SITE}/documents/${escapeXml(doc.slug)}</loc>\n`;
-    xml += `    <lastmod>${doc.updatedAt || today}</lastmod>\n`;
     xml += `    <changefreq>weekly</changefreq>\n`;
     xml += `    <priority>0.7</priority>\n`;
     xml += `  </url>\n`;
