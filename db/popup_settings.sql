@@ -11,6 +11,7 @@ CREATE TABLE IF NOT EXISTS public.popup_settings (
     redirect_to_link BOOLEAN NOT NULL DEFAULT false,
     lead_capture_enabled BOOLEAN NOT NULL DEFAULT false,
     required_fields JSONB NOT NULL DEFAULT '["name", "phone"]'::jsonb,
+    show_in_drawer BOOLEAN NOT NULL DEFAULT false,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL,
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
 );
@@ -18,6 +19,7 @@ CREATE TABLE IF NOT EXISTS public.popup_settings (
 -- Ensure columns exist if table was already created
 ALTER TABLE public.popup_settings ADD COLUMN IF NOT EXISTS redirect_to_link BOOLEAN NOT NULL DEFAULT false;
 ALTER TABLE public.popup_settings ADD COLUMN IF NOT EXISTS link_url TEXT NOT NULL DEFAULT '';
+ALTER TABLE public.popup_settings ADD COLUMN IF NOT EXISTS show_in_drawer BOOLEAN NOT NULL DEFAULT false;
 
 -- Seed with a default row if empty
 INSERT INTO public.popup_settings (is_active, image_url, title, subtitle, delay_seconds, button_text, link_url, redirect_to_link)

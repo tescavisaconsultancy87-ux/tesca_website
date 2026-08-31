@@ -32,7 +32,27 @@ if (Astro.request.method === "POST") {
     const formData = await Astro.request.formData();
     const action = formData.get("action")?.toString() || "add-popup";
 
-    if (action === "delete-popup") {
+    if (action === "set-drawer") {
+      const id = formData.get("id")?.toString();
+      if (!id) throw new Error("Popup ID is required.");
+      const { data: allPopups } = await supabase.from('popup_settings').select('*');
+      if (allPopups) {
+        for (const p of allPopups) {
+          const isTarget = p.id.toString() === id;
+          let req = Array.isArray(p.required_fields) ? p.required_fields.filter((f: string) => f !== "show_in_drawer") : ["name", "phone"];
+          if (isTarget) {
+            req.push("show_in_drawer");
+          }
+          const updateObj: any = { required_fields: req, updated_at: new Date().toISOString() };
+          try {
+            await supabase.from('popup_settings').update({ ...updateObj, show_in_drawer: isTarget }).eq('id', p.id);
+          } catch {
+            await supabase.from('popup_settings').update(updateObj).eq('id', p.id);
+          }
+        }
+      }
+      successMessage = "Designated floating drawer popup updated successfully.";
+    } else if (action === "delete-popup") {
       const id = formData.get("id")?.toString();
       if (!id) throw new Error("Popup ID is required.");
       const { error } = await supabase
@@ -44,12 +64,16 @@ if (Astro.request.method === "POST") {
     } else if (action === "add-popup" || action === "edit-popup") {
       const id = formData.get("id")?.toString();
       const is_active = formData.get("is_active") === "true";
+      const show_in_drawer = formData.get("show_in_drawer") === "true";
       const lead_capture_enabled = formData.get("lead_capture_enabled") === "true";
       const redirect_to_link = formData.get("redirect_to_link") === "true";
       const required_fields_raw = formData.getAll("required_fields");
       const final_required_fields = ["name", "phone"];
       if (required_fields_raw.includes("email")) {
         final_required_fields.push("email");
+      }
+      if (show_in_drawer) {
+        final_required_fields.push("show_in_drawer");
       }
       const required_fields = final_required_fields;
       const title = formData.get("title")?.toString().trim() || "Special Update";
@@ -79,42 +103,74 @@ if (Astro.request.method === "POST") {
         throw new Error("Custom Redirect Link URL is required when redirect toggle is ON.");
       }
 
+      if (show_in_drawer) {
+        const { data: existingPopups } = await supabase.from('popup_settings').select('*');
+        if (existingPopups) {
+          for (const p of existingPopups) {
+            if (id && p.id.toString() === id) continue;
+            const req = Array.isArray(p.required_fields) ? p.required_fields.filter((f: string) => f !== "show_in_drawer") : ["name", "phone"];
+            try {
+              await supabase.from('popup_settings').update({ required_fields: req, show_in_drawer: false }).eq('id', p.id);
+            } catch {
+              await supabase.from('popup_settings').update({ required_fields: req }).eq('id', p.id);
+            }
+          }
+        }
+      }
+
       if (action === "edit-popup") {
         if (!id) throw new Error("Popup ID is required for editing.");
-        const { error } = await supabase
-          .from('popup_settings')
-          .update({
-            is_active,
-            image_url: imageUrl,
-            title,
-            subtitle,
-            delay_seconds,
-            button_text,
-            link_url,
-            redirect_to_link,
-            lead_capture_enabled,
-            required_fields,
-            updated_at: new Date().toISOString()
-          })
-          .eq('id', id);
-        if (error) throw error;
+        const updateObj: any = {
+          is_active,
+          image_url: imageUrl,
+          title,
+          subtitle,
+          delay_seconds,
+          button_text,
+          link_url,
+          redirect_to_link,
+          lead_capture_enabled,
+          required_fields,
+          updated_at: new Date().toISOString()
+        };
+        try {
+          const { error } = await supabase
+            .from('popup_settings')
+            .update({ ...updateObj, show_in_drawer })
+            .eq('id', id);
+          if (error) throw error;
+        } catch {
+          const { error } = await supabase
+            .from('popup_settings')
+            .update(updateObj)
+            .eq('id', id);
+          if (error) throw error;
+        }
         successMessage = "Promo popup updated successfully.";
       } else {
-        const { error } = await supabase
-          .from('popup_settings')
-          .insert({
-            is_active,
-            image_url: imageUrl,
-            title,
-            subtitle,
-            delay_seconds,
-            button_text,
-            link_url,
-            redirect_to_link,
-            lead_capture_enabled,
-            required_fields
-          });
-        if (error) throw error;
+        const insertObj: any = {
+          is_active,
+          image_url: imageUrl,
+          title,
+          subtitle,
+          delay_seconds,
+          button_text,
+          link_url,
+          redirect_to_link,
+          lead_capture_enabled,
+          required_fields
+        };
+        try {
+          const { error } = await supabase
+            .from('popup_settings')
+            .insert({ ...insertObj, show_in_drawer });
+          if (error) throw error;
+        } catch {
+          const { error } = await supabase
+            .from('popup_settings')
+            .insert(insertObj);
+          if (error) throw error;
+        }
         successMessage = "New promo popup published successfully.";
       }
     }
@@ -199,6 +255,28 @@ try {
                   type="hidden" 
                   name="is_active" 
                   id="is_active_value" 
+                  value="false" 
+                />
+                <div class="w-10 h-6 bg-slate-200 rounded-full peer peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-0.5 after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-indigo-600"></div>
+              </label>
+            </div>
+
+            {/* Use in Bottom Drawer Toggle Switch */}
+            <div class="flex items-center justify-between p-3.5 bg-slate-50 border border-slate-200/65 rounded-xl">
+              <div class="space-y-0.5">
+                <span class="block text-xs font-bold text-slate-700">Use in Bottom Drawer</span>
+                <span class="block text-[10px] text-slate-450 font-normal">Display this offer in the sticky bottom floating drawer.</span>
+              </div>
+              <label class="relative inline-flex items-center cursor-pointer select-none">
+                <input 
+                  type="checkbox" 
+                  id="show_in_drawer_toggle" 
+                  class="sr-only peer"
+                />
+                <input 
+                  type="hidden" 
+                  name="show_in_drawer" 
+                  id="show_in_drawer_value" 
                   value="false" 
                 />
                 <div class="w-10 h-6 bg-slate-200 rounded-full peer peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-0.5 after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-indigo-600"></div>
@@ -386,56 +464,77 @@ try {
               </div>
             ) : (
               <div class="space-y-3">
-                {popups.map((p) => (
-                  <div class="flex items-center justify-between gap-4 p-4 rounded-2xl border border-slate-200 bg-white shadow-sm">
-                    <div class="flex items-center gap-3.5 min-w-0">
-                      <img src={p.image_url} alt="" class="w-12 h-12 rounded-xl object-cover border border-slate-100 bg-slate-50 shrink-0" />
-                      <div class="min-w-0 text-left">
-                        <p class="text-xs font-bold text-slate-850 truncate">{p.title}</p>
-                        <p class="text-[10px] text-slate-500 truncate mt-0.5">{p.subtitle}</p>
-                        <div class="flex items-center gap-2 mt-1 flex-wrap">
-                          <span class={`text-[8px] font-extrabold uppercase px-2 py-0.5 rounded-full border ${p.is_active ? 'bg-emerald-50 text-emerald-700 border-emerald-200' : 'bg-slate-100 text-slate-500 border-slate-200'}`}>
-                            {p.is_active ? 'Active' : 'Inactive'}
-                          </span>
-                          {p.redirect_to_link ? (
-                            <span class="text-[8px] font-extrabold uppercase px-2 py-0.5 rounded-full bg-blue-50 text-blue-700 border border-blue-200 truncate max-w-[160px]" title={p.link_url}>
-                              Link: {p.link_url || 'Custom Link'}
+                {popups.map((p) => {
+                  const isDrawer = p.show_in_drawer === true || (Array.isArray(p.required_fields) && p.required_fields.includes("show_in_drawer"));
+                  return (
+                    <div class="flex items-center justify-between gap-4 p-4 rounded-2xl border border-slate-200 bg-white shadow-sm">
+                      <div class="flex items-center gap-3.5 min-w-0">
+                        <img src={p.image_url} alt="" class="w-12 h-12 rounded-xl object-cover border border-slate-100 bg-slate-50 shrink-0" />
+                        <div class="min-w-0 text-left">
+                          <p class="text-xs font-bold text-slate-850 truncate">{p.title}</p>
+                          <p class="text-[10px] text-slate-500 truncate mt-0.5">{p.subtitle}</p>
+                          <div class="flex items-center gap-2 mt-1 flex-wrap">
+                            <span class={`text-[8px] font-extrabold uppercase px-2 py-0.5 rounded-full border ${p.is_active ? 'bg-emerald-50 text-emerald-700 border-emerald-200' : 'bg-slate-100 text-slate-500 border-slate-200'}`}>
+                              {p.is_active ? 'Active' : 'Inactive'}
                             </span>
-                          ) : (
-                            <span class="text-[8px] font-extrabold uppercase px-2 py-0.5 rounded-full bg-purple-50 text-purple-700 border border-purple-200">
-                              Lead Form Page
-                            </span>
-                          )}
-                          <span class="text-[9px] text-slate-400 font-medium">{p.delay_seconds}s delay</span>
+                            {isDrawer && (
+                              <span class="text-[8px] font-extrabold uppercase px-2 py-0.5 rounded-full bg-indigo-50 text-indigo-700 border border-indigo-200">
+                                📌 Drawer Selected
+                              </span>
+                            )}
+                            {p.redirect_to_link ? (
+                              <span class="text-[8px] font-extrabold uppercase px-2 py-0.5 rounded-full bg-blue-50 text-blue-700 border border-blue-200 truncate max-w-[160px]" title={p.link_url}>
+                                Link: {p.link_url || 'Custom Link'}
+                              </span>
+                            ) : (
+                              <span class="text-[8px] font-extrabold uppercase px-2 py-0.5 rounded-full bg-purple-50 text-purple-700 border border-purple-200">
+                                Lead Form Page
+                              </span>
+                            )}
+                            <span class="text-[9px] text-slate-400 font-medium">{p.delay_seconds}s delay</span>
+                          </div>
                         </div>
                       </div>
-                    </div>
-                    <div class="flex items-center gap-1 shrink-0">
-                      {/* Edit Button */}
-                      <button
-                        type="button"
-                        class="edit-popup-btn p-2 text-indigo-600 hover:bg-indigo-50 rounded-lg hover:scale-105 transition-all cursor-pointer border border-transparent hover:border-indigo-200"
-                        data-popup={JSON.stringify(p)}
-                        aria-label="Edit popup"
-                      >
-                        <span set:html={SVG.Edit} />
-                      </button>
-                      
-                      {/* Delete Button */}
-                      <form method="POST" class="delete-popup-form m-0 shrink-0">
-                        <input type="hidden" name="action" value="delete-popup" />
-                        <input type="hidden" name="id" value={p.id} />
+                      <div class="flex items-center gap-1.5 shrink-0">
+                        {!isDrawer && (
+                          <form method="POST" class="set-drawer-form m-0 shrink-0">
+                            <input type="hidden" name="action" value="set-drawer" />
+                            <input type="hidden" name="id" value={p.id} />
+                            <button
+                              type="submit"
+                              class="px-2.5 py-1.5 bg-slate-50 hover:bg-indigo-50 text-slate-600 hover:text-indigo-700 font-extrabold text-[9px] rounded-lg border border-slate-200 hover:border-indigo-200 transition-all cursor-pointer"
+                              title="Set as bottom drawer popup"
+                            >
+                              📌 Set Drawer
+                            </button>
+                          </form>
+                        )}
+                        {/* Edit Button */}
                         <button
-                          type="submit"
-                          class="p-2 text-rose-500 hover:bg-rose-50 rounded-lg hover:scale-105 transition-all cursor-pointer border border-transparent hover:border-rose-200"
-                          aria-label="Delete popup"
+                          type="button"
+                          class="edit-popup-btn p-2 text-indigo-600 hover:bg-indigo-50 rounded-lg hover:scale-105 transition-all cursor-pointer border border-transparent hover:border-indigo-200"
+                          data-popup={JSON.stringify(p)}
+                          aria-label="Edit popup"
                         >
-                          <span set:html={SVG.Trash2} />
+                          <span set:html={SVG.Edit} />
                         </button>
-                      </form>
+                        
+                        {/* Delete Button */}
+                        <form method="POST" class="delete-popup-form m-0 shrink-0">
+                          <input type="hidden" name="action" value="delete-popup" />
+                          <input type="hidden" name="id" value={p.id} />
+                          <button
+                            type="submit"
+                            class="p-2 text-rose-500 hover:bg-rose-50 rounded-lg hover:scale-105 transition-all cursor-pointer border border-transparent hover:border-rose-200"
+                            aria-label="Delete popup"
+                          >
+                            <span set:html={SVG.Trash2} />
+                          </button>
+                        </form>
+                      </div>
                     </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             )}
           </div>
@@ -539,6 +638,15 @@ try {
     is_active_toggle?.addEventListener("change", () => {
       if (is_active_value) {
         is_active_value.value = is_active_toggle.checked ? "true" : "false";
+      }
+    });
+
+    const show_in_drawer_toggle = document.getElementById("show_in_drawer_toggle") as HTMLInputElement;
+    const show_in_drawer_value = document.getElementById("show_in_drawer_value") as HTMLInputElement;
+
+    show_in_drawer_toggle?.addEventListener("change", () => {
+      if (show_in_drawer_value) {
+        show_in_drawer_value.value = show_in_drawer_toggle.checked ? "true" : "false";
       }
     });
 
@@ -682,6 +790,13 @@ try {
           }
           if (is_active_value) is_active_value.value = popup.is_active ? "true" : "false";
 
+          const isDrawer = popup.show_in_drawer === true || (Array.isArray(popup.required_fields) && popup.required_fields.includes("show_in_drawer"));
+          if (show_in_drawer_toggle) {
+            show_in_drawer_toggle.checked = isDrawer;
+            show_in_drawer_toggle.dispatchEvent(new Event("change"));
+          }
+          if (show_in_drawer_value) show_in_drawer_value.value = isDrawer ? "true" : "false";
+
           if (leadCaptureToggle) {
             leadCaptureToggle.checked = !!popup.lead_capture_enabled;
             leadCaptureToggle.dispatchEvent(new Event("change"));
@@ -759,6 +874,10 @@ try {
         is_active_toggle.checked = false;
         is_active_toggle.dispatchEvent(new Event("change"));
       }
+      if (show_in_drawer_toggle) {
+        show_in_drawer_toggle.checked = false;
+        show_in_drawer_toggle.dispatchEvent(new Event("change"));
+      }
       if (leadCaptureToggle) {
         leadCaptureToggle.checked = false;
         leadCaptureToggle.dispatchEvent(new Event("change"));
@@ -782,6 +901,44 @@ try {
       const previewImgBlur = document.getElementById("preview-image-blur") as HTMLImageElement;
       if (previewImg) previewImg.src = "/images/Hero/main.webp";
       if (previewImgBlur) previewImgBlur.src = "/images/Hero/main.webp";
+    });
+
+    // Handle set-drawer forms
+    const setDrawerForms = document.querySelectorAll("form.set-drawer-form");
+    setDrawerForms.forEach(form => {
+      if ((form as any)._ajaxBound) return;
+      (form as any)._ajaxBound = true;
+      form.addEventListener("submit", async (e) => {
+        e.preventDefault();
+        const btn = form.querySelector('button[type="submit"]') as HTMLElement;
+        (window as any).showBtnLoader?.(btn, "Updating...");
+
+        const params = new URLSearchParams();
+        form.querySelectorAll("input[name]").forEach((el) => {
+          const input = el as HTMLInputElement;
+          params.append(input.name, input.value);
+        });
+
+        try {
+          const res = await fetch(window.location.href, {
+            method: "POST",
+            headers: { "Content-Type": "application/x-www-form-urlencoded" },
+            body: params
+          });
+          await handleResponse(res, "Floating drawer popup updated successfully.");
+        } catch (err) {
+          console.error("AJAX error:", err);
+          if ((window as any).showToast) {
+            (window as any).showToast("An error occurred. Please try again.", "error");
+          } else {
+            alert("An error occurred. Please try again.");
+          }
+        } finally {
+          if (btn) {
+            (window as any).hideBtnLoader?.(btn);
+          }
+        }
+      });
     });
 
     // Handle delete forms confirmation dialog

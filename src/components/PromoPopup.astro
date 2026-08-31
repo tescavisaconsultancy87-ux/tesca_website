@@ -30,6 +30,22 @@ const defaultPopup = {
 };
 
 const popupsList = activePopups.length > 0 ? activePopups : [defaultPopup];
+
+const getPopupTargetUrl = (p: any) => {
+  if (p.link_url && p.link_url.trim().length > 0) {
+    return p.link_url.trim();
+  }
+  if (p.id && p.id !== "default-china-visa") {
+    return `/promo/${p.id}`;
+  }
+  return "/china-business-visa";
+};
+
+const isDrawerPopup = (p: any) =>
+  p.show_in_drawer === true ||
+  (Array.isArray(p.required_fields) && p.required_fields.includes("show_in_drawer"));
+
+const drawerPopup = popupsList.find(isDrawerPopup) || popupsList[0];
 const initialPopup = popupsList[0];
 const delaySeconds = initialPopup?.delay_seconds || 5;
 ---
@@ -94,10 +110,8 @@ const delaySeconds = initialPopup?.delay_seconds || 5;
 
         // Determine destination link for image click:
         // Type 1 (redirect_to_link): Custom link URL
-        // Type 2 (detail submission page): link_url if provided, else fallback to /china-business-visa
-        const targetUrl = popup.link_url && popup.link_url.trim().length > 0
-          ? popup.link_url
-          : "/check-eligibility";
+        // Type 2 (detail submission page): link_url if provided, else fallback to /promo/[id] or /china-business-visa
+        const targetUrl = getPopupTargetUrl(popup);
 
         return (
           <div
@@ -215,19 +229,19 @@ const delaySeconds = initialPopup?.delay_seconds || 5;
 
     <div class="space-y-2 text-left">
       <h4 id="drawer-title" class="text-sm md:text-base font-extrabold text-slate-900 tracking-tight leading-snug">
-        {initialPopup.title || "Special Offer"}
+        {drawerPopup.title || "Special Offer"}
       </h4>
       <p id="drawer-subtitle" class="text-xs text-slate-600 line-clamp-2 leading-relaxed">
-        {initialPopup.subtitle || ""}
+        {drawerPopup.subtitle || ""}
       </p>
 
       <div class="pt-2 flex items-center gap-2">
         <a
           id="drawer-action-link"
-          href={initialPopup.link_url || "/check-eligibility"}
+          href={getPopupTargetUrl(drawerPopup)}
           class="flex-1 py-2.5 px-4 rounded-xl bg-gradient-to-r from-red-600 to-amber-600 text-white font-bold text-xs text-center shadow-md hover:scale-[1.01] transition-all"
         >
-          {initialPopup.button_text || "Apply Now"}
+          {drawerPopup.button_text || "Apply Now"}
         </a>
         <button
           type="button"

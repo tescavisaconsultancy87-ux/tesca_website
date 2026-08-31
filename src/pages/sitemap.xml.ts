@@ -25,7 +25,6 @@ const STATIC_PAGES: { url: string; changefreq: string; priority: string }[] = [
   { url: "/contact", changefreq: "monthly", priority: "0.8" },
   { url: "/connect", changefreq: "monthly", priority: "0.7" },
   { url: "/inquiry", changefreq: "monthly", priority: "0.5" },
-  { url: "/documents", changefreq: "weekly", priority: "0.8" },
 
   // Service sub-pages
   { url: "/services/testprep", changefreq: "weekly", priority: "0.7" },
