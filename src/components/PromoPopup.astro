@@ -5,61 +5,61 @@
 
 <div
   id="promo-popup-overlay"
-  class="fixed inset-x-4 bottom-4 md:bottom-6 md:right-6 md:left-auto z-[100] max-w-full md:max-w-[420px] pointer-events-none transition-all duration-500 ease-out select-none"
+  class="fixed inset-x-4 bottom-24 md:bottom-6 md:right-6 md:left-auto z-[99] max-w-full md:max-w-[480px] pointer-events-none transition-all duration-500 ease-out select-none"
 >
   <div
     id="promo-popup-card"
-    class="relative bg-white/95 backdrop-blur-xl w-full rounded-3xl p-5 shadow-2xl border border-slate-200/90 flex flex-col transform translate-y-12 opacity-0 pointer-events-auto transition-all duration-500 ease-out overflow-hidden"
+    class="relative bg-white/95 backdrop-blur-xl w-full rounded-3xl p-5 md:p-6 shadow-2xl border border-slate-200/90 flex flex-col transform translate-y-12 opacity-0 pointer-events-auto transition-all duration-500 ease-out overflow-hidden"
   >
     {/* Decorative Gradient Background */}
-    <div class="absolute -top-16 -right-16 w-40 h-40 bg-red-500/10 rounded-full blur-2xl pointer-events-none" />
-    <div class="absolute -bottom-16 -left-16 w-40 h-40 bg-amber-500/10 rounded-full blur-2xl pointer-events-none" />
+    <div class="absolute -top-16 -right-16 w-44 h-44 bg-red-500/10 rounded-full blur-2xl pointer-events-none" />
+    <div class="absolute -bottom-16 -left-16 w-44 h-44 bg-amber-500/10 rounded-full blur-2xl pointer-events-none" />
 
     {/* Close Button */}
     <button
       type="button"
       id="promo-popup-close"
-      class="absolute top-3 right-3 z-50 p-1.5 bg-slate-100 hover:bg-slate-200 text-slate-600 hover:text-slate-900 rounded-full transition-all cursor-pointer hover:scale-105"
+      class="absolute top-3.5 right-3.5 z-50 p-2 bg-slate-100 hover:bg-slate-200 text-slate-600 hover:text-slate-900 rounded-full transition-all cursor-pointer hover:scale-105"
       aria-label="Close popup"
     >
       <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
     </button>
 
     {/* Header Badge & Title */}
-    <div class="flex items-center gap-2 mb-2 pr-6">
-      <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-red-600 text-white text-[10px] font-bold uppercase tracking-wider">
-        🔥 Featured Service
+    <div class="flex items-center gap-2 mb-2.5 pr-8 flex-wrap">
+      <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-red-600 text-white text-xs font-extrabold uppercase tracking-wider shadow-sm shadow-red-500/30">
+        🔥 Trending Service
       </span>
-      <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 text-[10px] font-bold">
+      <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-100 text-emerald-800 text-xs font-extrabold border border-emerald-200/60">
         🛡️ No Visa No Payment
       </span>
     </div>
 
     {/* Content Body */}
-    <div id="promo-popup-content" class="space-y-2.5 text-left">
-      <h4 class="text-base font-extrabold text-slate-900 tracking-tight leading-snug">
+    <div id="promo-popup-content" class="space-y-3 text-left">
+      <h4 class="text-base md:text-xl font-extrabold text-slate-900 tracking-tight leading-snug">
         China Business (M) Visa & Canton Fair 2026
       </h4>
-      <p class="text-xs text-slate-600 leading-relaxed">
+      <p class="text-xs md:text-sm text-slate-600 leading-relaxed">
         Heading to Guangzhou, Shanghai or Canton Fair? Get <b>4-5 Day Express Processing</b> with 100% Visa Approval Guarantee & zero risk!
       </p>
 
       {/* Trust Highlights */}
       <div class="grid grid-cols-2 gap-2 pt-1">
-        <div class="p-2 rounded-xl bg-slate-50 border border-slate-100 text-[11px] font-semibold text-slate-700 flex items-center gap-1.5">
-          <span class="text-emerald-600 font-bold">✓</span> No Visa, No Payment
+        <div class="p-2.5 rounded-xl bg-slate-50 border border-slate-200/80 text-xs font-bold text-slate-700 flex items-center gap-1.5">
+          <span class="text-emerald-600 font-extrabold">✓</span> No Visa, No Payment
         </div>
-        <div class="p-2 rounded-xl bg-slate-50 border border-slate-100 text-[11px] font-semibold text-slate-700 flex items-center gap-1.5">
-          <span class="text-amber-600 font-bold">⚡</span> 4-5 Day Express
+        <div class="p-2.5 rounded-xl bg-slate-50 border border-slate-200/80 text-xs font-bold text-slate-700 flex items-center gap-1.5">
+          <span class="text-amber-600 font-extrabold">⚡</span> 4-5 Day Express
         </div>
       </div>
 
       {/* Action Buttons */}
-      <div class="pt-2 flex items-center gap-2">
+      <div class="pt-2 flex items-center gap-2.5">
         <a
           href="/china-business-visa"
           id="promo-popup-action-btn"
-          class="flex-1 py-2.5 px-4 rounded-xl bg-gradient-to-r from-red-600 to-amber-600 hover:from-red-700 hover:to-amber-700 text-white font-bold text-xs shadow-lg shadow-red-500/20 text-center transition-all hover:scale-[1.02] active:scale-[0.98]"
+          class="flex-1 py-3 px-5 rounded-2xl bg-gradient-to-r from-red-600 to-amber-600 hover:from-red-700 hover:to-amber-700 text-white font-extrabold text-xs md:text-sm shadow-xl shadow-red-500/25 text-center transition-all hover:scale-[1.02] active:scale-[0.98]"
         >
           Check China Visa Details
         </a>
@@ -67,10 +67,10 @@
           href="https://wa.me/919824152731?text=Hi%20TESCA,%20I%20want%20info%20on%20China%20Business%20Visa"
           target="_blank"
           rel="noreferrer"
-          class="p-2.5 rounded-xl bg-emerald-500 hover:bg-emerald-600 text-white transition-all shadow-md shrink-0 flex items-center justify-center"
+          class="p-3 rounded-2xl bg-emerald-500 hover:bg-emerald-600 text-white transition-all shadow-lg shrink-0 flex items-center justify-center hover:scale-105"
           title="Instant WhatsApp Chat"
         >
-          <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+          <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
             <path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.893 11.892-1.99-.001-3.951-.5-5.688-1.448l-6.305 1.654zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.434 9.889-9.885.002-5.462-4.415-9.89-9.881-9.892-5.452 0-9.887 4.434-9.889 9.884-.001 2.225.651 3.891 1.746 5.634l-0.999 3.648 3.742-.981z"/>
           </svg>
         </a>
@@ -103,36 +103,50 @@
 
     if (isAdminOrExcludedPath()) return;
 
-    const isClosedInSession = sessionStorage.getItem("promo_drawer_closed");
-    const urlParams = new URLSearchParams(window.location.search);
-    const isTestMode = urlParams.get("test-popup") === "true";
-
-    if (isClosedInSession === "true" && !isTestMode) return;
-
     const overlay = document.getElementById("promo-popup-overlay");
     const card = document.getElementById("promo-popup-card");
     const closeBtn = document.getElementById("promo-popup-close");
 
     if (!overlay || !card) return;
 
-    const closePopup = () => {
-      if (!isTestMode) {
-        sessionStorage.setItem("promo_drawer_closed", "true");
+    const urlParams = new URLSearchParams(window.location.search);
+    const isTestMode = urlParams.get("test-popup") === "true";
+    const lastClosedTime = sessionStorage.getItem("promo_drawer_closed_at");
+
+    if (lastClosedTime && !isTestMode) {
+      const elapsed = Date.now() - parseInt(lastClosedTime, 10);
+      if (elapsed < 3 * 60 * 1000) { // 3 minutes cooldown if closed
+        return;
       }
+    }
+
+    const closePopup = () => {
+      sessionStorage.setItem("promo_drawer_closed_at", Date.now().toString());
       card.classList.remove("translate-y-0", "opacity-100");
       card.classList.add("translate-y-12", "opacity-0", "pointer-events-none");
     };
 
     if (closeBtn) closeBtn.onclick = closePopup;
 
-    // Trigger floating drawer smoothly after 5 seconds
+    // Trigger floating drawer smoothly after exactly 5 seconds
     popupTimer = setTimeout(() => {
       if (isAdminOrExcludedPath()) return;
-      if (sessionStorage.getItem("promo_drawer_closed") === "true" && !isTestMode) return;
+
+      const currentClosed = sessionStorage.getItem("promo_drawer_closed_at");
+      if (currentClosed && !isTestMode) {
+        const elapsed = Date.now() - parseInt(currentClosed, 10);
+        if (elapsed < 3 * 60 * 1000) return;
+      }
 
       card.classList.remove("translate-y-12", "opacity-0", "pointer-events-none");
       card.classList.add("translate-y-0", "opacity-100");
     }, 5000);
+  }
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", initPromoPopup);
+  } else {
+    initPromoPopup();
   }
 
   document.addEventListener("astro:page-load", () => {
