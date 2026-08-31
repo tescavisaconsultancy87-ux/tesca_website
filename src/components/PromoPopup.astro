@@ -97,7 +97,7 @@ const delaySeconds = initialPopup?.delay_seconds || 5;
         // Type 2 (detail submission page): link_url if provided, else fallback to /china-business-visa
         const targetUrl = popup.link_url && popup.link_url.trim().length > 0
           ? popup.link_url
-          : "/china-business-visa";
+          : "/check-eligibility";
 
         return (
           <div
@@ -224,7 +224,7 @@ const delaySeconds = initialPopup?.delay_seconds || 5;
       <div class="pt-2 flex items-center gap-2">
         <a
           id="drawer-action-link"
-          href={initialPopup.link_url || "/china-business-visa"}
+          href={initialPopup.link_url || "/check-eligibility"}
           class="flex-1 py-2.5 px-4 rounded-xl bg-gradient-to-r from-red-600 to-amber-600 text-white font-bold text-xs text-center shadow-md hover:scale-[1.01] transition-all"
         >
           {initialPopup.button_text || "Apply Now"}

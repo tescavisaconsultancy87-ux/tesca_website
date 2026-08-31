@@ -24,11 +24,15 @@ export const POST: APIRoute = async ({ request, locals }) => {
   try {
     const supabase = getSupabaseAdmin();
     body = await request.json();
-    const { fullName, email, mobileNumber, message, subject } = body;
+    const fullName = body.fullName || body.name;
+    const mobileNumber = body.mobileNumber || body.phone || body.mobile;
+    const email = body.email;
+    const message = body.message || body.notes;
+    const subject = body.subject || body.visa_type || body.visaType;
 
     // 1. Basic check for presence
     if (!fullName || !mobileNumber) {
-      return new Response(JSON.stringify({ error: "Missing required fields (fullName, mobileNumber)." }), {
+      return new Response(JSON.stringify({ error: "Missing required fields (fullName/name, mobileNumber/phone)." }), {
         status: 400,
         headers: { "Content-Type": "application/json" }
       });
@@ -93,8 +97,9 @@ export const POST: APIRoute = async ({ request, locals }) => {
     }
 
     const cleanLeadId = body.leadId ? sanitizeText(body.leadId, 80) : undefined;
-    const cleanPreferredCountries = Array.isArray(body.preferredCountries)
-      ? body.preferredCountries.map((country: unknown) => sanitizeText(String(country), 50)).filter(Boolean).slice(0, 12)
+    const rawPreferredCountries = body.preferredCountries || body.preferred_countries;
+    const cleanPreferredCountries = Array.isArray(rawPreferredCountries)
+      ? rawPreferredCountries.map((country: unknown) => sanitizeText(String(country), 50)).filter(Boolean).slice(0, 12)
       : [];
     
     // Safely whitelist details fields to prevent arbitrary JSON manipulation
