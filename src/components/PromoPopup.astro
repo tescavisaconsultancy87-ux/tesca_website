@@ -1,37 +1,44 @@
 ---
 // PromoPopup.astro
-// Includes both Main Screen Big Poster Image Popup & Persistent Floating Bottom Drawer
+// Includes Main Screen Big Uncropped Poster Popup with Multi-Popup Arrow Navigation (< >) & Floating Bottom Drawer
 import { supabase } from "../utils/supabase";
 
-let activePopup: any = null;
+let activePopups: any[] = [];
 try {
   const { data } = await supabase
     .from('popup_settings')
     .select('*')
     .eq('is_active', true)
-    .order('id', { ascending: false })
-    .limit(1)
-    .maybeSingle();
+    .order('id', { ascending: false });
 
-  activePopup = data || null;
+  activePopups = data && data.length > 0 ? data : [];
 } catch (e) {
-  activePopup = null;
+  activePopups = [];
 }
 
-const title = activePopup?.title || "China Business (M) Visa & Canton Fair 2026";
-const subtitle = activePopup?.subtitle || "Heading to Guangzhou, Shanghai or Canton Fair? Get 4-5 Day Express Processing with 100% Visa Approval Guarantee & Zero Risk!";
-const imageUrl = activePopup?.image_url || null;
-const delaySeconds = activePopup?.delay_seconds || 5;
-const buttonText = activePopup?.button_text || "Apply China Visa Now";
-const linkUrl = activePopup?.link_url || "/china-business-visa";
-const leadCapture = activePopup?.lead_capture_enabled ?? false;
+// Fallback popup if DB returns empty list
+const defaultPopup = {
+  id: "default-china-visa",
+  title: "China Business (M) Visa & Canton Fair 2026",
+  subtitle: "Heading to Guangzhou, Shanghai or Canton Fair? Get 4-5 Day Express Processing with 100% Visa Approval Guarantee & Zero Risk!",
+  image_url: null,
+  delay_seconds: 5,
+  button_text: "Apply China Visa Now",
+  link_url: "/china-business-visa",
+  lead_capture_enabled: false
+};
+
+const popupsList = activePopups.length > 0 ? activePopups : [defaultPopup];
+const initialPopup = popupsList[0];
+const delaySeconds = initialPopup?.delay_seconds || 5;
 ---
 
-<!-- 1. Main Screen Center Modal Popup Overlay (Big Poster Image Display) -->
+<!-- 1. Main Screen Center Modal Popup Overlay (Multi-Popup Carousel Support) -->
 <div
   id="promo-popup-overlay"
   class="hidden fixed inset-0 z-[9999] bg-slate-950/80 backdrop-blur-md flex items-center justify-center p-3 sm:p-6 transition-all duration-300 select-none overflow-y-auto"
   data-delay={delaySeconds}
+  data-total={popupsList.length}
 >
   <div
     id="promo-popup-card"
@@ -47,104 +54,157 @@ const leadCapture = activePopup?.lead_capture_enabled ?? false;
       <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
     </button>
 
-    {/* Poster Image Mode (Big Size, 100% Uncropped, No redundant text under image) */}
-    {imageUrl ? (
-      <div class="bg-white rounded-3xl overflow-hidden shadow-2xl border border-slate-200/90">
-        <a href={linkUrl} class="block relative w-full overflow-hidden bg-slate-950 p-1.5 sm:p-2 group">
-          <img
-            src={imageUrl}
-            alt={title}
-            class="w-full h-auto max-h-[75vh] object-contain rounded-2xl shadow-xl block mx-auto hover:scale-[1.01] transition-transform duration-300"
-          />
-        </a>
+    {/* Previous < and Next > Navigation Arrows (Shown when more than 1 active popup) */}
+    {popupsList.length > 1 && (
+      <>
+        <button
+          type="button"
+          id="promo-popup-prev"
+          class="absolute left-3 top-1/2 -translate-y-1/2 z-50 p-2.5 bg-slate-900/85 hover:bg-slate-900 text-white rounded-full transition-all cursor-pointer shadow-2xl hover:scale-110 border border-white/30 flex items-center justify-center"
+          aria-label="Previous popup"
+          title="Previous Offer"
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>
+        </button>
+        <button
+          type="button"
+          id="promo-popup-next"
+          class="absolute right-3 top-1/2 -translate-y-1/2 z-50 p-2.5 bg-slate-900/85 hover:bg-slate-900 text-white rounded-full transition-all cursor-pointer shadow-2xl hover:scale-110 border border-white/30 flex items-center justify-center"
+          aria-label="Next popup"
+          title="Next Offer"
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>
+        </button>
 
-        {leadCapture && (
-          <div class="p-5 bg-white space-y-3">
-            <form id="popup-lead-form">
-              <div id="popup-form-fields" class="space-y-3">
-                <input type="text" name="name" required placeholder="Full Name (As in Passport)" class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-medium focus:outline-none focus:border-red-500 focus:bg-white transition-all" />
-                <input type="tel" name="phone" required pattern="[0-9]{10}" placeholder="WhatsApp Mobile No." class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-medium focus:outline-none focus:border-red-500 focus:bg-white transition-all" />
-                <button type="submit" id="popup-submit-btn" class="w-full py-3 px-5 rounded-2xl bg-gradient-to-r from-red-600 to-amber-600 hover:from-red-700 hover:to-amber-700 text-white font-extrabold text-xs sm:text-sm shadow-xl shadow-red-500/25 transition-all cursor-pointer hover:scale-[1.01]">
-                  {buttonText}
-                </button>
-              </div>
-              <div id="popup-form-success" class="hidden p-4 bg-emerald-50 border border-emerald-200 rounded-2xl text-emerald-800 text-xs font-bold text-center space-y-1">
-                <p>✓ Application Submitted Successfully!</p>
-                <p class="font-normal text-emerald-700">Our team will call you within 30 minutes.</p>
-              </div>
-            </form>
-          </div>
-        )}
-      </div>
-    ) : (
-      /* Fallback Text Card if no poster image uploaded */
-      <div class="bg-white rounded-3xl overflow-hidden shadow-2xl border border-slate-200/90 p-6 space-y-4">
-        <div class="flex items-center gap-2 flex-wrap">
-          <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-red-600 text-white text-xs font-extrabold uppercase tracking-wider shadow-sm shadow-red-500/30">
-            🔥 Special Offer
-          </span>
-          <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-100 text-emerald-800 text-xs font-extrabold border border-emerald-200/60">
-            🛡️ No Visa No Payment
-          </span>
+        {/* Slide Counter Badge */}
+        <div class="absolute top-3.5 left-3.5 z-50 px-3 py-1 bg-slate-900/85 backdrop-blur-md text-white text-[11px] font-extrabold rounded-full border border-white/20 shadow-md">
+          <span id="promo-slide-current">1</span> / <span>{popupsList.length}</span>
         </div>
-
-        <div>
-          <h3 class="text-xl sm:text-2xl font-extrabold text-slate-900 tracking-tight leading-snug">
-            {title}
-          </h3>
-          {subtitle && (
-            <p class="text-xs sm:text-sm text-slate-600 mt-2 leading-relaxed">
-              {subtitle}
-            </p>
-          )}
-        </div>
-
-        <div class="grid grid-cols-2 gap-2.5 pt-1">
-          <div class="p-3 rounded-2xl bg-slate-50 border border-slate-200/80 text-xs font-bold text-slate-700 flex items-center gap-2">
-            <span class="text-emerald-600 font-extrabold text-sm">✓</span> No Visa, No Payment
-          </div>
-          <div class="p-3 rounded-2xl bg-slate-50 border border-slate-200/80 text-xs font-bold text-slate-700 flex items-center gap-2">
-            <span class="text-amber-600 font-extrabold text-sm">⚡</span> 4-5 Day Express
-          </div>
-        </div>
-
-        {leadCapture ? (
-          <form id="popup-lead-form" class="space-y-3 pt-2">
-            <div id="popup-form-fields" class="space-y-3">
-              <input type="text" name="name" required placeholder="Full Name (As in Passport)" class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-xs font-medium focus:outline-none focus:border-red-500 focus:bg-white transition-all" />
-              <input type="tel" name="phone" required pattern="[0-9]{10}" placeholder="WhatsApp Mobile No." class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-xs font-medium focus:outline-none focus:border-red-500 focus:bg-white transition-all" />
-              <button type="submit" id="popup-submit-btn" class="w-full py-3.5 px-6 rounded-2xl bg-gradient-to-r from-red-600 to-amber-600 hover:from-red-700 hover:to-amber-700 text-white font-extrabold text-xs sm:text-sm shadow-xl shadow-red-500/25 transition-all cursor-pointer hover:scale-[1.01]">
-                {buttonText}
-              </button>
-            </div>
-            <div id="popup-form-success" class="hidden p-4 bg-emerald-50 border border-emerald-200 rounded-2xl text-emerald-800 text-xs font-bold text-center space-y-1">
-              <p>✓ Application Submitted Successfully!</p>
-              <p class="font-normal text-emerald-700">Our team will call you within 30 minutes.</p>
-            </div>
-          </form>
-        ) : (
-          <div class="pt-2 flex items-center gap-3">
-            <a
-              href={linkUrl}
-              class="flex-1 py-3.5 px-6 rounded-2xl bg-gradient-to-r from-red-600 to-amber-600 hover:from-red-700 hover:to-amber-700 text-white font-extrabold text-xs sm:text-sm shadow-xl shadow-red-500/25 text-center transition-all hover:scale-[1.02] active:scale-[0.98]"
-            >
-              {buttonText}
-            </a>
-            <a
-              href="https://wa.me/919824152731?text=Hi%20TESCA,%20I%20want%20info%20on%20China%20Business%20Visa"
-              target="_blank"
-              rel="noreferrer"
-              class="p-3.5 rounded-2xl bg-emerald-500 hover:bg-emerald-600 text-white transition-all shadow-lg shrink-0 flex items-center justify-center hover:scale-105"
-              title="Instant WhatsApp Chat"
-            >
-              <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
-                <path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.893 11.892-1.99-.001-3.951-.5-5.688-1.448l-6.305 1.654zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.434 9.889-9.885.002-5.462-4.415-9.89-9.881-9.892-5.452 0-9.887 4.434-9.889 9.884-.001 2.225.651 3.891 1.746 5.634l-0.999 3.648 3.742-.981z"/>
-              </svg>
-            </a>
-          </div>
-        )}
-      </div>
+      </>
     )}
+
+    {/* Popup Slides Container */}
+    <div id="promo-slides-container" class="relative w-full">
+      {popupsList.map((popup, idx) => {
+        const title = popup.title || "Special Offer";
+        const subtitle = popup.subtitle || "";
+        const imageUrl = popup.image_url || null;
+        const buttonText = popup.button_text || "Apply Now";
+        const linkUrl = popup.link_url || "/china-business-visa";
+        const leadCapture = popup.lead_capture_enabled ?? false;
+
+        return (
+          <div
+            id={`promo-slide-${idx}`}
+            class={`promo-slide-item w-full transition-all duration-300 ${idx === 0 ? 'block' : 'hidden'}`}
+            data-index={idx}
+            data-title={title}
+            data-subtitle={subtitle}
+            data-button={buttonText}
+            data-link={linkUrl}
+          >
+            {imageUrl ? (
+              /* Big Uncropped Poster Mode */
+              <div class="bg-white rounded-3xl overflow-hidden shadow-2xl border border-slate-200/90">
+                <a href={linkUrl} class="block relative w-full overflow-hidden bg-slate-950 p-1.5 sm:p-2 group">
+                  <img
+                    src={imageUrl}
+                    alt={title}
+                    class="w-full h-auto max-h-[75vh] object-contain rounded-2xl shadow-xl block mx-auto hover:scale-[1.01] transition-transform duration-300"
+                  />
+                </a>
+
+                {leadCapture && (
+                  <div class="p-5 bg-white space-y-3">
+                    <form class="popup-lead-form">
+                      <div class="popup-form-fields space-y-3">
+                        <input type="text" name="name" required placeholder="Full Name (As in Passport)" class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-medium focus:outline-none focus:border-red-500 focus:bg-white transition-all" />
+                        <input type="tel" name="phone" required pattern="[0-9]{10}" placeholder="WhatsApp Mobile No." class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-medium focus:outline-none focus:border-red-500 focus:bg-white transition-all" />
+                        <button type="submit" class="w-full py-3 px-5 rounded-2xl bg-gradient-to-r from-red-600 to-amber-600 hover:from-red-700 hover:to-amber-700 text-white font-extrabold text-xs sm:text-sm shadow-xl shadow-red-500/25 transition-all cursor-pointer hover:scale-[1.01]">
+                          {buttonText}
+                        </button>
+                      </div>
+                      <div class="popup-form-success hidden p-4 bg-emerald-50 border border-emerald-200 rounded-2xl text-emerald-800 text-xs font-bold text-center space-y-1">
+                        <p>✓ Application Submitted Successfully!</p>
+                        <p class="font-normal text-emerald-700">Our team will call you within 30 minutes.</p>
+                      </div>
+                    </form>
+                  </div>
+                )}
+              </div>
+            ) : (
+              /* Fallback Text Card Mode */
+              <div class="bg-white rounded-3xl overflow-hidden shadow-2xl border border-slate-200/90 p-6 space-y-4">
+                <div class="flex items-center gap-2 flex-wrap">
+                  <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-red-600 text-white text-xs font-extrabold uppercase tracking-wider shadow-sm shadow-red-500/30">
+                    🔥 Special Offer
+                  </span>
+                  <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-100 text-emerald-800 text-xs font-extrabold border border-emerald-200/60">
+                    🛡️ No Visa No Payment
+                  </span>
+                </div>
+
+                <div>
+                  <h3 class="text-xl sm:text-2xl font-extrabold text-slate-900 tracking-tight leading-snug">
+                    {title}
+                  </h3>
+                  {subtitle && (
+                    <p class="text-xs sm:text-sm text-slate-600 mt-2 leading-relaxed">
+                      {subtitle}
+                    </p>
+                  )}
+                </div>
+
+                <div class="grid grid-cols-2 gap-2.5 pt-1">
+                  <div class="p-3 rounded-2xl bg-slate-50 border border-slate-200/80 text-xs font-bold text-slate-700 flex items-center gap-2">
+                    <span class="text-emerald-600 font-extrabold text-sm">✓</span> No Visa, No Payment
+                  </div>
+                  <div class="p-3 rounded-2xl bg-slate-50 border border-slate-200/80 text-xs font-bold text-slate-700 flex items-center gap-2">
+                    <span class="text-amber-600 font-extrabold text-sm">⚡</span> 4-5 Day Express
+                  </div>
+                </div>
+
+                {leadCapture ? (
+                  <form class="popup-lead-form space-y-3 pt-2">
+                    <div class="popup-form-fields space-y-3">
+                      <input type="text" name="name" required placeholder="Full Name (As in Passport)" class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-xs font-medium focus:outline-none focus:border-red-500 focus:bg-white transition-all" />
+                      <input type="tel" name="phone" required pattern="[0-9]{10}" placeholder="WhatsApp Mobile No." class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-xs font-medium focus:outline-none focus:border-red-500 focus:bg-white transition-all" />
+                      <button type="submit" class="w-full py-3.5 px-6 rounded-2xl bg-gradient-to-r from-red-600 to-amber-600 hover:from-red-700 hover:to-amber-700 text-white font-extrabold text-xs sm:text-sm shadow-xl shadow-red-500/25 transition-all cursor-pointer hover:scale-[1.01]">
+                        {buttonText}
+                      </button>
+                    </div>
+                    <div class="popup-form-success hidden p-4 bg-emerald-50 border border-emerald-200 rounded-2xl text-emerald-800 text-xs font-bold text-center space-y-1">
+                      <p>✓ Application Submitted Successfully!</p>
+                      <p class="font-normal text-emerald-700">Our team will call you within 30 minutes.</p>
+                    </div>
+                  </form>
+                ) : (
+                  <div class="pt-2 flex items-center gap-3">
+                    <a
+                      href={linkUrl}
+                      class="flex-1 py-3.5 px-6 rounded-2xl bg-gradient-to-r from-red-600 to-amber-600 hover:from-red-700 hover:to-amber-700 text-white font-extrabold text-xs sm:text-sm shadow-xl shadow-red-500/25 text-center transition-all hover:scale-[1.02] active:scale-[0.98]"
+                    >
+                      {buttonText}
+                    </a>
+                    <a
+                      href="https://wa.me/919824152731?text=Hi%20TESCA,%20I%20want%20info%20on%20China%20Business%20Visa"
+                      target="_blank"
+                      rel="noreferrer"
+                      class="p-3.5 rounded-2xl bg-emerald-500 hover:bg-emerald-600 text-white transition-all shadow-lg shrink-0 flex items-center justify-center hover:scale-105"
+                      title="Instant WhatsApp Chat"
+                    >
+                      <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338-11.892-11.893 11.892-1.99-.001-3.951-.5-5.688-1.448l-6.305 1.654zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.434 9.889-9.885.002-5.462-4.415-9.89-9.881-9.892-5.452 0-9.887 4.434-9.889 9.884-.001 2.225.651 3.891 1.746 5.634l-0.999 3.648 3.742-.981z"/>
+                      </svg>
+                    </a>
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+        );
+      })}
+    </div>
   </div>
 </div>
 
@@ -178,19 +238,20 @@ const leadCapture = activePopup?.lead_capture_enabled ?? false;
     </div>
 
     <div class="space-y-2 text-left">
-      <h4 class="text-sm md:text-base font-extrabold text-slate-900 tracking-tight leading-snug">
-        {title}
+      <h4 id="drawer-title" class="text-sm md:text-base font-extrabold text-slate-900 tracking-tight leading-snug">
+        {initialPopup.title || "Special Offer"}
       </h4>
-      <p class="text-xs text-slate-600 line-clamp-2 leading-relaxed">
-        {subtitle}
+      <p id="drawer-subtitle" class="text-xs text-slate-600 line-clamp-2 leading-relaxed">
+        {initialPopup.subtitle || ""}
       </p>
 
       <div class="pt-2 flex items-center gap-2">
         <a
-          href={linkUrl}
+          id="drawer-action-link"
+          href={initialPopup.link_url || "/china-business-visa"}
           class="flex-1 py-2.5 px-4 rounded-xl bg-gradient-to-r from-red-600 to-amber-600 text-white font-bold text-xs text-center shadow-md hover:scale-[1.01] transition-all"
         >
-          {buttonText}
+          {initialPopup.button_text || "Apply Now"}
         </a>
         <button
           type="button"
@@ -206,6 +267,7 @@ const leadCapture = activePopup?.lead_capture_enabled ?? false;
 
 <script>
   let popupTimer: ReturnType<typeof setTimeout> | null = null;
+  let currentSlideIndex = 0;
 
   function isAdminOrExcludedPath() {
     const path = window.location.pathname.toLowerCase();
@@ -235,11 +297,58 @@ const leadCapture = activePopup?.lead_capture_enabled ?? false;
     const drawerCloseBtn = document.getElementById("promo-drawer-close");
     const reopenBtn = document.getElementById("reopen-main-popup-btn");
 
+    const prevBtn = document.getElementById("promo-popup-prev");
+    const nextBtn = document.getElementById("promo-popup-next");
+
     if (!mainOverlay || !mainCard) return;
 
     const delaySec = Number(mainOverlay.getAttribute("data-delay")) || 5;
     const urlParams = new URLSearchParams(window.location.search);
     const isTestMode = urlParams.get("test-popup") === "true";
+
+    const slides = document.querySelectorAll(".promo-slide-item");
+
+    const goToSlide = (idx: number) => {
+      if (!slides || slides.length === 0) return;
+      const total = slides.length;
+      currentSlideIndex = (idx + total) % total;
+
+      slides.forEach((slide, i) => {
+        if (i === currentSlideIndex) {
+          slide.classList.remove("hidden");
+        } else {
+          slide.classList.add("hidden");
+        }
+      });
+
+      const currentBadge = document.getElementById("promo-slide-current");
+      if (currentBadge) {
+        currentBadge.innerText = (currentSlideIndex + 1).toString();
+      }
+
+      // Sync drawer with active slide
+      const activeSlide = slides[currentSlideIndex] as HTMLElement | null;
+      if (activeSlide) {
+        const title = activeSlide.getAttribute("data-title") || "";
+        const subtitle = activeSlide.getAttribute("data-subtitle") || "";
+        const link = activeSlide.getAttribute("data-link") || "";
+        const button = activeSlide.getAttribute("data-button") || "";
+
+        const drawerTitle = document.getElementById("drawer-title");
+        const drawerSub = document.getElementById("drawer-subtitle");
+        const drawerLink = document.getElementById("drawer-action-link") as HTMLAnchorElement | null;
+
+        if (drawerTitle) drawerTitle.innerText = title;
+        if (drawerSub) drawerSub.innerText = subtitle;
+        if (drawerLink) {
+          drawerLink.href = link;
+          drawerLink.innerText = button;
+        }
+      }
+    };
+
+    if (prevBtn) prevBtn.onclick = () => goToSlide(currentSlideIndex - 1);
+    if (nextBtn) nextBtn.onclick = () => goToSlide(currentSlideIndex + 1);
 
     const showDrawer = () => {
       if (!drawerCard) return;
@@ -290,21 +399,22 @@ const leadCapture = activePopup?.lead_capture_enabled ?? false;
       };
     }
 
-    // Safe Lead Form Submit Handling (no DOM removal errors)
-    const leadForm = document.getElementById("popup-lead-form") as HTMLFormElement | null;
-    const formFields = document.getElementById("popup-form-fields");
-    const formSuccess = document.getElementById("popup-form-success");
-
-    if (leadForm && formFields && formSuccess) {
-      leadForm.onsubmit = async (e) => {
+    // Lead Form Submit Handling across all slides
+    const leadForms = document.querySelectorAll(".popup-lead-form");
+    leadForms.forEach((formEl) => {
+      const form = formEl as HTMLFormElement;
+      form.onsubmit = async (e) => {
         e.preventDefault();
-        const submitBtn = document.getElementById("popup-submit-btn") as HTMLButtonElement | null;
+        const submitBtn = form.querySelector("button[type='submit']") as HTMLButtonElement | null;
+        const formFields = form.querySelector(".popup-form-fields");
+        const formSuccess = form.querySelector(".popup-form-success");
+
         if (submitBtn) {
           submitBtn.disabled = true;
           submitBtn.innerText = "Submitting...";
         }
 
-        const formData = new FormData(leadForm);
+        const formData = new FormData(form);
         const name = formData.get("name")?.toString() || "";
         const phone = formData.get("phone")?.toString() || "";
 
@@ -322,7 +432,7 @@ const leadCapture = activePopup?.lead_capture_enabled ?? false;
             }),
           });
 
-          if (res.ok) {
+          if (res.ok && formFields && formSuccess) {
             formFields.classList.add("hidden");
             formSuccess.classList.remove("hidden");
             setTimeout(closeMainPopup, 2500);
@@ -335,7 +445,15 @@ const leadCapture = activePopup?.lead_capture_enabled ?? false;
           }
         }
       };
-    }
+    });
+
+    // Keyboard Arrow Navigation
+    window.onkeydown = (e) => {
+      if (mainOverlay && !mainOverlay.classList.contains("hidden")) {
+        if (e.key === "ArrowLeft") goToSlide(currentSlideIndex - 1);
+        if (e.key === "ArrowRight") goToSlide(currentSlideIndex + 1);
+      }
+    };
 
     // Trigger main screen popup after delaySec seconds
     popupTimer = setTimeout(() => {
