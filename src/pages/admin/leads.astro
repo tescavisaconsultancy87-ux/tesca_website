@@ -753,14 +753,45 @@ try {
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <div>
                     <label class="block text-[10px] font-bold text-slate-700 uppercase mb-1">Call Outcome / Tag</label>
-                    <select name="outcome" class="w-full text-xs bg-white border border-slate-200 rounded-xl p-2 font-semibold">
-                      <option value="Connected - Interested">📞 Connected - Interested</option>
-                      <option value="Sent Document Checklist">📄 Sent Document Checklist</option>
-                      <option value="Price Quoted">💰 Price / Quote Offered</option>
-                      <option value="Follow-up Scheduled">⏳ Follow-up Scheduled</option>
-                      <option value="No Answer / Busy">❌ No Answer / Busy</option>
-                      <option value="Not Interested / Dropped">🚫 Not Interested / Dropped</option>
-                    </select>
+                    <div class="relative custom-outcome-dropdown">
+                      <input type="hidden" name="outcome" id="outcome-hidden-input" value="Connected - Interested" />
+                      
+                      <button 
+                        type="button" 
+                        id="outcome-dropdown-btn" 
+                        class="w-full text-xs bg-white border border-slate-200 hover:border-violet-400 rounded-xl p-2.5 font-bold text-slate-800 flex items-center justify-between transition-all cursor-pointer shadow-sm hover:shadow focus:outline-none focus:ring-2 focus:ring-violet-500/20"
+                      >
+                        <span id="outcome-selected-label" class="flex items-center gap-2 font-bold text-slate-800">
+                          📞 Connected - Interested
+                        </span>
+                        <svg class="w-4 h-4 text-slate-400 transition-transform duration-200" id="outcome-chevron" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7"></path></svg>
+                      </button>
+
+                      <div 
+                        id="outcome-dropdown-menu" 
+                        class="hidden absolute left-0 right-0 top-full mt-1.5 z-50 bg-white/98 backdrop-blur-xl border border-slate-200 rounded-2xl shadow-2xl p-1.5 space-y-1 transition-all duration-200 transform scale-95 opacity-0 origin-top"
+                      >
+                        <button type="button" data-val="Connected - Interested" class="outcome-option-item w-full text-left px-3 py-2 rounded-xl text-xs font-bold transition-all flex items-center justify-between cursor-pointer bg-violet-50 text-violet-700">
+                          <span>📞 Connected - Interested</span>
+                          <svg class="w-3.5 h-3.5 text-violet-600 font-bold" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path></svg>
+                        </button>
+                        <button type="button" data-val="Sent Document Checklist" class="outcome-option-item w-full text-left px-3 py-2 rounded-xl text-xs font-semibold text-slate-700 hover:bg-violet-50 hover:text-violet-700 transition-all flex items-center justify-between cursor-pointer">
+                          <span>📄 Sent Document Checklist</span>
+                        </button>
+                        <button type="button" data-val="Price Quoted" class="outcome-option-item w-full text-left px-3 py-2 rounded-xl text-xs font-semibold text-slate-700 hover:bg-violet-50 hover:text-violet-700 transition-all flex items-center justify-between cursor-pointer">
+                          <span>💰 Price / Quote Offered</span>
+                        </button>
+                        <button type="button" data-val="Follow-up Scheduled" class="outcome-option-item w-full text-left px-3 py-2 rounded-xl text-xs font-semibold text-slate-700 hover:bg-violet-50 hover:text-violet-700 transition-all flex items-center justify-between cursor-pointer">
+                          <span>⏳ Follow-up Scheduled</span>
+                        </button>
+                        <button type="button" data-val="No Answer / Busy" class="outcome-option-item w-full text-left px-3 py-2 rounded-xl text-xs font-semibold text-slate-700 hover:bg-violet-50 hover:text-violet-700 transition-all flex items-center justify-between cursor-pointer">
+                          <span>❌ No Answer / Busy</span>
+                        </button>
+                        <button type="button" data-val="Not Interested / Dropped" class="outcome-option-item w-full text-left px-3 py-2 rounded-xl text-xs font-semibold text-slate-700 hover:bg-violet-50 hover:text-violet-700 transition-all flex items-center justify-between cursor-pointer">
+                          <span>🚫 Not Interested / Dropped</span>
+                        </button>
+                      </div>
+                    </div>
                   </div>
                   <div>
                     <label class="block text-[10px] font-bold text-slate-700 uppercase mb-1">Next Follow-Up Date (Optional)</label>
@@ -819,6 +850,71 @@ try {
 
           listContainer.appendChild(followupSection);
           modalContent.appendChild(listContainer);
+
+          // Attach custom animated dropdown listeners
+          const dropBtn = modalContent.querySelector("#outcome-dropdown-btn");
+          const dropMenu = modalContent.querySelector("#outcome-dropdown-menu");
+          const dropChevron = modalContent.querySelector("#outcome-chevron");
+          const hiddenInput = modalContent.querySelector("#outcome-hidden-input") as HTMLInputElement;
+          const selectedLabel = modalContent.querySelector("#outcome-selected-label");
+
+          if (dropBtn && dropMenu) {
+            dropBtn.addEventListener("click", (e) => {
+              e.stopPropagation();
+              const isHidden = dropMenu.classList.contains("hidden");
+              if (isHidden) {
+                dropMenu.classList.remove("hidden");
+                requestAnimationFrame(() => {
+                  dropMenu.classList.remove("scale-95", "opacity-0");
+                  dropMenu.classList.add("scale-100", "opacity-100");
+                });
+                dropChevron?.classList.add("rotate-180");
+              } else {
+                dropMenu.classList.remove("scale-100", "opacity-100");
+                dropMenu.classList.add("scale-95", "opacity-0");
+                dropChevron?.classList.remove("rotate-180");
+                setTimeout(() => dropMenu.classList.add("hidden"), 150);
+              }
+            });
+
+            const optionItems = dropMenu.querySelectorAll(".outcome-option-item");
+            optionItems.forEach((item) => {
+              item.addEventListener("click", (e) => {
+                e.stopPropagation();
+                const val = item.getAttribute("data-val") || "";
+                if (hiddenInput) hiddenInput.value = val;
+                if (selectedLabel) selectedLabel.innerHTML = item.querySelector("span")?.innerHTML || val;
+
+                optionItems.forEach((opt) => {
+                  opt.classList.remove("bg-violet-50", "text-violet-700", "font-bold");
+                  opt.classList.add("font-semibold", "text-slate-700");
+                  const check = opt.querySelector("svg");
+                  if (check) check.remove();
+                });
+
+                item.classList.add("bg-violet-50", "text-violet-700", "font-bold");
+                item.classList.remove("font-semibold", "text-slate-700");
+                
+                const checkSvg = document.createElement("div");
+                checkSvg.innerHTML = `<svg class="w-3.5 h-3.5 text-violet-600 font-bold" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path></svg>`;
+                item.appendChild(checkSvg.firstElementChild!);
+
+                dropMenu.classList.remove("scale-100", "opacity-100");
+                dropMenu.classList.add("scale-95", "opacity-0");
+                dropChevron?.classList.remove("rotate-180");
+                setTimeout(() => dropMenu.classList.add("hidden"), 150);
+              });
+            });
+
+            document.addEventListener("click", () => {
+              if (!dropMenu.classList.contains("hidden")) {
+                dropMenu.classList.remove("scale-100", "opacity-100");
+                dropMenu.classList.add("scale-95", "opacity-0");
+                dropChevron?.classList.remove("rotate-180");
+                setTimeout(() => dropMenu.classList.add("hidden"), 150);
+              }
+            });
+          }
         } catch (e) {
           modalContent.innerText = "Error parsing lead details.";
         }
