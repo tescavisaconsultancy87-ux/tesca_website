@@ -12,13 +12,25 @@ export default function ChinaBusinessForm() {
   const [errorMsg, setErrorMsg] = useState("");
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
+    const { name, value } = e.target;
+    if (name === "phone") {
+      const digitsOnly = value.replace(/\D/g, "").slice(0, 10);
+      setFormData(prev => ({ ...prev, phone: digitsOnly }));
+    } else {
+      setFormData(prev => ({ ...prev, [name]: value }));
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setIsSubmitting(true);
     setErrorMsg("");
+
+    if (formData.phone.length !== 10) {
+      setErrorMsg("Please enter a valid 10-digit mobile number (e.g. 9824152731).");
+      return;
+    }
+
+    setIsSubmitting(true);
 
     try {
       const response = await fetch("/api/inquiry", {
@@ -128,18 +140,23 @@ export default function ChinaBusinessForm() {
 
           {/* WhatsApp Mobile No. */}
           <div>
-            <label className="block text-xs font-semibold text-slate-700 mb-1">WhatsApp Mobile No.</label>
+            <div className="flex items-center justify-between mb-1">
+              <label className="block text-xs font-semibold text-slate-700">WhatsApp Mobile No.</label>
+              <span className={`text-[11px] font-bold transition-colors ${formData.phone.length === 10 ? 'text-emerald-600' : 'text-amber-600'}`}>
+                {formData.phone.length}/10 digits {formData.phone.length === 10 ? '✓' : ''}
+              </span>
+            </div>
             <div className="relative">
               <Phone className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
               <input
                 type="tel"
                 name="phone"
                 required
-                pattern="[0-9]{10}"
+                maxLength={10}
                 value={formData.phone}
                 onChange={handleChange}
-                placeholder="9824152731"
-                className="w-full pl-10 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:border-red-500 focus:bg-white transition-all"
+                placeholder="e.g. 9824152731"
+                className="w-full pl-10 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:border-red-500 focus:bg-white transition-all font-mono"
               />
             </div>
           </div>

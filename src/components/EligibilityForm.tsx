@@ -1155,7 +1155,16 @@ export default function EligibilityForm() {
 
               {/* Mobile Number */}
               <div className="space-y-1.5">
-                <label htmlFor="lead-phone" className="text-xs font-extrabold text-slate-900 uppercase tracking-wider font-sans">Mobile Number</label>
+                <div className="flex items-center justify-between">
+                  <label htmlFor="lead-phone" className="text-xs font-extrabold text-slate-900 uppercase tracking-wider font-sans">Mobile Number</label>
+                  <span className={`text-[11px] font-bold transition-colors ${
+                    phone.replace(/\D/g, "").length >= selectedPhoneCountry.minDigits && phone.replace(/\D/g, "").length <= selectedPhoneCountry.maxDigits ? 'text-emerald-600' : 'text-amber-600'
+                  }`}>
+                    {phone.replace(/\D/g, "").length}/{selectedPhoneCountry.maxDigits} digits {
+                      phone.replace(/\D/g, "").length >= selectedPhoneCountry.minDigits && phone.replace(/\D/g, "").length <= selectedPhoneCountry.maxDigits ? '✓' : ''
+                    }
+                  </span>
+                </div>
                 <div className="flex gap-0 relative" ref={countryDropdownRef}>
                   {/* Country Code Picker Button */}
                   <button

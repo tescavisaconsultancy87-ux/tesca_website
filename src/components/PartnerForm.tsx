@@ -288,9 +288,14 @@ export default function PartnerForm() {
 
           {/* Mobile Number */}
           <div>
-            <label className="block text-sm font-bold text-slate-700 mb-1.5 font-sans">
-              Mobile / WhatsApp (10 digits) *
-            </label>
+            <div className="flex items-center justify-between mb-1.5">
+              <label className="block text-sm font-bold text-slate-700 font-sans">
+                Mobile / WhatsApp *
+              </label>
+              <span className={`text-[11px] font-bold ${phone.length === 10 ? 'text-emerald-600' : 'text-amber-600'}`}>
+                {phone.length}/10 digits {phone.length === 10 ? '✓' : ''}
+              </span>
+            </div>
             <div className="relative">
               <span className="absolute inset-y-0 left-0 pl-3.5 flex items-center text-slate-400">
                 <Phone className="w-4 h-4" />

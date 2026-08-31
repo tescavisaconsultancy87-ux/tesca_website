@@ -783,7 +783,16 @@ Comments/Additional Info: ${formData.comments || "None"}`;
                   </div>
 
                   <div className="space-y-1">
-                    <label htmlFor="crm-mobileNumber" className="text-xs font-bold uppercase tracking-wider text-slate-600 font-sans">Mobile Number / Whatsapp Number*</label>
+                    <div className="flex items-center justify-between">
+                      <label htmlFor="crm-mobileNumber" className="text-xs font-bold uppercase tracking-wider text-slate-600 font-sans">Mobile Number / Whatsapp Number*</label>
+                      <span className={`text-[10px] font-bold transition-colors ${
+                        formData.mobileNumber.replace(/\D/g, "").length >= selectedPhoneCountry.minDigits && formData.mobileNumber.replace(/\D/g, "").length <= selectedPhoneCountry.maxDigits ? 'text-emerald-600' : 'text-amber-600'
+                      }`}>
+                        {formData.mobileNumber.replace(/\D/g, "").length}/{selectedPhoneCountry.maxDigits} digits {
+                          formData.mobileNumber.replace(/\D/g, "").length >= selectedPhoneCountry.minDigits && formData.mobileNumber.replace(/\D/g, "").length <= selectedPhoneCountry.maxDigits ? '✓' : ''
+                        }
+                      </span>
+                    </div>
                     <div className="flex gap-0 relative" ref={countryDropdownRef}>
                       {/* Country Code Picker Button */}
                       <button

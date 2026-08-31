@@ -733,9 +733,18 @@ export default function CounsellorForm() {
                     </div>
 
                     <div className="space-y-1">
-                      <label className={labelClass}>
-                        Phone Number <span className="text-red-500">*</span>
-                      </label>
+                      <div className="flex items-center justify-between">
+                        <label className={labelClass}>
+                          Phone Number <span className="text-red-500">*</span>
+                        </label>
+                        <span className={`text-[11px] font-bold transition-colors ${
+                          phone.replace(/\D/g, "").length >= selectedPhoneCountry.minDigits && phone.replace(/\D/g, "").length <= selectedPhoneCountry.maxDigits ? 'text-emerald-600' : 'text-amber-600'
+                        }`}>
+                          {phone.replace(/\D/g, "").length}/{selectedPhoneCountry.maxDigits} digits {
+                            phone.replace(/\D/g, "").length >= selectedPhoneCountry.minDigits && phone.replace(/\D/g, "").length <= selectedPhoneCountry.maxDigits ? '✓' : ''
+                          }
+                        </span>
+                      </div>
                       <div className="flex gap-0 relative" ref={countryDropdownRef}>
                         {/* Country Code Picker Button */}
                         <button
