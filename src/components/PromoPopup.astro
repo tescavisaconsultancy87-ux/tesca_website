@@ -157,8 +157,18 @@ const leadCapture = activePopup?.lead_capture_enabled ?? false;
     id="promo-drawer-card"
     class="relative bg-white/95 backdrop-blur-xl w-full rounded-3xl p-4 md:p-5 shadow-2xl border border-slate-200/90 flex flex-col transform translate-y-12 opacity-0 pointer-events-auto transition-all duration-500 ease-out overflow-hidden"
   >
+    {/* Drawer Close Button */}
+    <button
+      type="button"
+      id="promo-drawer-close"
+      class="absolute top-3.5 right-3.5 z-50 p-1.5 bg-slate-100 hover:bg-slate-200 text-slate-500 hover:text-slate-900 rounded-full transition-all cursor-pointer hover:scale-110"
+      aria-label="Close drawer"
+    >
+      <svg xmlns="http://www.w3.org/2000/svg" class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+    </button>
+
     {/* Drawer Header Badges */}
-    <div class="flex items-center justify-between gap-2 mb-2 pr-6">
+    <div class="flex items-center justify-between gap-2 mb-2 pr-8">
       <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-red-600 text-white text-[10px] font-extrabold uppercase tracking-wider">
         🔥 Trending Promo
       </span>
@@ -222,6 +232,7 @@ const leadCapture = activePopup?.lead_capture_enabled ?? false;
     const mainCloseBtn = document.getElementById("promo-popup-close");
 
     const drawerCard = document.getElementById("promo-drawer-card");
+    const drawerCloseBtn = document.getElementById("promo-drawer-close");
     const reopenBtn = document.getElementById("reopen-main-popup-btn");
 
     if (!mainOverlay || !mainCard) return;
@@ -232,9 +243,21 @@ const leadCapture = activePopup?.lead_capture_enabled ?? false;
 
     const showDrawer = () => {
       if (!drawerCard) return;
+      const lastDrawerClosed = sessionStorage.getItem("promo_drawer_closed_at");
+      if (lastDrawerClosed && !isTestMode) return;
       drawerCard.classList.remove("translate-y-12", "opacity-0", "pointer-events-none");
       drawerCard.classList.add("translate-y-0", "opacity-100");
     };
+
+    const closeDrawer = () => {
+      sessionStorage.setItem("promo_drawer_closed_at", Date.now().toString());
+      if (drawerCard) {
+        drawerCard.classList.remove("translate-y-0", "opacity-100");
+        drawerCard.classList.add("translate-y-12", "opacity-0", "pointer-events-none");
+      }
+    };
+
+    if (drawerCloseBtn) drawerCloseBtn.onclick = closeDrawer;
 
     const showMainPopup = () => {
       mainOverlay.classList.remove("hidden");
