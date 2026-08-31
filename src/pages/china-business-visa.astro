@@ -28,13 +28,52 @@ const chinaFaqs = [
 ---
 
 <Layout
-  title="China Business Visa (M Visa) Services Surat | No Visa No Payment | TESCA"
-  description="Apply for China Business (M) Visa & Canton Fair entry with TESCA Surat. 100% Visa Guarantee, No Visa No Payment policy, express 4-5 day processing for Surat businessmen."
+  title="China Business Visa (M Visa) Surat | Canton Fair Visa Agent | TESCA"
+  description="Apply for China Business (M) Visa & Canton Fair entry with TESCA Surat. 100% Visa Guarantee, No Visa No Payment policy, express 4-5 day processing for Surat exporters & businessmen."
+  keywords="China Business Visa Surat, Canton Fair Visa Agent Surat, China M Visa Consultant Gujarat, China Express Visa 4 Days, Guangzhou Expo Visa, Yiwu Trade Visa Surat, No Visa No Payment China Visa, Chinese Embassy VFS Slot Surat, China Business Visa Agent Varachha Simada"
 >
-  <main class="bg-slate-50 min-h-screen pt-24 pb-20 overflow-x-hidden font-sans">
+  {/* Hidden JSON-LD Structured Data for Google Search SEO */}
+  <script type="application/ld+json" is:inline set:html={JSON.stringify({
+    "@context": "https://schema.org",
+    "@type": "Service",
+    "name": "China Business (M) Visa Consultancy",
+    "provider": {
+      "@type": "EducationalOrganization",
+      "name": "TESCA Visa Consultancy",
+      "url": "https://tescavisa.com"
+    },
+    "areaServed": {
+      "@type": "City",
+      "name": "Surat"
+    },
+    "hasOfferCatalog": {
+      "@type": "OfferCatalog",
+      "name": "China Visa Services",
+      "itemListElement": [
+        { "@type": "Offer", "itemOffered": { "@type": "Service", "name": "Canton Fair Business Visa" } },
+        { "@type": "Offer", "itemOffered": { "@type": "Service", "name": "Express 4-5 Day China Visa" } },
+        { "@type": "Offer", "itemOffered": { "@type": "Service", "name": "China Invitation Letter Verification" } }
+      ]
+    }
+  })} />
+
+  <script type="application/ld+json" is:inline set:html={JSON.stringify({
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": chinaFaqs.map(faq => ({
+      "@type": "Question",
+      "name": faq.question,
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": faq.answer
+      }
+    }))
+  })} />
+
+  <main class="bg-slate-50 min-h-screen pt-4 sm:pt-6 pb-20 overflow-x-hidden font-sans">
     
     <!-- Hero Section -->
-    <section class="relative px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto pt-6 pb-16">
+    <section class="relative px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto pt-2 pb-16">
       
       <!-- Background Decor -->
       <div class="absolute top-0 right-1/4 w-96 h-96 bg-red-500/10 rounded-full blur-3xl -z-10 pointer-events-none"></div>

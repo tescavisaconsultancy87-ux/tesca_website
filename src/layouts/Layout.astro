@@ -10,6 +10,7 @@ import { Icons as NavIcons } from "../utils/icons";
 interface Props {
 	title?: string;
 	description?: string;
+	keywords?: string;
 	showNavFooter?: boolean;
 	noindex?: boolean;
 	image?: string;
@@ -18,6 +19,7 @@ interface Props {
 const {
 	title = "TESCA | Premium Study Abroad & Visa Consultancy",
 	description = "Premium admissions evaluation, financial analysis tools, and visa compliance checking by TESCA Visa Consultancy.",
+	keywords = "visa consultancy surat, student visa consultant, visitor visa surat, china business visa, ielts coaching surat",
 	showNavFooter = true,
 	noindex = false,
 	image = "/images/Tesca_logo.png",
@@ -494,6 +496,7 @@ if (isAdminPage) {
 		<!-- SEO Meta Tags -->
 		<title>{title}</title>
 		<meta name="description" content={description} />
+		{keywords && <meta name="keywords" content={keywords} />}
 		<link rel="canonical" href={canonicalURL} />
 		{noindex && <meta name="robots" content="noindex, nofollow" />}
 
