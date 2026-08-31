@@ -113,7 +113,7 @@ const structuredData = {
 const gaId = import.meta.env.PUBLIC_GA4_ID || "G-2HW0JXMF2Y";
 
 let csrfToken = "";
-const isAdminPage = Astro.url.pathname.startsWith("/admin") || Astro.url.hostname.startsWith("admin.");
+const isAdminPage = Astro.url.pathname.startsWith("/admin") || Astro.url.hostname.startsWith("admin.") || Astro.url.hostname.includes("admin");
 if (isAdminPage) {
 	csrfToken = ensureCsrfToken(Astro.cookies);
 }
@@ -529,7 +529,7 @@ if (isAdminPage) {
 		<!-- Structured data (Organization / local business) -->
 		<script type="application/ld+json" is:inline set:html={JSON.stringify(structuredData)} />
 
-		<ClientRouter />
+		{!isAdminPage && <ClientRouter />}
 		{csrfToken && (
 			<meta name="csrf-token" content={csrfToken} />
 			<script is:inline>
