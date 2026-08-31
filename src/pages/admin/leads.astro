@@ -206,6 +206,59 @@ if (Astro.request.method === "POST") {
       }
 
       successMessage = "Lead status updated successfully.";
+    } else if (action === "add-followup-note") {
+      const id = formData.get("id")?.toString() || "";
+      const noteText = formData.get("note")?.toString().trim() || "";
+      const outcome = formData.get("outcome")?.toString().trim() || "Connected - Interested";
+      const nextFollowup = formData.get("next_followup")?.toString().trim() || "";
+
+      if (!noteText) {
+        throw new Error("Follow-up note content cannot be empty.");
+      }
+
+      const { data: leadData } = await supabase
+        .from('leads')
+        .select('details, status')
+        .eq('id', id)
+        .single();
+
+      let detailsObj: any = {};
+      if (leadData && leadData.details) {
+        try {
+          detailsObj = typeof leadData.details === 'string' ? JSON.parse(leadData.details) : leadData.details;
+        } catch (e) {
+          detailsObj = {};
+        }
+      }
+
+      if (!Array.isArray(detailsObj.followup_history)) {
+        detailsObj.followup_history = [];
+      }
+
+      const newEntry = {
+        id: Date.now(),
+        timestamp: new Date().toISOString(),
+        note: noteText,
+        outcome: outcome,
+        next_followup: nextFollowup || null,
+        author: "Counselor"
+      };
+
+      detailsObj.followup_history.unshift(newEntry);
+      if (nextFollowup) {
+        detailsObj.next_followup_date = nextFollowup;
+      }
+
+      const { error } = await supabase
+        .from('leads')
+        .update({
+          status: 'follow up',
+          details: JSON.stringify(detailsObj)
+        })
+        .eq('id', id);
+
+      if (error) throw error;
+      successMessage = "Follow-up note logged successfully.";
     }
   } catch (err: any) {
     console.error("Failed to process action:", err);
@@ -372,6 +425,31 @@ try {
                           <span class="text-slate-400" set:html={SVG.User} />
                           {lead.name}
                         </span>
+                        {(() => {
+                          let historyCount = 0;
+                          let nextFollowup = "";
+                          if (lead.details) {
+                            try {
+                              const d = typeof lead.details === 'string' ? JSON.parse(lead.details) : lead.details;
+                              if (Array.isArray(d.followup_history)) historyCount = d.followup_history.length;
+                              if (d.next_followup_date) nextFollowup = d.next_followup_date;
+                            } catch (e) {}
+                          }
+                          return (historyCount > 0 || nextFollowup) ? (
+                            <div class="mt-1 flex flex-wrap items-center gap-1.5 font-normal text-[10px]">
+                              {historyCount > 0 && (
+                                <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-violet-50 text-violet-700 font-bold border border-violet-200">
+                                  💬 {historyCount} Note{historyCount > 1 ? 's' : ''}
+                                </span>
+                              )}
+                              {nextFollowup && (
+                                <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-amber-50 text-amber-800 font-bold border border-amber-200">
+                                  ⏰ Next: {nextFollowup}
+                                </span>
+                              )}
+                            </div>
+                          ) : null;
+                        })()}
                       </td>
                       <td class="px-6 py-4 space-y-1">
                         <div class="flex items-center gap-1.5 text-slate-600">
@@ -483,6 +561,7 @@ try {
                         <button
                           type="button"
                           class="view-details-btn px-3 py-1.5 bg-white hover:bg-slate-50 text-slate-600 hover:text-slate-800 rounded-lg transition-all cursor-pointer font-bold inline-flex items-center gap-1 border border-slate-200"
+                          data-id={lead.id}
                           data-details={lead.details}
                           data-name={lead.name}
                           data-type={typeLabel}
@@ -605,6 +684,7 @@ try {
       if (modalContent) {
         modalContent.innerHTML = "";
         try {
+          const leadId = btn.getAttribute("data-id") || "";
           const details = JSON.parse(detailsRaw);
           
           // Map properties to a premium list key/value pair
@@ -626,7 +706,7 @@ try {
           listContainer.appendChild(statusItem);
 
           Object.entries(details).forEach(([key, val]) => {
-            if (key === "bookingTokenHash" || key === "bookingTokenUsedAt") return;
+            if (key === "bookingTokenHash" || key === "bookingTokenUsedAt" || key === "followup_history" || key === "next_followup_date") return;
             // Format keys beautifully
             const formattedKey = key
               .replace(/([A-Z])/g, " $1")
@@ -655,6 +735,89 @@ try {
             listContainer.appendChild(item);
           });
 
+          // Add Follow-Up Note & Call Log Section
+          const followupSection = document.createElement("div");
+          followupSection.className = "col-span-1 sm:col-span-2 border-t border-slate-200 pt-5 mt-2 space-y-4";
+          
+          const historyList = Array.isArray(details.followup_history) ? details.followup_history : [];
+
+          followupSection.innerHTML = `
+            <div class="bg-violet-50/80 border border-violet-200 p-4 rounded-2xl space-y-3 text-left">
+              <h4 class="text-xs font-extrabold uppercase tracking-wider text-violet-800 flex items-center gap-1.5">
+                <span>📝 Log Call Discussion / Follow-Up Note</span>
+              </h4>
+              <form method="POST" class="space-y-3">
+                <input type="hidden" name="action" value="add-followup-note" />
+                <input type="hidden" name="id" value="${escapeHTML(leadId)}" />
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div>
+                    <label class="block text-[10px] font-bold text-slate-700 uppercase mb-1">Call Outcome / Tag</label>
+                    <select name="outcome" class="w-full text-xs bg-white border border-slate-200 rounded-xl p-2 font-semibold">
+                      <option value="Connected - Interested">📞 Connected - Interested</option>
+                      <option value="Sent Document Checklist">📄 Sent Document Checklist</option>
+                      <option value="Price Quoted">💰 Price / Quote Offered</option>
+                      <option value="Follow-up Scheduled">⏳ Follow-up Scheduled</option>
+                      <option value="No Answer / Busy">❌ No Answer / Busy</option>
+                      <option value="Not Interested / Dropped">🚫 Not Interested / Dropped</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label class="block text-[10px] font-bold text-slate-700 uppercase mb-1">Next Follow-Up Date (Optional)</label>
+                    <input type="date" name="next_followup" class="w-full text-xs bg-white border border-slate-200 rounded-xl p-2 font-semibold" />
+                  </div>
+                </div>
+
+                <div>
+                  <label class="block text-[10px] font-bold text-slate-700 uppercase mb-1">Discussion Remarks / Call Notes</label>
+                  <textarea name="note" required rows="2" placeholder="e.g. Discussed Canton Fair Visa. Client needs invitation support. Promised to send GST cert by Friday." class="w-full text-xs bg-white border border-slate-200 rounded-xl p-2.5 font-medium focus:outline-none focus:border-violet-500"></textarea>
+                </div>
+
+                <button type="submit" class="w-full py-2.5 px-4 bg-violet-600 hover:bg-violet-700 text-white font-bold text-xs rounded-xl shadow-md transition-all flex items-center justify-center gap-1.5 cursor-pointer">
+                  <span>Save Call Note & Mark Follow-Up</span>
+                </button>
+              </form>
+            </div>
+
+            <!-- Timeline History -->
+            <div class="space-y-3 pt-2 text-left">
+              <h4 class="text-xs font-extrabold uppercase tracking-wider text-slate-700 flex items-center justify-between">
+                <span>💬 Call History Timeline</span>
+                <span class="text-[10px] text-slate-400 font-bold">${historyList.length} Entries</span>
+              </h4>
+
+              ${historyList.length === 0 ? `
+                <div class="p-4 bg-slate-50 border border-slate-100 rounded-2xl text-xs text-slate-400 italic">
+                  No call notes logged yet. Log the first call discussion above!
+                </div>
+              ` : `
+                <div class="space-y-2.5 max-h-60 overflow-y-auto pr-1">
+                  ${historyList.map((entry: any) => {
+                    const dt = new Date(entry.timestamp || Date.now()).toLocaleString("en-IN", {
+                      dateStyle: "medium",
+                      timeStyle: "short"
+                    });
+                    return `
+                      <div class="p-3 bg-white border border-slate-200 rounded-2xl space-y-1 shadow-sm">
+                        <div class="flex items-center justify-between text-[11px]">
+                          <span class="px-2 py-0.5 rounded-md bg-violet-100 text-violet-800 font-bold">${escapeHTML(entry.outcome || "Call Logged")}</span>
+                          <span class="text-slate-400 text-[10px] font-semibold">${dt}</span>
+                        </div>
+                        <p class="text-xs text-slate-700 font-medium leading-relaxed mt-1">${escapeHTML(entry.note || "")}</p>
+                        ${entry.next_followup ? `
+                          <div class="text-[10px] text-amber-700 font-bold pt-1">
+                            ⏰ Scheduled Next Follow-Up: ${escapeHTML(entry.next_followup)}
+                          </div>
+                        ` : ''}
+                      </div>
+                    `;
+                  }).join('')}
+                </div>
+              `}
+            </div>
+          `;
+
+          listContainer.appendChild(followupSection);
           modalContent.appendChild(listContainer);
         } catch (e) {
           modalContent.innerText = "Error parsing lead details.";

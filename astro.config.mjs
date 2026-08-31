@@ -41,9 +41,9 @@ export default defineConfig({
       exclude: ['astro:compiler-runtime', 'astro:virtual-modules/transitions.js']
     },
     ssr: {
+      noExternal: ['lucide-react', 'framer-motion'],
       optimizeDeps: {
-        noDiscovery: true,
-        include: []
+        exclude: ['astro:compiler-runtime', 'astro:virtual-modules/transitions.js', 'astro:components']
       }
     },
     build: {

@@ -49,20 +49,31 @@ export const onRequest = defineMiddleware(async (context, next) => {
   const lowerPath = reqPath.toLowerCase();
 
   // --- 2. Fast-path reject automated bot vulnerability probes ---
-  // Blocks common PHP/CMS probes (.php, wp-login, xmlrpc, settings.json, api/env, etc.)
+  // Blocks common PHP/CMS probes (.php, wp-login, xmlrpc, .env files, git/ci configs, etc.)
   // with a lightweight text 404 before triggering Astro SSR rendering overhead.
   const isProbePath =
     lowerPath.endsWith(".php") ||
+    lowerPath.endsWith(".env") ||
+    lowerPath.includes(".env.") ||
+    lowerPath.endsWith(".yml") ||
+    lowerPath.endsWith(".yaml") ||
+    lowerPath.endsWith(".sql") ||
+    lowerPath.endsWith(".bak") ||
+    lowerPath.endsWith(".config") ||
+    lowerPath.endsWith(".ini") ||
     lowerPath.includes("wp-login") ||
     lowerPath.includes("xmlrpc") ||
     lowerPath.includes("wp-admin") ||
+    lowerPath.includes("wp-content") ||
     lowerPath.includes("phpmyadmin") ||
+    lowerPath.includes("pma") ||
+    lowerPath.includes("/.git") ||
+    lowerPath.includes("/.gitlab") ||
+    lowerPath.includes("/.env") ||
     lowerPath === "/settings.json" ||
     lowerPath === "/api/env" ||
     lowerPath === "/fetch" ||
-    lowerPath === "/proxy" ||
-    lowerPath.startsWith("/.env") ||
-    lowerPath.startsWith("/.git");
+    lowerPath === "/proxy";
 
   if (isProbePath) {
     return new Response("Not Found", {

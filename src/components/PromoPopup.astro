@@ -1,42 +1,84 @@
 ---
 // PromoPopup.astro
-// Promotional lead-generation popup displayed client-side based on admin settings
+// Next-Gen Floating Smart Drawer (Non-Intrusive, Glassmorphism Lead Drawer)
 ---
 
-<div id="promo-popup-overlay" class="fixed inset-0 z-[100] flex items-center justify-center bg-slate-950/65 backdrop-blur-md opacity-0 pointer-events-none transition-opacity duration-300 select-none p-4">
-  <div id="promo-popup-card" class="relative bg-white w-full max-w-[480px] sm:max-w-[560px] md:max-w-[680px] lg:max-w-[740px] max-h-[92vh] rounded-[2rem] overflow-hidden shadow-2xl border border-slate-100 flex flex-col transform scale-95 translate-y-4 opacity-0 transition-all duration-500 ease-out">
-    
-    <!-- Close Button -->
-    <button type="button" id="promo-popup-close" class="absolute top-3.5 right-3.5 md:top-4 md:right-4 z-50 p-2 md:p-2.5 bg-white/90 hover:bg-white text-slate-800 rounded-full shadow-md transition-all cursor-pointer hover:scale-105" aria-label="Close popup">
-      <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 md:w-5 md:h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+<div
+  id="promo-popup-overlay"
+  class="fixed inset-x-4 bottom-4 md:bottom-6 md:right-6 md:left-auto z-[100] max-w-full md:max-w-[420px] pointer-events-none transition-all duration-500 ease-out select-none"
+>
+  <div
+    id="promo-popup-card"
+    class="relative bg-white/95 backdrop-blur-xl w-full rounded-3xl p-5 shadow-2xl border border-slate-200/90 flex flex-col transform translate-y-12 opacity-0 pointer-events-auto transition-all duration-500 ease-out overflow-hidden"
+  >
+    {/* Decorative Gradient Background */}
+    <div class="absolute -top-16 -right-16 w-40 h-40 bg-red-500/10 rounded-full blur-2xl pointer-events-none" />
+    <div class="absolute -bottom-16 -left-16 w-40 h-40 bg-amber-500/10 rounded-full blur-2xl pointer-events-none" />
+
+    {/* Close Button */}
+    <button
+      type="button"
+      id="promo-popup-close"
+      class="absolute top-3 right-3 z-50 p-1.5 bg-slate-100 hover:bg-slate-200 text-slate-600 hover:text-slate-900 rounded-full transition-all cursor-pointer hover:scale-105"
+      aria-label="Close popup"
+    >
+      <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
     </button>
 
-    <!-- Navigation Arrows (only shown if > 1 popups) -->
-    <button type="button" id="promo-popup-prev" class="absolute left-3 md:left-4 top-1/2 -translate-y-1/2 z-50 p-2 md:p-2.5 bg-white/95 hover:bg-white text-slate-700 hover:text-slate-900 rounded-full shadow-lg transition-all cursor-pointer hover:scale-105 border border-slate-100/80 hidden" aria-label="Previous popup">
-      <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 md:w-5 md:h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>
-    </button>
-    <button type="button" id="promo-popup-next" class="absolute right-3 md:right-4 top-1/2 -translate-y-1/2 z-50 p-2 md:p-2.5 bg-white/95 hover:bg-white text-slate-700 hover:text-slate-900 rounded-full shadow-lg transition-all cursor-pointer hover:scale-105 border border-slate-100/80 hidden" aria-label="Next popup">
-      <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 md:w-5 md:h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>
-    </button>
-
-    <!-- Slides Container -->
-    <div id="promo-popup-slides-container" class="relative w-full flex flex-col max-h-[92vh] overflow-hidden">
-       <!-- Dynamic slides injected client-side -->
+    {/* Header Badge & Title */}
+    <div class="flex items-center gap-2 mb-2 pr-6">
+      <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-red-600 text-white text-[10px] font-bold uppercase tracking-wider">
+        🔥 Featured Service
+      </span>
+      <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 text-[10px] font-bold">
+        🛡️ No Visa No Payment
+      </span>
     </div>
 
-    <!-- Slide Indicators -->
-    <div id="promo-popup-indicators" class="absolute bottom-4 left-1/2 -translate-x-1/2 z-40 flex gap-1.5 hidden">
-       <!-- Dynamic dot indicators injected client-side -->
-    </div>
+    {/* Content Body */}
+    <div id="promo-popup-content" class="space-y-2.5 text-left">
+      <h4 class="text-base font-extrabold text-slate-900 tracking-tight leading-snug">
+        China Business (M) Visa & Canton Fair 2026
+      </h4>
+      <p class="text-xs text-slate-600 leading-relaxed">
+        Heading to Guangzhou, Shanghai or Canton Fair? Get <b>4-5 Day Express Processing</b> with 100% Visa Approval Guarantee & zero risk!
+      </p>
 
+      {/* Trust Highlights */}
+      <div className="grid grid-cols-2 gap-2 pt-1">
+        <div class="p-2 rounded-xl bg-slate-50 border border-slate-100 text-[11px] font-semibold text-slate-700 flex items-center gap-1.5">
+          <span class="text-emerald-600 font-bold">✓</span> No Visa, No Payment
+        </div>
+        <div class="p-2 rounded-xl bg-slate-50 border border-slate-100 text-[11px] font-semibold text-slate-700 flex items-center gap-1.5">
+          <span class="text-amber-600 font-bold">⚡</span> 4-5 Day Express
+        </div>
+      </div>
+
+      {/* Action Buttons */}
+      <div class="pt-2 flex items-center gap-2">
+        <a
+          href="/china-business-visa"
+          id="promo-popup-action-btn"
+          class="flex-1 py-2.5 px-4 rounded-xl bg-gradient-to-r from-red-600 to-amber-600 hover:from-red-700 hover:to-amber-700 text-white font-bold text-xs shadow-lg shadow-red-500/20 text-center transition-all hover:scale-[1.02] active:scale-[0.98]"
+        >
+          Check China Visa Details
+        </a>
+        <a
+          href="https://wa.me/919824152731?text=Hi%20TESCA,%20I%20want%20info%20on%20China%20Business%20Visa"
+          target="_blank"
+          rel="noreferrer"
+          class="p-2.5 rounded-xl bg-emerald-500 hover:bg-emerald-600 text-white transition-all shadow-md shrink-0 flex items-center justify-center"
+          title="Instant WhatsApp Chat"
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+            <path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.893 11.892-1.99-.001-3.951-.5-5.688-1.448l-6.305 1.654zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.434 9.889-9.885.002-5.462-4.415-9.89-9.881-9.892-5.452 0-9.887 4.434-9.889 9.884-.001 2.225.651 3.891 1.746 5.634l-0.999 3.648 3.742-.981z"/>
+          </svg>
+        </a>
+      </div>
+
+    </div>
   </div>
 </div>
-
-<style>
-  .promo-slide {
-    transition: opacity 0.3s ease-in-out;
-  }
-</style>
 
 <script>
   let popupTimer: ReturnType<typeof setTimeout> | null = null;
@@ -49,13 +91,11 @@
       host.startsWith("admin.") ||
       path.includes("review-generator") ||
       path.startsWith("/documents") ||
-      path.startsWith("/document") ||
       path.startsWith("/promo")
     );
   }
 
-  async function initPromoPopup() {
-    // Clear any pending timer from a previous page view
+  function initPromoPopup() {
     if (popupTimer) {
       clearTimeout(popupTimer);
       popupTimer = null;
@@ -63,191 +103,38 @@
 
     if (isAdminOrExcludedPath()) return;
 
+    const isClosedInSession = sessionStorage.getItem("promo_drawer_closed");
     const urlParams = new URLSearchParams(window.location.search);
     const isTestMode = urlParams.get("test-popup") === "true";
 
-    if (isTestMode) {
-      sessionStorage.removeItem("promo_popup_closed");
-    }
-
-    const isClosedInSession = sessionStorage.getItem("promo_popup_closed");
     if (isClosedInSession === "true" && !isTestMode) return;
 
-    try {
-      const response = await fetch("/api/popup-settings");
-      if (!response.ok) return;
-      let popups = await response.json();
+    const overlay = document.getElementById("promo-popup-overlay");
+    const card = document.getElementById("promo-popup-card");
+    const closeBtn = document.getElementById("promo-popup-close");
 
-      // Seed mock popups for test mode if database is empty
-      if (isTestMode && (!Array.isArray(popups) || popups.length === 0)) {
-        popups = [
-          {
-            id: 999,
-            title: "Test Popup Slide 1",
-            subtitle: "Visual validation popup.",
-            image_url: "/images/Hero/main.webp",
-            button_text: "Enquire Now",
-            delay_seconds: 2,
-            is_active: true
-          }
-        ];
+    if (!overlay || !card) return;
+
+    const closePopup = () => {
+      if (!isTestMode) {
+        sessionStorage.setItem("promo_drawer_closed", "true");
       }
+      card.classList.remove("translate-y-0", "opacity-100");
+      card.classList.add("translate-y-12", "opacity-0", "pointer-events-none");
+    };
 
-      if (!Array.isArray(popups) || popups.length === 0) return;
+    if (closeBtn) closeBtn.onclick = closePopup;
 
-      const overlay = document.getElementById("promo-popup-overlay");
-      const card = document.getElementById("promo-popup-card");
-      const container = document.getElementById("promo-popup-slides-container");
-      const prevBtn = document.getElementById("promo-popup-prev") as HTMLButtonElement;
-      const nextBtn = document.getElementById("promo-popup-next") as HTMLButtonElement;
-      const indicatorsContainer = document.getElementById("promo-popup-indicators");
+    // Trigger floating drawer smoothly after 5 seconds
+    popupTimer = setTimeout(() => {
+      if (isAdminOrExcludedPath()) return;
+      if (sessionStorage.getItem("promo_drawer_closed") === "true" && !isTestMode) return;
 
-      if (!overlay || !card || !container) return;
-
-      // Injects slide elements
-      container.innerHTML = popups.map((p: any, idx: number) => {
-        const activeClasses = idx === 0 
-          ? "relative block opacity-100 z-10" 
-          : "absolute inset-0 opacity-0 pointer-events-none z-0";
-        const redirectAttr = p.redirect_to_link ? 'true' : 'false';
-        const linkUrlAttr = p.link_url ? String(p.link_url).replace(/"/g, '&quot;') : '';
-        return `
-          <div class="promo-slide w-full h-auto transition-all duration-300 cursor-pointer ${activeClasses}" data-index="${idx}" data-popup-id="${p.id}" data-redirect="${redirectAttr}" data-link-url="${linkUrlAttr}">
-            <img src="${p.image_url}" alt="${p.title}" class="w-full h-auto max-h-[90vh] object-contain block pointer-events-none select-none" />
-          </div>
-        `;
-      }).join("");
-
-      // Setup slider states
-      let currentIdx = 0;
-      const slides = container.querySelectorAll(".promo-slide");
-
-      const updateSlider = (newIdx: number) => {
-        if (newIdx < 0) newIdx = popups.length - 1;
-        if (newIdx >= popups.length) newIdx = 0;
-        
-        slides.forEach((slide, idx) => {
-          if (idx === newIdx) {
-            slide.classList.remove("absolute", "inset-0", "opacity-0", "pointer-events-none", "z-0");
-            slide.classList.add("relative", "block", "opacity-100", "z-10");
-          } else {
-            slide.classList.remove("relative", "block", "opacity-100", "z-10");
-            slide.classList.add("absolute", "inset-0", "opacity-0", "pointer-events-none", "z-0");
-          }
-        });
-
-        if (indicatorsContainer) {
-          const dots = indicatorsContainer.querySelectorAll(".indicator-dot");
-          dots.forEach((dot, idx) => {
-            if (idx === newIdx) {
-              dot.classList.remove("bg-slate-200");
-              dot.classList.add("bg-indigo-600", "w-4");
-            } else {
-              dot.classList.remove("bg-indigo-600", "w-4");
-              dot.classList.add("bg-slate-200");
-            }
-          });
-        }
-
-        currentIdx = newIdx;
-      };
-
-      // Set up navigations if > 1 popups
-      if (popups.length > 1) {
-        prevBtn?.classList.remove("hidden");
-        nextBtn?.classList.remove("hidden");
-        indicatorsContainer?.classList.remove("hidden");
-
-        if (indicatorsContainer) {
-          indicatorsContainer.innerHTML = popups.map((_: any, idx: number) => {
-            const widthClass = idx === 0 ? "w-4 bg-indigo-600" : "w-1.5 bg-slate-200";
-            return `<button type="button" class="indicator-dot h-1.5 rounded-full transition-all duration-300 ${widthClass}" data-slide="${idx}" aria-label="Go to slide ${idx + 1}"></button>`;
-          }).join("");
-
-          indicatorsContainer.querySelectorAll(".indicator-dot").forEach((dot) => {
-            (dot as HTMLElement).onclick = () => {
-              const slideIdx = parseInt(dot.getAttribute("data-slide") || "0", 10);
-              updateSlider(slideIdx);
-            };
-          });
-        }
-
-        if (prevBtn) prevBtn.onclick = () => updateSlider(currentIdx - 1);
-        if (nextBtn) nextBtn.onclick = () => updateSlider(currentIdx + 1);
-      }
-
-      // Close handler
-      const closePopup = () => {
-        if (!isTestMode) {
-          sessionStorage.setItem("promo_popup_closed", "true");
-        }
-        
-        const currentOverlay = document.getElementById("promo-popup-overlay");
-        const currentCard = document.getElementById("promo-popup-card");
-        if (currentCard) {
-          currentCard.classList.remove("opacity-100", "scale-100", "translate-y-0");
-          currentCard.classList.add("opacity-0", "scale-95", "translate-y-4");
-        }
-        if (currentOverlay) {
-          currentOverlay.classList.remove("opacity-100");
-          currentOverlay.classList.add("opacity-0", "pointer-events-none");
-        }
-      };
-
-      // Slide click listener
-      container.onclick = (e: MouseEvent) => {
-        const target = e.target as HTMLElement;
-        const slide = target.closest(".promo-slide");
-        if (slide) {
-          const popupId = slide.getAttribute("data-popup-id");
-          const isRedirect = slide.getAttribute("data-redirect") === "true";
-          const linkUrl = slide.getAttribute("data-link-url")?.trim();
-
-          closePopup();
-
-          if (isRedirect && linkUrl) {
-            let finalUrl = linkUrl;
-            if (!finalUrl.startsWith("http://") && !finalUrl.startsWith("https://") && !finalUrl.startsWith("/")) {
-              finalUrl = "https://" + finalUrl;
-            }
-            window.location.href = finalUrl;
-          } else {
-            window.location.href = `/promo/${popupId}`;
-          }
-        }
-      };
-
-      const closeBtn = document.getElementById("promo-popup-close");
-      if (closeBtn) closeBtn.onclick = closePopup;
-      overlay.onclick = (e) => {
-        if (e.target === overlay) closePopup();
-      };
-
-      // Show modal after delay_seconds from first active popup (default 5 seconds)
-      const delayMs = (isTestMode ? 1 : popups[0].delay_seconds || 5) * 1000;
-
-      popupTimer = setTimeout(() => {
-        if (isAdminOrExcludedPath()) return;
-        if (sessionStorage.getItem("promo_popup_closed") === "true" && !isTestMode) return;
-        
-        const liveOverlay = document.getElementById("promo-popup-overlay");
-        const liveCard = document.getElementById("promo-popup-card");
-
-        if (liveOverlay && liveCard) {
-          liveOverlay.classList.remove("pointer-events-none", "opacity-0");
-          liveOverlay.classList.add("opacity-100");
-
-          liveCard.classList.remove("opacity-0", "scale-95", "translate-y-4");
-          liveCard.classList.add("opacity-100", "scale-100", "translate-y-0");
-        }
-      }, delayMs);
-
-    } catch (e) {
-      console.error("Failed to load promo popup settings:", e);
-    }
+      card.classList.remove("translate-y-12", "opacity-0", "pointer-events-none");
+      card.classList.add("translate-y-0", "opacity-100");
+    }, 5000);
   }
 
-  // Handle initial page load & Astro View Transitions
   document.addEventListener("astro:page-load", () => {
     initPromoPopup();
   });

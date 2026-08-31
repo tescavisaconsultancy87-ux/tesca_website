@@ -1,0 +1,164 @@
+---
+import Layout from "../layouts/Layout.astro";
+import ChinaBusinessForm from "../components/ChinaBusinessForm";
+import FAQ from "../components/FAQ.astro";
+
+const chinaFaqs = [
+  {
+    question: "What is TESCA's 'No Visa, No Payment' policy for China Business Visas?",
+    answer: "Our 'No Visa, No Payment' policy means that our professional consultancy fees are 100% tied to your visa approval. If your China Business (M) Visa application is not approved by the Chinese Embassy/VFS, you do not pay our service fee. We conduct a thorough pre-screening of your business invitation and documents before submission to ensure a 100% success rate.",
+  },
+  {
+    question: "How do I get a China Business (M) Visa for the Canton Fair 2026?",
+    answer: "To attend the Canton Fair (Guangzhou) or business expos in China, you need an official Business (M) Visa. TESCA handles the entire process: we verify or assist with your Canton Fair E-invitation / Chinese company invitation letter, arrange official passport photo specs, book VFS appointment slots, and submit your file for express processing.",
+  },
+  {
+    question: "How fast can TESCA process a China Business Visa in Surat?",
+    answer: "Standard processing takes 5 to 7 working days. With our Express Priority Service, your China Business Visa can be issued in as fast as 4 to 5 working days after VFS submission.",
+  },
+  {
+    question: "What documents are required for an Indian passport holder for China Business Visa?",
+    answer: "Required documents include: (1) Original Passport valid for at least 6 months with 2 blank pages, (2) Official Invitation Letter from a Chinese firm or Canton Fair registration, (3) Indian Business Registration (GST/IEC) & Covering Letter on company letterhead, (4) 6-month bank statement with sufficient balance, and (5) 2 passport photos (33mm x 48mm, white background).",
+  },
+  {
+    question: "Do I need to visit the Chinese VFS application center in person?",
+    answer: "For first-time applicants or biometric submission requirements, a brief VFS appointment visit may be required. TESCA handles all pre-checks, appointment scheduling, and document formatting so your visit takes less than 15 minutes.",
+  },
+];
+---
+
+<Layout
+  title="China Business Visa (M Visa) Services Surat | No Visa No Payment | TESCA"
+  description="Apply for China Business (M) Visa & Canton Fair entry with TESCA Surat. 100% Visa Guarantee, No Visa No Payment policy, express 4-5 day processing for Surat businessmen."
+>
+  <main class="bg-slate-50 min-h-screen pt-24 pb-20 overflow-x-hidden font-sans">
+    
+    <!-- Hero Section -->
+    <section class="relative px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto pt-6 pb-16">
+      
+      <!-- Background Decor -->
+      <div class="absolute top-0 right-1/4 w-96 h-96 bg-red-500/10 rounded-full blur-3xl -z-10 pointer-events-none"></div>
+      <div class="absolute bottom-0 left-1/4 w-96 h-96 bg-amber-500/10 rounded-full blur-3xl -z-10 pointer-events-none"></div>
+
+      <!-- Top Breadcrumb -->
+      <div class="flex items-center gap-2 text-xs font-semibold text-slate-500 mb-6">
+        <a href="/" class="hover:text-red-600 transition-colors">Home</a>
+        <span>/</span>
+        <a href="/visitor-visa" class="hover:text-red-600 transition-colors">Visitor & Business Visas</a>
+        <span>/</span>
+        <span class="text-slate-900">China Business Visa</span>
+      </div>
+
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
+        
+        <!-- Left Column - Copy & Trust Badges -->
+        <div class="lg:col-span-7 space-y-6 text-left">
+          
+          <!-- Main Hook Badges -->
+          <div class="flex flex-wrap items-center gap-2.5">
+            <span class="px-3.5 py-1.5 rounded-full bg-red-600 text-white text-xs font-bold uppercase tracking-wider shadow-md shadow-red-500/20">
+              🇨🇳 China M Visa Specialist
+            </span>
+            <span class="px-3.5 py-1.5 rounded-full bg-amber-500/15 text-amber-900 text-xs font-bold border border-amber-300">
+              🏛️ Canton Fair 2026 Ready
+            </span>
+          </div>
+
+          <h1 class="text-3xl sm:text-4xl lg:text-5xl font-extrabold text-slate-900 tracking-tight leading-[1.15]">
+            China Business Visa <br class="hidden sm:inline" />
+            <span class="bg-gradient-to-r from-red-600 via-amber-600 to-red-700 bg-clip-text text-transparent">
+              No Visa, No Payment Guarantee.
+            </span>
+          </h1>
+
+          <p class="text-base sm:text-lg text-slate-600 leading-relaxed font-normal">
+            Planning your business trip to Guangzhou, Shenzhen, Shanghai, or the <b>Canton Fair 2026</b>? 
+            TESCA Visa Consultancy provides guaranteed China Business (M) Visa processing for Surat & Gujarat exporters, traders, and businessmen.
+          </p>
+
+          <!-- Key Value Proposition Grid -->
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-2">
+            <div class="p-4 rounded-2xl bg-white border border-slate-200/80 shadow-sm hover:border-red-300 transition-all">
+              <div class="text-2xl font-black text-red-600 mb-1">100%</div>
+              <div class="text-xs font-bold text-slate-900">Visa Guarantee</div>
+              <div class="text-[11px] text-slate-500 mt-0.5">Pre-verified invitation & docs</div>
+            </div>
+            <div class="p-4 rounded-2xl bg-white border border-slate-200/80 shadow-sm hover:border-amber-300 transition-all">
+              <div class="text-2xl font-black text-amber-600 mb-1">₹0 Risk</div>
+              <div class="text-xs font-bold text-slate-900">No Visa, No Payment</div>
+              <div class="text-[11px] text-slate-500 mt-0.5">Fee tied strictly to approval</div>
+            </div>
+            <div class="p-4 rounded-2xl bg-white border border-slate-200/80 shadow-sm hover:border-emerald-300 transition-all">
+              <div class="text-2xl font-black text-emerald-600 mb-1">4-5 Days</div>
+              <div class="text-xs font-bold text-slate-900">Express Processing</div>
+              <div class="text-[11px] text-slate-500 mt-0.5">Priority VFS slot booking</div>
+            </div>
+          </div>
+
+          <!-- Surat Branch Trust Bar -->
+          <div class="p-4 rounded-2xl bg-gradient-to-r from-slate-900 to-slate-800 text-white flex items-center justify-between gap-4 shadow-xl">
+            <div class="flex items-center gap-3">
+              <div class="w-10 h-10 rounded-full bg-red-600/30 border border-red-500/50 flex items-center justify-center shrink-0">
+                <span class="text-lg">📍</span>
+              </div>
+              <div>
+                <h4 class="text-xs font-bold text-white">Surat Branches (Varachha & Simada)</h4>
+                <p class="text-[11px] text-slate-300">Over 1,200+ China Business Visas Approved Since 2005</p>
+              </div>
+            </div>
+            <a
+              href="tel:+919824152731"
+              class="px-4 py-2 rounded-xl bg-red-600 hover:bg-red-500 text-white font-bold text-xs shrink-0 transition-all shadow-md"
+            >
+              Call 9824152731
+            </a>
+          </div>
+
+        </div>
+
+        <!-- Right Column - Form -->
+        <div class="lg:col-span-5">
+          <ChinaBusinessForm client:load />
+        </div>
+
+      </div>
+    </section>
+
+    <!-- Canton Fair Special Highlight Banner -->
+    <section class="bg-gradient-to-r from-red-700 via-red-600 to-amber-700 text-white py-12 px-4 sm:px-6 lg:px-8">
+      <div class="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-12 gap-8 items-center">
+        <div class="md:col-span-8 text-left space-y-3">
+          <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/15 text-white text-xs font-bold uppercase tracking-wider backdrop-blur-sm border border-white/20">
+            🔥 Canton Fair 2026 Fast-Track
+          </div>
+          <h2 class="text-2xl sm:text-3xl font-extrabold tracking-tight">
+            Visiting Canton Fair (Guangzhou) or Yiwu Market?
+          </h2>
+          <p class="text-sm text-red-100 max-w-2xl leading-relaxed">
+            Avoid last-minute embassy rejections and long VFS queues. TESCA provides official Canton Fair Buyer E-invitation verification, express appointment slots, and end-to-end file preparation.
+          </p>
+        </div>
+        <div class="md:col-span-4 flex justify-start md:justify-end">
+          <a
+            href="https://wa.me/919824152731?text=Hi%20TESCA,%20I%20want%20China%20Business%20Visa%20for%20Canton%20Fair"
+            target="_blank"
+            rel="noreferrer"
+            class="px-8 py-4 rounded-2xl bg-white hover:bg-slate-100 text-red-700 font-extrabold text-sm transition-all shadow-xl hover:scale-105"
+          >
+            Apply Canton Fair Visa Now
+          </a>
+        </div>
+      </div>
+    </section>
+
+    <!-- FAQ Section -->
+    <section class="py-16 px-4 sm:px-6 lg:px-8 max-w-4xl mx-auto">
+      <div class="text-center mb-8">
+        <h2 class="text-2xl sm:text-3xl font-extrabold text-slate-900">China Business Visa FAQs</h2>
+        <p class="text-xs text-slate-500 mt-1">Common questions answered by our visa consultants.</p>
+      </div>
+      <FAQ items={chinaFaqs} />
+    </section>
+
+  </main>
+</Layout>

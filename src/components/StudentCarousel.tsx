@@ -178,18 +178,12 @@ const StudentCardItem = memo(function StudentCardItem({ student }: { student: D1
 });
 
 export default function StudentCarousel({ stories = [] }: { stories?: D1Story[] }) {
-  const displayStories = useMemo(() => {
-    const activeStories = stories && stories.length > 0 ? stories : fallbackStories;
-    let list = [...activeStories];
-    while (list.length < 12 && activeStories.length > 0) {
-      list = [...list, ...activeStories];
-    }
-    return list;
-  }, [stories]);
-
-  const carouselItems = useMemo(() => {
-    return [...displayStories, ...displayStories];
-  }, [displayStories]);
+  const activeStories = stories && stories.length > 0 ? stories : fallbackStories;
+  let list = [...activeStories];
+  while (list.length < 12 && activeStories.length > 0) {
+    list = [...list, ...activeStories];
+  }
+  const carouselItems = [...list, ...list];
 
   return (
     <div className="w-full py-16 bg-white overflow-hidden font-sans border-y border-slate-100 relative">
