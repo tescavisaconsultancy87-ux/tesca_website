@@ -1,9 +1,23 @@
-
 ---
+export const prerender = true;
+
 import Layout from "../../layouts/Layout.astro";
 import AICounsellor from "../../components/AICounsellor";
 import { blogPosts as staticBlogPosts, type BlogPost } from "../../data/blog";
 import { supabase } from "../../utils/supabase";
+
+export async function getStaticPaths() {
+  let dbSlugs: string[] = [];
+  try {
+    const { data } = await supabase.from('blog_posts').select('slug').eq('is_published', true);
+    if (data) {
+      dbSlugs = data.map((p: any) => p.slug);
+    }
+  } catch (err) {}
+  
+  const allSlugs = Array.from(new Set([...dbSlugs, ...staticBlogPosts.map(p => p.slug)]));
+  return allSlugs.map(slug => ({ params: { slug } }));
+}
 
 const { slug } = Astro.params;
 
