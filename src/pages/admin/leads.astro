@@ -140,6 +140,23 @@ if (Astro.request.method === "POST") {
         throw new Error("Invalid lead status.");
       }
       const completionReason = formData.get("completion_reason")?.toString().trim();
+      const nextFollowup = formData.get("next_followup")?.toString().trim();
+      const outcome = formData.get("outcome")?.toString().trim() || "Connected - Interested";
+      const noteText = formData.get("note")?.toString().trim();
+
+      // Enforce date, outcome, and notes (at least 3 words) when status is follow up
+      if (status === "follow up") {
+        if (!nextFollowup) {
+          throw new Error("Next follow-up date is required when status is set to Follow-Up.");
+        }
+        if (!outcome) {
+          throw new Error("Call outcome selection is required when status is set to Follow-Up.");
+        }
+        const wordCount = noteText ? noteText.split(/\s+/).filter(w => w.length > 0).length : 0;
+        if (wordCount < 3) {
+          throw new Error("Follow-up notes must contain at least 3 words.");
+        }
+      }
 
       // If the lead is currently booked and its status is changing, release its calendar slot
       const leadId = parseInt(id, 10);
@@ -158,7 +175,7 @@ if (Astro.request.method === "POST") {
         let detailsObj: any = {};
         if (leadData && leadData.details) {
           try {
-            detailsObj = JSON.parse(leadData.details);
+            detailsObj = typeof leadData.details === 'string' ? JSON.parse(leadData.details) : leadData.details;
           } catch (e) {
             console.error("Failed to parse existing lead details JSON:", e);
           }
@@ -176,6 +193,49 @@ if (Astro.request.method === "POST") {
           .eq('id', id);
 
         if (error) throw error;
+      } else if (status === "follow up") {
+        const { data: leadData } = await supabase
+          .from('leads')
+          .select('details')
+          .eq('id', id)
+          .single();
+
+        let detailsObj: any = {};
+        if (leadData && leadData.details) {
+          try {
+            detailsObj = typeof leadData.details === 'string' ? JSON.parse(leadData.details) : leadData.details;
+          } catch (e) {
+            detailsObj = {};
+          }
+        }
+
+        if (!Array.isArray(detailsObj.followup_history)) {
+          detailsObj.followup_history = [];
+        }
+
+        const newEntry = {
+          id: Date.now(),
+          timestamp: new Date().toISOString(),
+          note: noteText,
+          outcome: outcome,
+          next_followup: nextFollowup || null,
+          author: "Counselor"
+        };
+
+        detailsObj.followup_history.unshift(newEntry);
+        if (nextFollowup) {
+          detailsObj.next_followup_date = nextFollowup;
+        }
+
+        const { error } = await supabase
+          .from('leads')
+          .update({ 
+            status: 'follow up',
+            details: JSON.stringify(detailsObj)
+          })
+          .eq('id', id);
+
+        if (error) throw error;
       } else {
         // If changing status back to something else, remove completionReason
         const { data: leadData } = await supabase
@@ -187,7 +247,7 @@ if (Astro.request.method === "POST") {
         let detailsObj: any = null;
         if (leadData && leadData.details) {
           try {
-            detailsObj = JSON.parse(leadData.details);
+            detailsObj = typeof leadData.details === 'string' ? JSON.parse(leadData.details) : leadData.details;
             if (detailsObj.completionReason) {
               delete detailsObj.completionReason;
             }
@@ -212,8 +272,15 @@ if (Astro.request.method === "POST") {
       const outcome = formData.get("outcome")?.toString().trim() || "Connected - Interested";
       const nextFollowup = formData.get("next_followup")?.toString().trim() || "";
 
-      if (!noteText) {
-        throw new Error("Follow-up note content cannot be empty.");
+      if (!nextFollowup) {
+        throw new Error("Next follow-up date is required.");
+      }
+      if (!outcome) {
+        throw new Error("Call outcome selection is required.");
+      }
+      const wordCount = noteText ? noteText.split(/\s+/).filter(w => w.length > 0).length : 0;
+      if (wordCount < 3) {
+        throw new Error("Follow-up note must contain at least 3 words.");
       }
 
       const { data: leadData } = await supabase
@@ -653,6 +720,99 @@ try {
       </div>
     </div>
 
+    {/* Follow-Up Details Required Modal Overlay */}
+    <div id="followup-prompt-modal" class="hidden fixed inset-0 z-50 bg-slate-900/40 backdrop-blur-sm flex items-center justify-center p-4">
+      <div class="bg-white border border-slate-200 w-full max-w-md rounded-3xl shadow-2xl overflow-hidden flex flex-col text-left transform transition-all">
+        <div class="flex items-center justify-between px-6 py-4 border-b border-slate-200 bg-violet-50/80">
+          <div class="flex items-center gap-2">
+            <span class="p-1.5 rounded-xl bg-violet-100 text-violet-700 font-bold text-sm">📅</span>
+            <div>
+              <h3 class="text-base font-extrabold text-slate-800">Set Follow-Up Details</h3>
+              <p class="text-[10px] text-violet-600 font-bold uppercase tracking-wider">Required for Follow-Up Status</p>
+            </div>
+          </div>
+          <button id="close-followup-prompt-btn" type="button" class="p-1.5 hover:bg-slate-200/60 text-slate-400 hover:text-slate-600 rounded-xl transition-colors cursor-pointer">
+            <span set:html={SVG.X} />
+          </button>
+        </div>
+
+        <form id="followup-prompt-form" class="p-6 space-y-4">
+          <input type="hidden" id="followup-prompt-lead-id" value="" />
+
+          <!-- Error Alert Banner -->
+          <div id="followup-prompt-error" class="hidden p-3 bg-rose-50 border border-rose-200 rounded-xl text-rose-600 font-bold text-xs">
+          </div>
+
+          <!-- Date Input -->
+          <div>
+            <label class="block text-xs font-extrabold text-slate-700 uppercase tracking-wider mb-1">
+              Next Follow-Up Date <span class="text-rose-500">*</span>
+            </label>
+            <input 
+              type="date" 
+              id="followup-prompt-date" 
+              required 
+              class="w-full text-xs bg-slate-50 border border-slate-200 rounded-xl p-3 font-semibold text-slate-800 focus:bg-white focus:outline-none focus:ring-2 focus:ring-violet-500/20 focus:border-violet-500 transition-all cursor-pointer" 
+            />
+          </div>
+
+          <!-- Outcome Select -->
+          <div>
+            <label class="block text-xs font-extrabold text-slate-700 uppercase tracking-wider mb-1">
+              Call Outcome / Tag <span class="text-rose-500">*</span>
+            </label>
+            <select 
+              id="followup-prompt-outcome" 
+              required
+              class="w-full text-xs bg-slate-50 border border-slate-200 rounded-xl p-3 font-bold text-slate-800 focus:bg-white focus:outline-none focus:ring-2 focus:ring-violet-500/20 focus:border-violet-500 transition-all cursor-pointer"
+            >
+              <option value="Connected - Interested">📞 Connected - Interested</option>
+              <option value="Sent Document Checklist">📄 Sent Document Checklist</option>
+              <option value="Price Quoted">💰 Price / Quote Offered</option>
+              <option value="Follow-up Scheduled">⏳ Follow-up Scheduled</option>
+              <option value="No Answer / Busy">❌ No Answer / Busy</option>
+              <option value="Not Interested / Dropped">🚫 Not Interested / Dropped</option>
+            </select>
+          </div>
+
+          <!-- Notes Input -->
+          <div>
+            <label class="block text-xs font-extrabold text-slate-700 uppercase tracking-wider mb-1">
+              Follow-Up Notes <span class="text-rose-500">*</span>
+              <span class="text-[10px] font-semibold text-slate-400 normal-case ml-1">(Minimum 3 words)</span>
+            </label>
+            <textarea 
+              id="followup-prompt-note" 
+              required 
+              rows="3" 
+              placeholder="Enter discussion remarks (at least 3 words, e.g. 'Client requested fee structure and document checklist by tomorrow')..." 
+              class="w-full text-xs bg-slate-50 border border-slate-200 rounded-xl p-3 font-medium text-slate-800 focus:bg-white focus:outline-none focus:ring-2 focus:ring-violet-500/20 focus:border-violet-500 transition-all"
+            ></textarea>
+            <div id="followup-word-count-badge" class="text-[10px] font-bold text-slate-400 mt-1 text-right">
+              0 words (Minimum 3 words required)
+            </div>
+          </div>
+
+          <div class="pt-2 flex items-center justify-end gap-2">
+            <button 
+              type="button" 
+              id="cancel-followup-prompt-btn" 
+              class="px-4 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-600 rounded-xl text-xs font-bold transition-all cursor-pointer"
+            >
+              Cancel
+            </button>
+            <button 
+              type="submit" 
+              id="save-followup-prompt-btn" 
+              class="px-5 py-2.5 bg-violet-600 hover:bg-violet-700 text-white rounded-xl text-xs font-bold shadow-md transition-all cursor-pointer flex items-center gap-1.5"
+            >
+              Save Follow-Up & Update Status
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+
   </div>
 </Layout>
 
@@ -794,13 +954,13 @@ try {
                     </div>
                   </div>
                   <div>
-                    <label class="block text-[10px] font-bold text-slate-700 uppercase mb-1">Next Follow-Up Date (Optional)</label>
-                    <input type="date" name="next_followup" class="w-full text-xs bg-white border border-slate-200 rounded-xl p-2 font-semibold" />
+                    <label class="block text-[10px] font-bold text-slate-700 uppercase mb-1">Next Follow-Up Date <span class="text-rose-500">*</span></label>
+                    <input type="date" name="next_followup" required class="w-full text-xs bg-white border border-slate-200 rounded-xl p-2 font-semibold cursor-pointer" />
                   </div>
                 </div>
 
                 <div>
-                  <label class="block text-[10px] font-bold text-slate-700 uppercase mb-1">Discussion Remarks / Call Notes</label>
+                  <label class="block text-[10px] font-bold text-slate-700 uppercase mb-1">Discussion Remarks / Call Notes <span class="text-rose-500">*</span> <span class="text-[9px] font-normal text-slate-400 font-sans">(Min 3 words)</span></label>
                   <textarea name="note" required rows="2" placeholder="e.g. Discussed Canton Fair Visa. Client needs invitation support. Promised to send GST cert by Friday." class="w-full text-xs bg-white border border-slate-200 rounded-xl p-2.5 font-medium focus:outline-none focus:border-violet-500"></textarea>
                 </div>
 
@@ -850,6 +1010,30 @@ try {
 
           listContainer.appendChild(followupSection);
           modalContent.appendChild(listContainer);
+
+          // Add client validation for details modal follow-up note form
+          const detailsFollowupForm = modalContent.querySelector("form") as HTMLFormElement;
+          if (detailsFollowupForm) {
+            detailsFollowupForm.addEventListener("submit", (fe) => {
+              const noteEl = detailsFollowupForm.querySelector('textarea[name="note"]') as HTMLTextAreaElement;
+              const dateEl = detailsFollowupForm.querySelector('input[name="next_followup"]') as HTMLInputElement;
+              const dateVal = dateEl ? dateEl.value.trim() : "";
+              const noteText = noteEl ? noteEl.value.trim() : "";
+              const wordCount = noteText ? noteText.split(/\s+/).filter(Boolean).length : 0;
+
+              if (!dateVal) {
+                fe.preventDefault();
+                alert("Next follow-up date is required.");
+                return;
+              }
+
+              if (wordCount < 3) {
+                fe.preventDefault();
+                alert(`Follow-up note must contain at least 3 words (currently ${wordCount} word${wordCount === 1 ? '' : 's'}).`);
+                return;
+              }
+            });
+          }
 
           // Attach custom animated dropdown listeners
           const dropBtn = modalContent.querySelector("#outcome-dropdown-btn");
@@ -1102,6 +1286,121 @@ try {
             if (val === prevVal) {
               toggleMenu(dropdown, false);
               return;
+            }
+
+            if (val === 'follow up') {
+              toggleMenu(dropdown, false);
+              const promptModal = document.getElementById("followup-prompt-modal");
+              const promptForm = document.getElementById("followup-prompt-form") as HTMLFormElement;
+              const leadIdInput = document.getElementById("followup-prompt-lead-id") as HTMLInputElement;
+              const dateInput = document.getElementById("followup-prompt-date") as HTMLInputElement;
+              const outcomeInput = document.getElementById("followup-prompt-outcome") as HTMLSelectElement;
+              const noteInput = document.getElementById("followup-prompt-note") as HTMLTextAreaElement;
+              const errorDiv = document.getElementById("followup-prompt-error");
+              const wordCountBadge = document.getElementById("followup-word-count-badge");
+              const closeBtn = document.getElementById("close-followup-prompt-btn");
+              const cancelBtn = document.getElementById("cancel-followup-prompt-btn");
+
+              if (promptModal && promptForm && leadIdInput) {
+                leadIdInput.value = form.querySelector('input[name="id"]')?.getAttribute("value") || "";
+
+                // Set default date to tomorrow
+                const tomorrow = new Date();
+                tomorrow.setDate(tomorrow.getDate() + 1);
+                dateInput.value = tomorrow.toISOString().split("T")[0];
+                outcomeInput.value = "Connected - Interested";
+                noteInput.value = "";
+                if (errorDiv) {
+                  errorDiv.innerText = "";
+                  errorDiv.classList.add("hidden");
+                }
+
+                const updateWordCount = () => {
+                  const text = noteInput.value.trim();
+                  const words = text ? text.split(/\s+/).filter(Boolean).length : 0;
+                  if (wordCountBadge) {
+                    if (words >= 3) {
+                      wordCountBadge.innerText = `${words} words (✓ Meets requirement)`;
+                      wordCountBadge.className = "text-[10px] font-bold text-emerald-600 mt-1 text-right";
+                    } else {
+                      wordCountBadge.innerText = `${words} words (Minimum 3 words required)`;
+                      wordCountBadge.className = "text-[10px] font-bold text-rose-500 mt-1 text-right";
+                    }
+                  }
+                };
+
+                noteInput.oninput = updateWordCount;
+                updateWordCount();
+
+                const closePrompt = () => {
+                  promptModal.classList.add("hidden");
+                  document.body.style.overflow = "";
+                };
+
+                if (closeBtn) closeBtn.onclick = closePrompt;
+                if (cancelBtn) cancelBtn.onclick = closePrompt;
+
+                promptModal.classList.remove("hidden");
+                document.body.style.overflow = "hidden";
+
+                promptForm.onsubmit = async (pe) => {
+                  pe.preventDefault();
+                  const dateVal = dateInput.value.trim();
+                  const outcomeVal = outcomeInput.value.trim();
+                  const noteVal = noteInput.value.trim();
+                  const wordCount = noteVal ? noteVal.split(/\s+/).filter(Boolean).length : 0;
+
+                  if (!dateVal) {
+                    if (errorDiv) {
+                      errorDiv.innerText = "Next follow-up date is required.";
+                      errorDiv.classList.remove("hidden");
+                    }
+                    return;
+                  }
+                  if (!outcomeVal) {
+                    if (errorDiv) {
+                      errorDiv.innerText = "Call outcome selection is required.";
+                      errorDiv.classList.remove("hidden");
+                    }
+                    return;
+                  }
+                  if (wordCount < 3) {
+                    if (errorDiv) {
+                      errorDiv.innerText = `Follow-up notes must contain at least 3 words (currently ${wordCount} word${wordCount === 1 ? '' : 's'}).`;
+                      errorDiv.classList.remove("hidden");
+                    }
+                    return;
+                  }
+
+                  closePrompt();
+
+                  // Update UI trigger text and colors
+                  const spanText = trigger.querySelector("span");
+                  if (spanText) {
+                    spanText.textContent = item.textContent?.trim() || "Follow Up";
+                  }
+                  trigger.className = `status-dropdown-trigger flex items-center gap-1.5 px-2.5 py-1 rounded-full border text-[10px] font-bold tracking-wide focus:outline-none transition-all duration-200 hover:brightness-95 cursor-pointer bg-violet-50 text-violet-700 border-violet-200`;
+
+                  statusInput.value = "follow up";
+
+                  const postData = new FormData(form);
+                  postData.append("next_followup", dateVal);
+                  postData.append("outcome", outcomeVal);
+                  postData.append("note", noteVal);
+
+                  try {
+                    const res = await fetch(window.location.href, {
+                      method: "POST",
+                      body: postData
+                    });
+                    await handleResponse(res, "Follow-up status and note saved successfully.");
+                  } catch (err) {
+                    console.error("AJAX status update error:", err);
+                  }
+                };
+
+                return;
+              }
             }
 
             let reason = "";
