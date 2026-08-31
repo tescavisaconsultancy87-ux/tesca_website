@@ -631,6 +631,8 @@ try {
                           data-id={lead.id}
                           data-details={lead.details}
                           data-name={lead.name}
+                          data-phone={lead.phone}
+                          data-email={lead.email}
                           data-type={typeLabel}
                           data-status={lead.status || "pending"}
                         >
@@ -828,6 +830,8 @@ try {
 
     const openModal = (btn: Element) => {
       const name = btn.getAttribute("data-name") || "Student Details";
+      const phone = btn.getAttribute("data-phone") || "";
+      const email = btn.getAttribute("data-email") || "";
       const type = btn.getAttribute("data-type") || "Lead";
       const status = btn.getAttribute("data-status") || "pending";
       const detailsRaw = btn.getAttribute("data-details") || "{}";
@@ -865,8 +869,40 @@ try {
           `;
           listContainer.appendChild(statusItem);
 
+          // Mobile / WhatsApp Number Item
+          const phoneVal = phone || details.phone || details.mobile || details.mobileNumber || "Not provided";
+          const phoneItem = document.createElement("div");
+          phoneItem.className = "bg-slate-50 border border-slate-200 p-3.5 rounded-2xl space-y-1";
+          phoneItem.innerHTML = `
+            <span class="block text-[10px] font-bold text-slate-500 uppercase tracking-wider">Mobile / WhatsApp No.</span>
+            <span class="block text-xs font-bold text-slate-800 font-mono">${escapeHTML(phoneVal)}</span>
+          `;
+          listContainer.appendChild(phoneItem);
+
+          // Email Address Item
+          const emailVal = email || details.email || "Not provided";
+          const emailItem = document.createElement("div");
+          emailItem.className = "bg-slate-50 border border-slate-200 p-3.5 rounded-2xl space-y-1";
+          emailItem.innerHTML = `
+            <span class="block text-[10px] font-bold text-slate-500 uppercase tracking-wider">Email Address</span>
+            <span class="block text-xs font-semibold text-slate-800">${escapeHTML(emailVal)}</span>
+          `;
+          listContainer.appendChild(emailItem);
+
           Object.entries(details).forEach(([key, val]) => {
-            if (key === "bookingTokenHash" || key === "bookingTokenUsedAt" || key === "followup_history" || key === "next_followup_date") return;
+            if (
+              key === "bookingTokenHash" || 
+              key === "bookingTokenUsedAt" || 
+              key === "followup_history" || 
+              key === "next_followup_date" ||
+              key === "name" ||
+              key === "fullName" ||
+              key === "full_name" ||
+              key === "phone" ||
+              key === "mobile" ||
+              key === "mobileNumber" ||
+              key === "email"
+            ) return;
             // Format keys beautifully
             const formattedKey = key
               .replace(/([A-Z])/g, " $1")
