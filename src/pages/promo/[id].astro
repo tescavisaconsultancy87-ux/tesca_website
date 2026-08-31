@@ -56,9 +56,12 @@ const whatsappUrl = `https://wa.me/919824152731?text=${whatsappMsg}`;
       <div class="w-full bg-white rounded-[2rem] shadow-xl overflow-hidden border border-slate-100 flex flex-col md:flex-row min-h-[500px]">
       
       <!-- Left side: Flyer Image -->
-      <div class="w-full md:w-1/2 relative bg-slate-900 overflow-hidden flex items-center justify-center min-h-[300px] md:min-h-auto">
-        <img src={popup.image_url} alt="" class="absolute inset-0 w-full h-full object-cover blur-xl opacity-40 scale-110 pointer-events-none select-none" />
-        <img src={popup.image_url} alt={popup.title} class="absolute inset-0 m-auto max-w-full max-h-full object-contain p-4 md:p-8 pointer-events-none select-none" />
+      <div class="w-full md:w-1/2 relative bg-slate-900 overflow-hidden min-h-[300px] md:min-h-full">
+        <img 
+          src={popup.image_url} 
+          alt={popup.title} 
+          class="w-full h-full object-cover block" 
+        />
       </div>
 
       <!-- Right side: Lead capture form -->
