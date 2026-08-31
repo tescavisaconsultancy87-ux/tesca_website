@@ -1,18 +1,17 @@
 import React, { useState } from "react";
-import { CheckCircle2, ShieldCheck, Zap, Send, User, Phone, Building2, MapPin, Award } from "lucide-react";
+import { CheckCircle2, ShieldCheck, Zap, Send, User, Phone, Building2, Clock, Award } from "lucide-react";
 
 export default function ChinaBusinessForm() {
   const [formData, setFormData] = useState({
     fullName: "",
     phone: "",
     companyName: "",
-    city: "Surat - Varachha",
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
   const [errorMsg, setErrorMsg] = useState("");
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
@@ -30,7 +29,7 @@ export default function ChinaBusinessForm() {
           phone: formData.phone,
           preferred_countries: ["China 🇨🇳"],
           visa_type: "Business (M Visa) / Canton Fair",
-          notes: `Company: ${formData.companyName || 'Not specified'} | Branch: ${formData.city}`,
+          notes: `Company: ${formData.companyName || 'Not specified'}`,
           source: "China Business Visa Page",
         }),
       });
@@ -79,7 +78,7 @@ export default function ChinaBusinessForm() {
           </div>
           <h3 className="text-2xl font-bold text-slate-900 font-sans">Application Received!</h3>
           <p className="text-sm text-slate-600 max-w-md mx-auto leading-relaxed">
-            Our China Visa specialist from TESCA Surat will contact you within <b>15 minutes</b> with the official document checklist.
+            Our China Visa specialist from TESCA Surat will call you <b>within 30 minutes</b> with the official document checklist.
           </p>
           <div className="pt-3">
             <a
@@ -98,8 +97,9 @@ export default function ChinaBusinessForm() {
             <h3 className="text-xl font-bold text-slate-900 font-sans tracking-tight">
               Apply for China Business (M) Visa
             </h3>
-            <p className="text-xs text-slate-500 mt-1">
-              Guaranteed VFS slot booking & document pre-audit by TESCA Surat.
+            <p className="text-xs text-emerald-700 font-bold flex items-center gap-1.5 mt-1">
+              <Clock className="w-3.5 h-3.5" />
+              <span>Get a callback from our specialist within 30 minutes!</span>
             </p>
           </div>
 
@@ -144,38 +144,19 @@ export default function ChinaBusinessForm() {
             </div>
           </div>
 
-          {/* Business Name / Firm & Nearest Branch */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            <div>
-              <label className="block text-xs font-semibold text-slate-700 mb-1">Business / Firm Name (Optional)</label>
-              <div className="relative">
-                <Building2 className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
-                <input
-                  type="text"
-                  name="companyName"
-                  value={formData.companyName}
-                  onChange={handleChange}
-                  placeholder="e.g. Surat Textile Traders"
-                  className="w-full pl-10 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:border-red-500 focus:bg-white transition-all"
-                />
-              </div>
-            </div>
-
-            <div>
-              <label className="block text-xs font-semibold text-slate-700 mb-1">Nearest TESCA Branch</label>
-              <div className="relative">
-                <MapPin className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
-                <select
-                  name="city"
-                  value={formData.city}
-                  onChange={handleChange}
-                  className="w-full pl-10 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:border-red-500 focus:bg-white transition-all cursor-pointer"
-                >
-                  <option value="Surat - Varachha">Surat - Varachha</option>
-                  <option value="Surat - Simada">Surat - Simada</option>
-                  <option value="Other Gujarat City">Other City / Online</option>
-                </select>
-              </div>
+          {/* Business Name / Firm */}
+          <div>
+            <label className="block text-xs font-semibold text-slate-700 mb-1">Business / Firm Name (Optional)</label>
+            <div className="relative">
+              <Building2 className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
+              <input
+                type="text"
+                name="companyName"
+                value={formData.companyName}
+                onChange={handleChange}
+                placeholder="e.g. Surat Textile Traders"
+                className="w-full pl-10 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:border-red-500 focus:bg-white transition-all"
+              />
             </div>
           </div>
 
@@ -196,7 +177,7 @@ export default function ChinaBusinessForm() {
           </button>
 
           <p className="text-[11px] text-center text-slate-400 mt-2">
-            🔒 Protected by <b>No Visa, No Payment Guarantee</b>. Zero hidden charges.
+            🔒 Protected by <b>No Visa, No Payment Guarantee</b>. Callback in 30 minutes.
           </p>
         </form>
       )}
