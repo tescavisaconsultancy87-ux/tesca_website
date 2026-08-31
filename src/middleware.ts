@@ -9,11 +9,11 @@ import { ensureCsrfToken, validateAdminCsrf } from "./utils/csrf";
 // - connect (XHR/fetch): Supabase, Google Apps Script, Web3Forms, EmailJS, GA
 const CSP = [
   "default-src 'self'",
-  "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://www.googletagmanager.com https://www.google-analytics.com https://cdn.jsdelivr.net https://static.cloudflareinsights.com https://us.i.posthog.com https://*.posthog.com",
-  "style-src 'self' 'unsafe-inline' https://api.fontshare.com https://fonts.googleapis.com https://cdn.jsdelivr.net",
-  "font-src 'self' data: https://*.fontshare.com https://fonts.gstatic.com",
+  "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://www.googletagmanager.com https://www.google-analytics.com https://cdn.jsdelivr.net https://cdnjs.cloudflare.com https://static.cloudflareinsights.com https://us.i.posthog.com https://*.posthog.com",
+  "style-src 'self' 'unsafe-inline' https://api.fontshare.com https://fonts.googleapis.com https://cdn.jsdelivr.net https://cdnjs.cloudflare.com",
+  "font-src 'self' data: https://*.fontshare.com https://fonts.gstatic.com https://cdnjs.cloudflare.com",
   "img-src 'self' data: blob: https://flagcdn.com https://*.supabase.co https://www.google-analytics.com https://www.googletagmanager.com https://www.google.com https://*.google.com https://www.google.co.in https://*.google.co.in https://stats.g.doubleclick.net https://*.doubleclick.net",
-  "connect-src 'self' https://*.supabase.co https://script.google.com https://api.web3forms.com https://api.emailjs.com https://www.google-analytics.com https://analytics.google.com https://*.analytics.google.com https://*.google-analytics.com https://www.google.com https://*.google.com https://stats.g.doubleclick.net https://*.doubleclick.net https://cdn.jsdelivr.net https://us.i.posthog.com https://*.posthog.com https://app.posthog.com",
+  "connect-src 'self' https://*.supabase.co https://script.google.com https://api.web3forms.com https://api.emailjs.com https://www.google-analytics.com https://analytics.google.com https://*.analytics.google.com https://*.google-analytics.com https://www.google.com https://*.google.com https://stats.g.doubleclick.net https://*.doubleclick.net https://cdn.jsdelivr.net https://cdnjs.cloudflare.com https://us.i.posthog.com https://*.posthog.com https://app.posthog.com",
   "frame-ancestors 'none'",
   "base-uri 'self'",
   "form-action 'self' https://script.google.com",

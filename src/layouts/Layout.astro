@@ -2089,7 +2089,7 @@ if (isAdminPage) {
 			</div>
 		</div>
 
-		{!isAdminPage && <PromoPopup />}
-		{!isAdminPage && <LiveSocialProofTicker client:only="react" />}
+		{showNavFooter && !isAdminPage && <PromoPopup />}
+		{showNavFooter && !isAdminPage && <LiveSocialProofTicker client:only="react" />}
 	</body>
 </html>

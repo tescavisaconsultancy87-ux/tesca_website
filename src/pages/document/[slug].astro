@@ -1,0 +1,172 @@
+---
+import Layout from "../../layouts/Layout.astro";
+import { documents, getDocumentBySlug } from "../../data/documents";
+
+export function getStaticPaths() {
+  return documents.map((doc) => ({
+    params: { slug: doc.slug },
+    props: { doc },
+  }));
+}
+
+const { slug } = Astro.params;
+const { doc: propDoc } = Astro.props;
+const doc = propDoc || getDocumentBySlug(slug || "");
+
+if (!doc) {
+  return Astro.redirect("/404");
+}
+---
+
+<Layout 
+  title={`${doc.title} | Protected Document Reader | TESCA`}
+  description={doc.description}
+  showNavFooter={false}
+  noindex={true}
+>
+  <div class="min-h-screen bg-slate-950 text-slate-100 font-sans selection:bg-none select-none relative pt-16 pb-12">
+    
+    <!-- Fixed Navigation Bar -->
+    <div class="fixed top-4 left-4 right-4 z-50 flex items-center justify-between max-w-5xl mx-auto pointer-events-none">
+      <a 
+        href="/" 
+        class="pointer-events-auto inline-flex items-center gap-2 px-4 py-2 rounded-full bg-slate-900/90 hover:bg-slate-800 text-white text-xs font-bold shadow-2xl border border-slate-700/80 backdrop-blur-md transition-all hover:scale-105"
+      >
+        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <path d="m15 18-6-6 6-6"/>
+        </svg>
+        Back to Home
+      </a>
+
+      <a 
+        href="/contact" 
+        class="pointer-events-auto inline-flex items-center gap-2 px-4 py-2 rounded-full bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold shadow-2xl border border-indigo-400/40 backdrop-blur-md transition-all hover:scale-105"
+      >
+        <span>Contact TESCA</span>
+        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M5 12h14"/>
+          <path d="m12 5 7 7-7 7"/>
+        </svg>
+      </a>
+    </div>
+
+    <!-- Main Canvas Document Render Container -->
+    <main class="max-w-4xl mx-auto px-4 flex flex-col items-center relative">
+      
+      <!-- Status Banner -->
+      <div id="loading-spinner" class="py-20 text-center space-y-3">
+        <div class="w-10 h-10 border-4 border-amber-500 border-t-transparent rounded-full animate-spin mx-auto"></div>
+        <p class="text-xs font-semibold text-slate-400">Loading secure document reader...</p>
+      </div>
+
+      <!-- Protected Viewer Container -->
+      <div id="pdf-viewer-wrapper" class="relative w-full flex flex-col items-center gap-6 hidden">
+        <!-- Anti-Drag Overlay Layer -->
+        <div 
+          class="absolute inset-0 z-20 pointer-events-auto bg-transparent select-none" 
+          oncontextmenu="return false;"
+          aria-hidden="true"
+        ></div>
+
+        <div id="pdf-pages-container" class="w-full flex flex-col items-center gap-6 z-10"></div>
+      </div>
+
+    </main>
+  </div>
+  </div>
+
+  <!-- PDF.js Engine -->
+  <script is:inline src="https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.min.js"></script>
+
+  <script is:inline define:vars={{ pdfUrl: doc.pdfUrl }}>
+    document.addEventListener("DOMContentLoaded", async () => {
+      const spinner = document.getElementById("loading-spinner");
+      const wrapper = document.getElementById("pdf-viewer-wrapper");
+      const pagesContainer = document.getElementById("pdf-pages-container");
+
+      const pdfjsLib = window.pdfjsLib || window["pdfjs-dist/build/pdf"];
+
+      if (!pdfjsLib) {
+        if (spinner) spinner.innerHTML = `<p class="text-xs text-rose-400 font-bold">Failed to load PDF viewer library.</p>`;
+        return;
+      }
+
+      pdfjsLib.GlobalWorkerOptions.workerSrc = "https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.worker.min.js";
+
+      try {
+        const loadingTask = pdfjsLib.getDocument(pdfUrl);
+        const pdf = await loadingTask.promise;
+
+        if (spinner) spinner.classList.add("hidden");
+        if (wrapper) wrapper.classList.remove("hidden");
+
+        for (let pageNum = 1; pageNum <= pdf.numPages; pageNum++) {
+          const page = await pdf.getPage(pageNum);
+          
+          // Compute scale for mobile & desktop
+          const containerWidth = pagesContainer.clientWidth || 800;
+          const unscaledViewport = page.getViewport({ scale: 1.0 });
+          const scale = Math.min((containerWidth - 32) / unscaledViewport.width, 1.8);
+          const viewport = page.getViewport({ scale: Math.max(scale, 1.0) });
+
+          const pageWrapper = document.createElement("div");
+          pageWrapper.className = "relative w-full max-w-3xl rounded-2xl overflow-hidden bg-white shadow-2xl border border-slate-800 flex flex-col items-center";
+
+          const canvas = document.createElement("canvas");
+          const context = canvas.getContext("2d");
+          canvas.height = viewport.height;
+          canvas.width = viewport.width;
+          canvas.className = "w-full h-auto block select-none pointer-events-none";
+
+          await page.render({ canvasContext: context, viewport: viewport }).promise;
+          pageWrapper.appendChild(canvas);
+
+          // Page Number Indicator Footer
+          const pageFooter = document.createElement("div");
+          pageFooter.className = "w-full py-2 bg-slate-100 border-t border-slate-200 text-center text-[10px] font-bold text-slate-500 uppercase tracking-wider";
+          pageFooter.innerText = `Page ${pageNum} of ${pdf.numPages}`;
+          pageWrapper.appendChild(pageFooter);
+
+          pagesContainer.appendChild(pageWrapper);
+        }
+      } catch (err) {
+        console.error("PDF Render Error:", err);
+        if (spinner) {
+          spinner.classList.remove("hidden");
+          spinner.innerHTML = `<p class="text-xs text-rose-400 font-bold">Failed to load document preview. Please check URL.</p>`;
+        }
+      }
+    });
+
+    // 🔒 Security Protection 1: Block Right-Click Context Menu
+    document.addEventListener("contextmenu", (e) => {
+      e.preventDefault();
+    });
+
+    // 🔒 Security Protection 2: Intercept Save & Print Keyboard Shortcuts
+    document.addEventListener("keydown", (e) => {
+      const key = e.key.toLowerCase();
+      if (
+        (e.ctrlKey || e.metaKey) && 
+        (key === "s" || key === "p" || key === "u" || key === "i" || key === "j" || key === "c")
+      ) {
+        e.preventDefault();
+        e.stopPropagation();
+        alert("🔒 Downloading, copying, and printing this document is disabled for security.");
+      }
+      if (e.key === "F12") {
+        e.preventDefault();
+      }
+    });
+  </script>
+
+  <!-- 🔒 Security Protection 3: CSS Print Shield -->
+  <style is:global>
+    @media print {
+      html, body {
+        display: none !important;
+        visibility: hidden !important;
+      }
+    }
+  </style>
+</Layout>
