@@ -1,6 +1,6 @@
 ---
 // PromoPopup.astro
-// Includes Main Screen Big Uncropped Poster Popup with Multi-Popup Arrow Navigation (< >) & Floating Bottom Drawer
+// Clean Poster Image Popup (Type 1: Custom Link Redirect, Type 2: Lead Submission Page Redirect) & Drawer
 import { supabase } from "../utils/supabase";
 
 let activePopups: any[] = [];
@@ -25,6 +25,7 @@ const defaultPopup = {
   delay_seconds: 5,
   button_text: "Apply China Visa Now",
   link_url: "/china-business-visa",
+  redirect_to_link: true,
   lead_capture_enabled: false
 };
 
@@ -33,7 +34,7 @@ const initialPopup = popupsList[0];
 const delaySeconds = initialPopup?.delay_seconds || 5;
 ---
 
-<!-- 1. Main Screen Center Modal Popup Overlay (Multi-Popup Carousel Support) -->
+<!-- 1. Main Screen Center Modal Popup Overlay (Clean Image Poster Display) -->
 <div
   id="promo-popup-overlay"
   class="hidden fixed inset-0 z-[9999] bg-slate-950/80 backdrop-blur-md flex items-center justify-center p-3 sm:p-6 transition-all duration-300 select-none overflow-y-auto"
@@ -90,8 +91,13 @@ const delaySeconds = initialPopup?.delay_seconds || 5;
         const subtitle = popup.subtitle || "";
         const imageUrl = popup.image_url || null;
         const buttonText = popup.button_text || "Apply Now";
-        const linkUrl = popup.link_url || "/china-business-visa";
-        const leadCapture = popup.lead_capture_enabled ?? false;
+
+        // Determine destination link for image click:
+        // Type 1 (redirect_to_link): Custom link URL
+        // Type 2 (detail submission page): link_url if provided, else fallback to /china-business-visa
+        const targetUrl = popup.link_url && popup.link_url.trim().length > 0
+          ? popup.link_url
+          : "/china-business-visa";
 
         return (
           <div
@@ -101,39 +107,25 @@ const delaySeconds = initialPopup?.delay_seconds || 5;
             data-title={title}
             data-subtitle={subtitle}
             data-button={buttonText}
-            data-link={linkUrl}
+            data-link={targetUrl}
           >
             {imageUrl ? (
-              /* Big Uncropped Poster Mode */
-              <div class="bg-white rounded-3xl overflow-hidden shadow-2xl border border-slate-200/90">
-                <a href={linkUrl} class="block relative w-full overflow-hidden bg-slate-950 p-1.5 sm:p-2 group">
+              /* Clean Image Only Mode (Clicking image redirects to target page/form) */
+              <div class="bg-slate-950 rounded-3xl overflow-hidden shadow-2xl border border-slate-700/80 p-1 sm:p-1.5">
+                <a
+                  href={targetUrl}
+                  class="block relative w-full overflow-hidden group cursor-pointer"
+                  title={`Click to view ${title}`}
+                >
                   <img
                     src={imageUrl}
                     alt={title}
-                    class="w-full h-auto max-h-[75vh] object-contain rounded-2xl shadow-xl block mx-auto hover:scale-[1.01] transition-transform duration-300"
+                    class="w-full h-auto max-h-[80vh] object-contain rounded-2xl shadow-xl block mx-auto hover:scale-[1.01] transition-transform duration-300"
                   />
                 </a>
-
-                {leadCapture && (
-                  <div class="p-5 bg-white space-y-3">
-                    <form class="popup-lead-form">
-                      <div class="popup-form-fields space-y-3">
-                        <input type="text" name="name" required placeholder="Full Name (As in Passport)" class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-medium focus:outline-none focus:border-red-500 focus:bg-white transition-all" />
-                        <input type="tel" name="phone" required pattern="[0-9]{10}" placeholder="WhatsApp Mobile No." class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-medium focus:outline-none focus:border-red-500 focus:bg-white transition-all" />
-                        <button type="submit" class="w-full py-3 px-5 rounded-2xl bg-gradient-to-r from-red-600 to-amber-600 hover:from-red-700 hover:to-amber-700 text-white font-extrabold text-xs sm:text-sm shadow-xl shadow-red-500/25 transition-all cursor-pointer hover:scale-[1.01]">
-                          {buttonText}
-                        </button>
-                      </div>
-                      <div class="popup-form-success hidden p-4 bg-emerald-50 border border-emerald-200 rounded-2xl text-emerald-800 text-xs font-bold text-center space-y-1">
-                        <p>✓ Application Submitted Successfully!</p>
-                        <p class="font-normal text-emerald-700">Our team will call you within 30 minutes.</p>
-                      </div>
-                    </form>
-                  </div>
-                )}
               </div>
             ) : (
-              /* Fallback Text Card Mode */
+              /* Fallback Text Card Mode (Only if no photo is uploaded) */
               <div class="bg-white rounded-3xl overflow-hidden shadow-2xl border border-slate-200/90 p-6 space-y-4">
                 <div class="flex items-center gap-2 flex-wrap">
                   <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-red-600 text-white text-xs font-extrabold uppercase tracking-wider shadow-sm shadow-red-500/30">
@@ -164,41 +156,25 @@ const delaySeconds = initialPopup?.delay_seconds || 5;
                   </div>
                 </div>
 
-                {leadCapture ? (
-                  <form class="popup-lead-form space-y-3 pt-2">
-                    <div class="popup-form-fields space-y-3">
-                      <input type="text" name="name" required placeholder="Full Name (As in Passport)" class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-xs font-medium focus:outline-none focus:border-red-500 focus:bg-white transition-all" />
-                      <input type="tel" name="phone" required pattern="[0-9]{10}" placeholder="WhatsApp Mobile No." class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-xs font-medium focus:outline-none focus:border-red-500 focus:bg-white transition-all" />
-                      <button type="submit" class="w-full py-3.5 px-6 rounded-2xl bg-gradient-to-r from-red-600 to-amber-600 hover:from-red-700 hover:to-amber-700 text-white font-extrabold text-xs sm:text-sm shadow-xl shadow-red-500/25 transition-all cursor-pointer hover:scale-[1.01]">
-                        {buttonText}
-                      </button>
-                    </div>
-                    <div class="popup-form-success hidden p-4 bg-emerald-50 border border-emerald-200 rounded-2xl text-emerald-800 text-xs font-bold text-center space-y-1">
-                      <p>✓ Application Submitted Successfully!</p>
-                      <p class="font-normal text-emerald-700">Our team will call you within 30 minutes.</p>
-                    </div>
-                  </form>
-                ) : (
-                  <div class="pt-2 flex items-center gap-3">
-                    <a
-                      href={linkUrl}
-                      class="flex-1 py-3.5 px-6 rounded-2xl bg-gradient-to-r from-red-600 to-amber-600 hover:from-red-700 hover:to-amber-700 text-white font-extrabold text-xs sm:text-sm shadow-xl shadow-red-500/25 text-center transition-all hover:scale-[1.02] active:scale-[0.98]"
-                    >
-                      {buttonText}
-                    </a>
-                    <a
-                      href="https://wa.me/919824152731?text=Hi%20TESCA,%20I%20want%20info%20on%20China%20Business%20Visa"
-                      target="_blank"
-                      rel="noreferrer"
-                      class="p-3.5 rounded-2xl bg-emerald-500 hover:bg-emerald-600 text-white transition-all shadow-lg shrink-0 flex items-center justify-center hover:scale-105"
-                      title="Instant WhatsApp Chat"
-                    >
-                      <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
-                        <path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338-11.892-11.893 11.892-1.99-.001-3.951-.5-5.688-1.448l-6.305 1.654zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.434 9.889-9.885.002-5.462-4.415-9.89-9.881-9.892-5.452 0-9.887 4.434-9.889 9.884-.001 2.225.651 3.891 1.746 5.634l-0.999 3.648 3.742-.981z"/>
-                      </svg>
-                    </a>
-                  </div>
-                )}
+                <div class="pt-2 flex items-center gap-3">
+                  <a
+                    href={targetUrl}
+                    class="flex-1 py-3.5 px-6 rounded-2xl bg-gradient-to-r from-red-600 to-amber-600 hover:from-red-700 hover:to-amber-700 text-white font-extrabold text-xs sm:text-sm shadow-xl shadow-red-500/25 text-center transition-all hover:scale-[1.02] active:scale-[0.98]"
+                  >
+                    {buttonText}
+                  </a>
+                  <a
+                    href="https://wa.me/919824152731?text=Hi%20TESCA,%20I%20want%20info"
+                    target="_blank"
+                    rel="noreferrer"
+                    class="p-3.5 rounded-2xl bg-emerald-500 hover:bg-emerald-600 text-white transition-all shadow-lg shrink-0 flex items-center justify-center hover:scale-105"
+                    title="Instant WhatsApp Chat"
+                  >
+                    <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                      <path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.893 11.892-1.99-.001-3.951-.5-5.688-1.448l-6.305 1.654zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.434 9.889-9.885.002-5.462-4.415-9.89-9.881-9.892-5.452 0-9.887 4.434-9.889 9.884-.001 2.225.651 3.891 1.746 5.634l-0.999 3.648 3.742-.981z"/>
+                    </svg>
+                  </a>
+                </div>
               </div>
             )}
           </div>
@@ -398,54 +374,6 @@ const delaySeconds = initialPopup?.delay_seconds || 5;
         showMainPopup();
       };
     }
-
-    // Lead Form Submit Handling across all slides
-    const leadForms = document.querySelectorAll(".popup-lead-form");
-    leadForms.forEach((formEl) => {
-      const form = formEl as HTMLFormElement;
-      form.onsubmit = async (e) => {
-        e.preventDefault();
-        const submitBtn = form.querySelector("button[type='submit']") as HTMLButtonElement | null;
-        const formFields = form.querySelector(".popup-form-fields");
-        const formSuccess = form.querySelector(".popup-form-success");
-
-        if (submitBtn) {
-          submitBtn.disabled = true;
-          submitBtn.innerText = "Submitting...";
-        }
-
-        const formData = new FormData(form);
-        const name = formData.get("name")?.toString() || "";
-        const phone = formData.get("phone")?.toString() || "";
-
-        try {
-          const res = await fetch("/api/inquiry", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              name,
-              phone,
-              preferred_countries: ["China 🇨🇳"],
-              visa_type: "Business (M Visa) / Special Promo",
-              notes: "Submitted via Main Screen Promo Popup",
-              source: "Main Screen Popup",
-            }),
-          });
-
-          if (res.ok && formFields && formSuccess) {
-            formFields.classList.add("hidden");
-            formSuccess.classList.remove("hidden");
-            setTimeout(closeMainPopup, 2500);
-          }
-        } catch (err) {
-          alert("Failed to submit. Please try again.");
-          if (submitBtn) {
-            submitBtn.disabled = false;
-            submitBtn.innerText = "Submit Request";
-          }
-        }
-      };
-    });
 
     // Keyboard Arrow Navigation
     window.onkeydown = (e) => {
