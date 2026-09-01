@@ -26,11 +26,31 @@ export const documents: DocumentItem[] = [
     featured: true,
     author: 'TESCA Immigration Team'
   },
- 
+  {
+    id: 'doc-uk-pr-stay-01',
+    slug: 'uk-pr-stay-guide',
+    title: 'UK Stay & PR Options Guide (Graduate Visa, FLR & PR)',
+    description: 'Comprehensive guide for international graduates facing a finished Graduate/PSW visa, sponsorship end, or seeking FLR, Fee Waiver, and PR/ILR pathways in the UK.',
+    category: 'Visa & Immigration',
+    pdfUrl: '/material/UK_PR_Stay.pdf',
+    fileSize: '59 KB',
+    updatedAt: 'September 2026',
+    tags: ['UK PR', 'UK Stay', 'ILR', 'Graduate Visa', 'PSW', 'FLR', 'Fee Waiver', 'Immigration'],
+    featured: true,
+    author: 'TESCA Immigration Team'
+  }
 ];
 
 export function getDocumentBySlug(slug: string): DocumentItem | undefined {
-  return documents.find((doc) => doc.slug.toLowerCase() === slug.toLowerCase());
+  const norm = slug.toLowerCase().replace(/_/g, '-');
+  return documents.find((doc) => {
+    const docNorm = doc.slug.toLowerCase().replace(/_/g, '-');
+    return (
+      docNorm === norm ||
+      docNorm.replace(/-guide$/, '') === norm ||
+      norm.replace(/-guide$/, '') === docNorm
+    );
+  });
 }
 
 export function getAllDocumentSlugs(): string[] {

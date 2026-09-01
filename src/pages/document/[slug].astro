@@ -4,10 +4,25 @@ import Layout from "../../layouts/Layout.astro";
 import { documents, getDocumentBySlug } from "../../data/documents";
 
 export function getStaticPaths() {
-  return documents.map((doc) => ({
-    params: { slug: doc.slug },
-    props: { doc },
-  }));
+  const paths: { params: { slug: string }; props: { doc: any } }[] = [];
+  for (const doc of documents) {
+    paths.push({ params: { slug: doc.slug }, props: { doc } });
+    if (doc.slug.endsWith('-guide')) {
+      paths.push({ params: { slug: doc.slug.replace(/-guide$/, '') }, props: { doc } });
+    }
+    if (doc.slug === 'uk-pr-stay-guide' || doc.slug === 'uk-pr-stay') {
+      paths.push({ params: { slug: 'uk-pr-stay' }, props: { doc } });
+      paths.push({ params: { slug: 'uk-pr-stay-guide' }, props: { doc } });
+      paths.push({ params: { slug: 'uk-pr-stay-pathway-guide' }, props: { doc } });
+    }
+  }
+  const uniqueMap = new Map();
+  for (const p of paths) {
+    if (!uniqueMap.has(p.params.slug)) {
+      uniqueMap.set(p.params.slug, p);
+    }
+  }
+  return Array.from(uniqueMap.values());
 }
 
 const { slug } = Astro.params;
