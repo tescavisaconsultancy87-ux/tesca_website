@@ -15,6 +15,12 @@ export function getStaticPaths() {
       paths.push({ params: { slug: 'uk-pr-stay-guide' }, props: { doc } });
       paths.push({ params: { slug: 'uk-pr-stay-pathway-guide' }, props: { doc } });
     }
+    if (doc.slug.includes('uk-care-home')) {
+      paths.push({ params: { slug: 'uk-care-home-to-canada-pr-pathway' }, props: { doc } });
+      paths.push({ params: { slug: 'uk-care-home-to-canada-pr-pathway-guide' }, props: { doc } });
+      paths.push({ params: { slug: 'uk-care-home-to-canada-pr' }, props: { doc } });
+      paths.push({ params: { slug: 'uk-care-home-canada-pr' }, props: { doc } });
+    }
   }
   const uniqueMap = new Map();
   for (const p of paths) {

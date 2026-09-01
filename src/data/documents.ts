@@ -33,9 +33,22 @@ export const documents: DocumentItem[] = [
     description: 'Comprehensive guide for international graduates facing a finished Graduate/PSW visa, sponsorship end, or seeking FLR, Fee Waiver, and PR/ILR pathways in the UK.',
     category: 'Visa & Immigration',
     pdfUrl: '/material/UK_PR_Stay.pdf',
-    fileSize: '59 KB',
+    fileSize: '1.21 MB',
     updatedAt: 'September 2026',
     tags: ['UK PR', 'UK Stay', 'ILR', 'Graduate Visa', 'PSW', 'FLR', 'Fee Waiver', 'Immigration'],
+    featured: true,
+    author: 'TESCA Immigration Team'
+  },
+  {
+    id: 'doc-uk-care-canada-pr-01',
+    slug: 'uk-care-home-to-canada-pr-pathway',
+    title: 'UK Care Home Experience to Canada PR Pathway Guide',
+    description: 'Comprehensive guide for UK care home workers and international healthcare graduates on leveraging UK experience for Canadian Permanent Residency.',
+    category: 'Visa & Immigration',
+    pdfUrl: '/material/UK_Care_Home_to_Canada_PR_Pathway.pdf',
+    fileSize: '1.17 MB',
+    updatedAt: 'September 2026',
+    tags: ['Canada PR', 'UK Care Home', 'Healthcare PR', 'Express Entry', 'PNP', 'Immigration', 'UK to Canada'],
     featured: true,
     author: 'TESCA Immigration Team'
   }
