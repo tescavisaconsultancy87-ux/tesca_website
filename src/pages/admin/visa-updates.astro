@@ -414,9 +414,21 @@ try {
     // Confirmation on single delete
     const deleteForms = document.querySelectorAll(".delete-single-form");
     deleteForms.forEach(form => {
-      form.addEventListener("submit", (e) => {
-        if (!confirm("Are you sure you want to delete this visa bulletin update?")) {
-          e.preventDefault();
+      form.addEventListener("submit", async (e) => {
+        e.preventDefault();
+        const confirmed = typeof window !== "undefined" && (window as any).showConfirmDialog
+          ? await (window as any).showConfirmDialog({
+              title: "Delete Visa Bulletin Update?",
+              description: "Are you sure you want to delete this visa bulletin update? This action cannot be undone.",
+              actionText: "Delete",
+              cancelText: "Cancel",
+              variant: "destructive",
+              from: "bottom"
+            })
+          : confirm("Are you sure you want to delete this visa bulletin update?");
+
+        if (confirmed) {
+          (form as HTMLFormElement).submit();
         }
       });
     });
@@ -424,10 +436,22 @@ try {
     // Confirmation on bulk delete
     const bulkDeleteForm = document.getElementById("bulk-delete-form");
     if (bulkDeleteForm) {
-      bulkDeleteForm.addEventListener("submit", (e) => {
+      bulkDeleteForm.addEventListener("submit", async (e) => {
+        e.preventDefault();
         const count = bulkDeleteIdsInput?.value.split(",").filter(Boolean).length || 0;
-        if (!confirm(`Are you sure you want to delete ${count} selected visa updates? This cannot be undone.`)) {
-          e.preventDefault();
+        const confirmed = typeof window !== "undefined" && (window as any).showConfirmDialog
+          ? await (window as any).showConfirmDialog({
+              title: "Delete Selected Bulletins?",
+              description: `Are you sure you want to delete ${count} selected visa bulletin updates? This action cannot be undone.`,
+              actionText: "Delete",
+              cancelText: "Cancel",
+              variant: "destructive",
+              from: "bottom"
+            })
+          : confirm(`Are you sure you want to delete ${count} selected visa updates? This cannot be undone.`);
+
+        if (confirmed) {
+          (bulkDeleteForm as HTMLFormElement).submit();
         }
       });
     }
