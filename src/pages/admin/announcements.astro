@@ -107,15 +107,21 @@ try {
 
       <!-- Messages -->
       {errorMessage && (
-        <div class="p-4 bg-rose-50 border border-rose-200 rounded-2xl text-rose-600 text-xs font-semibold mb-6 flex items-center gap-2">
-          <Fragment set:html={SVG.ShieldAlert} />
-          <span>{errorMessage}</span>
+        <div class="admin-alert-banner p-4 bg-rose-50 border border-rose-200 rounded-2xl text-rose-600 text-xs font-semibold mb-6 flex items-center justify-between gap-2 transition-all duration-500">
+          <div class="flex items-center gap-2">
+            <Fragment set:html={SVG.ShieldAlert} />
+            <span>{errorMessage}</span>
+          </div>
+          <button type="button" onclick="this.closest('.admin-alert-banner').remove()" class="text-rose-400 hover:text-rose-700 font-bold text-sm cursor-pointer ml-2">✕</button>
         </div>
       )}
       {successMessage && (
-        <div class="p-4 bg-emerald-50 border border-emerald-200 rounded-2xl text-emerald-600 text-xs font-semibold mb-6 flex items-center gap-2">
-          <span class="text-emerald-500 font-bold">✓</span>
-          <span>{successMessage}</span>
+        <div class="admin-alert-banner p-4 bg-emerald-50 border border-emerald-200 rounded-2xl text-emerald-600 text-xs font-semibold mb-6 flex items-center justify-between gap-2 transition-all duration-500">
+          <div class="flex items-center gap-2">
+            <span class="text-emerald-500 font-bold">✓</span>
+            <span>{successMessage}</span>
+          </div>
+          <button type="button" onclick="this.closest('.admin-alert-banner').remove()" class="text-emerald-400 hover:text-emerald-700 font-bold text-sm cursor-pointer ml-2">✕</button>
         </div>
       )}
 
@@ -363,6 +369,15 @@ try {
         }
       });
     }
+
+    // Auto-dismiss alert banners after 3 seconds
+    const banners = document.querySelectorAll(".admin-alert-banner");
+    banners.forEach((banner) => {
+      setTimeout(() => {
+        banner.classList.add("opacity-0", "translate-y-[-8px]");
+        setTimeout(() => (banner as HTMLElement).remove(), 500);
+      }, 3000);
+    });
   }
 
   setupAnnouncements();
