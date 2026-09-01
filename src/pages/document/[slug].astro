@@ -119,20 +119,28 @@ if (!doc) {
         for (let pageNum = 1; pageNum <= pdf.numPages; pageNum++) {
           const page = await pdf.getPage(pageNum);
           
-          // Compute scale for mobile & desktop
+          // Compute High-DPI scale for razor-sharp text rendering on Retina & 4K screens
+          const dpr = Math.max(window.devicePixelRatio || 1, 2.5);
           const containerWidth = pagesContainer.clientWidth || 800;
           const unscaledViewport = page.getViewport({ scale: 1.0 });
-          const scale = Math.min((containerWidth - 32) / unscaledViewport.width, 1.8);
-          const viewport = page.getViewport({ scale: Math.max(scale, 1.0) });
+          const displayScale = Math.max((containerWidth - 32) / unscaledViewport.width, 0.8);
+          const renderScale = displayScale * dpr;
+
+          const viewport = page.getViewport({ scale: renderScale });
 
           const pageWrapper = document.createElement("div");
           pageWrapper.className = "relative w-full max-w-3xl rounded-2xl overflow-hidden bg-white shadow-2xl border border-slate-800 flex flex-col items-center";
 
           const canvas = document.createElement("canvas");
-          const context = canvas.getContext("2d");
-          canvas.height = viewport.height;
-          canvas.width = viewport.width;
+          const context = canvas.getContext("2d", { alpha: false });
+          canvas.width = Math.floor(viewport.width);
+          canvas.height = Math.floor(viewport.height);
+          canvas.style.width = "100%";
+          canvas.style.height = "auto";
           canvas.className = "w-full h-auto block select-none pointer-events-none";
+
+          context.imageSmoothingEnabled = true;
+          context.imageSmoothingQuality = "high";
 
           await page.render({ canvasContext: context, viewport: viewport }).promise;
           pageWrapper.appendChild(canvas);
