@@ -56,7 +56,6 @@ const STATIC_PAGES: { url: string; changefreq: string; priority: string }[] = [
 
   // Visa-specific landing pages
   { url: "/visitor-visa", changefreq: "monthly", priority: "0.6" },
-  { url: "/china-business-visa", changefreq: "weekly", priority: "0.8" },
   { url: "/dependent-visa", changefreq: "monthly", priority: "0.6" },
   { url: "/work-permit", changefreq: "monthly", priority: "0.6" },
   { url: "/tourist-visa-schengen", changefreq: "monthly", priority: "0.6" },

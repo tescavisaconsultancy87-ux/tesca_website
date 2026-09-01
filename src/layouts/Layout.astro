@@ -19,7 +19,7 @@ interface Props {
 const {
 	title = "TESCA | Premium Study Abroad & Visa Consultancy",
 	description = "Premium admissions evaluation, financial analysis tools, and visa compliance checking by TESCA Visa Consultancy.",
-	keywords = "visa consultancy surat, student visa consultant, visitor visa surat, china business visa, ielts coaching surat",
+	keywords = "visa consultancy surat, student visa consultant, visitor visa surat, ielts coaching surat",
 	showNavFooter = true,
 	noindex = false,
 	image = "/images/Tesca_logo.png",
@@ -226,8 +226,9 @@ if (isAdminPage) {
 			document.addEventListener('astro:before-preparation', () => {
 				clearTimeout(loaderTimeout);
 				loaderTimeout = window.setTimeout(() => {
-					const loader = document.getElementById('global-page-loader');
+					const loader = document.getElementById('global-page-skeleton');
 					if (loader) {
+						loader.style.display = 'flex';
 						loader.classList.remove('opacity-0', 'pointer-events-none');
 					}
 				}, 150); // Delay showing the loader to prevent flashing on fast page loads
@@ -235,12 +236,20 @@ if (isAdminPage) {
 
 			const hideLoader = () => {
 				clearTimeout(loaderTimeout);
-				const loader = document.getElementById('global-page-loader');
+				const loader = document.getElementById('global-page-skeleton');
 				if (loader) {
 					loader.classList.add('opacity-0', 'pointer-events-none');
+					setTimeout(() => {
+						if (loader.classList.contains('opacity-0')) {
+							loader.style.display = 'none';
+						}
+					}, 500);
 				}
 			};
 
+			document.addEventListener('DOMContentLoaded', hideLoader);
+			window.addEventListener('load', hideLoader);
+			document.addEventListener('pageshow', hideLoader);
 			document.addEventListener('astro:after-swap', hideLoader);
 
 			document.addEventListener('astro:page-load', () => {
@@ -727,6 +736,27 @@ if (isAdminPage) {
 				</div>
 			</div>
 		</div>
+		<script is:inline>
+			(function() {
+				function hideGlobalSkeleton() {
+					var loader = document.getElementById('global-page-skeleton');
+					if (loader) {
+						loader.classList.add('opacity-0', 'pointer-events-none');
+						setTimeout(function() {
+							if (loader.classList.contains('opacity-0')) {
+								loader.style.display = 'none';
+							}
+						}, 500);
+					}
+				}
+				if (document.readyState === 'interactive' || document.readyState === 'complete') {
+					hideGlobalSkeleton();
+				} else {
+					document.addEventListener('DOMContentLoaded', hideGlobalSkeleton);
+					window.addEventListener('load', hideGlobalSkeleton);
+				}
+			})();
+		</script>
 		<!-- Skip to Content Accessibility -->
 		<a
 			href="#main-content"
