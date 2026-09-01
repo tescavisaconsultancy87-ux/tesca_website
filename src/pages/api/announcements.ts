@@ -20,7 +20,7 @@ const { data, error } = await supabase
     return new Response(JSON.stringify(texts), {
       headers: {
         "Content-Type": "application/json",
-        "Cache-Control": "public, max-age=300, s-maxage=900, stale-while-revalidate=3600",
+        "Cache-Control": "public, max-age=10, s-maxage=30, stale-while-revalidate=60",
       },
     });
   } catch (err) {

@@ -785,11 +785,15 @@ try {
 
         const formData = new FormData(blogForm);
         try {
-          const res = await fetch(window.location.pathname, {
+          const isEdit = formData.get('action') === 'edit-blog';
+          const res = await fetch(isEdit ? window.location.href : window.location.pathname, {
             method: "POST",
             body: formData
           });
-          const isEdit = formData.get('action') === 'edit-blog';
+          if (isEdit && res.ok) {
+            window.location.href = "/admin/blogs";
+            return;
+          }
           await handleResponse(res, isEdit ? "Blog post updated successfully." : "Blog post created successfully.");
         } catch (err) {
           console.error("AJAX error:", err);

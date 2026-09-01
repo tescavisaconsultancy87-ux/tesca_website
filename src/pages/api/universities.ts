@@ -51,7 +51,7 @@ export const GET: APIRoute = async ({ request }) => {
     }));
 
     return jsonResponse(list, 200, {
-        "Cache-Control": "public, max-age=900, s-maxage=3600, stale-while-revalidate=86400"
+        "Cache-Control": "public, max-age=10, s-maxage=30, stale-while-revalidate=60"
     });
   } catch (err: any) {
     console.error("Failed to query universities:", err);

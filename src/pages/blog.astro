@@ -1,5 +1,5 @@
 ---
-export const prerender = true;
+export const prerender = false;
 import { supabase } from "../utils/supabase";
 import Layout from "../layouts/Layout.astro";
 import AICounsellor from "../components/AICounsellor";
@@ -24,8 +24,8 @@ const [blogRes, updatesRes] = await Promise.all([
 // 2. Perform transformations and error handling
 if (blogRes.error) {
   console.error("Failed to fetch blog posts from Supabase, using static fallback:", blogRes.error);
-} else if (blogRes.data && blogRes.data.length > 0) {
-  blogPosts = blogRes.data.map(p => ({
+} else if (blogRes.data) {
+  const dbPosts = blogRes.data.map(p => ({
     slug: p.slug,
     title: p.title,
     desc: p.description,
@@ -36,6 +36,10 @@ if (blogRes.error) {
     content: p.content,
     faq: p.faq || [],
   }));
+
+  const dbSlugs = new Set(dbPosts.map(p => p.slug));
+  const fallbackPosts = staticBlogPosts.filter(p => !dbSlugs.has(p.slug));
+  blogPosts = [...dbPosts, ...fallbackPosts];
 }
 
 if (updatesRes.error) {

@@ -65,12 +65,15 @@ export const onRequest = defineMiddleware(async (context, next) => {
     lowerPath.includes("xmlrpc") ||
     lowerPath.includes("wp-admin") ||
     lowerPath.includes("wp-content") ||
+    lowerPath.includes("wp-json") ||
+    lowerPath.includes("wordpress") ||
     lowerPath.includes("phpmyadmin") ||
     lowerPath.includes("pma") ||
     lowerPath.includes("/.git") ||
     lowerPath.includes("/.gitlab") ||
     lowerPath.includes("/.env") ||
     lowerPath === "/settings.json" ||
+    lowerPath === "/api/config" ||
     lowerPath === "/api/env" ||
     lowerPath === "/fetch" ||
     lowerPath === "/proxy";
@@ -203,10 +206,24 @@ export const onRequest = defineMiddleware(async (context, next) => {
   const setsCookie = response.headers.has("set-cookie");
 
   if (isGet && isHtml && !isAdmin && !isApi && !setsCookie && response.status === 200) {
-    response.headers.set(
-      "Cache-Control",
-      "public, max-age=300, s-maxage=3600, stale-while-revalidate=86400"
-    );
+    const isDynamicPage =
+      pathname === "/" ||
+      pathname === "/blog" ||
+      pathname.startsWith("/blog/") ||
+      pathname === "/updates" ||
+      pathname === "/gallery";
+
+    if (isDynamicPage) {
+      response.headers.set(
+        "Cache-Control",
+        "public, max-age=0, s-maxage=10, stale-while-revalidate=30"
+      );
+    } else {
+      response.headers.set(
+        "Cache-Control",
+        "public, max-age=300, s-maxage=3600, stale-while-revalidate=86400"
+      );
+    }
   }
 
   return response;

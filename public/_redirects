@@ -6,3 +6,13 @@
 /TestPrep/       /services/testprep    301
 /testprep        /services/testprep    301
 /test-prep       /services/testprep    301
+
+# Legacy routes from older site versions (prevents 404s)
+/login           /admin                301
+/dashboard       /admin                301
+/account         /admin                301
+/tutor           /                     301
+/student         /                     301
+/courses         /universities         301
+/courses/*       /universities         301
+
