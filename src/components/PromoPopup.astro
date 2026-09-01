@@ -16,7 +16,7 @@ try {
   activePopups = [];
 }
 
-// Fallback popup if DB returns empty list
+// Fallback popup if DB returns empty list during build
 const defaultPopup = {
   id: "default-china-visa",
   title: "China Business (M) Visa & Canton Fair 2026",
@@ -72,33 +72,31 @@ const delaySeconds = initialPopup?.delay_seconds || 5;
     </button>
 
     {/* Previous < and Next > Navigation Arrows (Shown when more than 1 active popup) */}
-    {popupsList.length > 1 && (
-      <>
-        <button
-          type="button"
-          id="promo-popup-prev"
-          class="absolute left-3 top-1/2 -translate-y-1/2 z-50 p-2.5 bg-slate-900/85 hover:bg-slate-900 text-white rounded-full transition-all cursor-pointer shadow-2xl hover:scale-110 border border-white/30 flex items-center justify-center"
-          aria-label="Previous popup"
-          title="Previous Offer"
-        >
-          <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>
-        </button>
-        <button
-          type="button"
-          id="promo-popup-next"
-          class="absolute right-3 top-1/2 -translate-y-1/2 z-50 p-2.5 bg-slate-900/85 hover:bg-slate-900 text-white rounded-full transition-all cursor-pointer shadow-2xl hover:scale-110 border border-white/30 flex items-center justify-center"
-          aria-label="Next popup"
-          title="Next Offer"
-        >
-          <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>
-        </button>
+    <div id="promo-nav-controls" class={popupsList.length > 1 ? "" : "hidden"}>
+      <button
+        type="button"
+        id="promo-popup-prev"
+        class="absolute left-3 top-1/2 -translate-y-1/2 z-50 p-2.5 bg-slate-900/85 hover:bg-slate-900 text-white rounded-full transition-all cursor-pointer shadow-2xl hover:scale-110 border border-white/30 flex items-center justify-center"
+        aria-label="Previous popup"
+        title="Previous Offer"
+      >
+        <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>
+      </button>
+      <button
+        type="button"
+        id="promo-popup-next"
+        class="absolute right-3 top-1/2 -translate-y-1/2 z-50 p-2.5 bg-slate-900/85 hover:bg-slate-900 text-white rounded-full transition-all cursor-pointer shadow-2xl hover:scale-110 border border-white/30 flex items-center justify-center"
+        aria-label="Next popup"
+        title="Next Offer"
+      >
+        <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>
+      </button>
 
-        {/* Slide Counter Badge */}
-        <div class="absolute top-3.5 left-3.5 z-50 px-3 py-1 bg-slate-900/85 backdrop-blur-md text-white text-[11px] font-extrabold rounded-full border border-white/20 shadow-md">
-          <span id="promo-slide-current">1</span> / <span>{popupsList.length}</span>
-        </div>
-      </>
-    )}
+      {/* Slide Counter Badge */}
+      <div class="absolute top-3.5 left-3.5 z-50 px-3 py-1 bg-slate-900/85 backdrop-blur-md text-white text-[11px] font-extrabold rounded-full border border-white/20 shadow-md">
+        <span id="promo-slide-current">1</span> / <span id="promo-slide-total">{popupsList.length}</span>
+      </div>
+    </div>
 
     {/* Popup Slides Container */}
     <div id="promo-slides-container" class="relative w-full">
@@ -107,10 +105,6 @@ const delaySeconds = initialPopup?.delay_seconds || 5;
         const subtitle = popup.subtitle || "";
         const imageUrl = popup.image_url || null;
         const buttonText = popup.button_text || "Apply Now";
-
-        // Determine destination link for image click:
-        // Type 1 (redirect_to_link): Custom link URL
-        // Type 2 (detail submission page): link_url if provided, else fallback to /promo/[id] or /china-business-visa
         const targetUrl = getPopupTargetUrl(popup);
 
         return (
@@ -259,6 +253,26 @@ const delaySeconds = initialPopup?.delay_seconds || 5;
   let popupTimer: ReturnType<typeof setTimeout> | null = null;
   let currentSlideIndex = 0;
 
+  function escapeHtml(str: any): string {
+    if (!str) return "";
+    return String(str)
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;")
+      .replace(/'/g, "&#039;");
+  }
+
+  function getDynamicPopupTargetUrl(p: any): string {
+    if (p.link_url && p.link_url.trim().length > 0) {
+      return p.link_url.trim();
+    }
+    if (p.id && p.id !== "default-china-visa") {
+      return `/promo/${p.id}`;
+    }
+    return "/china-business-visa";
+  }
+
   function isAdminOrExcludedPath() {
     const path = window.location.pathname.toLowerCase();
     const host = window.location.hostname.toLowerCase();
@@ -269,6 +283,93 @@ const delaySeconds = initialPopup?.delay_seconds || 5;
       path.startsWith("/documents") ||
       path.startsWith("/promo")
     );
+  }
+
+  function renderSlidesHtml(popups: any[]): string {
+    return popups.map((popup, idx) => {
+      const title = escapeHtml(popup.title || "Special Offer");
+      const subtitle = escapeHtml(popup.subtitle || "");
+      const imageUrl = popup.image_url ? popup.image_url : null;
+      const buttonText = escapeHtml(popup.button_text || "Apply Now");
+      const targetUrl = escapeHtml(getDynamicPopupTargetUrl(popup));
+
+      const slideContent = imageUrl ? `
+        <div class="bg-slate-950 rounded-3xl overflow-hidden shadow-2xl border border-slate-700/80 p-1 sm:p-1.5">
+          <a
+            href="${targetUrl}"
+            class="block relative w-full overflow-hidden group cursor-pointer"
+            title="Click to view ${title}"
+          >
+            <img
+              src="${escapeHtml(imageUrl)}"
+              alt="${title}"
+              class="w-full h-auto max-h-[80vh] object-contain rounded-2xl shadow-xl block mx-auto hover:scale-[1.01] transition-transform duration-300"
+            />
+          </a>
+        </div>
+      ` : `
+        <div class="bg-white rounded-3xl overflow-hidden shadow-2xl border border-slate-200/90 p-6 space-y-4">
+          <div class="flex items-center gap-2 flex-wrap">
+            <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-red-600 text-white text-xs font-extrabold uppercase tracking-wider shadow-sm shadow-red-500/30">
+              🔥 Special Offer
+            </span>
+            <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-100 text-emerald-800 text-xs font-extrabold border border-emerald-200/60">
+              🛡️ No Visa No Payment
+            </span>
+          </div>
+
+          <div>
+            <h3 class="text-xl sm:text-2xl font-extrabold text-slate-900 tracking-tight leading-snug">
+              ${title}
+            </h3>
+            ${subtitle ? `<p class="text-xs sm:text-sm text-slate-600 mt-2 leading-relaxed">${subtitle}</p>` : ''}
+          </div>
+
+          <div class="grid grid-cols-2 gap-2.5 pt-1">
+            <div class="p-3 rounded-2xl bg-slate-50 border border-slate-200/80 text-xs font-bold text-slate-700 flex items-center gap-2">
+              <span class="text-emerald-600 font-extrabold text-sm">✓</span> No Visa, No Payment
+            </div>
+            <div class="p-3 rounded-2xl bg-slate-50 border border-slate-200/80 text-xs font-bold text-slate-700 flex items-center gap-2">
+              <span class="text-amber-600 font-extrabold text-sm">⚡</span> 4-5 Day Express
+            </div>
+          </div>
+
+          <div class="pt-2 flex items-center gap-3">
+            <a
+              href="${targetUrl}"
+              class="flex-1 py-3.5 px-6 rounded-2xl bg-gradient-to-r from-red-600 to-amber-600 hover:from-red-700 hover:to-amber-700 text-white font-extrabold text-xs sm:text-sm shadow-xl shadow-red-500/25 text-center transition-all hover:scale-[1.02] active:scale-[0.98]"
+            >
+              ${buttonText}
+            </a>
+            <a
+              href="https://wa.me/919824152731?text=Hi%20TESCA,%20I%20want%20info"
+              target="_blank"
+              rel="noreferrer"
+              class="p-3.5 rounded-2xl bg-emerald-500 hover:bg-emerald-600 text-white transition-all shadow-lg shrink-0 flex items-center justify-center hover:scale-105"
+              title="Instant WhatsApp Chat"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.893 11.892-1.99-.001-3.951-.5-5.688-1.448l-6.305 1.654zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.434 9.889-9.885.002-5.462-4.415-9.89-9.881-9.892-5.452 0-9.887 4.434-9.889 9.884-.001 2.225.651 3.891 1.746 5.634l-0.999 3.648 3.742-.981z"/>
+              </svg>
+            </a>
+          </div>
+        </div>
+      `;
+
+      return `
+        <div
+          id="promo-slide-${idx}"
+          class="promo-slide-item w-full transition-all duration-300 ${idx === 0 ? 'block' : 'hidden'}"
+          data-index="${idx}"
+          data-title="${title}"
+          data-subtitle="${subtitle}"
+          data-button="${buttonText}"
+          data-link="${targetUrl}"
+        >
+          ${slideContent}
+        </div>
+      `;
+    }).join("");
   }
 
   function initPromoPopups() {
@@ -283,22 +384,24 @@ const delaySeconds = initialPopup?.delay_seconds || 5;
     const mainCard = document.getElementById("promo-popup-card");
     const mainCloseBtn = document.getElementById("promo-popup-close");
 
+    const drawerOverlay = document.getElementById("promo-drawer-overlay");
     const drawerCard = document.getElementById("promo-drawer-card");
     const drawerCloseBtn = document.getElementById("promo-drawer-close");
     const reopenBtn = document.getElementById("reopen-main-popup-btn");
 
     const prevBtn = document.getElementById("promo-popup-prev");
     const nextBtn = document.getElementById("promo-popup-next");
+    const navControls = document.getElementById("promo-nav-controls");
+    const slideTotalEl = document.getElementById("promo-slide-total");
+    const slidesContainer = document.getElementById("promo-slides-container");
 
     if (!mainOverlay || !mainCard) return;
 
-    const delaySec = Number(mainOverlay.getAttribute("data-delay")) || 5;
     const urlParams = new URLSearchParams(window.location.search);
     const isTestMode = urlParams.get("test-popup") === "true";
 
-    const slides = document.querySelectorAll(".promo-slide-item");
-
     const goToSlide = (idx: number) => {
+      const slides = document.querySelectorAll(".promo-slide-item");
       if (!slides || slides.length === 0) return;
       const total = slides.length;
       currentSlideIndex = (idx + total) % total;
@@ -397,7 +500,76 @@ const delaySeconds = initialPopup?.delay_seconds || 5;
       }
     };
 
+    // Client-side dynamic fetch: always fetch the latest active popups from Supabase via API
+    fetch("/api/popup-settings", { cache: "no-store" })
+      .then((res) => (res.ok ? res.json() : null))
+      .then((popups: any[]) => {
+        if (!Array.isArray(popups)) return;
+
+        if (popups.length === 0) {
+          // No active popups: remove popup overlay and drawer
+          if (popupTimer) {
+            clearTimeout(popupTimer);
+            popupTimer = null;
+          }
+          mainOverlay?.remove();
+          drawerOverlay?.remove();
+          return;
+        }
+
+        // Preload popup images for immediate display without pop-in delay
+        popups.forEach((p) => {
+          if (p.image_url) {
+            const img = new Image();
+            img.src = p.image_url;
+          }
+        });
+
+        // Re-render slides with live data from database
+        if (slidesContainer) {
+          slidesContainer.innerHTML = renderSlidesHtml(popups);
+        }
+
+        // Update nav controls & counter
+        if (navControls) {
+          if (popups.length > 1) {
+            navControls.classList.remove("hidden");
+            if (slideTotalEl) slideTotalEl.innerText = popups.length.toString();
+          } else {
+            navControls.classList.add("hidden");
+          }
+        }
+
+        // Update drawer with designated drawer popup or first popup
+        const isDrawer = (p: any) =>
+          p.show_in_drawer === true ||
+          (Array.isArray(p.required_fields) && p.required_fields.includes("show_in_drawer"));
+        const designatedDrawer = popups.find(isDrawer) || popups[0];
+
+        const drawerTitle = document.getElementById("drawer-title");
+        const drawerSub = document.getElementById("drawer-subtitle");
+        const drawerLink = document.getElementById("drawer-action-link") as HTMLAnchorElement | null;
+
+        if (drawerTitle) drawerTitle.innerText = designatedDrawer.title || "Special Offer";
+        if (drawerSub) drawerSub.innerText = designatedDrawer.subtitle || "";
+        if (drawerLink) {
+          drawerLink.href = getDynamicPopupTargetUrl(designatedDrawer);
+          drawerLink.innerText = designatedDrawer.button_text || "Apply Now";
+        }
+
+        // Reset slide view
+        goToSlide(0);
+
+        // Update delay seconds from fresh popup settings
+        const freshDelay = designatedDrawer?.delay_seconds || popups[0]?.delay_seconds || 5;
+        mainOverlay.setAttribute("data-delay", freshDelay.toString());
+      })
+      .catch((err) => {
+        console.warn("Could not fetch live popup settings, using initial render:", err);
+      });
+
     // Trigger main screen popup after delaySec seconds
+    const delaySec = Number(mainOverlay.getAttribute("data-delay")) || 5;
     popupTimer = setTimeout(() => {
       if (isAdminOrExcludedPath()) return;
 
