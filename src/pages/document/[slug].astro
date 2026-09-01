@@ -97,11 +97,11 @@ if (!doc) {
   </div>
   </div>
 
-  <!-- PDF.js Engine -->
-  <script is:inline src="https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.min.js"></script>
+  <!-- PDF.js Engine (Same-Origin for zero worker CORS blocking) -->
+  <script is:inline src="/js/pdf.min.js"></script>
 
   <script is:inline define:vars={{ pdfUrl: doc.pdfUrl }}>
-    document.addEventListener("DOMContentLoaded", async () => {
+    async function initPdfViewer() {
       const spinner = document.getElementById("loading-spinner");
       const wrapper = document.getElementById("pdf-viewer-wrapper");
       const pagesContainer = document.getElementById("pdf-pages-container");
@@ -113,7 +113,7 @@ if (!doc) {
         return;
       }
 
-      pdfjsLib.GlobalWorkerOptions.workerSrc = "https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.worker.min.js";
+      pdfjsLib.GlobalWorkerOptions.workerSrc = "/js/pdf.worker.min.js";
 
       try {
         const loadingTask = pdfjsLib.getDocument(pdfUrl);
@@ -166,7 +166,13 @@ if (!doc) {
           spinner.innerHTML = `<p class="text-xs text-rose-400 font-bold">Failed to load document preview. Please check URL.</p>`;
         }
       }
-    });
+    }
+
+    if (document.readyState === "loading") {
+      document.addEventListener("DOMContentLoaded", initPdfViewer);
+    } else {
+      initPdfViewer();
+    }
 
     // 🔒 Security Protection 1: Block Right-Click Context Menu
     document.addEventListener("contextmenu", (e) => {
