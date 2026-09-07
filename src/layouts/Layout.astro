@@ -309,14 +309,18 @@ if (isAdminPage) {
 						'already exists',
 						'active booking or inquiry',
 						'active session',
-						'invalid or expired booking token'
+						'invalid or expired booking token',
+						'message channel closed',
+						'asynchronous response',
+						'listener indicated an asynchronous response',
+						'data:application/javascript',
+						'rrweb-plugin'
 					];
 					
 					const errorStr = `${message} ${stack || ''}`.toLowerCase();
 					const shouldIgnore = IGNORED_ERRORS.some(pattern => errorStr.includes(pattern.toLowerCase()));
 					
 					if (shouldIgnore) {
-						console.log(`[Error Logger] Ignored noisy/extension error: "${message}"`);
 						return;
 					}
 
@@ -355,6 +359,10 @@ if (isAdminPage) {
 
 			window.addEventListener('error', (event) => {
 				if (!event.error && !event.message) return;
+				const message = String(event.error?.message || event.message || '');
+				const filename = String(event.filename || '');
+				if (filename.includes('extension://') || message.includes('Script error.')) return;
+
 				window.reportClientError('Unhandled Runtime Error', event.error || event.message, {
 					filename: event.filename,
 					lineno: event.lineno,
@@ -368,9 +376,11 @@ if (isAdminPage) {
 				if (
 					reasonStr.includes('transition was aborted') ||
 					reasonStr.includes('invalid state') ||
-					reasonStr.includes('aborterror')
+					reasonStr.includes('aborterror') ||
+					reasonStr.includes('message channel closed') ||
+					reasonStr.includes('asynchronous response')
 				) {
-					console.log('[Error Logger] Ignored benign view transition cancellation:', event.reason);
+					event.preventDefault();
 					return;
 				}
 				window.reportClientError('Unhandled Promise Rejection', event.reason);
@@ -467,19 +477,19 @@ if (isAdminPage) {
 					info: { icon: 'ℹ', color: '#2563eb', bg: 'rgba(59,130,246,0.12)' },
 					warning: { icon: '!', color: '#d97706', bg: 'rgba(217,119,6,0.12)' },
 				};
-				let container: HTMLDivElement | null = null;
 				(window as any).showToast = function(message: string, type: keyof typeof TOAST_TYPES = 'info', duration = 4000) {
-					if (!container) {
+					let container = document.getElementById('premium-toast-container') as HTMLDivElement | null;
+					if (!container || !document.body.contains(container)) {
 						container = document.createElement('div');
 						container.id = 'premium-toast-container';
 						Object.assign(container.style, {
-							position: 'fixed', bottom: '24px', right: '24px', zIndex: '999999',
+							position: 'fixed', bottom: '24px', right: '24px', zIndex: '9999999',
 							display: 'flex', flexDirection: 'column', gap: '12px',
 							pointerEvents: 'none', maxWidth: '400px', width: '100%',
 						});
 						document.body.appendChild(container);
 					}
-					const t = TOAST_TYPES[type];
+					const t = TOAST_TYPES[type] || TOAST_TYPES.info;
 					const el = document.createElement('div');
 					Object.assign(el.style, {
 						pointerEvents: 'auto', background: 'rgba(255,255,255,0.98)',
@@ -522,24 +532,36 @@ if (isAdminPage) {
 				}): Promise<boolean> {
 					return new Promise((resolve) => {
 						let dialog = document.getElementById("custom-alert-dialog");
-						if (!dialog) {
-							dialog = document.createElement("div");
-							dialog.id = "custom-alert-dialog";
-							dialog.className = "fixed inset-0 z-[99999] bg-slate-900/40 backdrop-blur-sm flex items-center justify-center p-4 opacity-0 pointer-events-none transition-all duration-300 ease-out";
-							dialog.innerHTML = `
-								<div id="custom-alert-popup" class="bg-white border border-slate-200 w-full max-w-md rounded-3xl shadow-2xl overflow-hidden flex flex-col p-6 text-left transform transition-all duration-300 ease-out mx-4">
-									<div class="space-y-2">
-										<h3 class="text-base font-extrabold text-slate-900 font-display tracking-tight" id="custom-alert-title"></h3>
-										<p class="text-xs text-slate-500 font-sans font-normal leading-relaxed" id="custom-alert-desc"></p>
+						if (!dialog || !document.body.contains(dialog)) {
+							if (!dialog) {
+								dialog = document.createElement("div");
+								dialog.id = "custom-alert-dialog";
+								dialog.className = "fixed inset-0 z-[9999999] bg-slate-900/40 backdrop-blur-sm flex items-center justify-center p-4 opacity-0 pointer-events-none transition-all duration-300 ease-out";
+								dialog.innerHTML = `
+									<div id="custom-alert-popup" class="bg-white border border-slate-200 w-full max-w-md rounded-3xl shadow-2xl overflow-hidden flex flex-col p-6 text-left transform transition-all duration-300 ease-out mx-4">
+										<div class="space-y-2">
+											<h3 class="text-base font-extrabold text-slate-900 font-display tracking-tight" id="custom-alert-title"></h3>
+											<p class="text-xs text-slate-500 font-sans font-normal leading-relaxed" id="custom-alert-desc"></p>
+										</div>
+										<div class="flex justify-end gap-2.5 mt-6 font-sans">
+											<button id="custom-alert-cancel" class="px-4.5 py-2.5 bg-white hover:bg-slate-50 text-slate-600 hover:text-slate-800 rounded-2xl transition-all cursor-pointer text-xs font-bold border border-slate-200"></button>
+											<button id="custom-alert-action" class="px-4.5 py-2.5 text-white rounded-2xl transition-all cursor-pointer text-xs font-bold border-none"></button>
+										</div>
 									</div>
-									<div class="flex justify-end gap-2.5 mt-6 font-sans">
-										<button id="custom-alert-cancel" class="px-4.5 py-2.5 bg-white hover:bg-slate-50 text-slate-600 hover:text-slate-800 rounded-2xl transition-all cursor-pointer text-xs font-bold border border-slate-200"></button>
-										<button id="custom-alert-action" class="px-4.5 py-2.5 text-white rounded-2xl transition-all cursor-pointer text-xs font-bold border-none"></button>
-									</div>
-								</div>
-							`;
+								`;
+							}
 							document.body.appendChild(dialog);
 						}
+
+						Object.assign(dialog.style, {
+							position: 'fixed',
+							inset: '0',
+							zIndex: '9999999',
+							display: 'flex',
+							alignItems: 'center',
+							justifyContent: 'center',
+							padding: '16px',
+						});
 
 						const popup = dialog.querySelector("#custom-alert-popup") as HTMLElement;
 						const titleEl = dialog.querySelector("#custom-alert-title") as HTMLElement;
@@ -566,15 +588,20 @@ if (isAdminPage) {
 						// Force reflow
 						void dialog.offsetHeight;
 
+						dialog.style.opacity = "1";
+						dialog.style.pointerEvents = "auto";
 						dialog.classList.remove("opacity-0", "pointer-events-none");
 						dialog.classList.add("opacity-100", "pointer-events-auto", "open");
 						document.body.style.overflow = "hidden";
 
 						const cleanup = (result: boolean) => {
+							dialog!.style.opacity = "0";
+							dialog!.style.pointerEvents = "none";
 							dialog!.classList.remove("opacity-100", "pointer-events-auto", "open");
 							dialog!.classList.add("opacity-0", "pointer-events-none");
 							document.body.style.overflow = "";
 							document.removeEventListener("keydown", handleKeydown);
+							dialog!.onclick = null;
 							resolve(result);
 						};
 

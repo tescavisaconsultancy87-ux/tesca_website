@@ -474,8 +474,10 @@ try {
 
 <script>
   async function handleResponse(res: Response, successMsg: string, targetRow?: HTMLElement | null) {
-    if (res.redirected || (res.url && res.url.includes("/admin") && !window.location.pathname.endsWith("/admin"))) {
-      window.location.href = res.url || "/admin";
+    const resPath = res.url ? new URL(res.url, window.location.origin).pathname : "";
+    const isLoginPage = resPath === "/admin" || resPath === "/admin/";
+    if (res.redirected && isLoginPage) {
+      window.location.href = "/admin";
       return false;
     }
     if (res.ok) {
@@ -497,7 +499,11 @@ try {
         const newContainer = doc.querySelector("main");
         if (currentContainer && newContainer && newContainer.children.length > 0) {
           currentContainer.innerHTML = newContainer.innerHTML;
-          setupBlogAdmin();
+          try {
+            setupBlogAdmin();
+          } catch (err) {
+            console.error("Error re-initializing blog admin:", err);
+          }
         } else {
           window.location.reload();
           return true;
@@ -585,64 +591,69 @@ try {
     const hiddenInput = document.getElementById('blog-content') as HTMLInputElement;
 
     if (editorEl && typeof (window as any).Quill !== 'undefined') {
-      // Clear any previous Quill toolbar to prevent duplicate renders across transitions
-      const toolbarEl = editorEl.previousElementSibling;
-      if (toolbarEl && toolbarEl.classList.contains('ql-toolbar')) {
-        toolbarEl.remove();
-      }
-
-      const quill = new (window as any).Quill(editorEl, {
-        theme: 'snow',
-        placeholder: 'Write your blog post content here... Highlight text to apply bold, italic, headings, or lists.',
-        modules: {
-          toolbar: [
-            ['bold', 'italic'],
-            [{ 'header': 2 }, { 'header': 3 }],
-            [{ 'list': 'ordered'}, { 'list': 'bullet' }],
-            ['clean']
-          ]
+      try {
+        // Clear any previous Quill toolbar to prevent duplicate renders across transitions
+        const toolbarEl = editorEl.previousElementSibling;
+        if (toolbarEl && toolbarEl.classList.contains('ql-toolbar')) {
+          toolbarEl.remove();
         }
-      });
 
-      // Add custom clipboard matchers to preserve headings and inline styling from copy-pasted text
-      const Delta = (window as any).Quill.import('delta');
-
-      // Map H1-H6 headers to available toolbar headings (H2 or H3)
-      const headingLevels = ['H1', 'H2', 'H3', 'H4', 'H5', 'H6'];
-      headingLevels.forEach(tag => {
-        quill.clipboard.addMatcher(tag, (node: any, delta: any) => {
-          const level = (tag === 'H1' || tag === 'H2') ? 2 : 3;
-          return delta.compose(new Delta().retain(delta.length(), { header: level }));
+        const quill = new (window as any).Quill(editorEl, {
+          theme: 'snow',
+          placeholder: 'Write your blog post content here... Highlight text to apply bold, italic, headings, or lists.',
+          modules: {
+            toolbar: [
+              ['bold', 'italic'],
+              [{ 'header': 2 }, { 'header': 3 }],
+              [{ 'list': 'ordered'}, { 'list': 'bullet' }],
+              ['clean']
+            ]
+          }
         });
-      });
 
-      // Map span styles (e.g. font-weight, font-style) to Quill formatting attributes
-      quill.clipboard.addMatcher('SPAN', (node: any, delta: any) => {
-        const style = node.style;
-        const attributes: any = {};
-        
-        if (style.fontWeight === 'bold' || parseInt(style.fontWeight) >= 700) {
-          attributes.bold = true;
-        }
-        if (style.fontStyle === 'italic') {
-          attributes.italic = true;
+        // Add custom clipboard matchers to preserve headings and inline styling from copy-pasted text
+        const Delta = (window as any).Quill?.import?.('delta');
+        if (Delta) {
+          // Map H1-H6 headers to available toolbar headings (H2 or H3)
+          const headingLevels = ['H1', 'H2', 'H3', 'H4', 'H5', 'H6'];
+          headingLevels.forEach(tag => {
+            quill.clipboard.addMatcher(tag, (node: any, delta: any) => {
+              const level = (tag === 'H1' || tag === 'H2') ? 2 : 3;
+              return delta.compose(new Delta().retain(delta.length(), { header: level }));
+            });
+          });
+
+          // Map span styles (e.g. font-weight, font-style) to Quill formatting attributes
+          quill.clipboard.addMatcher('SPAN', (node: any, delta: any) => {
+            const style = node.style;
+            const attributes: any = {};
+            
+            if (style.fontWeight === 'bold' || parseInt(style.fontWeight) >= 700) {
+              attributes.bold = true;
+            }
+            if (style.fontStyle === 'italic') {
+              attributes.italic = true;
+            }
+
+            if (Object.keys(attributes).length > 0) {
+              return delta.compose(new Delta().retain(delta.length(), attributes));
+            }
+            return delta;
+          });
         }
 
-        if (Object.keys(attributes).length > 0) {
-          return delta.compose(new Delta().retain(delta.length(), attributes));
+        // Save initial value
+        if (hiddenInput && hiddenInput.value) {
+          quill.root.innerHTML = hiddenInput.value;
         }
-        return delta;
-      });
 
-      // Save initial value
-      if (hiddenInput && hiddenInput.value) {
-        quill.root.innerHTML = hiddenInput.value;
+        // Sync content back to hidden field on change
+        quill.on('text-change', () => {
+          hiddenInput.value = quill.root.innerHTML;
+        });
+      } catch (err) {
+        console.error("Quill initialization warning:", err);
       }
-
-      // Sync content back to hidden field on change
-      quill.on('text-change', () => {
-        hiddenInput.value = quill.root.innerHTML;
-      });
     }
 
     // Auto-generate slug from title
@@ -807,13 +818,18 @@ try {
       });
     }
 
-    // Handle delete forms
-    const deleteForms = document.querySelectorAll("form.delete-blog-form");
-    deleteForms.forEach(form => {
-      if ((form as any)._ajaxBound) return;
-      (form as any)._ajaxBound = true;
+  }
 
-      form.addEventListener("submit", async (e) => {
+  // Delegated document-level handler for delete and toggle forms (resilient to DOM swaps and transitions)
+  if (typeof window !== "undefined" && !(window as any)._blogDelegatedBound) {
+    (window as any)._blogDelegatedBound = true;
+
+    document.addEventListener("submit", async (e) => {
+      const target = e.target as HTMLElement;
+
+      // Handle delete forms
+      const deleteForm = target?.closest("form.delete-blog-form") as HTMLFormElement | null;
+      if (deleteForm) {
         e.preventDefault();
         const confirmed = typeof window !== "undefined" && (window as any).showConfirmDialog
           ? await (window as any).showConfirmDialog({
@@ -827,14 +843,16 @@ try {
           : confirm("Are you sure you want to delete this blog post?");
         if (!confirmed) return;
 
-        const btn = form.querySelector('button[type="submit"]') as HTMLElement;
+        const btn = deleteForm.querySelector('button[type="submit"]') as HTMLElement;
         (window as any).showBtnLoader?.(btn);
 
         const params = new URLSearchParams();
-        form.querySelectorAll("input[name]").forEach((el) => {
+        deleteForm.querySelectorAll("input[name]").forEach((el) => {
           const input = el as HTMLInputElement;
           params.append(input.name, input.value);
         });
+
+        const targetRow = deleteForm.closest("tr") as HTMLElement | null;
 
         try {
           const res = await fetch(window.location.pathname, {
@@ -842,7 +860,7 @@ try {
             headers: { "Content-Type": "application/x-www-form-urlencoded" },
             body: params
           });
-          await handleResponse(res, "Blog post deleted successfully.");
+          await handleResponse(res, "Blog post deleted successfully.", targetRow);
         } catch (err) {
           console.error("AJAX error:", err);
           alert("An error occurred. Please try again.");
@@ -851,20 +869,16 @@ try {
             (window as any).hideBtnLoader?.(btn);
           }
         }
-      });
-    });
+        return;
+      }
 
-    // Handle toggle publish forms
-    const toggleForms = document.querySelectorAll("form.toggle-publish-form");
-    toggleForms.forEach(form => {
-      if ((form as any)._ajaxBound) return;
-      (form as any)._ajaxBound = true;
-
-      form.addEventListener("submit", async (e) => {
+      // Handle toggle publish forms
+      const toggleForm = target?.closest("form.toggle-publish-form") as HTMLFormElement | null;
+      if (toggleForm) {
         e.preventDefault();
 
         const params = new URLSearchParams();
-        form.querySelectorAll("input[name]").forEach((el) => {
+        toggleForm.querySelectorAll("input[name]").forEach((el) => {
           const input = el as HTMLInputElement;
           params.append(input.name, input.value);
         });
@@ -881,7 +895,8 @@ try {
           console.error("AJAX error:", err);
           alert("An error occurred. Please try again.");
         }
-      });
+        return;
+      }
     });
   }
 

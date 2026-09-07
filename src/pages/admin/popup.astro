@@ -600,23 +600,36 @@ try {
 </Layout>
 
 <script>
-  async function handleResponse(res: Response, successMsg: string) {
-    if (res.redirected || (res.url && res.url.includes("/admin") && !window.location.pathname.endsWith("/admin"))) {
-      window.location.href = res.url || "/admin";
+  async function handleResponse(res: Response, successMsg: string, targetRow?: HTMLElement | null) {
+    const resPath = res.url ? new URL(res.url, window.location.origin).pathname : "";
+    const isLoginPage = resPath === "/admin" || resPath === "/admin/";
+    if (res.redirected && isLoginPage) {
+      window.location.href = "/admin";
       return;
     }
     if (res.ok) {
-      const htmlText = await res.text();
-      const parser = new DOMParser();
-      const doc = parser.parseFromString(htmlText, "text/html");
-      const currentContainer = document.querySelector("main");
-      const newContainer = doc.querySelector("main");
-      if (currentContainer && newContainer && newContainer.children.length > 0) {
-        currentContainer.innerHTML = newContainer.innerHTML;
-        setupPopupAdmin();
+      if (targetRow) {
+        targetRow.style.transition = "all 0.3s ease";
+        targetRow.style.opacity = "0";
+        targetRow.style.transform = "scale(0.95)";
+        setTimeout(() => targetRow.remove(), 300);
       } else {
-        window.location.reload();
-        return;
+        const htmlText = await res.text();
+        const parser = new DOMParser();
+        const doc = parser.parseFromString(htmlText, "text/html");
+        const currentContainer = document.querySelector("main");
+        const newContainer = doc.querySelector("main");
+        if (currentContainer && newContainer && newContainer.children.length > 0) {
+          currentContainer.innerHTML = newContainer.innerHTML;
+          try {
+            setupPopupAdmin();
+          } catch (err) {
+            console.error("Error re-initializing popup admin:", err);
+          }
+        } else {
+          window.location.reload();
+          return;
+        }
       }
       if ((window as any).showToast) {
         (window as any).showToast(successMsg, "success");
@@ -941,56 +954,6 @@ try {
       });
     });
 
-    // Handle delete forms confirmation dialog
-    const deleteForms = document.querySelectorAll("form.delete-popup-form");
-    deleteForms.forEach(form => {
-      if ((form as any)._ajaxBound) return;
-      (form as any)._ajaxBound = true;
-      form.addEventListener("submit", async (e) => {
-        e.preventDefault();
-        const confirmed = typeof window !== "undefined" && (window as any).showConfirmDialog
-          ? await (window as any).showConfirmDialog({
-              title: "Are you absolutely sure?",
-              description: "This action cannot be undone. This will permanently delete this promotional popup.",
-              actionText: "Delete",
-              cancelText: "Cancel",
-              variant: "destructive",
-              from: "bottom"
-            })
-          : confirm("Are you sure you want to delete this promotional popup?");
-        if (!confirmed) return;
-
-        const btn = form.querySelector('button[type="submit"]') as HTMLElement;
-        (window as any).showBtnLoader?.(btn);
-
-        const params = new URLSearchParams();
-        form.querySelectorAll("input[name]").forEach((el) => {
-          const input = el as HTMLInputElement;
-          params.append(input.name, input.value);
-        });
-
-        try {
-          const res = await fetch(window.location.href, {
-            method: "POST",
-            headers: { "Content-Type": "application/x-www-form-urlencoded" },
-            body: params
-          });
-          await handleResponse(res, "Promo popup deleted successfully.");
-        } catch (err) {
-          console.error("AJAX error:", err);
-          if ((window as any).showToast) {
-            (window as any).showToast("An error occurred. Please try again.", "error");
-          } else {
-            alert("An error occurred. Please try again.");
-          }
-        } finally {
-          if (btn) {
-            (window as any).hideBtnLoader?.(btn);
-          }
-        }
-      });
-    });
-
     // Form submit loader integration
     if (configForm && !(configForm as any)._ajaxBound) {
       (configForm as any)._ajaxBound = true;
@@ -1000,6 +963,61 @@ try {
         }
       });
     }
+  }
+
+  // Delegated document-level handler for delete popup forms (resilient to DOM swaps)
+  if (typeof window !== "undefined" && !(window as any)._popupDelegatedBound) {
+    (window as any)._popupDelegatedBound = true;
+
+    document.addEventListener("submit", async (e) => {
+      const target = e.target as HTMLElement;
+      const deleteForm = target?.closest("form.delete-popup-form") as HTMLFormElement | null;
+      if (!deleteForm) return;
+
+      e.preventDefault();
+      const confirmed = typeof window !== "undefined" && (window as any).showConfirmDialog
+        ? await (window as any).showConfirmDialog({
+            title: "Are you absolutely sure?",
+            description: "This action cannot be undone. This will permanently delete this promotional popup.",
+            actionText: "Delete",
+            cancelText: "Cancel",
+            variant: "destructive",
+            from: "bottom"
+          })
+        : confirm("Are you sure you want to delete this promotional popup?");
+      if (!confirmed) return;
+
+      const btn = deleteForm.querySelector('button[type="submit"]') as HTMLElement;
+      (window as any).showBtnLoader?.(btn);
+
+      const params = new URLSearchParams();
+      deleteForm.querySelectorAll("input[name]").forEach((el) => {
+        const input = el as HTMLInputElement;
+        params.append(input.name, input.value);
+      });
+
+      const targetRow = deleteForm.closest(".rounded-2xl") as HTMLElement | null;
+
+      try {
+        const res = await fetch(window.location.href, {
+          method: "POST",
+          headers: { "Content-Type": "application/x-www-form-urlencoded" },
+          body: params
+        });
+        await handleResponse(res, "Promo popup deleted successfully.", targetRow);
+      } catch (err) {
+        console.error("AJAX error:", err);
+        if ((window as any).showToast) {
+          (window as any).showToast("An error occurred. Please try again.", "error");
+        } else {
+          alert("An error occurred. Please try again.");
+        }
+      } finally {
+        if (btn) {
+          (window as any).hideBtnLoader?.(btn);
+        }
+      }
+    });
   }
 
   setupPopupAdmin();
