@@ -35,7 +35,6 @@ export default defineConfig({
         'posthog-js',
         'lenis',
         'nodemailer',
-        'react-hook-form',
         '@supabase/supabase-js'
       ],
       exclude: ['astro:compiler-runtime', 'astro:virtual-modules/transitions.js']
