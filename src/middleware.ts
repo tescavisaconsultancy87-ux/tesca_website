@@ -55,6 +55,29 @@ export const onRequest = defineMiddleware(async (context, next) => {
     lowerPath.endsWith(".php") ||
     lowerPath.endsWith(".env") ||
     lowerPath.includes(".env.") ||
+    lowerPath.includes("/@fs") ||
+    lowerPath.includes("/.oci") ||
+    lowerPath.includes("/.docker") ||
+    lowerPath.includes("/.aws") ||
+    lowerPath.includes("/.ssh") ||
+    lowerPath.includes("/.kube") ||
+    lowerPath.includes("kubernetes.io") ||
+    lowerPath.includes("/secrets/") ||
+    lowerPath.includes("/actuator") ||
+    lowerPath.includes("/userfiles") ||
+    lowerPath.includes("/etc/") ||
+    lowerPath.includes("/proc/") ||
+    lowerPath.includes("..") ||
+    lowerPath.includes("%2e%2e") ||
+    lowerPath.endsWith(".pem") ||
+    lowerPath.endsWith(".key") ||
+    lowerPath.endsWith(".crt") ||
+    lowerPath.endsWith(".cert") ||
+    lowerPath.endsWith(".zshrc") ||
+    lowerPath.endsWith(".bashrc") ||
+    lowerPath.endsWith(".bash_history") ||
+    lowerPath.endsWith(".bash_profile") ||
+    lowerPath.endsWith(".profile") ||
     lowerPath.endsWith(".yml") ||
     lowerPath.endsWith(".yaml") ||
     lowerPath.endsWith(".sql") ||
@@ -84,6 +107,7 @@ export const onRequest = defineMiddleware(async (context, next) => {
       headers: {
         "Content-Type": "text/plain; charset=utf-8",
         "X-Robots-Tag": "noindex, nofollow",
+        "Cache-Control": "public, max-age=86400, s-maxage=86400",
       },
     });
   }
@@ -103,6 +127,7 @@ export const onRequest = defineMiddleware(async (context, next) => {
       headers: {
         "Content-Type": "text/plain; charset=utf-8",
         "X-Robots-Tag": "noindex, nofollow",
+        "Cache-Control": "public, max-age=86400, s-maxage=86400",
       },
     });
   }
@@ -216,7 +241,7 @@ export const onRequest = defineMiddleware(async (context, next) => {
     if (isDynamicPage) {
       response.headers.set(
         "Cache-Control",
-        "public, max-age=0, s-maxage=10, stale-while-revalidate=30"
+        "public, max-age=0, s-maxage=300, stale-while-revalidate=86400"
       );
     } else {
       response.headers.set(

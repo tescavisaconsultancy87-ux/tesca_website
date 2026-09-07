@@ -6,8 +6,6 @@ let _supabaseAdmin: SupabaseClient | null = null;
 
 const DEFAULT_SUPABASE_URL = "https://zlsauoosumpnbyouhdfk.supabase.co";
 const DEFAULT_SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inpsc2F1b29zdW1wbmJ5b3VoZGZrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE3NjA2MDEsImV4cCI6MjA5NzMzNjYwMX0.JV5mmtfIGmPvA83H-vr173GDcqXoLG13gR7BJlXZ-SY";
-const DEFAULT_SUPABASE_SERVICE_ROLE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inpsc2F1b29zdW1wbmJ5b3VoZGZrIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc4MTc2MDYwMSwiZXhwIjoyMDk3MzM2NjAxfQ.f2L5m36JHa6Esz5IHDpy1rcu28ck80_yK3ErHEaiDhk";
-
 export function getSupabase(): SupabaseClient {
   if (!_supabase) {
     const supabaseUrl = getEnv('PUBLIC_SUPABASE_URL') || (typeof import.meta !== 'undefined' ? import.meta.env?.PUBLIC_SUPABASE_URL : undefined) || DEFAULT_SUPABASE_URL;
@@ -20,8 +18,13 @@ export function getSupabase(): SupabaseClient {
 
 export function getSupabaseAdmin(): SupabaseClient {
   if (!_supabaseAdmin) {
-    const serviceKey = getEnv('SUPABASE_SERVICE_ROLE_KEY') || (typeof import.meta !== 'undefined' ? import.meta.env?.SUPABASE_SERVICE_ROLE_KEY : undefined) || DEFAULT_SUPABASE_SERVICE_ROLE_KEY;
+    const serviceKey = getEnv('SUPABASE_SERVICE_ROLE_KEY') || (typeof import.meta !== 'undefined' ? import.meta.env?.SUPABASE_SERVICE_ROLE_KEY : undefined);
     const supabaseUrl = getEnv('PUBLIC_SUPABASE_URL') || (typeof import.meta !== 'undefined' ? import.meta.env?.PUBLIC_SUPABASE_URL : undefined) || DEFAULT_SUPABASE_URL;
+
+    if (!serviceKey) {
+      console.warn("[Supabase] SUPABASE_SERVICE_ROLE_KEY is not set in environment. Falling back to anonymous client.");
+      return getSupabase();
+    }
 
     _supabaseAdmin = createClient(supabaseUrl, serviceKey, {
       auth: {
