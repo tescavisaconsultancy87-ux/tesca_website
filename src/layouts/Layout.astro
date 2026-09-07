@@ -179,8 +179,10 @@ if (isAdminPage) {
 
 			// Global listener for tel:, mailto:, wa.me clicks, and consultation button clicks
 			document.addEventListener('click', (e) => {
-				const target = e.target;
-				if (!target) return;
+				const rawTarget = e.target;
+				if (!rawTarget) return;
+				const target = (rawTarget instanceof Element) ? rawTarget : (rawTarget && rawTarget.parentElement);
+				if (!target || typeof target.closest !== 'function') return;
 
 				// 1. Link Clicks
 				const link = target.closest('a');
@@ -1508,8 +1510,11 @@ if (isAdminPage) {
 					});
 				});
 				document.addEventListener('click', function(e) {
-					const target = e.target as HTMLElement | null;
-					if (!target?.closest('[data-mega-nav]')) {
+					const rawTarget = e.target;
+					if (!rawTarget) return;
+					const target = (rawTarget instanceof Element) ? rawTarget : (rawTarget as Node).parentElement;
+					if (!target || typeof target.closest !== 'function') return;
+					if (!target.closest('[data-mega-nav]')) {
 						document.querySelectorAll('[data-mega-nav].force-open').forEach(function(el) {
 							el.classList.remove('force-open');
 						});
@@ -1698,7 +1703,11 @@ if (isAdminPage) {
 				if (!isModalShown && !isAdminRoute && !isReviewGenerator) {
 					// Detect standard CTA click
 					handleCtaClick = (e: MouseEvent) => {
-						const target = e.target as HTMLElement;
+						const rawTarget = e.target;
+						if (!rawTarget) return;
+						const target = (rawTarget instanceof Element) ? rawTarget : (rawTarget as Node).parentElement;
+						if (!target || typeof target.closest !== 'function') return;
+
 						const isCta = target.closest('button, a, [onclick*="CounsellorForm"], input[type="submit"]');
 						if (isCta) {
 							const href = (isCta as HTMLAnchorElement).href || "";

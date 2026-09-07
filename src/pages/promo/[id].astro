@@ -289,10 +289,13 @@ const whatsappUrl = `https://wa.me/919824152731?text=${whatsappMsg}`;
         }
 
       } catch (err: any) {
-        alert(err.message || "An error occurred. Please try again.");
+        if (err?.name === 'AbortError') return;
+        alert(err?.message || "An error occurred. Please try again.");
       } finally {
-        submitBtn.disabled = false;
-        submitBtn.innerHTML = originalBtnContent;
+        if (submitBtn) {
+          submitBtn.disabled = false;
+          submitBtn.innerHTML = originalBtnContent;
+        }
       }
     });
   }
