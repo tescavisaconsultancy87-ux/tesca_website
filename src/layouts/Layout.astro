@@ -171,9 +171,19 @@ if (isAdminPage) {
 						event_category: 'engagement',
 						destination: destination
 					});
+					if (type === 'whatsapp') {
+						window.gtag('event', 'generate_lead', {
+							event_category: 'conversion',
+							lead_method: 'whatsapp',
+							destination: destination
+						});
+					}
 				}
 				if (window.posthog) {
 					window.posthog.capture(type === 'whatsapp' ? 'whatsapp_click' : 'phone_call_click', { destination });
+					if (type === 'whatsapp') {
+						window.posthog.capture('generate_lead', { lead_method: 'whatsapp', destination });
+					}
 				}
 			};
 
@@ -211,7 +221,11 @@ if (isAdminPage) {
 						text.includes('book free consultation') ||
 						text.includes('book consultation') ||
 						text.includes('free consultation') ||
-						onclickAttr.includes('openCounsellorForm')
+						text.includes('schedule free meeting') ||
+						text.includes('consult with our experts') ||
+						text.includes('free demo class') ||
+						onclickAttr.includes('openCounsellorForm') ||
+						onclickAttr.includes('open-counsellor-form')
 					) {
 						if (window.gtag) {
 							window.gtag('event', 'book_consultation_click', {
