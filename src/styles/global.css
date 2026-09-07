@@ -228,10 +228,10 @@ a, a:hover, a:focus, a:active {
 
 /* Open state */
 #custom-alert-dialog.open {
-  opacity: 1;
-  pointer-events: auto;
+  opacity: 1 !important;
+  pointer-events: auto !important;
 }
 #custom-alert-dialog.open #custom-alert-popup {
   transform: translate(0) scale(1) !important;
-  opacity: 1;
+  opacity: 1 !important;
 }
