@@ -8,12 +8,64 @@ const SVG = {
   Check: `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4 text-emerald-600"><polyline points="20 6 9 17 4 12"/></svg>`,
   Star: `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="currentColor" class="w-4 h-4 text-amber-500"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>`
 };
+
+const ieltsFaqs = [
+  {
+    q: "What is the course duration for IELTS training at TESCA?",
+    a: "We offer 1-month, 2-month, and 3-month courses based on your current proficiency level. Most students achieve their target score within 8 to 12 weeks of structured training."
+  },
+  {
+    q: "Do you offer both Academic and General IELTS coaching?",
+    a: "Yes, we have separate batches for Academic IELTS (for student visas) and General IELTS (for Canada/Australia PR migration)."
+  },
+  {
+    q: "What is the fee structure for IELTS classes in Surat?",
+    a: "Fees vary depending on the course duration and batch selection. Please contact our counseling desk or visit our Simada Naka/Mota Varachha branches for current fee tables and active discount offers."
+  },
+  {
+    q: "Do you offer English speaking courses and spoken English classes in Surat?",
+    a: "Yes! TESCA conducts comprehensive English speaking courses and spoken English classes in Surat. Our training focuses on fluent conversation, grammar basics, vocabulary building, and daily public speaking drills to help you communicate confidently."
+  }
+];
+
+const structuredFaqData = {
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "mainEntity": ieltsFaqs.map(faq => ({
+    "@type": "Question",
+    "name": faq.q,
+    "acceptedAnswer": {
+      "@type": "Answer",
+      "text": faq.a
+    }
+  }))
+};
+
+const structuredCourseData = {
+  "@context": "https://schema.org",
+  "@type": "Course",
+  "name": "IELTS Coaching Classes & English Speaking Course in Surat",
+  "description": "Comprehensive IELTS test preparation and spoken English training in Surat with small batches, weekly mock tests, certified tutors, and 7.5+ band target.",
+  "provider": {
+    "@type": "EducationalOrganization",
+    "name": "TESCA Visa Consultancy",
+    "sameAs": "https://tescavisa.com"
+  },
+  "educationalCredentialAwarded": "IELTS Certificate & Band Score Guarantee",
+  "offers": {
+    "@type": "Offer",
+    "category": "Paid",
+    "priceCurrency": "INR"
+  }
+};
 ---
 
 <Layout 
   title="Best IELTS Coaching Classes & English Speaking Course in Surat | TESCA"
   description="Enroll in the best IELTS coaching classes and English speaking course in Surat at TESCA. Certified trainers, 7.5+ band target, spoken English drills & weekly mock tests at Simada Naka & Varachha."
 >
+  <script is:inline type="application/ld+json" set:html={JSON.stringify(structuredFaqData)} />
+  <script is:inline type="application/ld+json" set:html={JSON.stringify(structuredCourseData)} />
   <section class="max-w-7xl mx-auto px-6 md:px-8 pt-8 pb-16 text-left">
     
     <a href="/" class="inline-flex items-center gap-1.5 text-sm font-semibold text-accent-blue hover:underline mb-8 font-sans">
@@ -100,24 +152,7 @@ const SVG = {
         <div class="space-y-6">
           <h2 class="text-2xl font-bold font-display text-slate-800 tracking-tight">Frequently Asked Questions</h2>
           <div class="space-y-4">
-            {[
-              {
-                q: "What is the course duration for IELTS training at TESCA?",
-                a: "We offer 1-month, 2-month, and 3-month courses based on your current proficiency level. Most students achieve their target score within 8 to 12 weeks of structured training."
-              },
-              {
-                q: "Do you offer both Academic and General IELTS coaching?",
-                a: "Yes, we have separate batches for Academic IELTS (for student visas) and General IELTS (for Canada/Australia PR migration)."
-              },
-              {
-                q: "What is the fee structure for IELTS classes in Surat?",
-                a: "Fees vary depending on the course duration and batch selection. Please contact our counseling desk or visit our Simada Naka/Mota Varachha branches for current fee tables and active discount offers."
-              },
-              {
-                q: "Do you offer English speaking courses and spoken English classes in Surat?",
-                a: "Yes! TESCA conducts comprehensive English speaking courses and spoken English classes in Surat. Our training focuses on fluent conversation, grammar basics, vocabulary building, and daily public speaking drills to help you communicate confidently."
-              }
-            ].map(faq => (
+            {ieltsFaqs.map(faq => (
               <div class="p-6 rounded-2xl bg-slate-50 border border-slate-200/60 shadow-sm font-sans">
                 <h4 class="font-bold text-slate-850 text-sm flex items-start gap-2 leading-relaxed">
                   <span class="text-accent-blue font-extrabold font-display">Q:</span>

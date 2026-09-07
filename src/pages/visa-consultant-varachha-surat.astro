@@ -6,9 +6,71 @@ import VisaApprovalCalculator from "../components/VisaApprovalCalculator";
 
 const pageTitle = "Best Visa Consultant in Varachha & Mota Varachha Surat | TESCA";
 const pageDescription = "Looking for a top visa consultant in Varachha or Mota Varachha? TESCA provides expert student visa, Canada PR, visitor visa filing, and IELTS classes at Ambika Pinnacle, Lajamni Chowk.";
+
+const varachhaFaqs = [
+  {
+    q: "Where is the TESCA Mota Varachha branch located?",
+    a: "Our branch is located at Ambika Pinnacle, Office 106-107, Lajamni Chowk, Maruti Dham Society, Mota Varachha, Surat, Gujarat 394101. It is easily accessible from Sarthana, Kamrej, and Katargam."
+  },
+  {
+    q: "Which visa services are available at the Varachha office?",
+    a: "We provide comprehensive services including Canada PR, UK & USA student visa processing, Australia higher education admissions, tourist visas, dependent visas, and visa refusal re-application audits."
+  },
+  {
+    q: "Do you offer offline IELTS coaching at Mota Varachha?",
+    a: "Yes! Our Mota Varachha center hosts modern classroom batches for IELTS Academic, General IELTS, and spoken English training with certified tutors and weekly mock test simulations."
+  },
+  {
+    q: "Do I need an appointment before visiting the Varachha office?",
+    a: "Walk-ins are warmly welcome Monday through Saturday from 10:00 AM to 7:00 PM. You can also book a priority counselling slot online for a dedicated 1-on-1 profile assessment."
+  }
+];
+
+const structuredFaqData = {
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "mainEntity": varachhaFaqs.map(faq => ({
+    "@type": "Question",
+    "name": faq.q,
+    "acceptedAnswer": {
+      "@type": "Answer",
+      "text": faq.a
+    }
+  }))
+};
+
+const branchSchema = {
+  "@context": "https://schema.org",
+  "@type": "LocalBusiness",
+  "name": "TESCA Visa Consultancy - Mota Varachha Branch",
+  "image": "https://tescavisa.com/images/Tesca_logo.png",
+  "url": "https://tescavisa.com/visa-consultant-varachha-surat",
+  "telephone": "+91-9824152731",
+  "email": "tescavisaconsultancy87@gmail.com",
+  "priceRange": "₹₹",
+  "address": {
+    "@type": "PostalAddress",
+    "streetAddress": "Ambika Pinnacle, 106-107, Lajamni Chowk, Maruti Dham Society, Mota Varachha",
+    "addressLocality": "Surat",
+    "addressRegion": "Gujarat",
+    "postalCode": "394101",
+    "addressCountry": "IN"
+  },
+  "openingHoursSpecification": [
+    {
+      "@type": "OpeningHoursSpecification",
+      "dayOfWeek": ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"],
+      "opens": "10:00",
+      "closes": "19:00"
+    }
+  ]
+};
 ---
 
 <Layout title={pageTitle} description={pageDescription}>
+  <script is:inline type="application/ld+json" set:html={JSON.stringify(structuredFaqData)} />
+  <script is:inline type="application/ld+json" set:html={JSON.stringify(branchSchema)} />
+  
   <section class="max-w-7xl mx-auto px-6 md:px-8 pt-8 pb-16 text-left font-sans">
     
     <a href="/" class="inline-flex items-center gap-1.5 text-sm font-semibold text-accent-blue hover:underline mb-8">
@@ -39,6 +101,25 @@ const pageDescription = "Looking for a top visa consultant in Varachha or Mota V
     {/* Integrated Calculator */}
     <div class="mb-12">
       <VisaApprovalCalculator client:only="react" />
+    </div>
+
+    {/* Frequently Asked Questions */}
+    <div class="max-w-4xl space-y-6 mb-12">
+      <h2 class="text-2xl font-bold font-display text-slate-800 tracking-tight">Varachha Branch FAQs</h2>
+      <div class="space-y-4">
+        {varachhaFaqs.map(faq => (
+          <div class="p-6 rounded-2xl bg-slate-50 border border-slate-200/60 shadow-sm font-sans">
+            <h4 class="font-bold text-slate-850 text-sm flex items-start gap-2 leading-relaxed">
+              <span class="text-accent-blue font-extrabold font-display">Q:</span>
+              <span>{faq.q}</span>
+            </h4>
+            <p class="text-xs text-slate-500 mt-2 leading-relaxed pl-5 flex items-start gap-2">
+              <span class="text-emerald-600 font-extrabold font-display">A:</span>
+              <span>{faq.a}</span>
+            </p>
+          </div>
+        ))}
+      </div>
     </div>
 
   </section>
