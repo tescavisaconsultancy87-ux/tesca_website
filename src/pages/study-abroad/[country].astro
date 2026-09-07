@@ -409,6 +409,18 @@ const SVG = {
   ArrowLeft: `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="inline-block"><path d="m12 19-7-7 7-7"/><path d="M19 12H5"/></svg>`,
   Check: `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4 text-emerald-600"><polyline points="20 6 9 17 4 12"/></svg>`
 };
+
+const PATHWAY_COURSES = [
+  { slug: 'data-science', title: 'Data Science & AI', duration: '1–2 Years', avgFee: '₹12L – ₹28L / yr', psw: '2–3 Years PSW', icon: '🤖' },
+  { slug: 'nursing', title: 'Nursing & Healthcare', duration: '2–3 Years', avgFee: '₹14L – ₹30L / yr', psw: 'High PR Demand', icon: '🩺' },
+  { slug: 'computer-science', title: 'Computer Science & Software', duration: '1–2 Years', avgFee: '₹15L – ₹35L / yr', psw: '2–3 Years PSW', icon: '💻' },
+  { slug: 'business-analytics', title: 'Business Analytics & Finance', duration: '1–2 Years', avgFee: '₹14L – ₹32L / yr', psw: '2–3 Years PSW', icon: '📊' },
+  { slug: 'cyber-security', title: 'Cyber Security & Cloud', duration: '1–2 Years', avgFee: '₹13L – ₹29L / yr', psw: '2–3 Years PSW', icon: '🔒' },
+  { slug: 'engineering', title: 'Engineering & Technology', duration: '2–4 Years', avgFee: '₹12L – ₹34L / yr', psw: '2–3 Years PSW', icon: '⚙️' },
+  { slug: 'mba', title: 'MBA & Executive Management', duration: '1–2 Years', avgFee: '₹18L – ₹45L / yr', psw: '2–3 Years PSW', icon: '🎓' }
+];
+
+const HAS_PATHWAYS = ['canada', 'uk', 'australia', 'usa', 'germany', 'ireland'].includes(country || '');
 ---
 
 <Layout 
@@ -508,6 +520,46 @@ const SVG = {
             Explore Prep Classes →
           </a>
         </div>
+
+        {HAS_PATHWAYS && (
+          <div class="space-y-4">
+            <div class="space-y-1">
+              <h2 class="text-2xl font-bold font-display text-slate-800 tracking-tight">Popular Degree Pathways in {data.name}</h2>
+              <p class="text-xs text-slate-500 font-sans">
+                Explore in-demand courses, average tuition fees, and post-study work permit eligibility in {data.name}.
+              </p>
+            </div>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              {PATHWAY_COURSES.map(course => (
+                <a 
+                  href={`/study-abroad/${country}/${course.slug}`}
+                  class="group p-5 rounded-2xl bg-white border border-slate-200/80 hover:border-accent-blue/50 hover:shadow-md transition-all font-sans flex flex-col justify-between space-y-3"
+                >
+                  <div class="flex items-start justify-between">
+                    <div class="flex items-center gap-3">
+                      <span class="text-2xl">{course.icon}</span>
+                      <div>
+                        <h3 class="text-sm font-bold text-slate-850 group-hover:text-accent-blue transition-colors">
+                          {course.title}
+                        </h3>
+                        <span class="text-[11px] text-slate-400 font-medium">{course.duration}</span>
+                      </div>
+                    </div>
+                    <span class="text-xs font-semibold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-100/60 shrink-0">
+                      {course.psw}
+                    </span>
+                  </div>
+                  <div class="pt-2 border-t border-slate-100 flex items-center justify-between text-xs text-slate-500">
+                    <span>Avg Fee: <strong class="text-slate-700">{course.avgFee}</strong></span>
+                    <span class="text-accent-blue font-semibold group-hover:translate-x-0.5 transition-transform flex items-center gap-1">
+                      View Guide →
+                    </span>
+                  </div>
+                </a>
+              ))}
+            </div>
+          </div>
+        )}
 
         <!-- Student Intakes -->
         <div class="space-y-4">

@@ -41,6 +41,18 @@ const { countryObj, courseObj } = Astro.props;
 const pageTitle = `Study ${courseObj.title} in ${countryObj.name} (2026 Admissions) | TESCA`;
 const pageDescription = `Complete guide for Indian students to study ${courseObj.title} in ${countryObj.name}. Tuition fees, university shortlists, post-study work permits, and 97% visa success guarantee by TESCA Surat.`;
 
+const allCourses = [
+  { slug: 'data-science', title: 'Data Science & AI', duration: '1–2 Years', avgFee: '₹12L – ₹28L / yr', psw: '2–3 Years PSW', icon: '🤖' },
+  { slug: 'nursing', title: 'Nursing & Healthcare', duration: '2–3 Years', avgFee: '₹14L – ₹30L / yr', psw: 'High PR Demand', icon: '🩺' },
+  { slug: 'computer-science', title: 'Computer Science & Software', duration: '1–2 Years', avgFee: '₹15L – ₹35L / yr', psw: '2–3 Years PSW', icon: '💻' },
+  { slug: 'business-analytics', title: 'Business Analytics & Finance', duration: '1–2 Years', avgFee: '₹14L – ₹32L / yr', psw: '2–3 Years PSW', icon: '📊' },
+  { slug: 'cyber-security', title: 'Cyber Security & Cloud', duration: '1–2 Years', avgFee: '₹13L – ₹29L / yr', psw: '2–3 Years PSW', icon: '🔒' },
+  { slug: 'engineering', title: 'Engineering & Technology', duration: '2–4 Years', avgFee: '₹12L – ₹34L / yr', psw: '2–3 Years PSW', icon: '⚙️' },
+  { slug: 'mba', title: 'MBA & Executive Management', duration: '1–2 Years', avgFee: '₹18L – ₹45L / yr', psw: '2–3 Years PSW', icon: '🎓' }
+];
+
+const otherCourses = allCourses.filter(c => c.slug !== courseObj.slug);
+
 const structuredCourseData = {
   "@context": "https://schema.org",
   "@type": "Course",
@@ -52,17 +64,60 @@ const structuredCourseData = {
     "sameAs": "https://tescavisa.com"
   }
 };
+
+const breadcrumbSchema = {
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    {
+      "@type": "ListItem",
+      "position": 1,
+      "name": "Home",
+      "item": "https://tescavisa.com"
+    },
+    {
+      "@type": "ListItem",
+      "position": 2,
+      "name": "Countries",
+      "item": "https://tescavisa.com/countries"
+    },
+    {
+      "@type": "ListItem",
+      "position": 3,
+      "name": `Study in ${countryObj.name}`,
+      "item": `https://tescavisa.com/study-abroad/${countryObj.slug}`
+    },
+    {
+      "@type": "ListItem",
+      "position": 4,
+      "name": courseObj.title,
+      "item": `https://tescavisa.com/study-abroad/${countryObj.slug}/${courseObj.slug}`
+    }
+  ]
+};
 ---
 
 <Layout title={pageTitle} description={pageDescription}>
   <script is:inline type="application/ld+json" set:html={JSON.stringify(structuredCourseData)} />
+  <script is:inline type="application/ld+json" set:html={JSON.stringify(breadcrumbSchema)} />
 
-  <div class="bg-slate-950 text-white py-12 md:py-20 px-6 md:px-8 relative overflow-hidden font-sans border-b border-slate-800">
+  <div class="bg-slate-950 text-white py-12 md:py-16 px-6 md:px-8 relative overflow-hidden font-sans border-b border-slate-800">
     <div class="max-w-7xl mx-auto relative z-10 space-y-6">
       
+      {/* Breadcrumb Navigation */}
+      <nav class="flex items-center gap-2 text-xs text-slate-400 font-medium flex-wrap" aria-label="Breadcrumb">
+        <a href="/" class="hover:text-white transition-colors">Home</a>
+        <span>/</span>
+        <a href="/countries" class="hover:text-white transition-colors">Countries</a>
+        <span>/</span>
+        <a href={`/study-abroad/${countryObj.slug}`} class="hover:text-white transition-colors">Study in {countryObj.name}</a>
+        <span>/</span>
+        <span class="text-accent-cyan font-semibold">{courseObj.title}</span>
+      </nav>
+
       <div class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white/10 text-accent-cyan border border-white/15 text-xs font-semibold uppercase tracking-wider">
         <span>{countryObj.flag}</span>
-        <span>2026 Destination Guide</span>
+        <span>2026 Admissions Guide</span>
       </div>
 
       <h1 class="text-3xl sm:text-5xl lg:text-6xl font-extrabold font-display tracking-tight text-white leading-tight">
@@ -111,6 +166,53 @@ const structuredCourseData = {
     {/* Integrated Interactive Visa Odds Calculator */}
     <div class="pt-6">
       <VisaApprovalCalculator client:only="react" />
+    </div>
+
+    {/* Hub-to-Spoke Related Pathways Cross-Linking */}
+    <div class="pt-10 border-t border-slate-200/80 space-y-6">
+      <div class="flex items-center justify-between flex-wrap gap-4">
+        <div>
+          <h2 class="text-2xl font-bold font-display text-slate-900 tracking-tight">
+            Other Popular Degree Pathways in {countryObj.name}
+          </h2>
+          <p class="text-xs text-slate-500 mt-1">
+            Compare duration, fees, and work permits for other top-ranked disciplines.
+          </p>
+        </div>
+        <a 
+          href={`/study-abroad/${countryObj.slug}`}
+          class="inline-flex items-center gap-1.5 text-xs font-semibold text-accent-blue hover:underline"
+        >
+          View Full {countryObj.name} Country Guide →
+        </a>
+      </div>
+
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+        {otherCourses.map(other => (
+          <a 
+            href={`/study-abroad/${countryObj.slug}/${other.slug}`}
+            class="group p-5 rounded-2xl bg-white border border-slate-200/80 hover:border-accent-blue/50 hover:shadow-md transition-all flex flex-col justify-between space-y-3"
+          >
+            <div class="flex items-start justify-between">
+              <div class="flex items-center gap-2.5">
+                <span class="text-xl">{other.icon}</span>
+                <h3 class="text-sm font-bold text-slate-800 group-hover:text-accent-blue transition-colors">
+                  {other.title}
+                </h3>
+              </div>
+              <span class="text-[10px] font-semibold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-100 shrink-0">
+                {other.psw}
+              </span>
+            </div>
+            <div class="pt-2 border-t border-slate-100 flex items-center justify-between text-xs text-slate-500">
+              <span>{other.avgFee}</span>
+              <span class="text-accent-blue font-semibold group-hover:translate-x-0.5 transition-transform">
+                Read Guide →
+              </span>
+            </div>
+          </a>
+        ))}
+      </div>
     </div>
 
   </section>
