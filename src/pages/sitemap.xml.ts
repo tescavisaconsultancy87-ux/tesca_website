@@ -69,14 +69,34 @@ const STATIC_PAGES: { url: string; changefreq: string; priority: string }[] = [
   { url: "/germany-opportunity-card", changefreq: "monthly", priority: "0.6" },
 
   // SEO local landing pages
-  { url: "/visa-consultant-in-surat", changefreq: "monthly", priority: "0.6" },
-  { url: "/ielts-classes-in-surat", changefreq: "monthly", priority: "0.6" },
+  { url: "/visa-consultant-in-surat", changefreq: "monthly", priority: "0.8" },
+  { url: "/visa-consultant-varachha-surat", changefreq: "monthly", priority: "0.8" },
+  { url: "/ielts-classes-in-surat", changefreq: "monthly", priority: "0.8" },
 
   // Trust & legal pages
   { url: "/visa-success-sla", changefreq: "monthly", priority: "0.5" },
   { url: "/security-audit", changefreq: "monthly", priority: "0.4" },
   { url: "/privacy-policy", changefreq: "monthly", priority: "0.4" },
   { url: "/terms-of-service", changefreq: "monthly", priority: "0.4" },
+];
+
+const STUDY_ABROAD_PATHWAY_COUNTRIES = [
+  "canada",
+  "uk",
+  "australia",
+  "usa",
+  "germany",
+  "ireland",
+];
+
+const STUDY_ABROAD_PATHWAY_COURSES = [
+  "data-science",
+  "nursing",
+  "computer-science",
+  "business-analytics",
+  "cyber-security",
+  "engineering",
+  "mba",
 ];
 
 function escapeXml(str: string): string {
@@ -160,6 +180,18 @@ export const GET: APIRoute = async () => {
     xml += `    <changefreq>monthly</changefreq>\n`;
     xml += `    <priority>0.7</priority>\n`;
     xml += `  </url>\n`;
+  }
+
+  // Study-abroad country-course pathway pages (42 programmatic SEO landing pages)
+  for (const country of STUDY_ABROAD_PATHWAY_COUNTRIES) {
+    for (const course of STUDY_ABROAD_PATHWAY_COURSES) {
+      xml += `  <url>\n`;
+      xml += `    <loc>${SITE}/study-abroad/${escapeXml(country)}/${escapeXml(course)}</loc>\n`;
+      xml += `    <lastmod>${today}</lastmod>\n`;
+      xml += `    <changefreq>monthly</changefreq>\n`;
+      xml += `    <priority>0.7</priority>\n`;
+      xml += `  </url>\n`;
+    }
   }
 
   xml += `</urlset>\n`;
