@@ -1,6 +1,8 @@
 import type { APIRoute } from "astro";
 import { checkAdminAuth } from "../../utils/adminAuth";
+import { validateAdminCsrf } from "../../utils/csrf";
 import { getSupabaseAdmin } from "../../utils/supabase";
+import { sanitizeText } from "../../utils/validation";
 
 export const prerender = false;
 
@@ -42,9 +44,12 @@ export const POST: APIRoute = async ({ request, cookies }) => {
     });
   }
 
+  const csrfError = await validateAdminCsrf(request, cookies);
+  if (csrfError) return csrfError;
+
   try {
     const body = await request.json();
-    const text = (body.text || "").toString().trim();
+    const text = sanitizeText(body.text || "", 500);
 
     if (!text) {
       return new Response(JSON.stringify({ error: "Announcement text cannot be empty." }), {
@@ -82,6 +87,9 @@ export const DELETE: APIRoute = async ({ request, cookies }) => {
       headers: { "Content-Type": "application/json" },
     });
   }
+
+  const csrfError = await validateAdminCsrf(request, cookies);
+  if (csrfError) return csrfError;
 
   try {
     const body = await request.json();

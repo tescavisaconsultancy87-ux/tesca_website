@@ -1,6 +1,8 @@
 import type { APIRoute } from "astro";
 import { checkAdminAuth } from "../../utils/adminAuth";
+import { validateAdminCsrf } from "../../utils/csrf";
 import { getSupabaseAdmin } from "../../utils/supabase";
+import { sanitizeText } from "../../utils/validation";
 
 export const prerender = false;
 
@@ -13,13 +15,16 @@ export const POST: APIRoute = async ({ request, cookies }) => {
     });
   }
 
+  const csrfError = await validateAdminCsrf(request, cookies);
+  if (csrfError) return csrfError;
+
   try {
     const body = await request.json();
-    const date = (body.date || "").toString().trim();
-    const tag = (body.tag || "").toString().trim();
+    const date = sanitizeText(body.date || "", 20);
+    const tag = sanitizeText(body.tag || "", 50);
     const tagColor = (body.tag_color || "amber").toString().trim();
-    const title = (body.title || "").toString().trim();
-    const link = (body.link || "").toString().trim();
+    const title = sanitizeText(body.title || "", 200);
+    const link = sanitizeText(body.link || "", 500);
 
     if (!date || !tag || !title || !link) {
       return new Response(JSON.stringify({ error: "Please fill in all visa bulletin fields." }), {
@@ -69,6 +74,9 @@ export const DELETE: APIRoute = async ({ request, cookies }) => {
       headers: { "Content-Type": "application/json" },
     });
   }
+
+  const csrfError = await validateAdminCsrf(request, cookies);
+  if (csrfError) return csrfError;
 
   try {
     const body = await request.json();

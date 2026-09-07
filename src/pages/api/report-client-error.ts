@@ -1,6 +1,7 @@
 import type { APIRoute } from 'astro';
 import { sendMail } from '../../utils/mailer';
 import { getClientIP, checkRateLimit, jsonResponse } from '../../utils/security';
+import { htmlEncode } from '../../utils/validation';
 
 const RATE_LIMIT_WINDOW_MS = 10 * 60 * 1000; // 10 minutes
 const RATE_LIMIT_MAX = 10; // Max 10 error reports per IP in 10 minutes
@@ -45,7 +46,7 @@ export const POST: APIRoute = async ({ request }) => {
       'fbq is not defined'
     ];
 
-    const errorStr = `${message} ${stack || ''}`.toLowerCase();
+    const errorStr = `${htmlEncode(message)} ${htmlEncode(stack || '')}`.toLowerCase();
     const shouldIgnore = IGNORED_ERRORS.some(pattern => errorStr.includes(pattern.toLowerCase()));
 
     if (shouldIgnore) {
@@ -56,11 +57,11 @@ export const POST: APIRoute = async ({ request }) => {
     const emailSubject = `⚠️ Client-Side Error: ${type || 'Unhandled Error'}`;
 
     const formattedContext = context 
-      ? `<pre style="background: #f5f5f5; padding: 10px; border-radius: 5px; overflow-x: auto; font-family: monospace;">${JSON.stringify(context, null, 2)}</pre>`
+      ? `<pre style="background: #f5f5f5; padding: 10px; border-radius: 5px; overflow-x: auto; font-family: monospace;">${htmlEncode(JSON.stringify(context, null, 2))}</pre>`
       : 'N/A';
 
     const formattedStack = stack
-      ? `<pre style="background: #fdf2f2; border: 1px solid #fde8e8; padding: 10px; border-radius: 5px; overflow-x: auto; color: #9b1c1c; font-family: monospace; font-size: 13px;">${stack}</pre>`
+      ? `<pre style="background: #fdf2f2; border: 1px solid #fde8e8; padding: 10px; border-radius: 5px; overflow-x: auto; color: #9b1c1c; font-family: monospace; font-size: 13px;">${htmlEncode(stack)}</pre>`
       : 'N/A';
 
     const htmlContent = `
@@ -73,11 +74,11 @@ export const POST: APIRoute = async ({ request }) => {
           <table style="width: 100%; border-collapse: collapse; margin-bottom: 20px; font-size: 14px;">
             <tr>
               <td style="padding: 8px 0; font-weight: 600; color: #4b5563; width: 120px; border-bottom: 1px solid #f3f4f6;">Type:</td>
-              <td style="padding: 8px 0; border-bottom: 1px solid #f3f4f6; color: #111827; font-weight: 500;">${type || 'Unknown'}</td>
+              <td style="padding: 8px 0; border-bottom: 1px solid #f3f4f6; color: #111827; font-weight: 500;">${htmlEncode(type || 'Unknown')}</td>
             </tr>
             <tr>
               <td style="padding: 8px 0; font-weight: 600; color: #4b5563; border-bottom: 1px solid #f3f4f6;">URL:</td>
-              <td style="padding: 8px 0; border-bottom: 1px solid #f3f4f6; color: #3b82f6;"><a href="${url || '#'}" target="_blank" style="text-decoration: none; color: #3b82f6;">${url || 'Unknown'}</a></td>
+              <td style="padding: 8px 0; border-bottom: 1px solid #f3f4f6; color: #3b82f6;"><a href="${htmlEncode(url || '#')}" target="_blank" style="text-decoration: none; color: #3b82f6;">${htmlEncode(url || 'Unknown')}</a></td>
             </tr>
             <tr>
               <td style="padding: 8px 0; font-weight: 600; color: #4b5563; border-bottom: 1px solid #f3f4f6;">Time:</td>
@@ -85,19 +86,19 @@ export const POST: APIRoute = async ({ request }) => {
             </tr>
             <tr>
               <td style="padding: 8px 0; font-weight: 600; color: #4b5563; border-bottom: 1px solid #f3f4f6;">Client IP:</td>
-              <td style="padding: 8px 0; border-bottom: 1px solid #f3f4f6; color: #1f2937;">${clientIP}</td>
+              <td style="padding: 8px 0; border-bottom: 1px solid #f3f4f6; color: #1f2937;">${htmlEncode(clientIP)}</td>
             </tr>
             ${filename ? `
             <tr>
               <td style="padding: 8px 0; font-weight: 600; color: #4b5563; border-bottom: 1px solid #f3f4f6;">Location:</td>
-              <td style="padding: 8px 0; border-bottom: 1px solid #f3f4f6; color: #1f2937; font-family: monospace;">${filename}:${lineno || 0}:${colno || 0}</td>
+              <td style="padding: 8px 0; border-bottom: 1px solid #f3f4f6; color: #1f2937; font-family: monospace;">${htmlEncode(filename)}:${lineno || 0}:${colno || 0}</td>
             </tr>` : ''}
           </table>
 
           <div style="margin-bottom: 20px;">
             <p style="margin: 0 0 8px 0; font-weight: 600; color: #4b5563; font-size: 14px;">Error Message:</p>
             <div style="background: #f9fafb; border: 1px solid #e5e7eb; padding: 12px 16px; border-radius: 8px; font-weight: 600; color: #111827; font-size: 15px; font-family: system-ui;">
-              ${message}
+              ${htmlEncode(message)}
             </div>
           </div>
 
@@ -112,7 +113,7 @@ export const POST: APIRoute = async ({ request }) => {
           </div>
 
           <div style="margin-top: 24px; padding-top: 16px; border-top: 1px solid #e5e7eb; font-size: 12px; color: #9ca3af;">
-            <strong>User Agent:</strong> ${userAgent || 'N/A'}
+            <strong>User Agent:</strong> ${htmlEncode(userAgent || 'N/A')}
           </div>
         </div>
       </div>

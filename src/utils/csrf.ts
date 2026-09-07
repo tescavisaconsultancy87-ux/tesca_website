@@ -17,7 +17,7 @@ export function ensureCsrfToken(cookies: any, isSecure: boolean = import.meta.en
       path: "/",
       httpOnly: true,
       secure: isSecure,
-      sameSite: "lax",
+      sameSite: "strict",
       maxAge: 60 * 60 * 12,
     });
   }

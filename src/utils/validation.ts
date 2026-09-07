@@ -69,11 +69,24 @@ export function sanitizeText(text: string | null | undefined, maxLen = 100): str
   let cleaned = text.trim();
   // Strip simple HTML tags to prevent XSS
   cleaned = cleaned.replace(/<\/?[^>]+(>|$)/g, "");
+  // Strip newlines/carriage returns to prevent header injection
+  cleaned = cleaned.replace(/[\r\n]+/g, " ");
   // Limit length
   if (cleaned.length > maxLen) {
     cleaned = cleaned.substring(0, maxLen);
   }
   return cleaned;
+}
+
+/** HTML-encode a string for safe interpolation into HTML (email templates, admin panels). */
+export function htmlEncode(str: string | null | undefined): string {
+  if (str === null || str === undefined) return "";
+  return str
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
 }
 
 export function sanitizeReviewInput(text: string | null | undefined, maxLen = 50): string {

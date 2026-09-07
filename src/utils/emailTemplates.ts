@@ -6,6 +6,8 @@
  *  3. inquiryConfirmationEmail – sent when user submits the full CRM inquiry form
  */
 
+import { htmlEncode } from './validation';
+
 const BRAND_BLUE = '#0F4C81';
 const BRAND_AMBER = '#F08A00';
 const BRAND_DARK = '#1E293B';
@@ -48,7 +50,7 @@ function baseWrapper(content: string, previewText = '') {
             © ${new Date().getFullYear()} TESCA Visa Consultancy. All rights reserved.<br/>
             110-112, Royal Arcade, Simada Naka, Surat, Gujarat 395013<br/>
             <a href="mailto:tescavisaconsultancy87@gmail.com" style="color:#${BRAND_BLUE.replace('#','')};">tescavisaconsultancy87@gmail.com</a> &nbsp;|&nbsp; 
-            <a href="tel:+919824152731" style="color:#${BRAND_BLUE.replace('#','')};">+91 98241 52731</a>
+            <a href="tel:+919****2731" style="color:#${BRAND_BLUE.replace('#','')};">+91 98241 52731</a>
           </p>
           <p style="font-size:11px; color:#cbd5e1; margin-top:12px;">This email was sent because you interacted with TESCA Visa Consultancy website.</p>
         </td></tr>
@@ -108,7 +110,7 @@ export function eligibilityResultEmail({
       <div style="display:inline-block; background:rgba(240,138,0,0.15); border:1px solid rgba(240,138,0,0.4); border-radius:30px; padding:5px 16px; margin-bottom:16px;">
         <span style="font-size:11px; font-weight:700; color:#fbbf24; letter-spacing:1.5px; text-transform:uppercase;">🎯 Eligibility Report</span>
       </div>
-      <h1 style="font-size:28px; font-weight:800; color:#ffffff; line-height:1.25; margin:0 0 10px;">Hello, ${name}! 👋</h1>
+      <h1 style="font-size:28px; font-weight:800; color:#ffffff; line-height:1.25; margin:0 0 10px;">Hello, ${htmlEncode(name)}! 👋</h1>
       <p style="font-size:16px; color:rgba(255,255,255,0.80); line-height:1.6; margin:0;">
         Your eligibility assessment is ready. Here's a personalized summary of your profile.
       </p>
@@ -123,19 +125,19 @@ export function eligibilityResultEmail({
         <tr>
           <td style="width:33%; padding:0 6px 0 0;">
             <div style="background:#f0f9ff; border:1.5px solid #bae6fd; border-radius:14px; padding:18px 14px; text-align:center;">
-              <span style="font-size:28px; font-weight:800; color:${BRAND_BLUE}; display:block; line-height:1;">${academicScore}%</span>
+              <span style="font-size:28px; font-weight:800; color:${BRAND_BLUE}; display:block; line-height:1;">${htmlEncode(String(academicScore))}%</span>
               <span style="font-size:11px; color:#64748b; font-weight:600; margin-top:4px; display:block; text-transform:uppercase; letter-spacing:0.8px;">Academic Score</span>
             </div>
           </td>
           <td style="width:33%; padding:0 3px;">
             <div style="background:#f0fdf4; border:1.5px solid #bbf7d0; border-radius:14px; padding:18px 14px; text-align:center;">
-              <span style="font-size:28px; font-weight:800; color:#16a34a; display:block; line-height:1;">${ieltsScore}</span>
+              <span style="font-size:28px; font-weight:800; color:#16a34a; display:block; line-height:1;">${htmlEncode(String(ieltsScore))}</span>
               <span style="font-size:11px; color:#64748b; font-weight:600; margin-top:4px; display:block; text-transform:uppercase; letter-spacing:0.8px;">IELTS Band</span>
             </div>
           </td>
           <td style="width:33%; padding:0 0 0 6px;">
             <div style="background:#fff7ed; border:1.5px solid #fed7aa; border-radius:14px; padding:18px 14px; text-align:center;">
-              <span style="font-size:22px; font-weight:800; color:${BRAND_AMBER}; display:block; line-height:1;">₹${budget}L</span>
+              <span style="font-size:22px; font-weight:800; color:${BRAND_AMBER}; display:block; line-height:1;">₹${htmlEncode(String(budget))}L</span>
               <span style="font-size:11px; color:#64748b; font-weight:600; margin-top:4px; display:block; text-transform:uppercase; letter-spacing:0.8px;">Budget/Year</span>
             </div>
           </td>
@@ -150,9 +152,9 @@ export function eligibilityResultEmail({
       ${isGoodMatch
         ? `<div style="background: linear-gradient(135deg, #f0fdf4, #dcfce7); border:2px solid #86efac; border-radius:16px; padding:22px 24px; display:flex; align-items:center;">
             <div>
-              <p style="font-size:18px; font-weight:800; color:#16a34a; margin:0 0 6px;">🎉 Great News! ${matchCount} Universities Match Your Profile</p>
+              <p style="font-size:18px; font-weight:800; color:#16a34a; margin:0 0 6px;">🎉 Great News! ${htmlEncode(String(matchCount))} Universities Match Your Profile</p>
               <p style="font-size:14px; color:#374151; margin:0; line-height:1.6;">
-                Based on your academic score, IELTS band, and budget, we found <strong>${matchCount} matched universities</strong> for <strong>${destination}</strong>. 
+                Based on your academic score, IELTS band, and budget, we found <strong>${htmlEncode(String(matchCount))} matched universities</strong> for <strong>${htmlEncode(destination)}</strong>. 
                 Our counselors will shortlist the best options for you!
               </p>
             </div>
@@ -207,8 +209,8 @@ export function eligibilityResultEmail({
   </tr>`;
 
   return {
-    subject: `🎯 Your Eligibility Results Are Ready, ${name}! — TESCA`,
-    html: baseWrapper(content, `Your eligibility assessment found ${matchCount} university matches. View them now!`),
+    subject: `🎯 Your Eligibility Results Are Ready, ${htmlEncode(name)}! — TESCA`,
+    html: baseWrapper(content, `Your eligibility assessment found ${htmlEncode(String(matchCount))} university matches. View them now!`),
   };
 }
 
@@ -262,19 +264,19 @@ export function counsellorBookingEmail({
 
   const heroTitle = hasBookingDetails 
     ? `Counselling Session Confirmed!`
-    : `You're All Set, ${firstName}!`;
+    : `You're All Set, ${htmlEncode(firstName)}!`;
 
   const heroSubtitle = hasBookingDetails
-    ? `Hi ${firstName}, your calendar slot has been successfully scheduled. A calendar invitation has been sent to your email.`
+    ? `Hi ${htmlEncode(firstName)}, your calendar slot has been successfully scheduled. A calendar invitation has been sent to your email.`
     : `Your counselling request has been received. A TESCA senior counselor will reach out to you within <strong style="color:#fbbf24;">24 hours</strong>.`;
 
   const subject = hasBookingDetails
-    ? `✅ Counselling Session Confirmed: ${formattedDate} at ${bookingTime} — TESCA`
+    ? `✅ Counselling Session Confirmed: ${htmlEncode(formattedDate)} at ${htmlEncode(bookingTime)} — TESCA`
     : `✅ Counselling Request Confirmed — TESCA Visa Consultancy`;
 
   const previewText = hasBookingDetails
-    ? `Hi ${firstName}, your counselling session on ${formattedDate} at ${bookingTime} is confirmed!`
-    : `Hi ${firstName}, your counselling session request is confirmed! We will contact you within 24 hours.`;
+    ? `Hi ${htmlEncode(firstName)}, your counselling session on ${htmlEncode(formattedDate)} at ${htmlEncode(bookingTime)} is confirmed!`
+    : `Hi ${htmlEncode(firstName)}, your counselling session request is confirmed! We will contact you within 24 hours.`;
 
   const content = `
   ${header()}
@@ -285,7 +287,7 @@ export function counsellorBookingEmail({
       <div style="display:inline-block; background:rgba(240,138,0,0.18); border:1px solid rgba(240,138,0,0.5); border-radius:30px; padding:5px 16px; margin-bottom:16px;">
         <span style="font-size:11px; font-weight:700; color:#fbbf24; letter-spacing:1.5px; text-transform:uppercase;">✅ Booking Confirmed</span>
       </div>
-      <h1 style="font-size:28px; font-weight:800; color:#ffffff; margin:0 0 10px; line-height:1.25;">${heroTitle}</h1>
+      <h1 style="font-size:28px; font-weight:800; color:#ffffff; margin:0 0 10px; line-height:1.25;">${htmlEncode(heroTitle)}</h1>
       <p style="font-size:15px; color:rgba(255,255,255,0.78); margin:0; line-height:1.65;">
         ${heroSubtitle}
       </p>
@@ -298,8 +300,8 @@ export function counsellorBookingEmail({
     <td style="padding: 32px 40px 0;">
       <div style="background: #f0fdf4; border: 1.5px solid #bbf7d0; border-radius: 16px; padding: 24px; text-align: center;">
         <p style="font-size: 13px; font-weight: 700; color: #166534; letter-spacing: 1.2px; text-transform: uppercase; margin: 0 0 8px;">Scheduled Date & Time</p>
-        <h2 style="font-size: 20px; font-weight: 800; color: ${BRAND_BLUE}; margin: 0 0 4px;">${formattedDate}</h2>
-        <p style="font-size: 18px; font-weight: 700; color: ${BRAND_DARK}; margin: 0;">⏱️ ${bookingTime}</p>
+        <h2 style="font-size: 20px; font-weight: 800; color: ${BRAND_BLUE}; margin: 0 0 4px;">${htmlEncode(formattedDate)}</h2>
+        <p style="font-size: 18px; font-weight: 700; color: ${BRAND_DARK}; margin: 0;">⏱️ ${htmlEncode(bookingTime)}</p>
       </div>
     </td>
   </tr>
@@ -322,7 +324,7 @@ export function counsellorBookingEmail({
         ].map(([label, value], i) => `
         <tr style="background:${i % 2 === 0 ? '#f8fafc' : '#ffffff'};">
           <td style="padding:14px 20px; font-size:13px; font-weight:600; color:#475569; width:45%; border-bottom:1px solid #f1f5f9;">${label}</td>
-          <td style="padding:14px 20px; font-size:13px; font-weight:700; color:${BRAND_DARK}; border-bottom:1px solid #f1f5f9;">${value}</td>
+          <td style="padding:14px 20px; font-size:13px; font-weight:700; color:${BRAND_DARK}; border-bottom:1px solid #f1f5f9;">${htmlEncode(value)}</td>
         </tr>`).join('')}
       </table>
     </td>
@@ -335,7 +337,7 @@ export function counsellorBookingEmail({
       <table width="100%" cellpadding="0" cellspacing="0">
         ${[
           { icon: '📞', title: 'Counselor Call', desc: 'Our expert will call you within 24 hours to understand your goals.' },
-          { icon: '📋', title: 'Profile Assessment', desc: 'We\u2019ll evaluate your academic profile and match you with universities.' },
+          { icon: '📋', title: 'Profile Assessment', desc: 'We\\u2019ll evaluate your academic profile and match you with universities.' },
           { icon: '🗺️', title: 'Custom Roadmap', desc: 'Get a tailored step-by-step plan for your study abroad journey.' },
         ].map(step => `
         <tr>
@@ -368,7 +370,7 @@ export function counsellorBookingEmail({
     <td style="padding:24px 40px 40px;" class="email-card">
       <div style="background:linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%); border:2px solid #86efac; border-radius:16px; padding:24px; text-align:center;">
         <p style="font-size:15px; font-weight:700; color:#15803d; margin:0 0 8px;">Need to Reach Us Sooner?</p>
-        <p style="font-size:13px; color:#374151; margin:0 0 18px;">WhatsApp or call us directly \u2014 we\u2019re available 9AM to 7PM IST.</p>
+        <p style="font-size:13px; color:#374151; margin:0 0 18px;">WhatsApp or call us directly \\u2014 we\\u2019re available 9AM to 7PM IST.</p>
         <a href="https://wa.me/919824152731" style="display:inline-block; background:#25D366; color:#ffffff; font-size:14px; font-weight:800; padding:12px 32px; border-radius:50px; letter-spacing:0.5px;">💬 WhatsApp Counsellor</a>
       </div>
     </td>
@@ -414,13 +416,13 @@ export function inquiryConfirmationEmail({
       <div style="display:inline-block; background:rgba(240,138,0,0.18); border:1px solid rgba(240,138,0,0.5); border-radius:30px; padding:5px 16px; margin-bottom:16px;">
         <span style="font-size:11px; font-weight:700; color:#fbbf24; letter-spacing:1.5px; text-transform:uppercase;">📋 Inquiry Received</span>
       </div>
-      <h1 style="font-size:28px; font-weight:800; color:#ffffff; margin:0 0 10px; line-height:1.25;">Thank You, ${name}!</h1>
+      <h1 style="font-size:28px; font-weight:800; color:#ffffff; margin:0 0 10px; line-height:1.25;">Thank You, ${htmlEncode(name)}!</h1>
       <p style="font-size:15px; color:rgba(255,255,255,0.78); margin:0; line-height:1.65;">
         Your detailed inquiry has been registered. Our senior counselor will review your complete profile and contact you within <strong style="color:#fbbf24;">24 hours</strong>.
       </p>
       ${leadId ? `<div style="margin-top:16px; display:inline-block; background:rgba(255,255,255,0.10); border:1px solid rgba(255,255,255,0.20); border-radius:10px; padding:8px 20px;">
         <span style="font-size:12px; font-weight:700; color:rgba(255,255,255,0.6); letter-spacing:0.8px;">LEAD ID: </span>
-        <span style="font-size:13px; font-weight:800; color:#ffffff; font-family:monospace;">${leadId}</span>
+        <span style="font-size:13px; font-weight:800; color:#ffffff; font-family:monospace;">${htmlEncode(leadId)}</span>
       </div>` : ''}
     </td>
   </tr>
@@ -435,7 +437,7 @@ export function inquiryConfirmationEmail({
             <div style="background:#f0f9ff; border:1.5px solid #bae6fd; border-radius:14px; padding:18px;">
               <p style="font-size:11px; font-weight:700; color:#0369a1; text-transform:uppercase; letter-spacing:1px; margin:0 0 10px;">🎯 Inquiry Types</p>
               ${inquiryTypes.length > 0 
-                ? inquiryTypes.map(t => `<div style="display:inline-block; background:#e0f2fe; color:#0369a1; font-size:12px; font-weight:700; padding:4px 12px; border-radius:20px; margin:3px 3px 3px 0; border:1px solid #bae6fd;">${t}</div>`).join('')
+                ? inquiryTypes.map(t => `<div style="display:inline-block; background:#e0f2fe; color:#0369a1; font-size:12px; font-weight:700; padding:4px 12px; border-radius:20px; margin:3px 3px 3px 0; border:1px solid #bae6fd;">${htmlEncode(t)}</div>`).join('')
                 : '<span style="font-size:13px; color:#94a3b8;">Not specified</span>'}
             </div>
           </td>
@@ -443,7 +445,7 @@ export function inquiryConfirmationEmail({
             <div style="background:#f0fdf4; border:1.5px solid #bbf7d0; border-radius:14px; padding:18px;">
               <p style="font-size:11px; font-weight:700; color:#15803d; text-transform:uppercase; letter-spacing:1px; margin:0 0 10px;">🌍 Preferred Countries</p>
               ${preferredCountries.length > 0
-                ? preferredCountries.map(c => `<div style="display:inline-block; background:#dcfce7; color:#15803d; font-size:12px; font-weight:700; padding:4px 12px; border-radius:20px; margin:3px 3px 3px 0; border:1px solid #bbf7d0;">${c}</div>`).join('')
+                ? preferredCountries.map(c => `<div style="display:inline-block; background:#dcfce7; color:#15803d; font-size:12px; font-weight:700; padding:4px 12px; border-radius:20px; margin:3px 3px 3px 0; border:1px solid #bbf7d0;">${htmlEncode(c)}</div>`).join('')
                 : '<span style="font-size:13px; color:#94a3b8;">Flexible</span>'}
             </div>
           </td>
@@ -495,7 +497,7 @@ export function inquiryConfirmationEmail({
         <h2 style="font-size:20px; font-weight:800; color:#ffffff; margin:0 0 10px;">Need Immediate Help?</h2>
         <p style="font-size:13px; color:rgba(255,255,255,0.75); margin:0 0 20px;">Our counselors are available 9 AM – 7 PM (IST) on WhatsApp and Phone.</p>
         <a href="https://wa.me/919824152731" style="display:inline-block; background:#25D366; color:#ffffff; font-size:14px; font-weight:800; padding:13px 30px; border-radius:50px; margin-right:10px;">💬 WhatsApp</a>
-        <a href="tel:+919824152731" style="display:inline-block; background:rgba(255,255,255,0.15); color:#ffffff; font-size:14px; font-weight:800; padding:13px 30px; border-radius:50px; border:1px solid rgba(255,255,255,0.25);">📞 Call Us</a>
+        <a href="tel:+919****2731" style="display:inline-block; background:rgba(255,255,255,0.15); color:#ffffff; font-size:14px; font-weight:800; padding:13px 30px; border-radius:50px; border:1px solid rgba(255,255,255,0.25);">📞 Call Us</a>
       </div>
     </td>
   </tr>
@@ -511,7 +513,7 @@ export function inquiryConfirmationEmail({
 
   return {
     subject: `📋 Inquiry Registered — TESCA Visa Consultancy`,
-    html: baseWrapper(content, `Hi ${name}, your inquiry has been received! We'll contact you within 24 hours.`),
+    html: baseWrapper(content, `Hi ${htmlEncode(name)}, your inquiry has been received! We'll contact you within 24 hours.`),
   };
 }
 
@@ -544,7 +546,7 @@ export function partnerConfirmationEmail({
       <div style="display:inline-block; background:rgba(240,138,0,0.18); border:1px solid rgba(240,138,0,0.5); border-radius:30px; padding:5px 16px; margin-bottom:16px;">
         <span style="font-size:11px; font-weight:700; color:#fbbf24; letter-spacing:1.5px; text-transform:uppercase;">🤝 Partnership Request</span>
       </div>
-      <h1 style="font-size:28px; font-weight:800; color:#ffffff; margin:0 0 10px; line-height:1.25;">Let's Grow Together, ${name}!</h1>
+      <h1 style="font-size:28px; font-weight:800; color:#ffffff; margin:0 0 10px; line-height:1.25;">Let's Grow Together, ${htmlEncode(name)}!</h1>
       <p style="font-size:15px; color:rgba(255,255,255,0.78); margin:0; line-height:1.65;">
         Thank you for your interest in partnering with TESCA Visa Consultancy. Our partnership coordinator will review your profile and reach out to you within <strong style="color:#fbbf24;">48 hours</strong> to discuss the next steps.
       </p>
@@ -567,7 +569,7 @@ export function partnerConfirmationEmail({
         ].map(([label, value], i) => `
         <tr style="background:${i % 2 === 0 ? '#f8fafc' : '#ffffff'};">
           <td style="padding:14px 20px; font-size:13px; font-weight:600; color:#475569; width:45%; border-bottom:1px solid #f1f5f9;">${label}</td>
-          <td style="padding:14px 20px; font-size:13px; font-weight:700; color:${BRAND_DARK}; border-bottom:1px solid #f1f5f9;">${value}</td>
+          <td style="padding:14px 20px; font-size:13px; font-weight:700; color:${BRAND_DARK}; border-bottom:1px solid #f1f5f9;">${htmlEncode(value)}</td>
         </tr>`).join('')}
       </table>
     </td>
@@ -652,9 +654,9 @@ export function contactConfirmationEmail({
       <div style="display:inline-block; background:rgba(240,138,0,0.18); border:1px solid rgba(240,138,0,0.5); border-radius:30px; padding:5px 16px; margin-bottom:16px;">
         <span style="font-size:11px; font-weight:700; color:#fbbf24; letter-spacing:1.5px; text-transform:uppercase;">${categoryLabel}</span>
       </div>
-      <h1 style="font-size:28px; font-weight:800; color:#ffffff; margin:0 0 10px; line-height:1.25;">Thank You, ${name}!</h1>
+      <h1 style="font-size:28px; font-weight:800; color:#ffffff; margin:0 0 10px; line-height:1.25;">Thank You, ${htmlEncode(name)}!</h1>
       <p style="font-size:15px; color:rgba(255,255,255,0.78); margin:0; line-height:1.65;">
-        We have received your <strong style="color:#fbbf24;">${subject || 'message'}</strong>. Our team will review it and get back to you within <strong style="color:#fbbf24;">24 hours</strong>.
+        We have received your <strong style="color:#fbbf24;">${htmlEncode(subject || 'message')}</strong>. Our team will review it and get back to you within <strong style="color:#fbbf24;">24 hours</strong>.
       </p>
     </td>
   </tr>
@@ -694,7 +696,7 @@ export function contactConfirmationEmail({
   </tr>`;
 
   return {
-    subject: `✅ We Received Your ${subject || 'Message'} — TESCA`,
+    subject: `✅ We Received Your ${htmlEncode(subject || 'Message')} — TESCA`,
     html: baseWrapper(content, `Hi ${name}, thank you for contacting TESCA. We'll respond within 24 hours.`),
   };
 }
@@ -733,7 +735,7 @@ export function contactAdminNotificationEmail({
       </div>
       <h1 style="font-size:28px; font-weight:800; color:#ffffff; margin:0 0 10px; line-height:1.25;">New Contact Message</h1>
       <p style="font-size:15px; color:rgba(255,255,255,0.78); margin:0; line-height:1.65;">
-        A new contact form submission from <strong style="color:#fbbf24;">${name}</strong>.
+        A new contact form submission from <strong style="color:#fbbf24;">${htmlEncode(name)}</strong>.
       </p>
     </td>
   </tr>
@@ -751,7 +753,7 @@ export function contactAdminNotificationEmail({
         ] as [string, string][]).map(([label, value], i) => `
         <tr style="background:${i % 2 === 0 ? '#f8fafc' : '#ffffff'};">
           <td style="padding:14px 20px; font-size:13px; font-weight:600; color:#475569; width:35%; border-bottom:1px solid #f1f5f9;">${label}</td>
-          <td style="padding:14px 20px; font-size:13px; font-weight:700; color:${BRAND_DARK}; border-bottom:1px solid #f1f5f9;">${value}</td>
+          <td style="padding:14px 20px; font-size:13px; font-weight:700; color:${BRAND_DARK}; border-bottom:1px solid #f1f5f9;">${htmlEncode(value)}</td>
         </tr>`).join('')}
       </table>
     </td>
@@ -768,8 +770,8 @@ export function contactAdminNotificationEmail({
   </tr>`;
 
   return {
-    subject: `📬 ${categoryLabel}: ${name} — ${subject || 'No Subject'}`,
-    html: baseWrapper(content, `New contact form submission from ${name}.`),
+    subject: `📬 ${htmlEncode(categoryLabel)}: ${htmlEncode(name)} — ${htmlEncode(subject || 'No Subject')}`,
+    html: baseWrapper(content, `New contact form submission from ${htmlEncode(name)}.`),
   };
 }
 
@@ -827,15 +829,15 @@ export function partnerNotificationEmail({
         ].map(([label, value], i) => `
         <tr style="background:${i % 2 === 0 ? '#f8fafc' : '#ffffff'};">
           <td style="padding:14px 20px; font-size:13px; font-weight:600; color:#475569; width:40%; border-bottom:1px solid #f1f5f9;">${label}</td>
-          <td style="padding:14px 20px; font-size:13px; font-weight:700; color:${BRAND_DARK}; border-bottom:1px solid #f1f5f9;">${value}</td>
+          <td style="padding:14px 20px; font-size:13px; font-weight:700; color:${BRAND_DARK}; border-bottom:1px solid #f1f5f9;">${htmlEncode(value)}</td>
         </tr>`).join('')}
       </table>
     </td>
   </tr>`;
 
   return {
-    subject: `🚨 NEW PARTNER INQUIRY: ${name} (${partnershipModel})`,
-    html: baseWrapper(content, `New partner registration from ${name} for the ${partnershipModel} program.`),
+    subject: `🚨 NEW PARTNER INQUIRY: ${htmlEncode(name)} (${htmlEncode(partnershipModel)})`,
+    html: baseWrapper(content, `New partner registration from ${htmlEncode(name)} for the ${htmlEncode(partnershipModel)} program.`),
   };
 }
 
@@ -865,8 +867,8 @@ export function counsellorAdminNotificationEmail({
 }) {
   const isBookedSlot = !!(bookingDate && bookingTime);
   const subject = isBookedSlot
-    ? `📅 CONSULTATION SLOT BOOKED: ${name} (${bookingDate} @ ${bookingTime})`
-    : `🔔 NEW CONSULTATION LEAD: ${name} (${visaType || 'Visa Advice'})`;
+    ? `📅 CONSULTATION SLOT BOOKED: ${htmlEncode(name)} (${htmlEncode(bookingDate)} @ ${htmlEncode(bookingTime)})`
+    : `🔔 NEW CONSULTATION LEAD: ${htmlEncode(name)} (${htmlEncode(visaType || 'Visa Advice')})`;
 
   const content = `
   ${header()}
@@ -878,7 +880,7 @@ export function counsellorAdminNotificationEmail({
         </span>
       </div>
       <h1 style="font-size:26px; font-weight:800; color:#ffffff; margin:0 0 10px; line-height:1.25;">
-        ${isBookedSlot ? `Slot Booked: ${name}` : `Consultation Request: ${name}`}
+        ${isBookedSlot ? `Slot Booked: ${htmlEncode(name)}` : `Consultation Request: ${htmlEncode(name)}`}
       </h1>
       <p style="font-size:14px; color:rgba(255,255,255,0.78); margin:0; line-height:1.65;">
         ${isBookedSlot ? `A student has booked a consultation session slot on Google Calendar.` : `A new consultation request has been submitted on the website.`}
@@ -907,7 +909,7 @@ export function counsellorAdminNotificationEmail({
         ].map(([label, value], i) => `
         <tr style="background:${i % 2 === 0 ? '#f8fafc' : '#ffffff'};">
           <td style="padding:14px 20px; font-size:13px; font-weight:600; color:#475569; width:40%; border-bottom:1px solid #f1f5f9;">${label}</td>
-          <td style="padding:14px 20px; font-size:13px; font-weight:700; color:${BRAND_DARK}; border-bottom:1px solid #f1f5f9;">${value}</td>
+          <td style="padding:14px 20px; font-size:13px; font-weight:700; color:${BRAND_DARK}; border-bottom:1px solid #f1f5f9;">${htmlEncode(value)}</td>
         </tr>`).join('')}
       </table>
     </td>
@@ -915,7 +917,7 @@ export function counsellorAdminNotificationEmail({
 
   return {
     subject,
-    html: baseWrapper(content, `${name} has ${isBookedSlot ? `booked a slot for ${bookingDate} at ${bookingTime}` : `submitted a consultation request`}.`),
+    html: baseWrapper(content, `${htmlEncode(name)} has ${isBookedSlot ? `booked a slot for ${htmlEncode(bookingDate)} at ${htmlEncode(bookingTime)}` : `submitted a consultation request`}.`),
   };
 }
 
@@ -937,7 +939,7 @@ export function inquiryAdminNotificationEmail({
   preferredCountries?: string[];
   leadId?: string | number;
 }) {
-  const subject = `📩 NEW INQUIRY: ${name} (${(preferredCountries || [])[0] || 'Study Abroad'})`;
+  const subject = `📩 NEW INQUIRY: ${htmlEncode(name)} (${(preferredCountries || [])[0] || 'Study Abroad'})`;
 
   const content = `
   ${header()}
@@ -947,7 +949,7 @@ export function inquiryAdminNotificationEmail({
         <span style="font-size:11px; font-weight:700; color:#fbbf24; letter-spacing:1.5px; text-transform:uppercase;">📩 New Inquiry Received</span>
       </div>
       <h1 style="font-size:26px; font-weight:800; color:#ffffff; margin:0 0 10px; line-height:1.25;">
-        Inquiry Submission: ${name}
+        Inquiry Submission: ${htmlEncode(name)}
       </h1>
       <p style="font-size:14px; color:rgba(255,255,255,0.78); margin:0; line-height:1.65;">
         A student has submitted the main inquiry form on the website.
@@ -971,7 +973,7 @@ export function inquiryAdminNotificationEmail({
         ].map(([label, value], i) => `
         <tr style="background:${i % 2 === 0 ? '#f8fafc' : '#ffffff'};">
           <td style="padding:14px 20px; font-size:13px; font-weight:600; color:#475569; width:40%; border-bottom:1px solid #f1f5f9;">${label}</td>
-          <td style="padding:14px 20px; font-size:13px; font-weight:700; color:${BRAND_DARK}; border-bottom:1px solid #f1f5f9;">${value}</td>
+          <td style="padding:14px 20px; font-size:13px; font-weight:700; color:${BRAND_DARK}; border-bottom:1px solid #f1f5f9;">${htmlEncode(value)}</td>
         </tr>`).join('')}
       </table>
     </td>
@@ -979,6 +981,6 @@ export function inquiryAdminNotificationEmail({
 
   return {
     subject,
-    html: baseWrapper(content, `New inquiry submitted by ${name}.`),
+    html: baseWrapper(content, `New inquiry submitted by ${htmlEncode(name)}.`),
   };
 }
