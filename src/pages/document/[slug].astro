@@ -181,6 +181,7 @@ if (!doc) {
 
     // 🔒 Security Protection 2: Intercept Save & Print Keyboard Shortcuts
     document.addEventListener("keydown", (e) => {
+      if (!e.key) return;
       const key = e.key.toLowerCase();
       if (
         (e.ctrlKey || e.metaKey) && 
@@ -190,7 +191,7 @@ if (!doc) {
         e.stopPropagation();
         alert("🔒 Downloading, copying, and printing this document is disabled for security.");
       }
-      if (e.key === "F12") {
+      if (key === "f12") {
         e.preventDefault();
       }
     });
