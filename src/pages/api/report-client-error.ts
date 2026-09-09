@@ -43,11 +43,30 @@ export const POST: APIRoute = async ({ request }) => {
       'Script error.',
       'window.webkit.messageHandlers',
       'Extensions/',
-      'fbq is not defined'
+      'fbq is not defined',
+      // Android WebView internal scripts (IAB navigation performance logger)
+      'iabjs://',
+      'navigation_performance_logger',
+      // Android WebView Java bridge postMessage failures
+      'Java exception was raised during method invocation',
+      'Error invoking postMessage'
     ];
 
-    const errorStr = `${htmlEncode(message)} ${htmlEncode(stack || '')}`.toLowerCase();
-    const shouldIgnore = IGNORED_ERRORS.some(pattern => errorStr.includes(pattern.toLowerCase()));
+    // Also check filename to catch browser-internal scripts that report
+    // from non-page URLs (e.g. iabjs://, chrome-extension://, about:)
+    const filenameLower = (filename || '').toLowerCase();
+    const isBrowserInternalSource = [
+      'iabjs://',
+      'chrome-extension://',
+      'moz-extension://',
+      'safari-extension://',
+      'safari-web-extension://',
+      'about:',
+      'webkit-masked-url://'
+    ].some(prefix => filenameLower.startsWith(prefix));
+
+    const errorStr = `${htmlEncode(message)} ${htmlEncode(stack || '')} ${htmlEncode(filename || '')}`.toLowerCase();
+    const shouldIgnore = isBrowserInternalSource || IGNORED_ERRORS.some(pattern => errorStr.includes(pattern.toLowerCase()));
 
     if (shouldIgnore) {
       return jsonResponse({ success: true, message: "Ignored noisy/extension error (not reported)." });

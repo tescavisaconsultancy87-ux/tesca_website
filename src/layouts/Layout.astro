@@ -314,10 +314,15 @@ if (isAdminPage) {
 						'asynchronous response',
 						'listener indicated an asynchronous response',
 						'data:application/javascript',
-						'rrweb-plugin'
+						'rrweb-plugin',
+						// Android WebView internal scripts (IAB navigation performance logger)
+						'iabjs://',
+						'navigation_performance_logger',
+						'Java exception was raised during method invocation',
+						'Error invoking postMessage'
 					];
 					
-					const errorStr = `${message} ${stack || ''}`.toLowerCase();
+					const errorStr = `${message} ${stack || ''} ${context?.filename || ''}`.toLowerCase();
 					const shouldIgnore = IGNORED_ERRORS.some(pattern => errorStr.includes(pattern.toLowerCase()));
 					
 					if (shouldIgnore) {
@@ -361,7 +366,7 @@ if (isAdminPage) {
 				if (!event.error && !event.message) return;
 				const message = String(event.error?.message || event.message || '');
 				const filename = String(event.filename || '');
-				if (filename.includes('extension://') || message.includes('Script error.')) return;
+				if (filename.includes('extension://') || filename.includes('iabjs://') || message.includes('Script error.')) return;
 
 				window.reportClientError('Unhandled Runtime Error', event.error || event.message, {
 					filename: event.filename,
