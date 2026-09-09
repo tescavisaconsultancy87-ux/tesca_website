@@ -51,6 +51,45 @@ export const documents: DocumentItem[] = [
     tags: ['Canada PR', 'UK Care Home', 'Healthcare PR', 'Express Entry', 'PNP', 'Immigration', 'UK to Canada'],
     featured: true,
     author: 'TESCA Immigration Team'
+  },
+  {
+    id: 'doc-uk-chevening-01',
+    slug: 'chevening-scholarship-guide',
+    title: 'UK Chevening Scholarship 2027–2028 Guide',
+    description: 'Complete application overview for the UK Government Chevening Scholarship 2027–2028 cohort. Covers fully funded Master\'s degrees, eligibility requirements, 2,800-hour work experience rules, selection timeline, and essay criteria.',
+    category: 'University Guide',
+    pdfUrl: '/material/Chevening_Scholarship_2027-2028.pdf',
+    fileSize: '40 KB',
+    updatedAt: 'September 2026',
+    tags: ['Chevening Scholarship', 'UK Scholarship', 'Study in UK', 'Fully Funded Masters', 'FCDO', 'University Guide'],
+    featured: true,
+    author: 'TESCA Scholarship Desk'
+  },
+  {
+    id: 'doc-dubai-mibd-01',
+    slug: 'study-in-dubai-mibd-guide',
+    title: 'Study in Dubai – MIBD University 2026 Admission Guide',
+    description: 'Comprehensive admission guide for MIBD University in Dubai. Explore low tuition fees, no IELTS/PTE requirement pathways, study gap acceptance, Level 4 & 5 International Diplomas, and UAE work permits.',
+    category: 'University Guide',
+    pdfUrl: '/material/study_in_dubai_mibd_guide.pdf',
+    fileSize: '68 KB',
+    updatedAt: 'September 2026',
+    tags: ['Study in Dubai', 'MIBD University', 'Dubai Student Visa', 'No IELTS', 'Study Gap Accepted', 'UAE Education'],
+    featured: true,
+    author: 'TESCA Study Abroad Team'
+  },
+  {
+    id: 'doc-apaar-id-01',
+    slug: 'apaar-id-guide',
+    title: 'APAAR ID Master Guide – Digital Academic Passport',
+    description: 'Step-by-step blueprint for Indian students on creating and using your APAAR ID (Automated Permanent Academic Account Registry) and DigiLocker ABC linkage for streamlined overseas university credit transfers and verification.',
+    category: 'General Brochure',
+    pdfUrl: '/material/APAAR_ID_60.pdf',
+    fileSize: '29 KB',
+    updatedAt: 'September 2026',
+    tags: ['APAAR ID', 'One Nation One Student ID', 'Academic Bank of Credits', 'DigiLocker', 'Overseas Education', 'Student Visa Checklist'],
+    featured: true,
+    author: 'TESCA Advisory Desk'
   }
 ];
 
@@ -58,11 +97,33 @@ export function getDocumentBySlug(slug: string): DocumentItem | undefined {
   const norm = slug.toLowerCase().replace(/_/g, '-');
   return documents.find((doc) => {
     const docNorm = doc.slug.toLowerCase().replace(/_/g, '-');
-    return (
+    if (
       docNorm === norm ||
       docNorm.replace(/-guide$/, '') === norm ||
       norm.replace(/-guide$/, '') === docNorm
-    );
+    ) {
+      return true;
+    }
+    if (doc.slug.includes('chevening') && norm.includes('chevening')) {
+      return true;
+    }
+    if (
+      (doc.slug.includes('dubai-mibd') || doc.slug.includes('study-in-dubai')) &&
+      norm.includes('dubai') &&
+      (norm.includes('mibd') || norm.includes('study-in-dubai'))
+    ) {
+      return true;
+    }
+    if (doc.slug.includes('apaar') && norm.includes('apaar')) {
+      return true;
+    }
+    if (doc.slug.includes('uk-care-home') && norm.includes('care-home')) {
+      return true;
+    }
+    if (doc.slug.includes('uk-pr-stay') && norm.includes('uk-pr-stay')) {
+      return true;
+    }
+    return false;
   });
 }
 

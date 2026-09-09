@@ -21,6 +21,24 @@ export function getStaticPaths() {
       paths.push({ params: { slug: 'uk-care-home-to-canada-pr' }, props: { doc } });
       paths.push({ params: { slug: 'uk-care-home-canada-pr' }, props: { doc } });
     }
+    if (doc.slug.includes('chevening')) {
+      paths.push({ params: { slug: 'chevening-scholarship-guide' }, props: { doc } });
+      paths.push({ params: { slug: 'chevening-scholarship' }, props: { doc } });
+      paths.push({ params: { slug: 'chevening-scholarship-2027-2028' }, props: { doc } });
+      paths.push({ params: { slug: 'chevening-scholarship-2027-2028-guide' }, props: { doc } });
+    }
+    if (doc.slug.includes('dubai-mibd') || doc.slug.includes('study-in-dubai')) {
+      paths.push({ params: { slug: 'study-in-dubai-mibd-guide' }, props: { doc } });
+      paths.push({ params: { slug: 'study-in-dubai-mibd' }, props: { doc } });
+      paths.push({ params: { slug: 'dubai-mibd-guide' }, props: { doc } });
+      paths.push({ params: { slug: 'dubai-mibd-university-guide' }, props: { doc } });
+      paths.push({ params: { slug: 'study-in-dubai-guide' }, props: { doc } });
+    }
+    if (doc.slug.includes('apaar')) {
+      paths.push({ params: { slug: 'apaar-id-guide' }, props: { doc } });
+      paths.push({ params: { slug: 'apaar-id' }, props: { doc } });
+      paths.push({ params: { slug: 'apaar-id-master-guide' }, props: { doc } });
+    }
   }
   const uniqueMap = new Map();
   for (const p of paths) {
