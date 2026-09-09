@@ -9,10 +9,17 @@
 
 # Legacy routes from older site versions (prevents 404s)
 /login           /admin                301
+/signup          /admin                301
 /dashboard       /admin                301
 /account         /admin                301
 /tutor           /                     301
 /student         /                     301
 /courses         /universities         301
 /courses/*       /universities         301
+/calculators     /eligibility          301
+/calculator      /eligibility          301
+
+# Plural /documents/ redirect to singular /document/ (fixes social campaign 404s)
+/documents/*     /document/:splat      301
+/documents       /document/nova-scotia-pr-pathway-guide 301
 

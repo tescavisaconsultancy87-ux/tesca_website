@@ -133,13 +133,18 @@ import Layout from "../layouts/Layout.astro";
                 />
               </div>
               <div>
-                <label for="cf-category" class="text-xs font-bold uppercase tracking-wider text-slate-600 font-sans block mb-1.5">Category *</label>
+                <label for="cf-category" class="text-xs font-bold uppercase tracking-wider text-slate-600 font-sans block mb-1.5">Inquiry Type *</label>
                 <select id="cf-category" name="category" required
                   class="w-full px-4 py-3 bg-white border border-slate-200 focus:border-[#0F4C81] focus:ring-2 focus:ring-[#0F4C81]/15 rounded-xl text-sm focus:outline-none transition-all font-sans text-slate-700"
                 >
-                  <option value="general">General Contact</option>
-                  <option value="bug">🐛 Report a Bug</option>
-                  <option value="error">⚠️ Report an Error</option>
+                  <option value="general" selected>🎓 Study Abroad & Student Visa</option>
+                  <option value="general">🍁 Canada & Australia PR Pathways</option>
+                  <option value="general">✈️ Tourist & Visitor Visa</option>
+                  <option value="general">🇨🇳 China Business & Canton Fair</option>
+                  <option value="general">📚 IELTS & PTE Coaching</option>
+                  <option value="general">💬 General Inquiry</option>
+                  <option value="bug">🐛 Report a Bug / Technical Issue</option>
+                  <option value="error">⚠️ Report Content Error</option>
                 </select>
               </div>
             </div>
@@ -147,21 +152,21 @@ import Layout from "../layouts/Layout.astro";
             <div>
               <label for="cf-subject" class="text-xs font-bold uppercase tracking-wider text-slate-600 font-sans block mb-1.5">Subject *</label>
               <input id="cf-subject" name="subject" type="text" required
-                placeholder="How can we help you?"
+                placeholder="e.g. Inquiry regarding Canada PR or UK Student Visa"
                 class="w-full px-4 py-3 bg-white border border-slate-200 focus:border-[#0F4C81] focus:ring-2 focus:ring-[#0F4C81]/15 rounded-xl text-sm placeholder-slate-400 focus:outline-none transition-all font-sans"
               />
             </div>
 
             <div>
-              <label for="cf-message" class="text-xs font-bold uppercase tracking-wider text-slate-600 font-sans block mb-1.5">Message *</label>
-              <textarea id="cf-message" name="message" required rows="6"
-                placeholder="Describe your question, bug, or issue in detail..."
+              <label for="cf-message" class="text-xs font-bold uppercase tracking-wider text-slate-600 font-sans block mb-1.5">Message / Profile Details *</label>
+              <textarea id="cf-message" name="message" required rows="5"
+                placeholder="Tell us about your qualification, destination country, work experience, or any specific questions..."
                 class="w-full px-4 py-3 bg-white border border-slate-200 focus:border-[#0F4C81] focus:ring-2 focus:ring-[#0F4C81]/15 rounded-xl text-sm placeholder-slate-400 focus:outline-none transition-all font-sans resize-y"
               ></textarea>
             </div>
 
             <button type="submit" id="cf-submit"
-              class="w-full py-3.5 px-6 bg-[#0F4C81] hover:bg-[#0a3a63] text-white font-bold text-sm rounded-xl transition-all duration-200 font-sans tracking-wide shadow-lg shadow-[#0F4C81]/20 hover:shadow-[#0F4C81]/30 active:scale-[0.98]"
+              class="w-full py-3.5 px-6 bg-[#0F4C81] hover:bg-[#0a3a63] text-white font-bold text-sm rounded-xl transition-all duration-200 font-sans tracking-wide shadow-lg shadow-[#0F4C81]/20 hover:shadow-[#0F4C81]/30 active:scale-[0.98] cursor-pointer"
             >
               Send Message
             </button>
@@ -173,112 +178,139 @@ import Layout from "../layouts/Layout.astro";
 </Layout>
 
 <script>
-  const form = document.getElementById("contact-form") as HTMLFormElement | null;
-  const submitBtn = document.getElementById("cf-submit") as HTMLButtonElement | null;
-  const whatsappBtn = document.getElementById("track-whatsapp-click");
-  const emailBtn = document.getElementById("track-email-click");
-  const phoneBtn = document.getElementById("track-phone-click");
-  const phoneInput = document.getElementById("cf-phone") as HTMLInputElement | null;
-  const phoneCounter = document.getElementById("cf-phone-counter");
+  function initContactForm() {
+    const form = document.getElementById("contact-form") as HTMLFormElement | null;
+    const submitBtn = document.getElementById("cf-submit") as HTMLButtonElement | null;
+    const whatsappBtn = document.getElementById("track-whatsapp-click");
+    const emailBtn = document.getElementById("track-email-click");
+    const phoneBtn = document.getElementById("track-phone-click");
+    const phoneInput = document.getElementById("cf-phone") as HTMLInputElement | null;
+    const phoneCounter = document.getElementById("cf-phone-counter");
 
-  if (phoneInput && phoneCounter) {
-    phoneInput.addEventListener("input", () => {
-      const digits = phoneInput.value.replace(/\D/g, "").slice(0, 10);
-      phoneInput.value = digits;
-      if (digits.length === 10) {
-        phoneCounter.textContent = "10/10 digits ✓";
-        phoneCounter.className = "text-[10px] font-bold text-emerald-600 font-mono";
-      } else {
-        phoneCounter.textContent = `${digits.length}/10 digits`;
-        phoneCounter.className = "text-[10px] font-bold text-amber-600 font-mono";
+    if (phoneInput && phoneCounter) {
+      phoneInput.addEventListener("input", () => {
+        const digits = phoneInput.value.replace(/\D/g, "").slice(0, 10);
+        phoneInput.value = digits;
+        if (digits.length === 10) {
+          phoneCounter.textContent = "10/10 digits ✓";
+          phoneCounter.className = "text-[10px] font-bold text-emerald-600 font-mono";
+        } else {
+          phoneCounter.textContent = `${digits.length}/10 digits`;
+          phoneCounter.className = "text-[10px] font-bold text-amber-600 font-mono";
+        }
+      });
+    }
+
+    // Helper for safe PostHog capture
+    const captureEvent = (eventName: string, properties: Record<string, any> = {}) => {
+      if (typeof window !== "undefined" && (window as any).posthog) {
+        (window as any).posthog.capture(eventName, properties);
+      }
+    };
+
+    // Track direct channel clicks
+    whatsappBtn?.addEventListener("click", () => captureEvent("contact_whatsapp_clicked"));
+    emailBtn?.addEventListener("click", () => captureEvent("contact_email_clicked"));
+    phoneBtn?.addEventListener("click", () => captureEvent("contact_phone_clicked"));
+
+    // Track form initiation
+    let formStartTracked = false;
+    form?.addEventListener("focusin", () => {
+      if (!formStartTracked) {
+        formStartTracked = true;
+        captureEvent("contact_form_started");
       }
     });
+
+    if (form && submitBtn) {
+      // Prevent duplicate listener binding
+      if ((form as any).__hasSubmitListener) return;
+      (form as any).__hasSubmitListener = true;
+
+      form.addEventListener("submit", async (e) => {
+        e.preventDefault();
+
+        const nameEl = document.getElementById("cf-name") as HTMLInputElement | null;
+        const emailEl = document.getElementById("cf-email") as HTMLInputElement | null;
+        const phoneEl = document.getElementById("cf-phone") as HTMLInputElement | null;
+        const categoryEl = document.getElementById("cf-category") as HTMLSelectElement | null;
+        const subjectEl = document.getElementById("cf-subject") as HTMLInputElement | null;
+        const messageEl = document.getElementById("cf-message") as HTMLTextAreaElement | null;
+
+        const name = nameEl ? nameEl.value.trim() : "";
+        const email = emailEl ? emailEl.value.trim() : "";
+        const phoneRaw = phoneEl ? phoneEl.value.trim() : "";
+        const phone = phoneRaw ? phoneRaw.replace(/\D/g, "") : "";
+        
+        if (phoneRaw && phone.length !== 10) {
+          if (typeof window !== "undefined" && (window as any).showToast) {
+            (window as any).showToast("Please enter a valid 10-digit phone number.", "warning");
+          }
+          return;
+        }
+
+        const category = categoryEl ? categoryEl.value : "general";
+        const subject = subjectEl ? subjectEl.value.trim() : "";
+        const message = messageEl ? messageEl.value.trim() : "";
+
+        if (!name || !email || !subject || !message) {
+          if (typeof window !== "undefined" && (window as any).showToast) {
+            (window as any).showToast("Please fill in all required fields.", "warning");
+          }
+          captureEvent("contact_form_validation_failed");
+          return;
+        }
+
+        submitBtn.disabled = true;
+        submitBtn.textContent = "Sending...";
+
+        try {
+          const res = await fetch("/api/contact", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ name, email, phone, category, subject, message }),
+          });
+
+          const data = await res.json();
+
+          if (data.success) {
+            captureEvent("contact_form_submitted", { category, hasPhone: Boolean(phone) });
+
+            if (typeof window !== "undefined" && (window as any).showToast) {
+              (window as any).showToast("Message sent! We'll get back to you within 24 hours.", "success");
+            }
+            form.reset();
+            formStartTracked = false;
+            if (phoneCounter) {
+              phoneCounter.textContent = "0/10 digits";
+              phoneCounter.className = "text-[10px] font-bold text-amber-600 font-mono";
+            }
+          } else {
+            captureEvent("contact_form_error", { error: data.error });
+
+            if (typeof window !== "undefined" && (window as any).showToast) {
+              (window as any).showToast(data.error || "Something went wrong. Please try again.", "error");
+            }
+          }
+        } catch (error: any) {
+          captureEvent("contact_form_network_error", { message: error?.message });
+
+          if (typeof window !== "undefined" && (window as any).showToast) {
+            (window as any).showToast("Network error. Please try again or WhatsApp us.", "error");
+          }
+        } finally {
+          submitBtn.disabled = false;
+          submitBtn.textContent = "Send Message";
+        }
+      });
+    }
   }
 
-  // Helper for safe PostHog capture
-  const captureEvent = (eventName: string, properties: Record<string, any> = {}) => {
-    if (typeof window !== "undefined" && (window as any).posthog) {
-      (window as any).posthog.capture(eventName, properties);
-    }
-  };
-
-  // Track direct channel clicks
-  whatsappBtn?.addEventListener("click", () => captureEvent("contact_whatsapp_clicked"));
-  emailBtn?.addEventListener("click", () => captureEvent("contact_email_clicked"));
-  phoneBtn?.addEventListener("click", () => captureEvent("contact_phone_clicked"));
-
-  // Track form initiation
-  let formStartTracked = false;
-  form?.addEventListener("focusin", () => {
-    if (!formStartTracked) {
-      formStartTracked = true;
-      captureEvent("contact_form_started");
-    }
-  });
-
-  if (form && submitBtn) {
-    form.addEventListener("submit", async (e) => {
-      e.preventDefault();
-
-      const name = (document.getElementById("cf-name") as HTMLInputElement).value.trim();
-      const email = (document.getElementById("cf-email") as HTMLInputElement).value.trim();
-      const phoneRaw = (document.getElementById("cf-phone") as HTMLInputElement).value.trim();
-      const phone = phoneRaw ? phoneRaw.replace(/\D/g, "") : "";
-      if (phoneRaw && phone.length !== 10) {
-        if (typeof window !== "undefined" && (window as any).showToast) {
-          (window as any).showToast("Please enter a valid 10-digit phone number.", "warning");
-        }
-        return;
-      }
-      const category = (document.getElementById("cf-category") as HTMLSelectElement).value;
-      const subject = (document.getElementById("cf-subject") as HTMLInputElement).value.trim();
-      const message = (document.getElementById("cf-message") as HTMLTextAreaElement).value.trim();
-
-      if (!name || !email || !subject || !message) {
-        if (typeof window !== "undefined" && (window as any).showToast) {
-          (window as any).showToast("Please fill in all required fields.", "warning");
-        }
-        captureEvent("contact_form_validation_failed");
-        return;
-      }
-
-      submitBtn.disabled = true;
-      submitBtn.textContent = "Sending...";
-
-      try {
-        const res = await fetch("/api/contact", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ name, email, phone, category, subject, message }),
-        });
-
-        const data = await res.json();
-
-        if (data.success) {
-          captureEvent("contact_form_submitted", { category, hasPhone: Boolean(phone) });
-
-          if (typeof window !== "undefined" && (window as any).showToast) {
-            (window as any).showToast("Message sent! We'll get back to you within 24 hours.", "success");
-          }
-          form.reset();
-          formStartTracked = false;
-        } else {
-          captureEvent("contact_form_error", { error: data.error });
-
-          if (typeof window !== "undefined" && (window as any).showToast) {
-            (window as any).showToast(data.error || "Something went wrong. Please try again.", "error");
-          }
-        }
-      } catch (error: any) {
-        captureEvent("contact_form_network_error", { message: error?.message });
-
-        if (typeof window !== "undefined" && (window as any).showToast) {
-          (window as any).showToast("Network error. Please try again or WhatsApp us.", "error");
-        }
-      } finally {
-        submitBtn.disabled = false;
-        submitBtn.textContent = "Send Message";
-      }
-    });
+  // Bind to View Transitions and direct page loads
+  document.addEventListener("astro:page-load", initContactForm);
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", initContactForm);
+  } else {
+    initContactForm();
   }
 </script>

@@ -44,8 +44,9 @@ Disallow: /
 User-agent: CloudflareBrowserRenderingCrawler
 Disallow: /
 
+# Meta / Facebook / Instagram link preview & verification agent
 User-agent: meta-externalagent
-Disallow: /
+Allow: /
 
 # AI crawlers — ALLOWED for GEO/LLMO optimization
 # These crawlers can index and cite our content in AI-generated answers

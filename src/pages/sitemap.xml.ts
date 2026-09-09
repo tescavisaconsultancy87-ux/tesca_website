@@ -67,6 +67,7 @@ const STATIC_PAGES: { url: string; changefreq: string; priority: string }[] = [
   { url: "/canada-express-entry", changefreq: "monthly", priority: "0.6" },
   { url: "/australia-pr", changefreq: "monthly", priority: "0.6" },
   { url: "/germany-opportunity-card", changefreq: "monthly", priority: "0.6" },
+  { url: "/china-business-visa", changefreq: "weekly", priority: "0.7" },
 
   // SEO local landing pages
   { url: "/visa-consultant-in-surat", changefreq: "monthly", priority: "0.8" },

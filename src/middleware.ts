@@ -138,6 +138,23 @@ export const onRequest = defineMiddleware(async (context, next) => {
     return Response.redirect(`https://tescavisa.com${reqPath}${search}`, 301);
   }
 
+  // --- Fast-path redirect plural /documents/* to singular /document/* (fixes social DM campaign 404s) ---
+  if (lowerPath === "/documents" || lowerPath === "/documents/") {
+    return Response.redirect(`https://tescavisa.com/document/nova-scotia-pr-pathway-guide${search}`, 301);
+  }
+  if (lowerPath.startsWith("/documents/")) {
+    const slugPart = reqPath.slice("/documents/".length);
+    return Response.redirect(`https://tescavisa.com/document/${slugPart}${search}`, 301);
+  }
+
+  // --- Redirect legacy/miscellaneous routes to prevent 404s ---
+  if (lowerPath === "/signup" || lowerPath === "/signup/") {
+    return Response.redirect(`https://admin.tescavisa.com/admin`, 301);
+  }
+  if (lowerPath === "/calculators" || lowerPath === "/calculators/" || lowerPath === "/calculator" || lowerPath === "/calculator/") {
+    return Response.redirect(`https://tescavisa.com/eligibility`, 301);
+  }
+
   // --- Redirect legacy apex admin URLs to the dedicated admin subdomain ---
   // The admin panel now lives on admin.tescavisa.com. Permanently (301) redirect
   // tescavisa.com/admin and /admin/* — preserving the full path and query string —
