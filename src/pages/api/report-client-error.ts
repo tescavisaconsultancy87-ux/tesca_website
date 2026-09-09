@@ -49,7 +49,10 @@ export const POST: APIRoute = async ({ request }) => {
       'navigation_performance_logger',
       // Android WebView Java bridge postMessage failures
       'Java exception was raised during method invocation',
-      'Error invoking postMessage'
+      'Error invoking postMessage',
+      // Safari/WebKit view transition interrupted by document becoming hidden
+      'Skipping view transition',
+      'document visibility state has become hidden'
     ];
 
     // Also check filename to catch browser-internal scripts that report

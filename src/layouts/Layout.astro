@@ -319,7 +319,10 @@ if (isAdminPage) {
 						'iabjs://',
 						'navigation_performance_logger',
 						'Java exception was raised during method invocation',
-						'Error invoking postMessage'
+						'Error invoking postMessage',
+						// Safari/WebKit view transition interrupted by document becoming hidden
+						'Skipping view transition',
+						'document visibility state has become hidden'
 					];
 					
 					const errorStr = `${message} ${stack || ''} ${context?.filename || ''}`.toLowerCase();
