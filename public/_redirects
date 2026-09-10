@@ -23,3 +23,6 @@
 /documents/*     /document/:splat      301
 /documents       /document/nova-scotia-pr-pathway-guide 301
 
+# Deprecated pages redirect to active alternatives (eliminates 404s)
+/china-business-visa    /visitor-visa   301
+/china-business-visa/   /visitor-visa   301

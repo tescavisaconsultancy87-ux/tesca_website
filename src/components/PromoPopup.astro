@@ -18,13 +18,13 @@ try {
 
 // Fallback popup if DB returns empty list during build
 const defaultPopup = {
-  id: "default-china-visa",
-  title: "China Business (M) Visa & Canton Fair 2026",
-  subtitle: "Heading to Guangzhou, Shanghai or Canton Fair? Get 4-5 Day Express Processing with 100% Visa Approval Guarantee & Zero Risk!",
+  id: "default-consultation",
+  title: "Free Study Abroad & Visa Counselling",
+  subtitle: "Plan your international education journey with TESCA. Get expert university shortlisting, IELTS coaching, and 97% visa success guidance!",
   image_url: null,
   delay_seconds: 5,
-  button_text: "Apply China Visa Now",
-  link_url: "/china-business-visa",
+  button_text: "Book Free Consultation",
+  link_url: "/inquiry",
   redirect_to_link: true,
   lead_capture_enabled: false
 };
@@ -35,10 +35,10 @@ const getPopupTargetUrl = (p: any) => {
   if (p.link_url && p.link_url.trim().length > 0) {
     return p.link_url.trim();
   }
-  if (p.id && p.id !== "default-china-visa") {
+  if (p.id && p.id !== "default-consultation" && p.id !== "default-china-visa") {
     return `/promo/${p.id}`;
   }
-  return "/china-business-visa";
+  return "/inquiry";
 };
 
 const isDrawerPopup = (p: any) =>
@@ -267,10 +267,10 @@ const delaySeconds = initialPopup?.delay_seconds || 5;
     if (p.link_url && p.link_url.trim().length > 0) {
       return p.link_url.trim();
     }
-    if (p.id && p.id !== "default-china-visa") {
+    if (p.id && p.id !== "default-consultation" && p.id !== "default-china-visa") {
       return `/promo/${p.id}`;
     }
-    return "/china-business-visa";
+    return "/inquiry";
   }
 
   function isAdminOrExcludedPath() {

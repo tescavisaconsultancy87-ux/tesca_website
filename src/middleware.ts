@@ -154,6 +154,9 @@ export const onRequest = defineMiddleware(async (context, next) => {
   if (lowerPath === "/calculators" || lowerPath === "/calculators/" || lowerPath === "/calculator" || lowerPath === "/calculator/") {
     return Response.redirect(`https://tescavisa.com/eligibility`, 301);
   }
+  if (lowerPath === "/china-business-visa" || lowerPath === "/china-business-visa/") {
+    return Response.redirect(`https://tescavisa.com/visitor-visa${search}`, 301);
+  }
 
   // --- Redirect legacy apex admin URLs to the dedicated admin subdomain ---
   // The admin panel now lives on admin.tescavisa.com. Permanently (301) redirect
