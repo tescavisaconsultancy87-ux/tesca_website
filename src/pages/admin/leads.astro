@@ -569,9 +569,22 @@ try {
               </thead>
               <tbody class="divide-y divide-slate-100">
                 {leads.map((lead) => {
+                  let detailsObj: any = {};
+                  if (lead.details) {
+                    try {
+                      detailsObj = typeof lead.details === 'string' ? JSON.parse(lead.details) : lead.details;
+                    } catch (e) {}
+                  }
+
+                  const docTitle = detailsObj.document_title || detailsObj.doc_title || detailsObj.source_title || (detailsObj.lead_source && detailsObj.lead_source.includes("Document") ? detailsObj.lead_source : null) || (detailsObj.source && (detailsObj.source.includes("Guide") || detailsObj.source.includes("Document")) ? detailsObj.source : null) || (detailsObj.subject && detailsObj.subject.includes("Assessment Request: ") ? detailsObj.subject.replace("Assessment Request: ", "").trim() : null);
+                  const isDocumentLead = lead.lead_type === "document" || Boolean(docTitle);
+
                   let typeLabel = "Eligibility Finder";
                   let typeBg = "bg-teal-50 text-teal-700 border-teal-200";
-                  if (lead.lead_type === "inquiry") {
+                  if (isDocumentLead) {
+                    typeLabel = "Document Guide";
+                    typeBg = "bg-sky-50 text-sky-700 border-sky-200";
+                  } else if (lead.lead_type === "inquiry") {
                     typeLabel = "CRM Inquiry";
                     typeBg = "bg-indigo-50 text-indigo-700 border-indigo-200";
                   } else if (lead.lead_type === "counsellor") {
@@ -580,6 +593,12 @@ try {
                   } else if (lead.lead_type === "popup") {
                     typeLabel = "Popup Inquiry";
                     typeBg = "bg-purple-50 text-purple-700 border-purple-200";
+                  } else if (lead.lead_type === "contact") {
+                    typeLabel = "Contact Form";
+                    typeBg = "bg-slate-100 text-slate-700 border-slate-200";
+                  } else if (lead.lead_type === "eligibility") {
+                    typeLabel = "Eligibility Finder";
+                    typeBg = "bg-teal-50 text-teal-700 border-teal-200";
                   }
 
                   const formattedDate = new Date(lead.created_at || Date.now()).toLocaleString("en-IN", {
@@ -599,10 +618,17 @@ try {
                           {formattedDate}
                         </span>
                       </td>
-                      <td class="px-6 py-4 whitespace-nowrap">
-                        <span class={`px-2.5 py-1 rounded-full border text-[10px] font-bold tracking-wide ${typeBg}`}>
-                          {typeLabel}
-                        </span>
+                      <td class="px-6 py-4">
+                        <div class="space-y-1">
+                          <span class={`inline-block px-2.5 py-1 rounded-full border text-[10px] font-bold tracking-wide ${typeBg}`}>
+                            {typeLabel}
+                          </span>
+                          {docTitle && (
+                            <div class="text-[11px] font-semibold text-sky-900 max-w-[220px] truncate" title={docTitle}>
+                              📄 {docTitle.replace(/^(Guide:\s*|Document:\s*|Document Guide:\s*)/i, '')}
+                            </div>
+                          )}
+                        </div>
                       </td>
                       <td class="px-6 py-4 font-bold text-slate-800 whitespace-nowrap">
                         <span class="flex items-center gap-1.5">
@@ -750,7 +776,7 @@ try {
                           data-name={lead.name}
                           data-phone={lead.phone}
                           data-email={lead.email}
-                          data-type={typeLabel}
+                          data-type={isDocumentLead && docTitle ? `Document Guide: ${docTitle.replace(/^(Guide:\s*|Document:\s*|Document Guide:\s*)/i, '')}` : typeLabel}
                           data-status={lead.status || "pending"}
                         >
                           <span set:html={SVG.Eye} /> View Details
@@ -1039,11 +1065,15 @@ try {
               formattedVal = "Not provided";
             }
 
+            const isUrl = String(formattedVal).startsWith("http://") || String(formattedVal).startsWith("https://");
             const item = document.createElement("div");
-            item.className = "bg-slate-50 border border-slate-200 p-3.5 rounded-2xl space-y-1";
+            item.className = "bg-slate-50 border border-slate-200 p-3.5 rounded-2xl space-y-1" + (isUrl ? " col-span-1 sm:col-span-2" : "");
             item.innerHTML = `
               <span class="block text-[10px] font-bold text-slate-500 uppercase tracking-wider">${escapeHTML(formattedKey)}</span>
-              <span class="block text-xs font-semibold text-slate-700 leading-normal">${escapeHTML(formattedVal)}</span>
+              ${isUrl 
+                ? `<a href="${escapeHTML(formattedVal)}" target="_blank" rel="noopener noreferrer" class="block text-xs font-semibold text-indigo-600 hover:text-indigo-800 underline break-all">${escapeHTML(formattedVal)} ↗</a>`
+                : `<span class="block text-xs font-semibold text-slate-700 leading-normal">${escapeHTML(formattedVal)}</span>`
+              }
             `;
             listContainer.appendChild(item);
           });

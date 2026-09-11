@@ -74,12 +74,37 @@ export default function LiveSocialProofTicker() {
   const [dismissed, setDismissed] = useState(false);
 
   useEffect(() => {
+    // Check if current route is a document or admin page
+    const checkRoute = () => {
+      if (typeof window !== 'undefined') {
+        const path = window.location.pathname.toLowerCase();
+        if (path.startsWith('/document') || path.startsWith('/admin')) {
+          setVisible(false);
+          return false;
+        }
+      }
+      return true;
+    };
+
+    if (!checkRoute()) return;
+
     // Initial delay before showing first toast
     const timer = setTimeout(() => {
-      if (!dismissed) setVisible(true);
+      if (!dismissed && checkRoute()) setVisible(true);
     }, 4000);
 
-    return () => clearTimeout(timer);
+    const onPageLoad = () => {
+      if (!checkRoute()) {
+        setVisible(false);
+      }
+    };
+
+    document.addEventListener('astro:page-load', onPageLoad);
+
+    return () => {
+      clearTimeout(timer);
+      document.removeEventListener('astro:page-load', onPageLoad);
+    };
   }, [dismissed]);
 
   useEffect(() => {
@@ -87,9 +112,20 @@ export default function LiveSocialProofTicker() {
 
     // Cycle items every 12 seconds
     const interval = setInterval(() => {
+      if (typeof window !== 'undefined') {
+        const path = window.location.pathname.toLowerCase();
+        if (path.startsWith('/document') || path.startsWith('/admin')) {
+          setVisible(false);
+          return;
+        }
+      }
       setVisible(false);
       setTimeout(() => {
         setCurrentIndex((prev) => (prev + 1) % RECENT_ACTIVITIES.length);
+        if (typeof window !== 'undefined') {
+          const path = window.location.pathname.toLowerCase();
+          if (path.startsWith('/document') || path.startsWith('/admin')) return;
+        }
         setVisible(true);
       }, 400);
     }, 12000);
@@ -98,6 +134,13 @@ export default function LiveSocialProofTicker() {
   }, [dismissed]);
 
   if (dismissed) return null;
+
+  if (typeof window !== 'undefined') {
+    const currentPath = window.location.pathname.toLowerCase();
+    if (currentPath.startsWith('/document') || currentPath.startsWith('/admin')) {
+      return null;
+    }
+  }
 
   const current = RECENT_ACTIVITIES[currentIndex];
 

@@ -744,26 +744,39 @@ const whatsappPrefill = encodeURIComponent(`Hi TESCA, I was reading the ${doc.ti
       const submitBtn = document.getElementById("doc-lead-submit");
       const phoneInput = document.getElementById("doc-lead-phone");
 
-      if (phoneInput) {
+      if (phoneInput && phoneInput.dataset.inputAttached !== "true") {
+        phoneInput.dataset.inputAttached = "true";
         phoneInput.addEventListener("input", () => {
           phoneInput.value = phoneInput.value.replace(/\D/g, "").slice(0, 10);
         });
       }
 
       if (form && submitBtn) {
+        if (form.dataset.listenerAttached === "true") return;
+        form.dataset.listenerAttached = "true";
+
         form.addEventListener("submit", async (e) => {
           e.preventDefault();
-          const name = form.querySelector('[name="name"]').value.trim();
-          const phone = form.querySelector('[name="phone"]').value.trim();
-          const email = form.querySelector('[name="email"]').value.trim();
-          const city = form.querySelector('[name="city"]').value.trim();
-          const source = form.querySelector('[name="source"]').value.trim();
+          if (form.dataset.submitting === "true") return;
+
+          const nameInput = form.querySelector('[name="name"]');
+          const phoneField = form.querySelector('[name="phone"]');
+          const emailInput = form.querySelector('[name="email"]');
+          const cityInput = form.querySelector('[name="city"]');
+          const sourceInput = form.querySelector('[name="source"]');
+
+          const name = nameInput ? nameInput.value.trim() : "";
+          const phone = phoneField ? phoneField.value.trim() : "";
+          const email = emailInput ? emailInput.value.trim() : "";
+          const city = cityInput ? cityInput.value.trim() : "";
+          const source = sourceInput ? sourceInput.value.trim() : `Document: ${docTitle}`;
 
           if (!name || !phone || phone.length !== 10 || !email) {
             if (window.showToast) window.showToast("Please provide your name, valid 10-digit phone number, and email.", "warning");
             return;
           }
 
+          form.dataset.submitting = "true";
           submitBtn.disabled = true;
           submitBtn.innerHTML = `<span>Submitting...</span>`;
 
@@ -775,9 +788,15 @@ const whatsappPrefill = encodeURIComponent(`Hi TESCA, I was reading the ${doc.ti
                 name,
                 email,
                 phone,
-                subject: `Assessment Request: ${source}`,
+                city,
+                lead_type: "document",
+                document_title: docTitle,
+                document_slug: docSlug,
+                page_url: window.location.href,
+                source: source || `Document Guide: ${docTitle}`,
+                subject: `Free Assessment Request: ${docTitle}`,
                 category: "general",
-                message: `Lead from document guide: ${source}. City: ${city || "Not specified"}. Phone: ${phone}. Email: ${email}.`
+                message: `Document Assessment Request for "${docTitle}". Student: ${name}. Phone: +91 ${phone}. Email: ${email}. City: ${city || "Not specified"}. Page: ${window.location.href}`
               })
             });
 
@@ -787,16 +806,24 @@ const whatsappPrefill = encodeURIComponent(`Hi TESCA, I was reading the ${doc.ti
                 window.showToast("Thank you! Your assessment request has been received. Our team will contact you shortly.", "success");
               }
               if (window.posthog) {
-                window.posthog.capture("document_lead_submitted", { source, city });
+                window.posthog.capture("document_lead_submitted", { 
+                  source: `Document Guide: ${docTitle}`,
+                  doc_title: docTitle,
+                  doc_slug: docSlug,
+                  city 
+                });
               }
               form.reset();
+              form.dataset.submitting = "false";
               submitBtn.innerHTML = `<span>Assessment Requested ✓</span>`;
             } else {
+              form.dataset.submitting = "false";
               if (window.showToast) window.showToast(data.error || "Submission failed. Please WhatsApp us directly.", "error");
               submitBtn.disabled = false;
               submitBtn.innerHTML = `<span>Request Free Assessment</span>`;
             }
           } catch (err) {
+            form.dataset.submitting = "false";
             if (window.showToast) window.showToast("Network error. Please chat with us on WhatsApp.", "error");
             submitBtn.disabled = false;
             submitBtn.innerHTML = `<span>Request Free Assessment</span>`;

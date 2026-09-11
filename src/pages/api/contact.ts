@@ -23,7 +23,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
   try {
     const supabase = getSupabaseAdmin();
     body = await request.json();
-    const { name, email, phone, subject, category, message } = body;
+    const { name, email, phone, subject, category, message, city, lead_type, document_title, document_slug, page_url, source } = body;
 
     if (!name || !message) {
       return jsonResponse({ error: "Missing required fields (name, message)." }, 400);
@@ -47,11 +47,24 @@ export const POST: APIRoute = async ({ request, locals }) => {
     const cleanSubject = subject ? sanitizeText(subject, 200) : '';
     const cleanCategory = ['bug', 'error', 'general'].includes(category) ? category : 'general';
     const cleanMessage = sanitizeText(message, 2000);
+    const cleanCity = city ? sanitizeText(city, 100) : null;
+    const cleanDocTitle = document_title ? sanitizeText(document_title, 200) : null;
+    const cleanDocSlug = document_slug ? sanitizeText(document_slug, 120) : null;
+    const cleanPageUrl = page_url ? sanitizeText(page_url, 300) : null;
+    const cleanSource = source ? sanitizeText(source, 200) : null;
+
+    const isDocLead = lead_type === 'document' || Boolean(cleanDocTitle) || (cleanSource && cleanSource.toLowerCase().includes('guide'));
+    const finalLeadType = isDocLead ? 'document' : 'contact';
 
     const detailsStr = JSON.stringify({
       name: cleanName,
       email: cleanEmail,
       phone: cleanPhone,
+      city: cleanCity,
+      lead_source: cleanSource || (isDocLead ? `Document: ${cleanDocTitle}` : 'Contact Page'),
+      document_title: cleanDocTitle,
+      document_slug: cleanDocSlug,
+      page_url: cleanPageUrl,
       subject: cleanSubject,
       category: cleanCategory,
       message: cleanMessage,
@@ -60,7 +73,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
     const { data: insertedData, error } = await supabase
       .from('leads')
       .insert({
-        lead_type: 'contact',
+        lead_type: finalLeadType,
         name: cleanName,
         email: cleanEmail,
         phone: cleanPhone,

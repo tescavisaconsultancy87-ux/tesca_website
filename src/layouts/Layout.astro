@@ -114,6 +114,7 @@ const gaId = import.meta.env.PUBLIC_GA4_ID || "G-2HW0JXMF2Y";
 
 let csrfToken = "";
 const isAdminPage = Astro.url.pathname.startsWith("/admin") || Astro.url.hostname.startsWith("admin.") || Astro.url.hostname.includes("admin");
+const isDocumentPage = Astro.url.pathname.startsWith("/document");
 if (isAdminPage) {
 	csrfToken = ensureCsrfToken(Astro.cookies);
 }
@@ -2198,7 +2199,7 @@ if (isAdminPage) {
 			</div>
 		</div>
 
-		{showNavFooter && !isAdminPage && <PromoPopup />}
-		{showNavFooter && !isAdminPage && <LiveSocialProofTicker client:only="react" />}
+		{showNavFooter && !isAdminPage && !isDocumentPage && <PromoPopup />}
+		{showNavFooter && !isAdminPage && !isDocumentPage && <LiveSocialProofTicker client:only="react" />}
 	</body>
 </html>

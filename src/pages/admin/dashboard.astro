@@ -58,7 +58,7 @@ try {
     supabase.from('visa_updates').select('*', { count: 'exact', head: true }).then(res => res, err => ({ count: 0, error: err })),
     supabase.from('social_causes').select('*', { count: 'exact', head: true }).then(res => res, err => ({ count: 0, error: err })),
     supabase.from('blog_posts').select('*', { count: 'exact', head: true }).then(res => res, err => ({ count: 0, error: err })),
-    supabase.from('leads').select('id, name, email, phone, lead_type, status, created_at').neq('lead_type', 'partner').order('created_at', { ascending: false }).limit(1000).then(res => res, err => ({ data: [], error: err }))
+    supabase.from('leads').select('id, name, email, phone, lead_type, details, status, created_at').neq('lead_type', 'partner').order('created_at', { ascending: false }).limit(1000).then(res => res, err => ({ data: [], error: err }))
   ]);
 
   // 2. Log non-critical query failures and assign counts
@@ -411,9 +411,21 @@ const cards = [
                     month: "short"
                   });
                   const firstLetter = lead.name ? lead.name[0].toUpperCase() : 'S';
+                  let detailsObj: any = {};
+                  if (lead.details) {
+                    try {
+                      detailsObj = typeof lead.details === 'string' ? JSON.parse(lead.details) : lead.details;
+                    } catch (e) {}
+                  }
+                  const docTitle = detailsObj.document_title || detailsObj.doc_title || detailsObj.source_title || (detailsObj.lead_source && detailsObj.lead_source.includes("Document") ? detailsObj.lead_source : null) || (detailsObj.source && (detailsObj.source.includes("Guide") || detailsObj.source.includes("Document")) ? detailsObj.source : null) || (detailsObj.subject && detailsObj.subject.includes("Assessment Request: ") ? detailsObj.subject.replace("Assessment Request: ", "").trim() : null);
+                  const isDocumentLead = lead.lead_type === "document" || Boolean(docTitle);
+
                   let typeLabel = "Eligibility Finder";
                   let typeBg = "bg-teal-50 text-teal-700 border-teal-200";
-                  if (lead.lead_type === "inquiry") {
+                  if (isDocumentLead) {
+                    typeLabel = "Document Guide";
+                    typeBg = "bg-sky-50 text-sky-700 border-sky-200";
+                  } else if (lead.lead_type === "inquiry") {
                     typeLabel = "CRM Inquiry";
                     typeBg = "bg-indigo-50 text-indigo-700 border-indigo-200";
                   } else if (lead.lead_type === "counsellor") {
@@ -422,6 +434,12 @@ const cards = [
                   } else if (lead.lead_type === "popup") {
                     typeLabel = "Popup Inquiry";
                     typeBg = "bg-purple-50 text-purple-700 border-purple-200";
+                  } else if (lead.lead_type === "contact") {
+                    typeLabel = "Contact Form";
+                    typeBg = "bg-slate-100 text-slate-700 border-slate-200";
+                  } else if (lead.lead_type === "eligibility") {
+                    typeLabel = "Eligibility Finder";
+                    typeBg = "bg-teal-50 text-teal-700 border-teal-200";
                   }
 
                   return (
@@ -439,6 +457,11 @@ const cards = [
                         <span class={`px-2 py-0.5 rounded-full border text-[10px] font-medium ${typeBg}`}>
                           {typeLabel}
                         </span>
+                        {docTitle && (
+                          <div class="text-[10px] text-slate-500 max-w-[140px] truncate mt-0.5" title={docTitle}>
+                            📄 {docTitle.replace(/^(Guide:\s*|Document:\s*|Document Guide:\s*)/i, '')}
+                          </div>
+                        )}
                       </td>
                       <td class="py-3.5 px-4 text-slate-600 whitespace-nowrap">
                         <div>{lead.phone}</div>
