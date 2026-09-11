@@ -221,7 +221,7 @@ const docStructuredData = [
     },
     "datePublished": "2026-01-01",
     "dateModified": "2026-09-09",
-    "about": doc.tags.map(t => ({ "@type": "Thing", "name": t }))
+    "about": (doc.tags || []).map((t: string) => ({ "@type": "Thing", "name": t }))
   },
   {
     "@context": "https://schema.org",
