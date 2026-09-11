@@ -420,6 +420,22 @@ if (isAdminPage) {
 							password: true,
 						},
 					},
+					before_send: (event: any) => {
+						if (event?.event === '$exception') {
+							const msg = String(event.properties?.$exception_message || event.properties?.$exception_type || '').toLowerCase();
+							if (
+								msg.includes('transition was aborted') ||
+								msg.includes('invalidstateerror') ||
+								msg.includes('autofillcallbackhandler') ||
+								msg.includes('java object is gone') ||
+								msg.includes('senddatatonative') ||
+								msg.includes('load failed')
+							) {
+								return null;
+							}
+						}
+						return event;
+					},
 					loaded: (ph) => {
 						(window as any).posthog = ph;
 						ph.startSessionRecording();

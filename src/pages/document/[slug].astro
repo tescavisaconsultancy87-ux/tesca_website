@@ -297,6 +297,7 @@ const whatsappPrefill = encodeURIComponent(`Hi TESCA, I was reading the ${doc.ti
           target="_blank"
           rel="noopener noreferrer"
           id="doc-top-whatsapp"
+          data-cta-loc="top_header"
           class="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold shadow-lg border border-emerald-400/40 backdrop-blur-md transition-all hover:scale-105"
         >
           <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
@@ -361,6 +362,51 @@ const whatsappPrefill = encodeURIComponent(`Hi TESCA, I was reading the ${doc.ti
 
     </main>
 
+    <!-- Contextual Direct WhatsApp Callout Card (Bridge between Preview & Assessment) -->
+    <section class="max-w-4xl mx-auto px-4 mt-6 w-full">
+      <div class="rounded-2xl bg-gradient-to-r from-emerald-950/60 via-slate-900 to-slate-900 border border-emerald-500/30 p-5 sm:p-7 shadow-xl relative overflow-hidden flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
+        <div class="absolute -right-12 -top-12 w-48 h-48 bg-emerald-500/10 rounded-full blur-3xl pointer-events-none"></div>
+        
+        <div class="space-y-2 relative z-10 max-w-xl text-left">
+          <div class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-extrabold uppercase tracking-wider bg-emerald-500/15 text-emerald-400 border border-emerald-500/30">
+            <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-ping"></span>
+            Direct Consultant WhatsApp Access
+          </div>
+          <h2 class="text-lg sm:text-xl font-extrabold text-white font-display tracking-tight leading-snug">
+            Need 1-on-1 Guidance for {doc.title.split('(')[0].trim()}?
+          </h2>
+          <p class="text-xs text-slate-300 leading-relaxed font-sans">
+            Skip lengthy back-and-forth emails. Message our senior visa & study abroad counselors on WhatsApp right now for an immediate 1-on-1 eligibility check and document review.
+          </p>
+          <div class="flex flex-wrap items-center gap-3 pt-1 text-[11px] text-slate-400">
+            <span class="inline-flex items-center gap-1 text-emerald-400 font-medium">✓ 100% Free Profile Assessment</span>
+            <span class="inline-flex items-center gap-1 text-slate-300 font-medium">• Fast Reply (9 AM – 7 PM IST)</span>
+            <span class="inline-flex items-center gap-1 text-slate-300 font-medium">• NOC & Score Mapping</span>
+          </div>
+        </div>
+
+        <div class="flex flex-col sm:flex-row md:flex-col gap-2.5 w-full md:w-auto relative z-10 shrink-0">
+          <a 
+            href={`https://wa.me/919824152731?text=${whatsappPrefill}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            data-cta-loc="inline_preview_bridge"
+            class="inline-flex items-center justify-center gap-2 px-5 py-3 rounded-xl bg-emerald-600 hover:bg-emerald-500 active:bg-emerald-700 text-white text-xs font-bold shadow-lg shadow-emerald-600/30 border border-emerald-400/40 transition-all hover:scale-[1.02] text-center cursor-pointer"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+            <span>Chat on WhatsApp Now</span>
+          </a>
+          <a 
+            href="#inquiry-section" 
+            class="inline-flex items-center justify-center gap-1.5 px-4 py-2.5 rounded-xl bg-slate-800/90 hover:bg-slate-750 text-slate-300 hover:text-white text-xs font-semibold border border-slate-700/80 transition-all text-center"
+          >
+            <span>Or Fill Assessment Form</span>
+            <span>↓</span>
+          </a>
+        </div>
+      </div>
+    </section>
+
     <!-- High-Converting Lead Generation & Assessment Section (CRO) -->
     <section id="inquiry-section" class="max-w-4xl mx-auto px-4 mt-8">
       <div class="rounded-3xl bg-gradient-to-br from-slate-900 via-slate-900/95 to-slate-850 border border-slate-700/70 p-6 sm:p-10 shadow-2xl relative overflow-hidden text-left">
@@ -411,6 +457,7 @@ const whatsappPrefill = encodeURIComponent(`Hi TESCA, I was reading the ${doc.ti
                 target="_blank"
                 rel="noopener noreferrer"
                 id="doc-bottom-whatsapp-btn"
+                data-cta-loc="inquiry_section"
                 class="inline-flex items-center justify-center gap-2 py-3 px-5 bg-emerald-600 hover:bg-emerald-500 active:bg-emerald-700 text-white font-bold text-xs sm:text-sm rounded-xl shadow-lg shadow-emerald-600/30 transition-all hover:scale-[1.02]"
               >
                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
@@ -543,6 +590,29 @@ const whatsappPrefill = encodeURIComponent(`Hi TESCA, I was reading the ${doc.ti
             </details>
           ))}
         </div>
+
+        <!-- Unanswered Questions WhatsApp Callout Card -->
+        <div class="rounded-2xl bg-gradient-to-br from-slate-900/90 via-slate-900 to-emerald-950/40 border border-slate-800 p-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-5 text-left mt-6 shadow-lg">
+          <div class="space-y-1.5 max-w-xl">
+            <h3 class="text-sm sm:text-base font-bold text-white font-display flex items-center gap-2">
+              <span class="w-2 h-2 rounded-full bg-emerald-400"></span>
+              <span>Still have unanswered questions about {doc.title.split('(')[0].trim()}?</span>
+            </h3>
+            <p class="text-xs text-slate-400 leading-relaxed">
+              Every applicant's profile is unique. Share your education history or work experience with our counselors on WhatsApp for personalized 1-on-1 advice.
+            </p>
+          </div>
+          <a 
+            href={`https://wa.me/919824152731?text=${whatsappPrefill}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            data-cta-loc="faq_bottom"
+            class="inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold shadow-md shrink-0 transition-all hover:scale-105"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+            <span>Ask on WhatsApp</span>
+          </a>
+        </div>
       </div>
 
       <!-- Related Guides & Pathways -->
@@ -569,12 +639,44 @@ const whatsappPrefill = encodeURIComponent(`Hi TESCA, I was reading the ${doc.ti
       )}
     </section>
 
+    <!-- Floating WhatsApp Specialist Card Widget (Desktop & Mobile) -->
+    <aside id="doc-floating-whatsapp-widget" class="fixed bottom-20 right-4 sm:bottom-6 sm:right-6 z-40 flex items-center" aria-label="WhatsApp live inquiry">
+      <div class="relative group">
+        <!-- Ambient Glow -->
+        <div class="absolute -inset-1 bg-gradient-to-r from-emerald-600 to-teal-500 rounded-full blur-md opacity-50 group-hover:opacity-85 transition duration-300 pointer-events-none"></div>
+        
+        <a 
+          href={`https://wa.me/919824152731?text=${whatsappPrefill}`}
+          target="_blank"
+          rel="noopener noreferrer"
+          data-cta-loc="floating_widget"
+          class="relative flex items-center gap-3 bg-slate-900/95 hover:bg-slate-850 text-white pl-3.5 pr-5 py-2.5 rounded-full border border-emerald-500/40 shadow-2xl backdrop-blur-md transition-all hover:scale-[1.03] active:scale-95 group"
+          aria-label="Chat with Visa Advisor on WhatsApp"
+        >
+          <div class="relative w-9 h-9 rounded-full bg-emerald-500 flex items-center justify-center text-white shrink-0 shadow-md">
+            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+            <span class="absolute top-0 right-0 w-2.5 h-2.5 bg-emerald-400 rounded-full border-2 border-slate-900 animate-pulse"></span>
+          </div>
+          <div class="text-left flex flex-col">
+            <span class="text-[10px] uppercase font-extrabold tracking-wider text-emerald-400 flex items-center gap-1 leading-none mb-0.5">
+              <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-ping"></span>
+              Advisor Online
+            </span>
+            <span class="text-xs font-bold text-white group-hover:text-emerald-300 transition-colors leading-tight">
+              Chat on WhatsApp
+            </span>
+          </div>
+        </a>
+      </div>
+    </aside>
+
     <!-- Mobile Sticky Conversion Bar -->
     <div class="fixed bottom-0 inset-x-0 z-40 bg-slate-900/95 backdrop-blur-lg border-t border-slate-800 p-3 sm:hidden flex items-center justify-between gap-3 shadow-2xl">
       <a 
         href={`https://wa.me/919824152731?text=${whatsappPrefill}`}
         target="_blank"
         rel="noopener noreferrer"
+        data-cta-loc="mobile_sticky_bar"
         class="flex-1 py-2.5 px-3 bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs rounded-xl flex items-center justify-center gap-1.5 shadow-md"
       >
         <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
@@ -595,7 +697,7 @@ const whatsappPrefill = encodeURIComponent(`Hi TESCA, I was reading the ${doc.ti
   <!-- PDF.js Engine (Same-Origin for zero worker CORS blocking) -->
   <script is:inline src="/js/pdf.min.js"></script>
 
-  <script is:inline define:vars={{ pdfUrl: doc.pdfUrl }}>
+  <script is:inline define:vars={{ pdfUrl: doc.pdfUrl, docSlug: doc.slug, docTitle: doc.title }}>
     async function initPdfViewer() {
       const spinner = document.getElementById("loading-spinner");
       const wrapper = document.getElementById("pdf-viewer-wrapper");
@@ -734,20 +836,66 @@ const whatsappPrefill = encodeURIComponent(`Hi TESCA, I was reading the ${doc.ti
       }
     }
 
+    // Direct WhatsApp Analytics Tracker
+    function initWhatsAppTracking() {
+      document.querySelectorAll('a[href*="wa.me"]').forEach(link => {
+        if (link.dataset.waAttached === "true") return;
+        link.dataset.waAttached = "true";
+
+        link.addEventListener('click', () => {
+          const ctaLoc = link.getAttribute('data-cta-loc') || 'document_page';
+          if (window.gtag) {
+            window.gtag('event', 'whatsapp_click', {
+              event_category: 'engagement',
+              destination: link.href,
+              location: ctaLoc
+            });
+            window.gtag('event', 'generate_lead', {
+              event_category: 'conversion',
+              lead_method: 'whatsapp',
+              source: `Document Guide: ${docTitle}`
+            });
+          }
+          if (window.posthog) {
+            window.posthog.capture('whatsapp_click', {
+              source: 'document_guide',
+              doc_slug: docSlug,
+              doc_title: docTitle,
+              cta_location: ctaLoc
+            });
+            window.posthog.capture('contact_whatsapp_clicked', {
+              source: 'document_guide',
+              doc_slug: docSlug,
+              doc_title: docTitle,
+              cta_location: ctaLoc
+            });
+            window.posthog.capture('generate_lead', {
+              lead_method: 'whatsapp',
+              source: `Document Guide: ${docTitle}`,
+              cta_location: ctaLoc
+            });
+          }
+        });
+      });
+    }
+
     // View Transitions compatibility
     document.addEventListener("astro:page-load", () => {
       initPdfViewer();
       initLeadForm();
+      initWhatsAppTracking();
     });
 
     if (document.readyState === "loading") {
       document.addEventListener("DOMContentLoaded", () => {
         initPdfViewer();
         initLeadForm();
+        initWhatsAppTracking();
       });
     } else {
       initPdfViewer();
       initLeadForm();
+      initWhatsAppTracking();
     }
 
     // 🔒 Security Protection 1: Block Right-Click Context Menu

@@ -531,7 +531,7 @@ export default function UniversityFilter() {
                             </span>
                             <span className="block pl-4 mt-0.5">
                               <span className={`inline-flex items-center px-1.5 py-0.5 rounded-full text-[9px] font-bold ${
-                                moi.toLowerCase() === "yes" 
+                                String(moi || "").toLowerCase() === "yes" 
                                   ? "bg-emerald-50 text-emerald-600 border border-emerald-100" 
                                   : "bg-rose-50 text-rose-600 border border-rose-100"
                               }`}>
@@ -674,10 +674,10 @@ export default function UniversityFilter() {
                   </div>
                   <div className="flex-1 min-w-0">
                     <div className="flex flex-wrap items-center gap-2 mb-1.5">
-                      <img src={`https://flagcdn.com/w20/${flagCode}.png`} alt="Flag" className="w-4.5 h-3.5 rounded-sm object-cover shadow-sm" loading="lazy" decoding="async" />
+                      <img src={`https://flagcdn.com/w20/${flagCode || "in"}.png`} alt="Flag" className="w-4.5 h-3.5 rounded-sm object-cover shadow-sm" loading="lazy" decoding="async" />
                       <span className="text-[10px] text-white/90 font-extrabold uppercase tracking-widest font-sans">{selectedUniversity.country}</span>
                       <span className="text-[9px] bg-[#FFE5CC] text-[#0A7880] px-2 py-0.5 rounded-full font-bold uppercase tracking-wider border border-[#FFE5CC]/25">
-                        {selectedUniversity.code.toUpperCase()}
+                        {selectedUniversity.code ? selectedUniversity.code.toUpperCase() : "UNI"}
                       </span>
                     </div>
                     <h3 className="text-xl sm:text-2xl font-extrabold text-white leading-tight font-display tracking-tight drop-shadow-sm">
@@ -720,7 +720,7 @@ export default function UniversityFilter() {
                             value: ugMoi,
                             icon: ShieldCheck,
                             badge: true,
-                            isYes: ugMoi.toLowerCase() !== "no"
+                            isYes: String(ugMoi || "").toLowerCase() !== "no"
                           }
                         ].map((row) => (
                           <div key={row.label} className="flex items-center justify-between gap-3 text-xs font-sans">
@@ -779,7 +779,7 @@ export default function UniversityFilter() {
                             value: pgMoi,
                             icon: ShieldCheck,
                             badge: true,
-                            isYes: pgMoi.toLowerCase() !== "no" && pgMoi !== "N/A"
+                            isYes: String(pgMoi || "").toLowerCase() !== "no" && pgMoi !== "N/A"
                           }
                         ].map((row) => (
                           <div key={row.label} className="flex items-center justify-between gap-3 text-xs font-sans">
