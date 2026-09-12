@@ -170,6 +170,7 @@ export default function InquiryFormCRM() {
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
+  const [submitError, setSubmitError] = useState("");
   const airplaneRef = useRef<AnimatedIconHandle>(null);
 
   // Phone Country Code Selector
@@ -393,6 +394,7 @@ export default function InquiryFormCRM() {
     e.preventDefault();
     if (!validateStep(9)) return;
     setIsSubmitting(true);
+    setSubmitError("");
 
     const addressStr = formData.city || "Not provided";
     const educationStr = `Highest: ${formData.highest} | Completed 10th: ${formData.completedTenth} | Completed 12th: ${formData.completedTwelfth}` + (formData.collegeYear ? ` | College: ${formData.collegeYear} (${formData.collegeGpa} GPA, ${formData.collegeUni}, ${formData.collegeCourse})` : "");
@@ -496,6 +498,7 @@ Comments/Additional Info: ${formData.comments || "None"}`;
       }
 
       // Success
+      setSubmitError("");
       if (typeof window !== "undefined") {
         if ((window as any).trackLeadEvent) {
           (window as any).trackLeadEvent("inquiry");
@@ -519,8 +522,10 @@ Comments/Additional Info: ${formData.comments || "None"}`;
           formData
         });
       }
+      const errorMsg = err.message || "Something went wrong. Please try again or contact us via WhatsApp.";
+      setSubmitError(errorMsg);
       if (typeof window !== "undefined" && (window as any).showToast) {
-        (window as any).showToast("Something went wrong. Please try again or contact us via WhatsApp.", "error");
+        (window as any).showToast(errorMsg, "error");
       }
     } finally {
       setIsSubmitting(false);
@@ -1553,6 +1558,22 @@ Comments/Additional Info: ${formData.comments || "None"}`;
             </button>
           )}
         </div>
+        {submitError && (
+          <div className="mt-4 p-3 rounded-lg bg-red-50 border border-red-200 flex items-start gap-2 text-left">
+            <AlertCircle className="w-4 h-4 text-red-500 shrink-0 mt-0.5" />
+            <div className="flex-1 min-w-0">
+              <p className="text-xs font-semibold text-red-700">Submission Failed</p>
+              <p className="text-xs text-red-600 mt-0.5 break-words">{submitError}</p>
+            </div>
+            <button
+              type="button"
+              onClick={() => setSubmitError("")}
+              className="p-0.5 rounded hover:bg-red-100 text-red-400 hover:text-red-600 transition-colors cursor-pointer"
+            >
+              <X className="w-3.5 h-3.5" />
+            </button>
+          </div>
+        )}
       </div>
 
       <style>{`
