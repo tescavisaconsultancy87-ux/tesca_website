@@ -104,6 +104,19 @@ export const POST: APIRoute = async ({ request, locals }) => {
         .single();
 
       if (fetchError || !lead) {
+        // Diagnose: does the ID exist with a different lead_type?
+        const { data: otherTypeLead, error: otherFetchError } = await supabase
+          .from('leads')
+          .select('id, lead_type, status')
+          .eq('id', leadId)
+          .single();
+        if (!otherFetchError && otherTypeLead) {
+          console.error(`[counsellor-booking] Lead ${leadId} exists but is type '${otherTypeLead.lead_type}', not 'counsellor'. This is a cross-type ID collision.`);
+          return new Response(JSON.stringify({ error: "This lead was created through a different form and cannot be booked as a counsellor session. Please submit a fresh enquiry." }), {
+            status: 422,
+            headers: { "Content-Type": "application/json" }
+          });
+        }
         return new Response(JSON.stringify({ error: "Lead not found or database query failed." }), {
           status: 404,
           headers: { "Content-Type": "application/json" }
@@ -117,6 +130,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
       const checkQuery = supabase
         .from('leads')
         .select('id, status')
+        .eq('lead_type', 'counsellor')
         .neq('status', 'completed')
         .neq('id', lead.id);
 
@@ -305,6 +319,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
     const { data: recentLeads, error: checkError } = await supabase
       .from('leads')
       .select('id, status, phone, email, details, created_at')
+      .eq('lead_type', 'counsellor')
       .neq('status', 'completed')
       .order('created_at', { ascending: false })
       .limit(1);
