@@ -522,10 +522,10 @@ Comments/Additional Info: ${formData.comments || "None"}`;
           formData
         });
       }
-      const errorMsg = err.message || "Something went wrong. Please try again or contact us via WhatsApp.";
-      setSubmitError(errorMsg);
+      const genericError = "Submission failed. Please try again later or contact us via WhatsApp.";
+      setSubmitError(genericError);
       if (typeof window !== "undefined" && (window as any).showToast) {
-        (window as any).showToast(errorMsg, "error");
+        (window as any).showToast(genericError, "error");
       }
     } finally {
       setIsSubmitting(false);
