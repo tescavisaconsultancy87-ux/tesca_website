@@ -31,7 +31,6 @@ jobs:
           BACKUP_FILE="supabase_backup_${TIMESTAMP}.sql.gz"
 
           echo "Starting database dump using PostgreSQL 17..."
-          # Uses official PostgreSQL 17 container to match Supabase PG 17 version perfectly
           docker run --rm \
             postgres:17-alpine \
             pg_dump "$SUPABASE_DB_URL" \
@@ -43,7 +42,6 @@ jobs:
           FILESIZE=$(stat -c%s "$BACKUP_FILE" 2>/dev/null || stat -f%z "$BACKUP_FILE")
           echo "Backup completed: $BACKUP_FILE ($FILESIZE bytes)"
 
-          # Safety check: Ensure file is not empty (> 100 bytes)
           if [ "$FILESIZE" -lt 100 ]; then
             echo "::error::Backup file is suspiciously small ($FILESIZE bytes). Check DB connection."
             exit 1
@@ -54,32 +52,47 @@ jobs:
 
       - name: Upload Backup to Cloudflare R2
         env:
-          AWS_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
-          AWS_DEFAULT_REGION: auto
-          R2_ACCOUNT_ID: ${{ secrets.R2_ACCOUNT_ID }}
-          R2_BUCKET_NAME: ${{ secrets.R2_BUCKET_NAME }}
+          RAW_ACCESS_KEY: ${{ secrets.R2_ACCESS_KEY_ID }}
+          RAW_SECRET_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+          RAW_ACCOUNT_ID: ${{ secrets.R2_ACCOUNT_ID }}
+          RAW_BUCKET_NAME: ${{ secrets.R2_BUCKET_NAME }}
         run: |
-          if [ -z "$AWS_ACCESS_KEY_ID" ] || [ -z "$AWS_SECRET_ACCESS_KEY" ] || [ -z "$R2_ACCOUNT_ID" ] || [ -z "$R2_BUCKET_NAME" ]; then
-            echo "::error::One or more R2 secrets are missing (R2_ACCESS_KEY_ID, R2_SECRET_ACCESS_KEY, R2_ACCOUNT_ID, R2_BUCKET_NAME)!"
+          # Strip any accidental leading/trailing whitespace or newlines from secrets
+          R2_ACCESS_KEY=$(echo "$RAW_ACCESS_KEY" | tr -d '[:space:]')
+          R2_SECRET_KEY=$(echo "$RAW_SECRET_KEY" | tr -d '[:space:]')
+          R2_ACCOUNT_ID=$(echo "$RAW_ACCOUNT_ID" | tr -d '[:space:]')
+          R2_BUCKET_NAME=$(echo "$RAW_BUCKET_NAME" | tr -d '[:space:]')
+
+          if [ -z "$R2_ACCESS_KEY" ] || [ -z "$R2_SECRET_KEY" ] || [ -z "$R2_ACCOUNT_ID" ] || [ -z "$R2_BUCKET_NAME" ]; then
+            echo "::error::One or more R2 secrets are missing in GitHub repository settings!"
             exit 1
           fi
 
           ENDPOINT_URL="https://${R2_ACCOUNT_ID}.r2.cloudflarestorage.com"
 
+          echo "Configuring AWS CLI profile for Cloudflare R2..."
+          aws configure set aws_access_key_id "$R2_ACCESS_KEY"
+          aws configure set aws_secret_access_key "$R2_SECRET_KEY"
+          aws configure set default.region auto
+          aws configure set default.s3.signature_version s3v4
+
           echo "Uploading $BACKUP_FILE to Cloudflare R2 ($R2_BUCKET_NAME)..."
           aws s3 cp "$BACKUP_FILE" "s3://${R2_BUCKET_NAME}/database/${BACKUP_FILE}" \
-            --endpoint-url "$ENDPOINT_URL"
+            --endpoint-url "$ENDPOINT_URL" \
+            --region auto
 
           echo "Upload successful! Backup stored at s3://${R2_BUCKET_NAME}/database/${BACKUP_FILE}"
 
       - name: Verify Uploaded Backup in R2
         env:
-          AWS_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
-          AWS_DEFAULT_REGION: auto
-          R2_ACCOUNT_ID: ${{ secrets.R2_ACCOUNT_ID }}
-          R2_BUCKET_NAME: ${{ secrets.R2_BUCKET_NAME }}
+          RAW_ACCOUNT_ID: ${{ secrets.R2_ACCOUNT_ID }}
+          RAW_BUCKET_NAME: ${{ secrets.R2_BUCKET_NAME }}
         run: |
+          R2_ACCOUNT_ID=$(echo "$RAW_ACCOUNT_ID" | tr -d '[:space:]')
+          R2_BUCKET_NAME=$(echo "$RAW_BUCKET_NAME" | tr -d '[:space:]')
           ENDPOINT_URL="https://${R2_ACCOUNT_ID}.r2.cloudflarestorage.com"
-          aws s3 ls "s3://${R2_BUCKET_NAME}/database/${BACKUP_FILE}" --endpoint-url "$ENDPOINT_URL"
+
+          echo "Verifying object in R2..."
+          aws s3 ls "s3://${R2_BUCKET_NAME}/database/${BACKUP_FILE}" \
+            --endpoint-url "$ENDPOINT_URL" \
+            --region auto
