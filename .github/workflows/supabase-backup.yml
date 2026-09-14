@@ -1,0 +1,88 @@
+name: Supabase to Cloudflare R2 Automated Backup
+
+on:
+  schedule:
+    # Runs every day at 02:00 UTC (07:30 AM IST)
+    - cron: '0 2 * * *'
+  workflow_dispatch:
+    # Allows manual backup trigger from GitHub Actions UI anytime
+    inputs:
+      retention_days:
+        description: 'Days of backups to retain in R2'
+        required: false
+        default: '30'
+
+jobs:
+  backup:
+    name: Backup Supabase DB to Cloudflare R2
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Install PostgreSQL Client
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq postgresql-client
+
+      - name: Generate Database Backup
+        env:
+          SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL }}
+        run: |
+          if [ -z "$SUPABASE_DB_URL" ]; then
+            echo "::error::SUPABASE_DB_URL secret is not set!"
+            exit 1
+          fi
+
+          TIMESTAMP=$(date +"%Y%m%d_%H%M%S")
+          BACKUP_FILE="supabase_backup_${TIMESTAMP}.sql.gz"
+
+          echo "Starting database dump..."
+          # Dump all schemas, tables, and data, compressed with gzip
+          pg_dump "$SUPABASE_DB_URL" \
+            --clean \
+            --if-exists \
+            --no-owner \
+            --no-privileges | gzip > "$BACKUP_FILE"
+
+          FILESIZE=$(stat -c%s "$BACKUP_FILE" 2>/dev/null || stat -f%z "$BACKUP_FILE")
+          echo "Backup completed: $BACKUP_FILE ($FILESIZE bytes)"
+
+          # Safety check: Ensure file is not empty (> 100 bytes)
+          if [ "$FILESIZE" -lt 100 ]; then
+            echo "::error::Backup file is suspiciously small ($FILESIZE bytes). Check DB credentials."
+            exit 1
+          fi
+
+          echo "BACKUP_FILE=$BACKUP_FILE" >> $GITHUB_ENV
+          echo "TIMESTAMP=$TIMESTAMP" >> $GITHUB_ENV
+
+      - name: Upload Backup to Cloudflare R2
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+          AWS_DEFAULT_REGION: auto
+          R2_ACCOUNT_ID: ${{ secrets.R2_ACCOUNT_ID }}
+          R2_BUCKET_NAME: ${{ secrets.R2_BUCKET_NAME }}
+        run: |
+          if [ -z "$R2_ACCESS_KEY_ID" ] || [ -z "$R2_SECRET_ACCESS_KEY" ] || [ -z "$R2_ACCOUNT_ID" ] || [ -z "$R2_BUCKET_NAME" ]; then
+            echo "::error::One or more R2 secrets are missing (R2_ACCESS_KEY_ID, R2_SECRET_ACCESS_KEY, R2_ACCOUNT_ID, R2_BUCKET_NAME)!"
+            exit 1
+          fi
+
+          ENDPOINT_URL="https://${R2_ACCOUNT_ID}.r2.cloudflarestorage.com"
+
+          echo "Uploading $BACKUP_FILE to Cloudflare R2 ($R2_BUCKET_NAME)..."
+          aws s3 cp "$BACKUP_FILE" "s3://${R2_BUCKET_NAME}/database/${BACKUP_FILE}" \
+            --endpoint-url "$ENDPOINT_URL"
+
+          echo "Upload successful! Backup stored at s3://${R2_BUCKET_NAME}/database/${BACKUP_FILE}"
+
+      - name: Verify Uploaded Backup in R2
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+          AWS_DEFAULT_REGION: auto
+          R2_ACCOUNT_ID: ${{ secrets.R2_ACCOUNT_ID }}
+          R2_BUCKET_NAME: ${{ secrets.R2_BUCKET_NAME }}
+        run: |
+          ENDPOINT_URL="https://${R2_ACCOUNT_ID}.r2.cloudflarestorage.com"
+          aws s3 ls "s3://${R2_BUCKET_NAME}/database/${BACKUP_FILE}" --endpoint-url "$ENDPOINT_URL"
