@@ -66,28 +66,34 @@ async function run() {
   console.log(`Starting Supabase Storage backup to ${OUTPUT_DIR}...`);
   fs.mkdirSync(OUTPUT_DIR, { recursive: true });
 
-  const { data: buckets, error: bErr } = await supabase.storage.listBuckets();
-  if (bErr || !buckets) {
-    console.error("Failed to list buckets:", bErr?.message);
-    process.exit(1);
+  const bucketNames = new Set(["tesca-assets"]);
+  try {
+    const { data: buckets } = await supabase.storage.listBuckets();
+    if (buckets && Array.isArray(buckets)) {
+      for (const b of buckets) {
+        if (b && b.name) bucketNames.add(b.name);
+      }
+    }
+  } catch (err) {
+    console.warn("Could not dynamically list buckets, using fallback:", err.message);
   }
 
-  console.log(`Found ${buckets.length} bucket(s):`, buckets.map(b => b.name).join(", "));
+  console.log(`Found ${bucketNames.size} bucket(s):`, Array.from(bucketNames).join(", "));
 
   let totalFiles = 0;
   let totalBytes = 0;
 
-  for (const bucket of buckets) {
-    console.log(`Scanning bucket: [${bucket.name}]...`);
-    const files = await listAllInFolder(bucket.name, "");
-    console.log(`Found ${files.length} file(s) in [${bucket.name}]. Downloading...`);
+  for (const bucketName of bucketNames) {
+    console.log(`Scanning bucket: [${bucketName}]...`);
+    const files = await listAllInFolder(bucketName, "");
+    console.log(`Found ${files.length} file(s) in [${bucketName}]. Downloading...`);
 
     // Download in concurrent batches of 6 for speed
     const BATCH_SIZE = 6;
     for (let i = 0; i < files.length; i += BATCH_SIZE) {
       const batch = files.slice(i, i + BATCH_SIZE);
       await Promise.all(batch.map(async (f) => {
-        const localDest = path.join(OUTPUT_DIR, bucket.name, f.path);
+        const localDest = path.join(OUTPUT_DIR, f.bucket, f.path);
         const ok = await downloadFile(f.bucket, f.path, localDest);
         if (ok) {
           totalFiles++;

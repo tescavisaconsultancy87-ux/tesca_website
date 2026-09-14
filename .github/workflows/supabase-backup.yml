@@ -105,5 +105,6 @@ jobs:
           echo "=== Verified Database Dumps ==="
           rclone lsf "r2:${R2_BUCKET_NAME}/database" --s3-no-check-bucket
 
-          echo "=== Verified Storage Folders ==="
+          echo "=== Verified Storage Folders & Count ==="
           rclone lsd "r2:${R2_BUCKET_NAME}/storage" --s3-no-check-bucket
+          rclone size "r2:${R2_BUCKET_NAME}/storage" --s3-no-check-bucket
