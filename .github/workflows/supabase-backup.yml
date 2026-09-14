@@ -84,19 +84,12 @@ jobs:
             exit 1
           fi
 
-          echo "=== Credential Diagnostic Info ==="
-          echo "Access Key ID length: ${#R2_ACCESS_KEY} (Starts with: ${R2_ACCESS_KEY:0:4}...)"
-          echo "Secret Access Key length: ${#R2_SECRET_KEY}"
-          echo "Account ID length: ${#R2_ACCOUNT_ID}"
-          echo "Target Bucket: $R2_BUCKET_NAME"
-
           mkdir -p ~/.config/rclone
-          printf "[r2]\ntype = s3\nprovider = Cloudflare\naccess_key_id = %s\nsecret_access_key = %s\nendpoint = https://%s.r2.cloudflarestorage.com\nno_check_bucket = true\nforce_path_style = true\n" "$R2_ACCESS_KEY" "$R2_SECRET_KEY" "$R2_ACCOUNT_ID" > ~/.config/rclone/rclone.conf
+          printf "[r2]\ntype = s3\nprovider = Cloudflare\naccess_key_id = %s\nsecret_access_key = %s\nendpoint = https://%s.r2.cloudflarestorage.com\nno_check_bucket = true\nforce_path_style = true\nno_head = true\n" "$R2_ACCESS_KEY" "$R2_SECRET_KEY" "$R2_ACCOUNT_ID" > ~/.config/rclone/rclone.conf
 
-          # 1. Upload Database Backup
+          # 1. Upload Database Backup (using --s3-no-head to bypass Cloudflare HEAD 403)
           echo "Uploading $BACKUP_FILE to Cloudflare R2 bucket: $R2_BUCKET_NAME/database/..."
-          rclone copyto "$BACKUP_FILE" "r2:${R2_BUCKET_NAME}/database/${BACKUP_FILE}" --s3-no-check-bucket -vv --dump bodies
-
+          rclone copyto "$BACKUP_FILE" "r2:${R2_BUCKET_NAME}/database/${BACKUP_FILE}" --s3-no-check-bucket --s3-no-head -v
           echo "Database backup upload complete!"
 
           # 2. Download and Sync Storage Images (Visa Success Stories, Carousel, Popups)
@@ -104,7 +97,7 @@ jobs:
           node scripts/backup-storage.mjs ./tmp-storage-backup
 
           echo "Syncing images to Cloudflare R2: $R2_BUCKET_NAME/storage/..."
-          rclone sync ./tmp-storage-backup "r2:${R2_BUCKET_NAME}/storage" --s3-no-check-bucket -v
+          rclone copy ./tmp-storage-backup "r2:${R2_BUCKET_NAME}/storage" --s3-no-check-bucket --s3-no-head -v
           rm -rf ./tmp-storage-backup
           echo "Storage images sync complete!"
 
