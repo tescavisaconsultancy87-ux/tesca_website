@@ -77,10 +77,11 @@ jobs:
           export RCLONE_CONFIG_R2_ACCESS_KEY_ID="$R2_ACCESS_KEY"
           export RCLONE_CONFIG_R2_SECRET_ACCESS_KEY="$R2_SECRET_KEY"
           export RCLONE_CONFIG_R2_ENDPOINT="https://${R2_ACCOUNT_ID}.r2.cloudflarestorage.com"
-          export RCLONE_CONFIG_R2_ACL="private"
+          export RCLONE_CONFIG_R2_NO_CHECK_BUCKET="true"
+          export RCLONE_CONFIG_R2_FORCE_PATH_STYLE="true"
 
           echo "Uploading $BACKUP_FILE to Cloudflare R2 bucket: $R2_BUCKET_NAME/database/..."
-          rclone copy "$BACKUP_FILE" "r2:${R2_BUCKET_NAME}/database"
+          rclone copy "$BACKUP_FILE" "r2:${R2_BUCKET_NAME}/database" --s3-no-check-bucket
 
           echo "Upload complete! Verifying files in R2:"
-          rclone lsf "r2:${R2_BUCKET_NAME}/database"
+          rclone lsf "r2:${R2_BUCKET_NAME}/database" --s3-no-check-bucket
