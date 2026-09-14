@@ -742,8 +742,6 @@ const whatsappPrefill = encodeURIComponent(`Hi TESCA, I was reading the ${doc.ti
       const form = document.getElementById("doc-lead-form");
       const submitBtn = document.getElementById("doc-lead-submit");
       const phoneInput = document.getElementById("doc-lead-phone");
-      const countryCodeSelect = document.getElementById("doc-lead-country-code");
-
       if (phoneInput && phoneInput.dataset.inputAttached !== "true") {
         phoneInput.dataset.inputAttached = "true";
         phoneInput.addEventListener("input", () => {
@@ -753,7 +751,7 @@ const whatsappPrefill = encodeURIComponent(`Hi TESCA, I was reading the ${doc.ti
       }
 
       if (form && submitBtn) {
-        (form as any)._ajaxBound = true;
+        form._ajaxBound = true;
         if (form.dataset.listenerAttached === "true") return;
         form.dataset.listenerAttached = "true";
 
@@ -780,8 +778,8 @@ const whatsappPrefill = encodeURIComponent(`Hi TESCA, I was reading the ${doc.ti
             form.dataset.submitting = "false";
             submitBtn.disabled = false;
             submitBtn.innerHTML = `<span>Request Free Assessment</span>`;
-            if (typeof (window as any).hideBtnLoader === "function") {
-              (window as any).hideBtnLoader(submitBtn);
+            if (typeof window.hideBtnLoader === "function") {
+              window.hideBtnLoader(submitBtn);
             }
           };
 
