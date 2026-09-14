@@ -428,7 +428,7 @@ const whatsappPrefill = encodeURIComponent(`Hi TESCA, I was reading the ${doc.ti
             <h3 class="text-base font-bold text-white mb-1 font-display">Get Free Assessment</h3>
             <p class="text-[11px] text-slate-400 mb-4">We'll review your profile and reply within 24 hours.</p>
 
-            <form id="doc-lead-form" class="space-y-3">
+            <form id="doc-lead-form" class="space-y-3" data-no-loader="true">
               <input type="hidden" name="source" value={`Guide: ${doc.title}`} />
               
               <div>
@@ -445,16 +445,29 @@ const whatsappPrefill = encodeURIComponent(`Hi TESCA, I was reading the ${doc.ti
 
               <div>
                 <label for="doc-lead-phone" class="sr-only">Phone Number</label>
-                <div class="relative">
-                  <span class="absolute left-3 top-1/2 -translate-y-1/2 text-[11px] text-slate-400 font-mono">+91</span>
+                <div class="flex gap-2">
+                  <select 
+                    id="doc-lead-country-code" 
+                    name="country_code" 
+                    aria-label="Country Dial Code"
+                    class="w-[105px] px-2 py-2.5 bg-slate-900 border border-slate-800 rounded-xl text-xs text-white focus:outline-none focus:border-accent-blue font-mono shrink-0 cursor-pointer"
+                  >
+                    <option value="+44" selected={doc.slug.includes('uk') ? true : false}>🇬🇧 +44</option>
+                    <option value="+1" selected={doc.slug.includes('canada') && !doc.slug.includes('uk') ? true : false}>🇨🇦 +1</option>
+                    <option value="+91" selected={!doc.slug.includes('uk') && !doc.slug.includes('canada') ? true : false}>🇮🇳 +91</option>
+                    <option value="+971">🇦🇪 +971</option>
+                    <option value="+61">🇦🇺 +61</option>
+                    <option value="+49">🇩🇪 +49</option>
+                    <option value="+64">🇳🇿 +64</option>
+                  </select>
                   <input 
                     type="tel" 
                     id="doc-lead-phone" 
                     name="phone" 
-                    maxlength="10" 
+                    maxlength="15" 
                     required 
-                    placeholder="10-Digit Mobile Number *" 
-                    class="w-full pl-11 pr-3.5 py-2.5 bg-slate-900 border border-slate-800 rounded-xl text-xs text-white placeholder-slate-500 focus:outline-none focus:border-accent-blue transition-colors font-mono"
+                    placeholder="Mobile Number *" 
+                    class="flex-1 min-w-0 px-3.5 py-2.5 bg-slate-900 border border-slate-800 rounded-xl text-xs text-white placeholder-slate-500 focus:outline-none focus:border-accent-blue transition-colors font-mono"
                   />
                 </div>
               </div>
@@ -680,11 +693,12 @@ const whatsappPrefill = encodeURIComponent(`Hi TESCA, I was reading the ${doc.ti
         for (let pageNum = 1; pageNum <= pdf.numPages; pageNum++) {
           const page = await pdf.getPage(pageNum);
           
-          // Compute High-DPI scale for razor-sharp text rendering on Retina & 4K screens
-          const dpr = Math.max(window.devicePixelRatio || 1, 2.5);
-          const containerWidth = pagesContainer.clientWidth || 800;
+          // Compute sensible DPR scale: cap at 1.5 on mobile to avoid in-app browser canvas out-of-memory crashes
+          const isMobile = window.innerWidth < 768;
+          const dpr = isMobile ? Math.min(window.devicePixelRatio || 1, 1.5) : Math.min(window.devicePixelRatio || 1, 2.0);
+          const containerWidth = pagesContainer.clientWidth || (isMobile ? window.innerWidth - 32 : 800);
           const unscaledViewport = page.getViewport({ scale: 1.0 });
-          const displayScale = Math.max((containerWidth - 32) / unscaledViewport.width, 0.8);
+          const displayScale = Math.max((containerWidth - 32) / unscaledViewport.width, 0.6);
           const renderScale = displayScale * dpr;
 
           const viewport = page.getViewport({ scale: renderScale });
@@ -728,15 +742,18 @@ const whatsappPrefill = encodeURIComponent(`Hi TESCA, I was reading the ${doc.ti
       const form = document.getElementById("doc-lead-form");
       const submitBtn = document.getElementById("doc-lead-submit");
       const phoneInput = document.getElementById("doc-lead-phone");
+      const countryCodeSelect = document.getElementById("doc-lead-country-code");
 
       if (phoneInput && phoneInput.dataset.inputAttached !== "true") {
         phoneInput.dataset.inputAttached = "true";
         phoneInput.addEventListener("input", () => {
-          phoneInput.value = phoneInput.value.replace(/\D/g, "").slice(0, 10);
+          // Allow digits, spaces, and hyphens up to 15 characters
+          phoneInput.value = phoneInput.value.replace(/[^\d\s\-]/g, "").slice(0, 15);
         });
       }
 
       if (form && submitBtn) {
+        (form as any)._ajaxBound = true;
         if (form.dataset.listenerAttached === "true") return;
         form.dataset.listenerAttached = "true";
 
@@ -746,24 +763,39 @@ const whatsappPrefill = encodeURIComponent(`Hi TESCA, I was reading the ${doc.ti
 
           const nameInput = form.querySelector('[name="name"]');
           const phoneField = form.querySelector('[name="phone"]');
+          const codeField = form.querySelector('[name="country_code"]');
           const emailInput = form.querySelector('[name="email"]');
           const cityInput = form.querySelector('[name="city"]');
           const sourceInput = form.querySelector('[name="source"]');
 
           const name = nameInput ? nameInput.value.trim() : "";
-          const phone = phoneField ? phoneField.value.trim() : "";
+          const rawPhone = phoneField ? phoneField.value.trim() : "";
+          const phoneDigits = rawPhone.replace(/\D/g, "");
+          const countryCode = codeField ? codeField.value.trim() : "+44";
           const email = emailInput ? emailInput.value.trim() : "";
           const city = cityInput ? cityInput.value.trim() : "";
           const source = sourceInput ? sourceInput.value.trim() : `Document: ${docTitle}`;
 
-          if (!name || !phone || phone.length !== 10 || !email) {
-            if (window.showToast) window.showToast("Please provide your name, valid 10-digit phone number, and email.", "warning");
+          const resetSubmitButton = () => {
+            form.dataset.submitting = "false";
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = `<span>Request Free Assessment</span>`;
+            if (typeof (window as any).hideBtnLoader === "function") {
+              (window as any).hideBtnLoader(submitBtn);
+            }
+          };
+
+          if (!name || !phoneDigits || phoneDigits.length < 7 || phoneDigits.length > 15 || !email) {
+            if (window.showToast) window.showToast("Please provide your name, valid phone number (7-15 digits), and email.", "warning");
+            resetSubmitButton();
             return;
           }
 
           form.dataset.submitting = "true";
           submitBtn.disabled = true;
           submitBtn.innerHTML = `<span>Submitting...</span>`;
+
+          const fullPhone = `${countryCode} ${phoneDigits}`;
 
           try {
             const res = await fetch("/api/contact", {
@@ -772,7 +804,7 @@ const whatsappPrefill = encodeURIComponent(`Hi TESCA, I was reading the ${doc.ti
               body: JSON.stringify({
                 name,
                 email,
-                phone,
+                phone: fullPhone,
                 city,
                 lead_type: "document",
                 document_title: docTitle,
@@ -781,7 +813,7 @@ const whatsappPrefill = encodeURIComponent(`Hi TESCA, I was reading the ${doc.ti
                 source: source || `Document Guide: ${docTitle}`,
                 subject: `Free Assessment Request: ${docTitle}`,
                 category: "general",
-                message: `Document Assessment Request for "${docTitle}". Student: ${name}. Phone: +91 ${phone}. Email: ${email}. City: ${city || "Not specified"}. Page: ${window.location.href}`
+                message: `Document Assessment Request for "${docTitle}". Student: ${name}. Phone: ${fullPhone}. Email: ${email}. City: ${city || "Not specified"}. Page: ${window.location.href}`
               })
             });
 
@@ -800,24 +832,21 @@ const whatsappPrefill = encodeURIComponent(`Hi TESCA, I was reading the ${doc.ti
               }
               form.reset();
               form.dataset.submitting = "false";
+              submitBtn.disabled = false;
               submitBtn.innerHTML = `<span>Assessment Requested ✓</span>`;
             } else {
-              form.dataset.submitting = "false";
+              resetSubmitButton();
               if (window.showToast) window.showToast(data.error || "Submission failed. Please WhatsApp us directly.", "error");
-              submitBtn.disabled = false;
-              submitBtn.innerHTML = `<span>Request Free Assessment</span>`;
             }
           } catch (err) {
-            form.dataset.submitting = "false";
+            resetSubmitButton();
             if (window.showToast) window.showToast("Network error. Please chat with us on WhatsApp.", "error");
-            submitBtn.disabled = false;
-            submitBtn.innerHTML = `<span>Request Free Assessment</span>`;
           }
         });
       }
     }
 
-    // Direct WhatsApp Analytics Tracker
+    // Direct WhatsApp Analytics Tracker & Background Database Lead Logger
     function initWhatsAppTracking() {
       document.querySelectorAll('a[href*="wa.me"]').forEach(link => {
         if (link.dataset.waAttached === "true") return;
@@ -825,6 +854,35 @@ const whatsappPrefill = encodeURIComponent(`Hi TESCA, I was reading the ${doc.ti
 
         link.addEventListener('click', () => {
           const ctaLoc = link.getAttribute('data-cta-loc') || 'document_page';
+
+          // Log WhatsApp click to database so it appears in admin panel
+          try {
+            const beaconPayload = JSON.stringify({
+              name: "WhatsApp Visitor",
+              phone: "WhatsApp Chat",
+              lead_type: "whatsapp",
+              source: `WhatsApp CTA: ${ctaLoc} (${docTitle})`,
+              document_title: docTitle,
+              document_slug: docSlug,
+              page_url: window.location.href,
+              message: `Visitor initiated WhatsApp chat from [${ctaLoc}] on guide "${docTitle}"`
+            });
+
+            if (navigator.sendBeacon) {
+              const blob = new Blob([beaconPayload], { type: 'application/json' });
+              navigator.sendBeacon('/api/contact', blob);
+            } else {
+              fetch('/api/contact', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: beaconPayload,
+                keepalive: true
+              }).catch(() => {});
+            }
+          } catch (logErr) {
+            console.warn('[WhatsApp Lead Track Notice]:', logErr);
+          }
+
           if (window.gtag) {
             window.gtag('event', 'whatsapp_click', {
               event_category: 'engagement',

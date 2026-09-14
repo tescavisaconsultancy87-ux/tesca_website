@@ -103,7 +103,7 @@ import Layout from "../layouts/Layout.astro";
           <h2 class="text-2xl font-extrabold font-display text-slate-900 mb-2">Send Us a Message</h2>
           <p class="text-sm text-slate-500 font-sans mb-8">All fields marked with * are required.</p>
 
-          <form id="contact-form" class="space-y-5">
+          <form id="contact-form" class="space-y-5" data-no-loader="true">
             <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
               <div>
                 <label for="cf-name" class="text-xs font-bold uppercase tracking-wider text-slate-600 font-sans block mb-1.5">Full Name *</label>
@@ -223,6 +223,7 @@ import Layout from "../layouts/Layout.astro";
 
     if (form && submitBtn) {
       // Prevent duplicate listener binding
+      (form as any)._ajaxBound = true;
       if ((form as any).__hasSubmitListener) return;
       (form as any).__hasSubmitListener = true;
 
@@ -241,10 +242,19 @@ import Layout from "../layouts/Layout.astro";
         const phoneRaw = phoneEl ? phoneEl.value.trim() : "";
         const phone = phoneRaw ? phoneRaw.replace(/\D/g, "") : "";
         
+        const resetBtn = () => {
+          submitBtn.disabled = false;
+          submitBtn.textContent = "Send Message";
+          if (typeof (window as any).hideBtnLoader === 'function') {
+            (window as any).hideBtnLoader(submitBtn);
+          }
+        };
+
         if (phoneRaw && phone.length !== 10) {
           if (typeof window !== "undefined" && (window as any).showToast) {
             (window as any).showToast("Please enter a valid 10-digit phone number.", "warning");
           }
+          resetBtn();
           return;
         }
 
@@ -257,6 +267,7 @@ import Layout from "../layouts/Layout.astro";
             (window as any).showToast("Please fill in all required fields.", "warning");
           }
           captureEvent("contact_form_validation_failed");
+          resetBtn();
           return;
         }
 

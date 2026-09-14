@@ -422,7 +422,10 @@ const cards = [
 
                   let typeLabel = "Eligibility Finder";
                   let typeBg = "bg-teal-50 text-teal-700 border-teal-200";
-                  if (isDocumentLead) {
+                  if (lead.lead_type === "whatsapp") {
+                    typeLabel = "WhatsApp Lead";
+                    typeBg = "bg-emerald-50 text-emerald-700 border-emerald-200";
+                  } else if (isDocumentLead) {
                     typeLabel = "Document Guide";
                     typeBg = "bg-sky-50 text-sky-700 border-sky-200";
                   } else if (lead.lead_type === "inquiry") {

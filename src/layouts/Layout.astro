@@ -210,6 +210,31 @@ if (isAdminPage) {
 						}
 					} else if (href.includes('wa.me') || href.includes('api.whatsapp.com') || href.includes('whatsapp://')) {
 						window.trackClickEvent('whatsapp', href);
+
+						// Log WhatsApp inquiry to database so it appears in admin dashboard
+						try {
+							const beaconPayload = JSON.stringify({
+								name: "WhatsApp Visitor",
+								phone: "WhatsApp Chat",
+								lead_type: "whatsapp",
+								source: `WhatsApp Click: ${window.location.pathname}`,
+								page_url: window.location.href,
+								message: `Visitor clicked WhatsApp chat link: ${href}`
+							});
+							if (navigator.sendBeacon) {
+								const blob = new Blob([beaconPayload], { type: 'application/json' });
+								navigator.sendBeacon('/api/contact', blob);
+							} else {
+								fetch('/api/contact', {
+									method: 'POST',
+									headers: { 'Content-Type': 'application/json' },
+									body: beaconPayload,
+									keepalive: true
+								}).catch(() => {});
+							}
+						} catch (logErr) {
+							console.warn('[WhatsApp Track Notice]:', logErr);
+						}
 					}
 				}
 
@@ -1812,10 +1837,17 @@ if (isAdminPage) {
 					document.referrer.includes("instagram.com") ||
 					document.referrer.includes("facebook.com");
 
-				const modalDelay = isSocialAdTraffic ? 12000 : 45000;
+				// If social traffic, give user space since PromoPopup may show at 5s; delay soft modal to 40s
+				const modalDelay = isSocialAdTraffic ? 40000 : 45000;
 
 				const showSoftModal = () => {
 					if (window.location.pathname.toLowerCase().includes("review-generator")) return;
+					// Don't show soft modal if main promo popup is currently visible or recently closed
+					const mainPromo = document.getElementById("promo-popup-overlay");
+					if (mainPromo && !mainPromo.classList.contains("hidden")) return;
+					const lastPromoClosed = sessionStorage.getItem("main_popup_closed_at");
+					if (lastPromoClosed && (Date.now() - parseInt(lastPromoClosed, 10)) < 60000) return;
+
 					const modal = document.getElementById("soft-cta-modal");
 					const card = document.getElementById("soft-cta-card");
 					if (modal && card) {
@@ -2042,10 +2074,17 @@ if (isAdminPage) {
 					}
 					btn.innerHTML = SPINNER_HTML + (label ? ' ' + label : '');
 					btn.style.pointerEvents = 'none';
+
+					// Defensive auto-reset watchdog: automatically restore button after 10s in case form validation or network stalls
+					clearTimeout((btn as any)._loaderTimeout);
+					(btn as any)._loaderTimeout = setTimeout(() => {
+						(window as any).hideBtnLoader?.(btn);
+					}, 10000);
 				};
 
 				(window as any).hideBtnLoader = function(btn: HTMLElement) {
 					if (!btn) return;
+					clearTimeout((btn as any)._loaderTimeout);
 					(btn as HTMLButtonElement).disabled = false;
 					btn.style.pointerEvents = '';
 					const orig = (btn as any)._originalHTML;
@@ -2058,8 +2097,9 @@ if (isAdminPage) {
 				// Global form submission handler for non-AJAX forms
 				document.addEventListener("submit", (e) => {
 					const form = e.target as HTMLFormElement;
-					const btn = form.querySelector('button[type="submit"]') as HTMLElement;
-					if (btn && !(form as any)._ajaxBound && !btn.closest('[data-no-loader]')) {
+					const btn = form?.querySelector?.('button[type="submit"]') as HTMLElement;
+					const isNoLoader = form?.hasAttribute?.('data-no-loader') || btn?.closest?.('[data-no-loader]');
+					if (btn && !(form as any)._ajaxBound && !isNoLoader) {
 						(window as any).showBtnLoader(btn);
 					}
 				});

@@ -25,11 +25,15 @@ export const POST: APIRoute = async ({ request, locals }) => {
     body = await request.json();
     const { name, email, phone, subject, category, message, city, lead_type, document_title, document_slug, page_url, source } = body;
 
-    if (!name || !message) {
+    const isWhatsAppLead = lead_type === 'whatsapp';
+    const effectiveName = (name && name.trim()) || (isWhatsAppLead ? 'WhatsApp Visitor' : '');
+    const effectiveMessage = (message && message.trim()) || (isWhatsAppLead ? `Direct WhatsApp chat initiated from ${page_url || source || 'Website'}` : '');
+
+    if (!effectiveName || !effectiveMessage) {
       return jsonResponse({ error: "Missing required fields (name, message)." }, 400);
     }
 
-    if (!validateName(name, 200)) {
+    if (!validateName(effectiveName, 200)) {
       return jsonResponse({ error: "Invalid name format or length (max 200 characters)." }, 400);
     }
 
@@ -37,16 +41,16 @@ export const POST: APIRoute = async ({ request, locals }) => {
       return jsonResponse({ error: "Invalid email address format." }, 400);
     }
 
-    if (phone && !validatePhone(phone)) {
+    if (phone && phone !== 'WhatsApp Chat' && !validatePhone(phone)) {
       return jsonResponse({ error: "Invalid phone number format." }, 400);
     }
 
-    const cleanName = sanitizeText(name, 200);
+    const cleanName = sanitizeText(effectiveName, 200);
     const cleanEmail = email ? sanitizeText(email, 254).toLowerCase() : null;
-    const cleanPhone = phone ? sanitizeText(phone, 20) : null;
-    const cleanSubject = subject ? sanitizeText(subject, 200) : '';
+    const cleanPhone = phone ? sanitizeText(phone, 30) : (isWhatsAppLead ? 'WhatsApp Chat' : null);
+    const cleanSubject = subject ? sanitizeText(subject, 200) : (isWhatsAppLead ? 'WhatsApp Direct Inquiry' : '');
     const cleanCategory = ['bug', 'error', 'general'].includes(category) ? category : 'general';
-    const cleanMessage = sanitizeText(message, 2000);
+    const cleanMessage = sanitizeText(effectiveMessage, 2000);
     const cleanCity = city ? sanitizeText(city, 100) : null;
     const cleanDocTitle = document_title ? sanitizeText(document_title, 200) : null;
     const cleanDocSlug = document_slug ? sanitizeText(document_slug, 120) : null;
@@ -54,7 +58,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
     const cleanSource = source ? sanitizeText(source, 200) : null;
 
     const isDocLead = lead_type === 'document' || Boolean(cleanDocTitle) || (cleanSource && cleanSource.toLowerCase().includes('guide'));
-    const finalLeadType = isDocLead ? 'document' : 'contact';
+    const finalLeadType = isWhatsAppLead ? 'whatsapp' : (isDocLead ? 'document' : 'contact');
 
     const detailsStr = JSON.stringify({
       name: cleanName,
@@ -95,17 +99,19 @@ export const POST: APIRoute = async ({ request, locals }) => {
       runInBackground(locals, () => sendMail({ to: cleanEmail, subject: emailSubject, html }), "contact-confirmation-email");
     }
 
-    // Send notification to admin
-    const adminEmail = getEnv('OWNER_EMAIL') || getEnv('GMAIL_USER') || "tescavisaconsultancy87@gmail.com";
-    const { subject: adminSubject, html: adminHtml } = contactAdminNotificationEmail({
-      name: cleanName,
-      email: cleanEmail || undefined,
-      phone: cleanPhone || undefined,
-      subject: cleanSubject,
-      category: cleanCategory,
-      message: cleanMessage,
-    });
-    runInBackground(locals, () => sendMail({ to: adminEmail, subject: adminSubject, html: adminHtml }), "contact-admin-email");
+    // Send notification to admin (skip for raw WhatsApp clicks to avoid email spam)
+    if (!isWhatsAppLead) {
+      const adminEmail = getEnv('OWNER_EMAIL') || getEnv('GMAIL_USER') || "tescavisaconsultancy87@gmail.com";
+      const { subject: adminSubject, html: adminHtml } = contactAdminNotificationEmail({
+        name: cleanName,
+        email: cleanEmail || undefined,
+        phone: cleanPhone || undefined,
+        subject: cleanSubject,
+        category: cleanCategory,
+        message: cleanMessage,
+      });
+      runInBackground(locals, () => sendMail({ to: adminEmail, subject: adminSubject, html: adminHtml }), "contact-admin-email");
+    }
 
     return jsonResponse({ success: true, id: insertedData?.id || null });
 
