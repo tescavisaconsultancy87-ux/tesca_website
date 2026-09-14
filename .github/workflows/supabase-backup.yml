@@ -60,17 +60,20 @@ jobs:
           fi
 
           echo "BACKUP_FILE=$BACKUP_FILE" >> $GITHUB_ENV
-          echo "TIMESTAMP=$TIMESTAMP" >> $GITHUB_ENV
 
-      - name: Configure Rclone for Cloudflare R2
+      - name: Backup to Cloudflare R2 (Database & Storage Images)
         env:
           RAW_ACCESS_KEY: ${{ secrets.R2_ACCESS_KEY_ID }}
           RAW_SECRET_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
           RAW_ACCOUNT_ID: ${{ secrets.R2_ACCOUNT_ID }}
           RAW_BUCKET_NAME: ${{ secrets.R2_BUCKET_NAME }}
+          PUBLIC_SUPABASE_URL: "https://zlsauoosumpnbyouhdfk.supabase.co"
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
         run: |
+          # Install rclone
           sudo apt-get update -qq && sudo apt-get install -y -qq rclone
 
+          # Sanitize secrets
           R2_ACCESS_KEY=$(echo "$RAW_ACCESS_KEY" | tr -d '[:space:]')
           R2_SECRET_KEY=$(echo "$RAW_SECRET_KEY" | tr -d '[:space:]')
           R2_ACCOUNT_ID=$(echo "$RAW_ACCOUNT_ID" | tr -d '[:space:]')
@@ -81,37 +84,27 @@ jobs:
             exit 1
           fi
 
+          # Configure rclone with exact settings verified in Run #15
           mkdir -p ~/.config/rclone
           printf "[r2]\ntype = s3\nprovider = Cloudflare\naccess_key_id = %s\nsecret_access_key = %s\nendpoint = https://%s.r2.cloudflarestorage.com\nno_check_bucket = true\nforce_path_style = true\n" "$R2_ACCESS_KEY" "$R2_SECRET_KEY" "$R2_ACCOUNT_ID" > ~/.config/rclone/rclone.conf
 
-          echo "R2_BUCKET_NAME=$R2_BUCKET_NAME" >> $GITHUB_ENV
-
-      - name: Upload Database Backup to Cloudflare R2
-        run: |
+          # 1. Upload Database Backup
           echo "Uploading $BACKUP_FILE to Cloudflare R2 bucket: $R2_BUCKET_NAME/database/..."
           rclone copyto "$BACKUP_FILE" "r2:${R2_BUCKET_NAME}/database/${BACKUP_FILE}" --s3-no-check-bucket -v
-
           echo "Database backup upload complete!"
 
-      - name: Backup Supabase Storage Files (Visa Success & Media Assets)
-        env:
-          PUBLIC_SUPABASE_URL: "https://zlsauoosumpnbyouhdfk.supabase.co"
-          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
-        run: |
+          # 2. Download and Sync Storage Images (Visa Success Stories, Carousel, Popups)
           echo "Downloading all images and media assets from Supabase Storage..."
           node scripts/backup-storage.mjs ./tmp-storage-backup
 
           echo "Syncing images to Cloudflare R2: $R2_BUCKET_NAME/storage/..."
-          # rclone sync only uploads new or modified images, skipping existing ones
           rclone sync ./tmp-storage-backup "r2:${R2_BUCKET_NAME}/storage" --s3-no-check-bucket -v
-
           rm -rf ./tmp-storage-backup
-          echo "Storage sync complete!"
+          echo "Storage images sync complete!"
 
-      - name: Verify Backups in R2
-        run: |
-          echo "=== Recent Database Dumps ==="
+          # 3. Verification
+          echo "=== Verified Database Dumps ==="
           rclone lsf "r2:${R2_BUCKET_NAME}/database" --s3-no-check-bucket
 
-          echo "=== Synced Storage Folders ==="
+          echo "=== Verified Storage Folders ==="
           rclone lsd "r2:${R2_BUCKET_NAME}/storage" --s3-no-check-bucket
