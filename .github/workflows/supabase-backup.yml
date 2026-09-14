@@ -60,7 +60,7 @@ jobs:
           # Install rclone
           sudo apt-get update -qq && sudo apt-get install -y -qq rclone
 
-          # Strip any whitespace or newlines
+          # Sanitize secrets
           R2_ACCESS_KEY=$(echo "$RAW_ACCESS_KEY" | tr -d '[:space:]')
           R2_SECRET_KEY=$(echo "$RAW_SECRET_KEY" | tr -d '[:space:]')
           R2_ACCOUNT_ID=$(echo "$RAW_ACCOUNT_ID" | tr -d '[:space:]')
@@ -71,17 +71,13 @@ jobs:
             exit 1
           fi
 
-          # Create clean rclone config file (avoids URL comma-escaping issues)
-          mkdir -p ~/.config/rclone
-          cat << EOF > ~/.config/rclone/rclone.conf
-[r2]
-type = s3
-provider = Cloudflare
-access_key_id = ${R2_ACCESS_KEY}
-secret_access_key = ${R2_SECRET_KEY}
-endpoint = https://${R2_ACCOUNT_ID}.r2.cloudflarestorage.com
-acl = private
-EOF
+          # Configure rclone dynamically via standard environment variables
+          export RCLONE_CONFIG_R2_TYPE="s3"
+          export RCLONE_CONFIG_R2_PROVIDER="Cloudflare"
+          export RCLONE_CONFIG_R2_ACCESS_KEY_ID="$R2_ACCESS_KEY"
+          export RCLONE_CONFIG_R2_SECRET_ACCESS_KEY="$R2_SECRET_KEY"
+          export RCLONE_CONFIG_R2_ENDPOINT="https://${R2_ACCOUNT_ID}.r2.cloudflarestorage.com"
+          export RCLONE_CONFIG_R2_ACL="private"
 
           echo "Uploading $BACKUP_FILE to Cloudflare R2 bucket: $R2_BUCKET_NAME/database/..."
           rclone copy "$BACKUP_FILE" "r2:${R2_BUCKET_NAME}/database"
