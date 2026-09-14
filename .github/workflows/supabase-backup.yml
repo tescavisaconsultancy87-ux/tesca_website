@@ -57,10 +57,10 @@ jobs:
           RAW_ACCOUNT_ID: ${{ secrets.R2_ACCOUNT_ID }}
           RAW_BUCKET_NAME: ${{ secrets.R2_BUCKET_NAME }}
         run: |
-          # Install rclone (official industry standard tool with native Cloudflare R2 provider support)
+          # Install rclone
           sudo apt-get update -qq && sudo apt-get install -y -qq rclone
 
-          # Strip any accidental whitespace or newlines from secrets
+          # Strip any whitespace or newlines
           R2_ACCESS_KEY=$(echo "$RAW_ACCESS_KEY" | tr -d '[:space:]')
           R2_SECRET_KEY=$(echo "$RAW_SECRET_KEY" | tr -d '[:space:]')
           R2_ACCOUNT_ID=$(echo "$RAW_ACCOUNT_ID" | tr -d '[:space:]')
@@ -71,27 +71,20 @@ jobs:
             exit 1
           fi
 
-          ENDPOINT_URL="https://${R2_ACCOUNT_ID}.r2.cloudflarestorage.com"
+          # Create clean rclone config file (avoids URL comma-escaping issues)
+          mkdir -p ~/.config/rclone
+          cat << EOF > ~/.config/rclone/rclone.conf
+[r2]
+type = s3
+provider = Cloudflare
+access_key_id = ${R2_ACCESS_KEY}
+secret_access_key = ${R2_SECRET_KEY}
+endpoint = https://${R2_ACCOUNT_ID}.r2.cloudflarestorage.com
+acl = private
+EOF
 
-          echo "Uploading $BACKUP_FILE to Cloudflare R2 bucket ($R2_BUCKET_NAME)..."
-          rclone copy "$BACKUP_FILE" \
-            ":s3,provider=Cloudflare,access_key_id=$R2_ACCESS_KEY,secret_access_key=$R2_SECRET_KEY,endpoint=$ENDPOINT_URL,no_check_bucket=true,force_path_style=true:$R2_BUCKET_NAME/database"
+          echo "Uploading $BACKUP_FILE to Cloudflare R2 bucket: $R2_BUCKET_NAME/database/..."
+          rclone copy "$BACKUP_FILE" "r2:${R2_BUCKET_NAME}/database"
 
-          echo "Upload successful! Backup stored in Cloudflare R2."
-
-      - name: Verify Uploaded Backup in R2
-        env:
-          RAW_ACCESS_KEY: ${{ secrets.R2_ACCESS_KEY_ID }}
-          RAW_SECRET_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
-          RAW_ACCOUNT_ID: ${{ secrets.R2_ACCOUNT_ID }}
-          RAW_BUCKET_NAME: ${{ secrets.R2_BUCKET_NAME }}
-        run: |
-          R2_ACCESS_KEY=$(echo "$RAW_ACCESS_KEY" | tr -d '[:space:]')
-          R2_SECRET_KEY=$(echo "$RAW_SECRET_KEY" | tr -d '[:space:]')
-          R2_ACCOUNT_ID=$(echo "$RAW_ACCOUNT_ID" | tr -d '[:space:]')
-          R2_BUCKET_NAME=$(echo "$RAW_BUCKET_NAME" | tr -d '[:space:]')
-          ENDPOINT_URL="https://${R2_ACCOUNT_ID}.r2.cloudflarestorage.com"
-
-          echo "Listing recent backups in R2..."
-          rclone lsf \
-            ":s3,provider=Cloudflare,access_key_id=$R2_ACCESS_KEY,secret_access_key=$R2_SECRET_KEY,endpoint=$ENDPOINT_URL,no_check_bucket=true,force_path_style=true:$R2_BUCKET_NAME/database"
+          echo "Upload complete! Verifying files in R2:"
+          rclone lsf "r2:${R2_BUCKET_NAME}/database"
