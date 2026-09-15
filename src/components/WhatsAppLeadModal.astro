@@ -1,0 +1,482 @@
+---
+// WhatsAppLeadModal.astro
+// High-converting 1-step modal to capture student contact details before opening WhatsApp
+---
+
+<div
+  id="wa-lead-modal"
+  class="fixed inset-0 z-[99999] hidden items-center justify-center p-4 bg-slate-950/70 backdrop-blur-md transition-opacity duration-200 select-none overflow-y-auto"
+  role="dialog"
+  aria-modal="true"
+  aria-labelledby="wa-modal-title"
+>
+  <div
+    id="wa-modal-card"
+    class="relative w-full max-w-md bg-white rounded-3xl shadow-2xl border border-slate-100 overflow-hidden transform transition-all duration-200 scale-95 opacity-0 text-left my-auto"
+  >
+    <!-- Close Button -->
+    <button
+      type="button"
+      id="wa-modal-close-btn"
+      class="absolute top-4 right-4 z-10 w-9 h-9 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-400 hover:text-slate-700 transition-colors flex items-center justify-center cursor-pointer focus:outline-none focus:ring-2 focus:ring-emerald-500"
+      aria-label="Close modal"
+    >
+      <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+        <line x1="18" y1="6" x2="6" y2="18"></line>
+        <line x1="6" y1="6" x2="18" y2="18"></line>
+      </svg>
+    </button>
+
+    <!-- Header with WhatsApp Branding -->
+    <div class="relative bg-gradient-to-br from-emerald-600 via-emerald-700 to-teal-800 text-white p-6 pb-7">
+      <div class="flex items-center gap-3 mb-2">
+        <div class="w-11 h-11 rounded-2xl bg-white/15 backdrop-blur-sm border border-white/20 flex items-center justify-center text-white shrink-0 shadow-inner">
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M7.9 20A9 9 0 1 0 4 16.1L2 22Z" />
+            <path d="M8 12h.01" />
+            <path d="M12 12h.01" />
+            <path d="M16 12h.01" />
+          </svg>
+        </div>
+        <div>
+          <span class="inline-block px-2.5 py-0.5 rounded-full bg-white/20 text-white text-[10px] font-extrabold uppercase tracking-wider mb-0.5">
+            Direct Counsellor Chat
+          </span>
+          <h3 id="wa-modal-title" class="text-lg font-extrabold leading-tight text-white tracking-tight">
+            Connect on WhatsApp
+          </h3>
+        </div>
+      </div>
+      <p class="text-xs text-emerald-100 font-medium leading-relaxed">
+        Chat directly with our senior visa & study abroad counsellors for free eligibility advice, university shortlisting & fee estimates.
+      </p>
+
+      <!-- Optional dynamic guide/document pill -->
+      <div id="wa-modal-guide-badge" class="hidden mt-3 px-3 py-1.5 rounded-xl bg-white/15 border border-white/20 text-white text-[11px] font-semibold items-center gap-2 backdrop-blur-xs">
+        <span class="shrink-0">📄</span>
+        <span id="wa-modal-guide-text" class="truncate">Guide Inquiry</span>
+      </div>
+    </div>
+
+    <!-- Form Body -->
+    <form id="wa-lead-form" class="p-6 space-y-4">
+      <input type="hidden" id="wa-target-href" value="" />
+      <input type="hidden" id="wa-doc-title" value="" />
+      <input type="hidden" id="wa-doc-slug" value="" />
+      <input type="hidden" id="wa-cta-loc" value="" />
+
+      <!-- Error Alert Box -->
+      <div id="wa-modal-error" class="hidden p-3 rounded-xl bg-rose-50 border border-rose-200 text-rose-700 text-xs font-semibold flex items-center gap-2">
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="shrink-0 text-rose-500">
+          <circle cx="12" cy="12" r="10"></circle>
+          <line x1="12" y1="8" x2="12" y2="12"></line>
+          <line x1="12" y1="16" x2="12.01" y2="16"></line>
+        </svg>
+        <span id="wa-modal-error-text">Please check your details</span>
+      </div>
+
+      <!-- Field: Full Name -->
+      <div>
+        <label for="wa-lead-name" class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">
+          Your Full Name <span class="text-rose-500">*</span>
+        </label>
+        <div class="relative">
+          <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2" />
+              <circle cx="12" cy="7" r="4" />
+            </svg>
+          </div>
+          <input
+            type="text"
+            id="wa-lead-name"
+            required
+            autocomplete="name"
+            placeholder="e.g. Rahul Patel"
+            class="w-full text-xs sm:text-sm pl-10 pr-3.5 py-3 bg-slate-50 border border-slate-200 rounded-xl font-semibold text-slate-800 placeholder-slate-400 focus:bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all"
+          />
+        </div>
+      </div>
+
+      <!-- Field: Mobile / WhatsApp Number with Country Code -->
+      <div>
+        <label for="wa-lead-phone" class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">
+          WhatsApp Number <span class="text-rose-500">*</span>
+        </label>
+        <div class="flex gap-2">
+          <select
+            id="wa-country-code"
+            class="w-28 text-xs py-3 px-2.5 bg-slate-50 border border-slate-200 rounded-xl font-bold text-slate-700 focus:bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all cursor-pointer shrink-0"
+          >
+            <option value="+91" selected>🇮🇳 +91 (IN)</option>
+            <option value="+44">🇬🇧 +44 (UK)</option>
+            <option value="+1">🇨🇦/🇺🇸 +1 (CA/US)</option>
+            <option value="+61">🇦🇺 +61 (AU)</option>
+            <option value="+64">🇳🇿 +64 (NZ)</option>
+            <option value="+971">🇦🇪 +971 (UAE)</option>
+            <option value="+49">🇩🇪 +49 (DE)</option>
+            <option value="+33">🇫🇷 +33 (FR)</option>
+            <option value="+65">🇸🇬 +65 (SG)</option>
+            <option value="+353">🇮🇪 +353 (IE)</option>
+          </select>
+          <div class="relative flex-1">
+            <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/>
+              </svg>
+            </div>
+            <input
+              type="tel"
+              id="wa-lead-phone"
+              required
+              autocomplete="tel"
+              placeholder="98241 52731"
+              class="w-full text-xs sm:text-sm pl-10 pr-3.5 py-3 bg-slate-50 border border-slate-200 rounded-xl font-semibold text-slate-800 placeholder-slate-400 focus:bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all font-mono"
+            />
+          </div>
+        </div>
+      </div>
+
+      <!-- Field: Interested In / Topic -->
+      <div>
+        <label for="wa-lead-interest" class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">
+          Area of Interest
+        </label>
+        <select
+          id="wa-lead-interest"
+          class="w-full text-xs sm:text-sm py-3 px-3.5 bg-slate-50 border border-slate-200 rounded-xl font-semibold text-slate-800 focus:bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all cursor-pointer"
+        >
+          <option value="Study Abroad / Student Visa" selected>🎓 Study Abroad / Student Visa</option>
+          <option value="UK Care Home / Work Experience">💼 UK Care Home / Work Visa</option>
+          <option value="Canada Study & Work Visa">🇨🇦 Canada Study & Work Permit</option>
+          <option value="USA / Australia / Europe Visa">🌏 USA, Australia & Europe Visa</option>
+          <option value="Tourist / Visitor Visa">✈️ Tourist / Visitor Visa</option>
+          <option value="IELTS / PTE / English Coaching">📚 IELTS / PTE Coaching</option>
+          <option value="General Profile Evaluation">🔍 Free Profile Evaluation</option>
+        </select>
+      </div>
+
+      <!-- Submit CTA Button -->
+      <div class="pt-2">
+        <button
+          type="submit"
+          id="wa-submit-btn"
+          class="w-full py-3.5 px-6 rounded-2xl bg-[#25D366] hover:bg-[#1ebd59] text-white font-extrabold text-sm sm:text-base shadow-lg shadow-emerald-500/25 hover:shadow-emerald-500/40 hover:-translate-y-0.5 active:translate-y-0 transition-all duration-200 flex items-center justify-center gap-2 cursor-pointer border-none"
+        >
+          <span id="wa-btn-icon" class="inline-flex items-center">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M7.9 20A9 9 0 1 0 4 16.1L2 22Z" />
+              <path d="M8 12h.01" />
+              <path d="M12 12h.01" />
+              <path d="M16 12h.01" />
+            </svg>
+          </span>
+          <span id="wa-btn-text">Continue to WhatsApp →</span>
+          <span id="wa-btn-spinner" class="hidden">
+            <svg class="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+              <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+              <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+            </svg>
+          </span>
+        </button>
+      </div>
+
+      <!-- Trust Badges -->
+      <div class="pt-1 flex items-center justify-center gap-2 text-[11px] font-semibold text-slate-400">
+        <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="text-emerald-500">
+          <rect width="18" height="11" x="3" y="11" rx="2" ry="2"/>
+          <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+        </svg>
+        <span>100% Free Consultation • No Spam Guaranteed</span>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script>
+  (function initWhatsAppLeadInterceptor() {
+    const STORAGE_KEY = 'tesca_wa_user';
+
+    const modal = document.getElementById('wa-lead-modal') as HTMLElement | null;
+    const card = document.getElementById('wa-modal-card') as HTMLElement | null;
+    const closeBtn = document.getElementById('wa-modal-close-btn');
+    const form = document.getElementById('wa-lead-form') as HTMLFormElement | null;
+    const nameInput = document.getElementById('wa-lead-name') as HTMLInputElement | null;
+    const phoneInput = document.getElementById('wa-lead-phone') as HTMLInputElement | null;
+    const countryCodeSelect = document.getElementById('wa-country-code') as HTMLSelectElement | null;
+    const interestSelect = document.getElementById('wa-lead-interest') as HTMLSelectElement | null;
+    const errorBox = document.getElementById('wa-modal-error');
+    const errorText = document.getElementById('wa-modal-error-text');
+    const targetHrefInput = document.getElementById('wa-target-href') as HTMLInputElement | null;
+    const docTitleInput = document.getElementById('wa-doc-title') as HTMLInputElement | null;
+    const docSlugInput = document.getElementById('wa-doc-slug') as HTMLInputElement | null;
+    const ctaLocInput = document.getElementById('wa-cta-loc') as HTMLInputElement | null;
+    const guideBadge = document.getElementById('wa-modal-guide-badge');
+    const guideText = document.getElementById('wa-modal-guide-text');
+    const submitBtn = document.getElementById('wa-submit-btn') as HTMLButtonElement | null;
+    const btnText = document.getElementById('wa-btn-text');
+    const btnSpinner = document.getElementById('wa-btn-spinner');
+
+    if (!modal || !card || !form) return;
+
+    // Helper: get saved user from localStorage
+    function getSavedUser() {
+      try {
+        const raw = localStorage.getItem(STORAGE_KEY);
+        if (!raw) return null;
+        const parsed = JSON.parse(raw);
+        if (parsed && parsed.name && (parsed.phone || parsed.fullPhone)) {
+          return parsed;
+        }
+      } catch (e) {}
+      return null;
+    }
+
+    // Helper: open modal
+    function openModal(href: string, docTitle: string, docSlug: string, ctaLoc: string) {
+      if (!modal || !card) return;
+      if (targetHrefInput) targetHrefInput.value = href;
+      if (docTitleInput) docTitleInput.value = docTitle || '';
+      if (docSlugInput) docSlugInput.value = docSlug || '';
+      if (ctaLocInput) ctaLocInput.value = ctaLoc || 'website';
+
+      if (docTitle && guideBadge && guideText) {
+        guideText.textContent = docTitle.replace(/^(Guide:\s*|Document:\s*)/i, '');
+        guideBadge.classList.remove('hidden');
+        guideBadge.classList.add('flex');
+        
+        // Auto select relevant interest if guide matches
+        if (interestSelect) {
+          const lower = docTitle.toLowerCase();
+          if (lower.includes('care home')) {
+            interestSelect.value = 'UK Care Home / Work Experience';
+          } else if (lower.includes('canada')) {
+            interestSelect.value = 'Canada Study & Work Visa';
+          } else if (lower.includes('australia') || lower.includes('usa') || lower.includes('germany') || lower.includes('europe')) {
+            interestSelect.value = 'USA / Australia / Europe Visa';
+          }
+        }
+      } else if (guideBadge) {
+        guideBadge.classList.add('hidden');
+        guideBadge.classList.remove('flex');
+      }
+
+      if (errorBox) errorBox.classList.add('hidden');
+
+      modal.classList.remove('hidden');
+      modal.classList.add('flex');
+      document.body.style.overflow = 'hidden';
+
+      // Smooth transition in
+      requestAnimationFrame(() => {
+        card.classList.remove('scale-95', 'opacity-0');
+        card.classList.add('scale-100', 'opacity-100');
+        nameInput?.focus();
+      });
+    }
+
+    // Helper: close modal
+    function closeModal() {
+      if (!modal || !card) return;
+      card.classList.remove('scale-100', 'opacity-100');
+      card.classList.add('scale-95', 'opacity-0');
+      setTimeout(() => {
+        modal.classList.remove('flex');
+        modal.classList.add('hidden');
+        document.body.style.overflow = '';
+      }, 200);
+    }
+
+    closeBtn?.addEventListener('click', closeModal);
+    modal.addEventListener('click', (e) => {
+      if (e.target === modal) closeModal();
+    });
+    window.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && !modal.classList.contains('hidden')) {
+        closeModal();
+      }
+    });
+
+    // Send lead to /api/contact
+    async function sendLeadToDatabase(data: {
+      name: string;
+      phone: string;
+      source: string;
+      document_title?: string | null;
+      document_slug?: string | null;
+      page_url: string;
+      message: string;
+    }) {
+      const payload = {
+        name: data.name,
+        phone: data.phone,
+        lead_type: 'whatsapp',
+        source: data.source,
+        document_title: data.document_title || null,
+        document_slug: data.document_slug || null,
+        page_url: data.page_url,
+        message: data.message
+      };
+
+      try {
+        if (navigator.sendBeacon) {
+          const blob = new Blob([JSON.stringify(payload)], { type: 'application/json' });
+          navigator.sendBeacon('/api/contact', blob);
+        } else {
+          fetch('/api/contact', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload),
+            keepalive: true
+          }).catch(() => {});
+        }
+      } catch (err) {
+        console.warn('[WhatsApp Lead Send Error]:', err);
+      }
+    }
+
+    // Global interceptor for all WhatsApp links
+    document.addEventListener('click', (e) => {
+      const rawTarget = e.target;
+      if (!rawTarget) return;
+      const target = (rawTarget instanceof Element) ? rawTarget : (rawTarget && (rawTarget as any).parentElement);
+      if (!target || typeof target.closest !== 'function') return;
+
+      const link = target.closest('a');
+      if (!link) return;
+
+      const href = link.getAttribute('href') || '';
+      const isWhatsApp = href.includes('wa.me') || href.includes('api.whatsapp.com') || href.includes('whatsapp://');
+      if (!isWhatsApp) return;
+
+      // Check if user already provided their verified details before
+      const savedUser = getSavedUser();
+      const docTitle = link.getAttribute('data-doc-title') || document.title || '';
+      const docSlug = link.getAttribute('data-doc-slug') || '';
+      const ctaLoc = link.getAttribute('data-cta-loc') || link.getAttribute('data-location') || 'website';
+
+      if (savedUser) {
+        // Returning verified user - log the visit and open directly
+        const sourceLabel = docTitle ? `WhatsApp Guide: ${docTitle}` : `WhatsApp Lead: ${window.location.pathname}`;
+        sendLeadToDatabase({
+          name: savedUser.name,
+          phone: savedUser.phone || savedUser.fullPhone,
+          source: sourceLabel,
+          document_title: docTitle,
+          document_slug: docSlug,
+          page_url: window.location.href,
+          message: `Returning verified user initiated WhatsApp inquiry for: ${docTitle || window.location.pathname}`
+        });
+
+        // Continue normal click navigation (opens WhatsApp)
+        return;
+      }
+
+      // First-time user - intercept and show lead capture modal
+      e.preventDefault();
+      e.stopPropagation();
+      openModal(href, docTitle, docSlug, ctaLoc);
+    }, true);
+
+    // Form submission handler
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+
+      const name = (nameInput?.value || '').trim();
+      const rawPhone = (phoneInput?.value || '').trim().replace(/[^0-9]/g, '');
+      const code = countryCodeSelect?.value || '+91';
+      const interest = interestSelect?.value || 'Study Abroad';
+      const targetHref = targetHrefInput?.value || 'https://wa.me/919824152731';
+      const docTitle = docTitleInput?.value || '';
+      const docSlug = docSlugInput?.value || '';
+      const ctaLoc = ctaLocInput?.value || 'modal';
+
+      // Validation
+      if (name.length < 2) {
+        if (errorBox && errorText) {
+          errorText.textContent = 'Please enter your real full name (at least 2 letters).';
+          errorBox.classList.remove('hidden');
+        }
+        nameInput?.focus();
+        return;
+      }
+
+      if (rawPhone.length < 7 || rawPhone.length > 15) {
+        if (errorBox && errorText) {
+          errorText.textContent = 'Please enter a valid mobile number (min 7 digits).';
+          errorBox.classList.remove('hidden');
+        }
+        phoneInput?.focus();
+        return;
+      }
+
+      const fullPhone = `${code} ${rawPhone}`;
+
+      // Loading UI
+      if (submitBtn) submitBtn.disabled = true;
+      if (btnText) btnText.textContent = 'Connecting to WhatsApp...';
+      if (btnSpinner) btnSpinner.classList.remove('hidden');
+
+      // Save user to localStorage
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify({
+          name,
+          phone: fullPhone,
+          countryCode: code,
+          rawPhone,
+          interest
+        }));
+      } catch (err) {}
+
+      // Log lead to database
+      const sourceLabel = docTitle ? `WhatsApp Guide: ${docTitle} (${ctaLoc})` : `WhatsApp Lead: ${window.location.pathname} (${ctaLoc})`;
+      await sendLeadToDatabase({
+        name,
+        phone: fullPhone,
+        source: sourceLabel,
+        document_title: docTitle,
+        document_slug: docSlug,
+        page_url: window.location.href,
+        message: `Lead submitted via WhatsApp Modal for: ${interest}. Guide: ${docTitle || 'None'}. Phone: ${fullPhone}`
+      });
+
+      // Track analytics if available
+      try {
+        if ((window as any).trackLeadEvent) {
+          (window as any).trackLeadEvent(`whatsapp_lead_${interest.toLowerCase().replace(/\s+/g, '_')}`);
+        }
+      } catch (e) {}
+
+      // Build personalized WhatsApp URL
+      let finalWaUrl = targetHref;
+      try {
+        const urlObj = new URL(targetHref.startsWith('http') ? targetHref : `https://${targetHref}`);
+        const existingText = urlObj.searchParams.get('text') || '';
+
+        let personalizedMessage = '';
+        if (existingText && existingText.trim().length > 0) {
+          personalizedMessage = `Hello TESCA, my name is ${name}. ${existingText}`;
+        } else {
+          personalizedMessage = `Hello TESCA Visa Consultancy, my name is ${name}. I was visiting your website and would like guidance regarding ${interest}${docTitle ? ` (${docTitle})` : ''}. Please guide me.`;
+        }
+
+        urlObj.searchParams.set('text', personalizedMessage);
+        finalWaUrl = urlObj.toString();
+      } catch (err) {
+        // Fallback simple concatenation
+        finalWaUrl = `https://wa.me/919824152731?text=${encodeURIComponent(`Hello TESCA, my name is ${name}. I am interested in ${interest}.`)}`;
+      }
+
+      // Close modal and reset loading state
+      closeModal();
+      setTimeout(() => {
+        if (submitBtn) submitBtn.disabled = false;
+        if (btnText) btnText.textContent = 'Continue to WhatsApp →';
+        if (btnSpinner) btnSpinner.classList.add('hidden');
+      }, 300);
+
+      // Open WhatsApp in new tab
+      window.open(finalWaUrl, '_blank', 'noopener,noreferrer');
+    });
+  })();
+</script>

@@ -339,6 +339,8 @@ const whatsappPrefill = encodeURIComponent(`Hi TESCA, I was reading the ${doc.ti
             target="_blank"
             rel="noopener noreferrer"
             data-cta-loc="inline_preview_bridge"
+            data-doc-title={doc.title}
+            data-doc-slug={doc.slug}
             class="inline-flex items-center justify-center gap-2 px-5 py-3 rounded-xl bg-emerald-600 hover:bg-emerald-500 active:bg-emerald-700 text-white text-xs font-bold shadow-lg shadow-emerald-600/30 border border-emerald-400/40 transition-all hover:scale-[1.02] text-center cursor-pointer"
           >
             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
@@ -406,6 +408,8 @@ const whatsappPrefill = encodeURIComponent(`Hi TESCA, I was reading the ${doc.ti
                 rel="noopener noreferrer"
                 id="doc-bottom-whatsapp-btn"
                 data-cta-loc="inquiry_section"
+                data-doc-title={doc.title}
+                data-doc-slug={doc.slug}
                 class="inline-flex items-center justify-center gap-2 py-3 px-5 bg-emerald-600 hover:bg-emerald-500 active:bg-emerald-700 text-white font-bold text-xs sm:text-sm rounded-xl shadow-lg shadow-emerald-600/30 transition-all hover:scale-[1.02]"
               >
                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
@@ -568,6 +572,8 @@ const whatsappPrefill = encodeURIComponent(`Hi TESCA, I was reading the ${doc.ti
             target="_blank"
             rel="noopener noreferrer"
             data-cta-loc="faq_bottom"
+            data-doc-title={doc.title}
+            data-doc-slug={doc.slug}
             class="inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold shadow-md shrink-0 transition-all hover:scale-105"
           >
             <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
@@ -611,6 +617,8 @@ const whatsappPrefill = encodeURIComponent(`Hi TESCA, I was reading the ${doc.ti
           target="_blank"
           rel="noopener noreferrer"
           data-cta-loc="floating_widget"
+          data-doc-title={doc.title}
+          data-doc-slug={doc.slug}
           class="relative flex items-center gap-3 bg-slate-900/95 hover:bg-slate-850 text-white pl-3.5 pr-5 py-2.5 rounded-full border border-emerald-500/40 shadow-2xl backdrop-blur-md transition-all hover:scale-[1.03] active:scale-95 group"
           aria-label="Chat with Visa Advisor on WhatsApp"
         >
@@ -638,6 +646,8 @@ const whatsappPrefill = encodeURIComponent(`Hi TESCA, I was reading the ${doc.ti
         target="_blank"
         rel="noopener noreferrer"
         data-cta-loc="mobile_sticky_bar"
+        data-doc-title={doc.title}
+        data-doc-slug={doc.slug}
         class="flex-1 py-2.5 px-3 bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs rounded-xl flex items-center justify-center gap-1.5 shadow-md"
       >
         <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
@@ -853,33 +863,7 @@ const whatsappPrefill = encodeURIComponent(`Hi TESCA, I was reading the ${doc.ti
         link.addEventListener('click', () => {
           const ctaLoc = link.getAttribute('data-cta-loc') || 'document_page';
 
-          // Log WhatsApp click to database so it appears in admin panel
-          try {
-            const beaconPayload = JSON.stringify({
-              name: "WhatsApp Visitor",
-              phone: "WhatsApp Chat",
-              lead_type: "whatsapp",
-              source: `WhatsApp CTA: ${ctaLoc} (${docTitle})`,
-              document_title: docTitle,
-              document_slug: docSlug,
-              page_url: window.location.href,
-              message: `Visitor initiated WhatsApp chat from [${ctaLoc}] on guide "${docTitle}"`
-            });
-
-            if (navigator.sendBeacon) {
-              const blob = new Blob([beaconPayload], { type: 'application/json' });
-              navigator.sendBeacon('/api/contact', blob);
-            } else {
-              fetch('/api/contact', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: beaconPayload,
-                keepalive: true
-              }).catch(() => {});
-            }
-          } catch (logErr) {
-            console.warn('[WhatsApp Lead Track Notice]:', logErr);
-          }
+          // Lead tracking is handled with verified details by WhatsAppLeadModal
 
           if (window.gtag) {
             window.gtag('event', 'whatsapp_click', {

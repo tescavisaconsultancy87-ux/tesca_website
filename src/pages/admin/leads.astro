@@ -665,10 +665,28 @@ try {
                         })()}
                       </td>
                       <td class="px-6 py-4 space-y-1">
-                        <div class="flex items-center gap-1.5 text-slate-600">
-                          <span class="text-slate-400" set:html={SVG.Phone} />
-                          <span>{lead.phone}</span>
-                        </div>
+                        {lead.phone === 'WhatsApp Chat' ? (
+                          <div class="flex items-center gap-1.5 text-slate-400 italic text-xs">
+                            <span class="text-slate-400" set:html={SVG.Phone} />
+                            <span class="text-[11px] text-slate-400 font-medium">Anonymous Click (No Phone)</span>
+                          </div>
+                        ) : (
+                          <div class="flex items-center gap-1.5 text-slate-600 flex-wrap">
+                            <span class="text-slate-400" set:html={SVG.Phone} />
+                            <a href={`tel:${lead.phone}`} class="font-bold text-slate-800 hover:text-indigo-600 transition-colors font-mono">{lead.phone}</a>
+                            {lead.phone && (
+                              <a
+                                href={`https://wa.me/${lead.phone.replace(/[^0-9]/g, '')}`}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-emerald-50 hover:bg-emerald-100 text-emerald-700 text-[10px] font-bold border border-emerald-200 transition-colors cursor-pointer"
+                                title="Chat on WhatsApp"
+                              >
+                                💬 WhatsApp
+                              </a>
+                            )}
+                          </div>
+                        )}
                         {lead.email && (
                           <div class="flex items-center gap-1.5 text-slate-500">
                             <span class="text-slate-400" set:html={SVG.Mail} />

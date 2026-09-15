@@ -2,6 +2,7 @@
 import "../styles/global.css";
 import CounsellorForm from "../components/CounsellorForm";
 import PromoPopup from "../components/PromoPopup.astro";
+import WhatsAppLeadModal from "../components/WhatsAppLeadModal.astro";
 import LiveSocialProofTicker from "../components/LiveSocialProofTicker";
 import { ClientRouter } from "astro:transitions";
 import { ensureCsrfToken } from "../utils/csrf";
@@ -210,31 +211,6 @@ if (isAdminPage) {
 						}
 					} else if (href.includes('wa.me') || href.includes('api.whatsapp.com') || href.includes('whatsapp://')) {
 						window.trackClickEvent('whatsapp', href);
-
-						// Log WhatsApp inquiry to database so it appears in admin dashboard
-						try {
-							const beaconPayload = JSON.stringify({
-								name: "WhatsApp Visitor",
-								phone: "WhatsApp Chat",
-								lead_type: "whatsapp",
-								source: `WhatsApp Click: ${window.location.pathname}`,
-								page_url: window.location.href,
-								message: `Visitor clicked WhatsApp chat link: ${href}`
-							});
-							if (navigator.sendBeacon) {
-								const blob = new Blob([beaconPayload], { type: 'application/json' });
-								navigator.sendBeacon('/api/contact', blob);
-							} else {
-								fetch('/api/contact', {
-									method: 'POST',
-									headers: { 'Content-Type': 'application/json' },
-									body: beaconPayload,
-									keepalive: true
-								}).catch(() => {});
-							}
-						} catch (logErr) {
-							console.warn('[WhatsApp Track Notice]:', logErr);
-						}
 					}
 				}
 
@@ -2241,5 +2217,6 @@ if (isAdminPage) {
 
 		{showNavFooter && !isAdminPage && !isDocumentPage && <PromoPopup />}
 		{showNavFooter && !isAdminPage && !isDocumentPage && <LiveSocialProofTicker client:only="react" />}
+		{!isAdminPage && <WhatsAppLeadModal />}
 	</body>
 </html>

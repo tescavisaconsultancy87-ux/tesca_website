@@ -467,7 +467,11 @@ const cards = [
                         )}
                       </td>
                       <td class="py-3.5 px-4 text-slate-600 whitespace-nowrap">
-                        <div>{lead.phone}</div>
+                        {lead.phone === 'WhatsApp Chat' ? (
+                          <div class="text-[11px] text-slate-400 italic">Anonymous Click</div>
+                        ) : (
+                          <div class="font-semibold text-slate-800 font-mono">{lead.phone}</div>
+                        )}
                         {lead.email && <div class="text-[10px] text-slate-400">{lead.email}</div>}
                       </td>
                       <td class="py-3.5 px-4 whitespace-nowrap">
