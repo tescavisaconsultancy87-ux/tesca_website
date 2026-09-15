@@ -192,7 +192,17 @@ const logoutSvg = `<svg ${svgBase} class="w-5 h-5"><path d="M9 21H5a2 2 0 0 1-2-
     };
 
     await fetchLeadsCount();
-    pollInterval = setInterval(fetchLeadsCount, 12000);
+    pollInterval = setInterval(fetchLeadsCount, 30000);
+
+    // Check immediately when user switches back to the admin tab
+    if (!(window as any)._adminVisibilityPollingBound) {
+      (window as any)._adminVisibilityPollingBound = true;
+      document.addEventListener("visibilitychange", () => {
+        if (!document.hidden) {
+          fetchLeadsCount();
+        }
+      });
+    }
   }
 
   document.addEventListener("astro:before-preparation", () => {

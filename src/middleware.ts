@@ -37,12 +37,30 @@ export const onRequest = defineMiddleware(async (context, next) => {
     // process.env / import.meta.env in that case, so this is a no-op.
   }
 
-  // --- 1. Block requests with empty / missing User-Agent (bot spam protection) ---
+  // --- 1. Block requests with empty / missing User-Agent or known malicious scrapers ---
   const userAgent = context.request.headers.get("user-agent");
   if (!userAgent || userAgent.trim() === "") {
     return new Response("Bad Request: Missing User-Agent header", {
       status: 400,
       headers: { "Content-Type": "text/plain; charset=utf-8" },
+    });
+  }
+
+  const lowerUA = userAgent.toLowerCase();
+  if (
+    lowerUA.includes("jscrawler") ||
+    lowerUA.includes("libwww-perl") ||
+    lowerUA.includes("nikto") ||
+    lowerUA.includes("sqlmap") ||
+    lowerUA.includes("masscan")
+  ) {
+    return new Response("Forbidden: Automated scraping disallowed", {
+      status: 403,
+      headers: {
+        "Content-Type": "text/plain; charset=utf-8",
+        "X-Robots-Tag": "noindex, nofollow",
+        "Cache-Control": "public, max-age=86400, s-maxage=86400",
+      },
     });
   }
 
@@ -89,13 +107,18 @@ export const onRequest = defineMiddleware(async (context, next) => {
     lowerPath.includes("xmlrpc") ||
     lowerPath.includes("wp-admin") ||
     lowerPath.includes("wp-content") ||
+    lowerPath.includes("wp-includes") ||
     lowerPath.includes("wp-json") ||
     lowerPath.includes("wordpress") ||
     lowerPath.includes("phpmyadmin") ||
+    lowerPath.includes("adminer") ||
     lowerPath.includes("pma") ||
     lowerPath.includes("/.git") ||
     lowerPath.includes("/.gitlab") ||
     lowerPath.includes("/.env") ||
+    lowerPath.includes("service-account") ||
+    lowerPath.includes("firebase") ||
+    lowerPath.includes("credentials") ||
     lowerPath === "/settings.json" ||
     lowerPath === "/api/config" ||
     lowerPath === "/api/env" ||
