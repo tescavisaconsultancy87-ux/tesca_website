@@ -253,17 +253,20 @@ if (causesRes.error) {
           {
             title: "University Matchmaking",
             desc: "Find the right university, course, and destination aligned with your goals and future career plans.",
-            icon: SVG.Compass
+            icon: SVG.Compass,
+            link: "/universities"
           },
           {
             title: "Smart Financial Planning",
             desc: "Explore scholarships, education loans, and cost-effective study options designed for your budget.",
-            icon: SVG.Landmark
+            icon: SVG.Landmark,
+            link: "/services/financial"
           },
           {
             title: "Visa Success Expertise",
             desc: "Application reviews, document checks, and strategic guidance to maximize approval confidence.",
-            icon: SVG.ShieldCheck
+            icon: SVG.ShieldCheck,
+            link: "/visa-success-sla"
           }
         ].map((item, idx) => {
           const colors = [
@@ -282,7 +285,7 @@ if (causesRes.error) {
             </div>
             
             {/* Button: Plus Jakarta Sans 600 */}
-            <a href="/countries" class="text-[16px] font-semibold font-sans tracking-wide text-accent-blue hover:underline inline-flex items-center gap-1 pt-4 group">
+            <a href={item.link} aria-label={`Read more about ${item.title}`} class="text-[16px] font-semibold font-sans tracking-wide text-accent-blue hover:underline inline-flex items-center gap-1 pt-4 group">
               Read More <span set:html={SVG.ArrowUpRight} />
             </a>
           </div>
