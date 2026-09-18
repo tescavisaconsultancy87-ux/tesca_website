@@ -219,13 +219,14 @@ const UniversityLogo = memo(function UniversityLogo({ domain, name }: { domain: 
 // Requirements Parsing Helpers
 function parseMinScore(reqStr: string | null | undefined): number {
   if (!reqStr) return 0;
-  const percentMatch = reqStr.match(/(\d+(?:\.\d+)?)\s*%/);
+  const str = String(reqStr);
+  const percentMatch = str.match(/(\d+(?:\.\d+)?)\s*%/);
   if (percentMatch) return parseFloat(percentMatch[1]);
   
-  const cgpaMatch = reqStr.match(/(\d+(?:\.\d+)?)\s*(?:CGPA|GPA)/i);
+  const cgpaMatch = str.match(/(\d+(?:\.\d+)?)\s*(?:CGPA|GPA)/i);
   if (cgpaMatch) return parseFloat(cgpaMatch[1]) * 10;
   
-  const numMatch = reqStr.match(/(\d+(?:\.\d+)?)/);
+  const numMatch = str.match(/(\d+(?:\.\d+)?)/);
   if (numMatch) {
     const val = parseFloat(numMatch[1]);
     return val <= 10 ? val * 10 : val;
@@ -235,16 +236,18 @@ function parseMinScore(reqStr: string | null | undefined): number {
 
 function parseIelts(reqStr: string | null | undefined): number {
   if (!reqStr) return 0;
-  const match = reqStr.match(/(\d+(\.\d+)?)/);
+  const str = String(reqStr);
+  const match = str.match(/(\d+(\.\d+)?)/);
   return match ? parseFloat(match[1]) : 0;
 }
 
 function parsePte(reqStr: string | null | undefined): number {
   if (!reqStr) return 0;
-  const match = reqStr.match(/PTE\s*(\d+)/i);
+  const str = String(reqStr);
+  const match = str.match(/PTE\s*(\d+)/i);
   if (match) return parseInt(match[1], 10);
   
-  const ieltsVal = parseIelts(reqStr);
+  const ieltsVal = parseIelts(str);
   if (ieltsVal <= 5.0) return 36;
   if (ieltsVal <= 5.5) return 42;
   if (ieltsVal <= 6.0) return 50;
@@ -255,9 +258,12 @@ function parsePte(reqStr: string | null | undefined): number {
 }
 
 function parseToefl(reqStr: string | null | undefined, toeflField?: string | null): number {
-  if (toeflField && toeflField.trim()) {
-    const num = parseFloat(toeflField);
-    if (!isNaN(num) && num > 0) return num;
+  if (toeflField) {
+    const toeflStr = String(toeflField).trim();
+    if (toeflStr) {
+      const num = parseFloat(toeflStr);
+      if (!isNaN(num) && num > 0) return num;
+    }
   }
   const ieltsVal = parseIelts(reqStr);
   if (ieltsVal <= 5.0) return 35;
@@ -270,9 +276,12 @@ function parseToefl(reqStr: string | null | undefined, toeflField?: string | nul
 }
 
 function parseDuolingo(reqStr: string | null | undefined, duolingoField?: string | null): number {
-  if (duolingoField && duolingoField.trim()) {
-    const num = parseFloat(duolingoField);
-    if (!isNaN(num) && num > 0) return num;
+  if (duolingoField) {
+    const duoStr = String(duolingoField).trim();
+    if (duoStr) {
+      const num = parseFloat(duoStr);
+      if (!isNaN(num) && num > 0) return num;
+    }
   }
   const ieltsVal = parseIelts(reqStr);
   if (ieltsVal <= 5.0) return 85;
@@ -455,10 +464,12 @@ export default function EligibilityForm() {
       return true;
     }
     return countryUnis.some(uni => {
-      const moiStr = selectedLevel === 'UG'
-        ? (uni.ug_moi || uni.ug_moi_accepted || uni.moi_accepted || "")
-        : (uni.pg_moi || uni.pg_moi_accepted || uni.moi_accepted || "");
-      return moiStr.trim().toLowerCase() === "yes";
+      if (!uni) return false;
+      const moiVal = selectedLevel === 'UG'
+        ? (uni.ug_moi ?? uni.ug_moi_accepted ?? uni.moi_accepted ?? "")
+        : (uni.pg_moi ?? uni.pg_moi_accepted ?? uni.moi_accepted ?? "");
+      const moiStr = String(moiVal).trim().toLowerCase();
+      return moiStr === "yes" || moiStr === "true";
     });
   }, [countryUnis, selectedCountry, selectedLevel]);
 
@@ -614,10 +625,10 @@ export default function EligibilityForm() {
 
         if (englishType === 'MOI') {
           // Verify if MOI is accepted for selected level
-          const moiStr = selectedLevel === 'UG'
-            ? (uni.ug_moi || uni.ug_moi_accepted || uni.moi_accepted || "")
-            : (uni.pg_moi || uni.pg_moi_accepted || uni.moi_accepted || "")
-          const acceptsMoi = moiStr.toLowerCase() === "yes";
+          const moiVal = selectedLevel === 'UG'
+            ? (uni.ug_moi ?? uni.ug_moi_accepted ?? uni.moi_accepted ?? "")
+            : (uni.pg_moi ?? uni.pg_moi_accepted ?? uni.moi_accepted ?? "");
+          const acceptsMoi = String(moiVal).trim().toLowerCase() === "yes" || String(moiVal).trim().toLowerCase() === "true";
           
           englishMatchesDirect = acceptsMoi;
           englishMatchesReach = acceptsMoi;

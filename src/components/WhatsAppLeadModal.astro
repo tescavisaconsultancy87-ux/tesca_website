@@ -157,7 +157,7 @@
       </div>
 
       <!-- Submit CTA Button -->
-      <div class="pt-2">
+      <div class="pt-2 space-y-2">
         <button
           type="submit"
           id="wa-submit-btn"
@@ -178,6 +178,13 @@
               <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
             </svg>
           </span>
+        </button>
+        <button
+          type="button"
+          id="wa-direct-skip-btn"
+          class="w-full py-1.5 text-center text-xs text-slate-500 hover:text-emerald-700 font-semibold transition-colors cursor-pointer bg-transparent border-none block"
+        >
+          Or chat directly on WhatsApp without saving details &rarr;
         </button>
       </div>
 
@@ -295,6 +302,16 @@
       if (e.key === 'Escape' && !modal.classList.contains('hidden')) {
         closeModal();
       }
+    });
+
+    const directSkipBtn = document.getElementById('wa-direct-skip-btn');
+    directSkipBtn?.addEventListener('click', () => {
+      const targetHref = targetHrefInput?.value || 'https://wa.me/919824152731?text=Hello%20TESCA%2C%20I%20am%20visiting%20your%20website%20and%20would%20like%20to%20consult%20about%20your%20visa%20and%20study%20abroad%20services.';
+      if ((window as any).trackClickEvent) {
+        (window as any).trackClickEvent('whatsapp', targetHref);
+      }
+      closeModal();
+      window.open(targetHref, '_blank', 'noopener,noreferrer');
     });
 
     // Send lead to /api/contact

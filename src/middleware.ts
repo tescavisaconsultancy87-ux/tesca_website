@@ -141,6 +141,15 @@ export const onRequest = defineMiddleware(async (context, next) => {
   const isPublicHost = hostname === "tescavisa.com" || hostname === "www.tescavisa.com";
   const isAdminHost = hostname === "admin.tescavisa.com";
 
+  // --- 2.5 Enforce HTTPS 301 Redirect for all public web traffic ---
+  // Fixes GSC canonical cannibalization between http:// and https://
+  const forwardedProto = context.request.headers.get("x-forwarded-proto");
+  const isHttp = context.url.protocol === "http:" || forwardedProto === "http";
+  if (isHttp && !isLocalHost) {
+    const targetHost = hostname === "www.tescavisa.com" ? "tescavisa.com" : hostname;
+    return Response.redirect(`https://${targetHost}${reqPath}${search}`, 301);
+  }
+
   // --- 3. Handle stray / probed subdomains cleanly ---
   // Cloudflare analytics showed heavy scanner traffic against arbitrary subdomains
   // (e.g. itrustvisa.tescavisa.com, admin-console.tescavisa.com). Returning a direct 404
@@ -171,13 +180,26 @@ export const onRequest = defineMiddleware(async (context, next) => {
   }
 
   // --- Redirect legacy/miscellaneous routes to prevent 404s ---
+  let decodedPath = reqPath;
+  try {
+    decodedPath = decodeURIComponent(reqPath).toLowerCase();
+  } catch (e) {
+    decodedPath = lowerPath;
+  }
+
   if (lowerPath === "/signup" || lowerPath === "/signup/") {
     return Response.redirect(`https://admin.tescavisa.com/admin`, 301);
   }
   if (lowerPath === "/calculators" || lowerPath === "/calculators/" || lowerPath === "/calculator" || lowerPath === "/calculator/") {
     return Response.redirect(`https://tescavisa.com/eligibility`, 301);
   }
-  if (lowerPath === "/china-business-visa" || lowerPath === "/china-business-visa/") {
+  if (
+    lowerPath === "/china-business-visa" ||
+    lowerPath === "/china-business-visa/" ||
+    decodedPath === "/china business visa" ||
+    decodedPath === "/china business visa/" ||
+    lowerPath.includes("china%20business%20visa")
+  ) {
     return Response.redirect(`https://tescavisa.com/visitor-visa${search}`, 301);
   }
 

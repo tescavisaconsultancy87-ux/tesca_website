@@ -47,7 +47,7 @@ const isDrawerPopup = (p: any) =>
 
 const drawerPopup = popupsList.find(isDrawerPopup) || popupsList[0];
 const initialPopup = popupsList[0];
-const delaySeconds = initialPopup?.delay_seconds || 5;
+const delaySeconds = Math.max(initialPopup?.delay_seconds || 20, 20);
 ---
 
 <!-- 1. Main Screen Center Modal Popup Overlay (Clean Image Poster Display) -->
@@ -463,8 +463,25 @@ const delaySeconds = initialPopup?.delay_seconds || 5;
     if (drawerCloseBtn) drawerCloseBtn.onclick = closeDrawer;
 
     const showMainPopup = () => {
+      // Check if user came from social media, mobile in-app browser, or UTM campaign
+      const ua = (navigator.userAgent || "").toLowerCase();
+      const isSocialApp = ua.includes("instagram") || ua.includes("fban") || ua.includes("fbav") || ua.includes("tiktok");
+      const isSocialReferral = (document.referrer || "").toLowerCase().includes("instagram.com") ||
+                               (document.referrer || "").toLowerCase().includes("facebook.com") ||
+                               urlParams.get("utm_source") === "ig" ||
+                               urlParams.get("utm_medium") === "social";
+      const isMobileScreen = window.innerWidth < 768;
+
+      // On mobile social in-app browsers, never show full-screen blocking modal — show smooth non-intrusive drawer instead!
+      if ((isSocialApp || isSocialReferral) && isMobileScreen && !isTestMode) {
+        showDrawer();
+        return;
+      }
+
       mainOverlay.classList.remove("hidden");
-      document.body.style.overflow = "hidden";
+      if (!isMobileScreen) {
+        document.body.style.overflow = "hidden";
+      }
       requestAnimationFrame(() => {
         mainCard.classList.remove("scale-95", "opacity-0");
         mainCard.classList.add("scale-100", "opacity-100");
@@ -561,16 +578,18 @@ const delaySeconds = initialPopup?.delay_seconds || 5;
         // Reset slide view
         goToSlide(0);
 
-        // Update delay seconds from fresh popup settings
-        const freshDelay = designatedDrawer?.delay_seconds || popups[0]?.delay_seconds || 5;
+        // Update delay seconds from fresh popup settings (minimum 20s to prevent early bounce)
+        const rawDelay = designatedDrawer?.delay_seconds || popups[0]?.delay_seconds || 20;
+        const freshDelay = Math.max(rawDelay, 20);
         mainOverlay.setAttribute("data-delay", freshDelay.toString());
       })
       .catch((err) => {
         console.warn("Could not fetch live popup settings, using initial render:", err);
       });
 
-    // Trigger main screen popup after delaySec seconds
-    const delaySec = Number(mainOverlay.getAttribute("data-delay")) || 5;
+    // Trigger main screen popup after delaySec seconds (minimum 20 seconds so users have time to read!)
+    const configuredDelay = Number(mainOverlay.getAttribute("data-delay")) || 20;
+    const delaySec = isTestMode ? 1 : Math.max(configuredDelay, 20);
     popupTimer = setTimeout(() => {
       if (isAdminOrExcludedPath()) return;
 
