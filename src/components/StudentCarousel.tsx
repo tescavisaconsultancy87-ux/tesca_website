@@ -1,4 +1,4 @@
-import React, { useMemo, memo } from "react";
+import React, { useMemo, memo, useState } from "react";
 
 interface D1Story {
   id: number;
@@ -178,6 +178,7 @@ const StudentCardItem = memo(function StudentCardItem({ student }: { student: D1
 });
 
 export default function StudentCarousel({ stories = [] }: { stories?: D1Story[] }) {
+  const [isPaused, setIsPaused] = useState(false);
   const activeStories = stories && stories.length > 0 ? stories : fallbackStories;
   let list = [...activeStories];
   while (list.length < 12 && activeStories.length > 0) {
@@ -200,17 +201,57 @@ export default function StudentCarousel({ stories = [] }: { stories?: D1Story[] 
       </div>
 
       {/* Infinite Scrolling Track */}
-      <div className="relative w-full overflow-hidden select-none py-2">
+      <div
+        className="relative w-full overflow-hidden select-none py-2 cursor-pointer"
+        onClick={() => setIsPaused(prev => !prev)}
+        role="region"
+        aria-label="Success stories carousel. Tap to pause or resume scrolling."
+        title={isPaused ? "Tap to resume scroll" : "Tap to pause scroll"}
+      >
         {/* Soft fading overlays on left and right borders for premium glass-depth look */}
         <div className="absolute top-0 bottom-0 left-0 w-16 md:w-32 bg-gradient-to-r from-white to-transparent z-10 pointer-events-none"></div>
         <div className="absolute top-0 bottom-0 right-0 w-16 md:w-32 bg-gradient-to-l from-white to-transparent z-10 pointer-events-none"></div>
 
         {/* Scrolling wrapper */}
-        <div className="flex w-max gap-6 animate-scroll hover:[animation-play-state:paused]">
+        <div
+          className="flex w-max gap-6 animate-scroll hover:[animation-play-state:paused]"
+          style={{ animationPlayState: isPaused ? 'paused' : undefined }}
+        >
           {carouselItems.map((student, idx) => (
             <StudentCardItem key={`${student.id}-${idx}`} student={student} />
           ))}
         </div>
+      </div>
+
+      {/* Mobile-friendly pause/resume control button */}
+      <div className="flex justify-center items-center mt-6 px-4">
+        <button
+          type="button"
+          onClick={() => setIsPaused(prev => !prev)}
+          className={`inline-flex items-center gap-2 px-5 py-2.5 min-h-[44px] text-xs sm:text-sm font-semibold rounded-full transition-all duration-200 shadow-sm border active:scale-95 cursor-pointer select-none font-sans ${
+            isPaused
+              ? "bg-[#0A7880] text-white border-[#0A7880] hover:bg-[#075E64] shadow-[#0A7880]/20"
+              : "bg-slate-100 hover:bg-slate-200 text-slate-700 border-slate-200/80"
+          }`}
+          aria-label={isPaused ? "Resume story scroll" : "Pause story scroll"}
+        >
+          {isPaused ? (
+            <>
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-4 h-4 shrink-0" aria-hidden="true">
+                <polygon points="5 3 19 12 5 21 5 3" />
+              </svg>
+              <span>▶ Resume Story Scroll</span>
+            </>
+          ) : (
+            <>
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-4 h-4 shrink-0 text-slate-600" aria-hidden="true">
+                <rect x="6" y="4" width="4" height="16" rx="1" />
+                <rect x="14" y="4" width="4" height="16" rx="1" />
+              </svg>
+              <span>⏸ Tap to Pause Stories</span>
+            </>
+          )}
+        </button>
       </div>
     </div>
   );

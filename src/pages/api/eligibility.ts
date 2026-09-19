@@ -148,7 +148,7 @@ const detailsStr = JSON.stringify({
     const budgetUSD = budgetLakhsNum > 0 ? budgetLakhsNum * 1200 : 999999;
 
     // Fetch all universities or filter by destination code
-    let query = supabase.from('universities').select('*');
+    let query = supabase.from('universities').select('*').is('deleted_at', null);
     if (destination && destination !== "all" && destination !== "Any") {
       query = query.eq('code', destination);
     }

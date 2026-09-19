@@ -35,7 +35,7 @@ if (Astro.request.method === "POST") {
       const id = formData.get("id");
       const { error } = await supabase
         .from('universities')
-        .delete()
+        .update({ deleted_at: new Date().toISOString() })
         .eq('id', id);
 
       if (error) throw error;
@@ -165,6 +165,7 @@ try {
   const { data, error } = await supabase
     .from('universities')
     .select('*')
+    .is('deleted_at', null)
     .order('name', { ascending: true });
 
   if (error) throw error;

@@ -90,6 +90,7 @@ async function isAllowlistedAdmin(sb: SupabaseClient, email: string): Promise<bo
       .from("admins")
       .select("email")
       .eq("email", normalizedEmail)
+      .is("deleted_at", null)
       .maybeSingle();
     return !error && !!data;
   } catch {

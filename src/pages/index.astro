@@ -59,10 +59,10 @@ let socialCauses = [];
 
 // 1. Initiate database fetches concurrently
 const [storiesRes, videosRes, updatesRes, causesRes] = await Promise.all([
-  supabase.from('success_stories').select('*').order('id', { ascending: false }).then(res => res, err => ({ data: [], error: err })),
-  supabase.from('carousel_videos').select('*').order('id', { ascending: false }).then(res => res, err => ({ data: [], error: err })),
-  supabase.from('visa_updates').select('*').then(res => res, err => ({ data: [], error: err })),
-  supabase.from('social_causes').select('*').order('id', { ascending: false }).then(res => res, err => ({ data: [], error: err }))
+  supabase.from('success_stories').select('*').is('deleted_at', null).order('id', { ascending: false }).then(res => res, err => ({ data: [], error: err })),
+  supabase.from('carousel_videos').select('*').is('deleted_at', null).order('id', { ascending: false }).then(res => res, err => ({ data: [], error: err })),
+  supabase.from('visa_updates').select('*').is('deleted_at', null).then(res => res, err => ({ data: [], error: err })),
+  supabase.from('social_causes').select('*').is('deleted_at', null).order('id', { ascending: false }).then(res => res, err => ({ data: [], error: err }))
 ]);
 
 // 2. Perform transformations and error handling

@@ -12,6 +12,7 @@ export const GET: APIRoute = async () => {
 const { data, error } = await supabase
       .from("announcements")
       .select("text")
+      .is("deleted_at", null)
       .order("id", { ascending: false });
 
     if (error) throw error;

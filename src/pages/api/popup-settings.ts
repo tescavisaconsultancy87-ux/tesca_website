@@ -11,6 +11,7 @@ export const GET: APIRoute = async () => {
       .from('popup_settings')
       .select('*')
       .eq('is_active', true)
+      .is('deleted_at', null)
       .order('id', { ascending: false });
 
     if (error) {

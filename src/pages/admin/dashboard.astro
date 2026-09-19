@@ -50,15 +50,15 @@ try {
     blogRes,
     leadsDataRes
   ] = await Promise.all([
-    supabase.from('leads').select('*', { count: 'exact', head: true }).neq('lead_type', 'partner').then(res => res, err => ({ count: 0, error: err })),
-    supabase.from('leads').select('*', { count: 'exact', head: true }).eq('lead_type', 'partner').then(res => res, err => ({ count: 0, error: err })),
-    supabase.from('universities').select('*', { count: 'exact', head: true }).then(res => res, err => ({ count: 0, error: err })),
-    supabase.from('success_stories').select('*', { count: 'exact', head: true }).then(res => res, err => ({ count: 0, error: err })),
-    supabase.from('announcements').select('*', { count: 'exact', head: true }).then(res => res, err => ({ count: 0, error: err })),
-    supabase.from('visa_updates').select('*', { count: 'exact', head: true }).then(res => res, err => ({ count: 0, error: err })),
-    supabase.from('social_causes').select('*', { count: 'exact', head: true }).then(res => res, err => ({ count: 0, error: err })),
-    supabase.from('blog_posts').select('*', { count: 'exact', head: true }).then(res => res, err => ({ count: 0, error: err })),
-    supabase.from('leads').select('id, name, email, phone, lead_type, details, status, created_at').neq('lead_type', 'partner').order('created_at', { ascending: false }).limit(1000).then(res => res, err => ({ data: [], error: err }))
+    supabase.from('leads').select('*', { count: 'exact', head: true }).neq('lead_type', 'partner').is('deleted_at', null).then(res => res, err => ({ count: 0, error: err })),
+    supabase.from('leads').select('*', { count: 'exact', head: true }).eq('lead_type', 'partner').is('deleted_at', null).then(res => res, err => ({ count: 0, error: err })),
+    supabase.from('universities').select('*', { count: 'exact', head: true }).is('deleted_at', null).then(res => res, err => ({ count: 0, error: err })),
+    supabase.from('success_stories').select('*', { count: 'exact', head: true }).is('deleted_at', null).then(res => res, err => ({ count: 0, error: err })),
+    supabase.from('announcements').select('*', { count: 'exact', head: true }).is('deleted_at', null).then(res => res, err => ({ count: 0, error: err })),
+    supabase.from('visa_updates').select('*', { count: 'exact', head: true }).is('deleted_at', null).then(res => res, err => ({ count: 0, error: err })),
+    supabase.from('social_causes').select('*', { count: 'exact', head: true }).is('deleted_at', null).then(res => res, err => ({ count: 0, error: err })),
+    supabase.from('blog_posts').select('*', { count: 'exact', head: true }).is('deleted_at', null).then(res => res, err => ({ count: 0, error: err })),
+    supabase.from('leads').select('id, name, email, phone, lead_type, details, status, created_at').neq('lead_type', 'partner').is('deleted_at', null).order('created_at', { ascending: false }).limit(1000).then(res => res, err => ({ data: [], error: err }))
   ]);
 
   // 2. Log non-critical query failures and assign counts

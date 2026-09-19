@@ -118,6 +118,7 @@ export const GET: APIRoute = async () => {
       .from("blog_posts")
       .select("slug, created_at")
       .eq("is_published", true)
+      .is("deleted_at", null)
       .order("created_at", { ascending: false });
 
     if (!error && data) {

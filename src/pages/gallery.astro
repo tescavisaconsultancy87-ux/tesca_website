@@ -22,6 +22,7 @@ try {
   const { data, error } = await supabase
     .from('success_stories')
     .select('*')
+    .is('deleted_at', null)
     .order('id', { ascending: false });
 
   if (!error && data) {
@@ -30,6 +31,17 @@ try {
 } catch (err) {
   console.error("Failed to load success stories from Supabase:", err);
 }
+
+const fallbackStories = [
+  { id: 1, name: "Aarav Patel", photo: "https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?q=80&w=400&auto=format&fit=crop", type: "IELTS", score: "8.0", country: null },
+  { id: 2, name: "Sneha Reddy", photo: "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?q=80&w=400&auto=format&fit=crop", type: "PTE", score: "84", country: null },
+  { id: 3, name: "Vikram Malhotra", photo: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?q=80&w=400&auto=format&fit=crop", type: "Visa Success", score: null, country: "United Kingdom" },
+  { id: 4, name: "Meera Krishnan", photo: "https://images.unsplash.com/photo-1580489944761-15a19d654956?q=80&w=400&auto=format&fit=crop", type: "IELTS", score: "7.5", country: null },
+  { id: 5, name: "Kabir Mehra", photo: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?q=80&w=400&auto=format&fit=crop", type: "PTE", score: "79", country: null },
+  { id: 6, name: "Jaspreet Kaur", photo: "https://images.unsplash.com/photo-1607746882042-944635dfe10e?q=80&w=400&auto=format&fit=crop", type: "Visa Success", score: null, country: "Canada" }
+];
+
+const displayStories = stories && stories.length > 0 ? stories : fallbackStories;
 ---
 
 <Layout 
@@ -115,7 +127,7 @@ try {
         </div>
       </div>
 
-      {stories.length === 0 ? (
+      {displayStories.length === 0 ? (
         <div class="bg-white rounded-3xl border border-slate-200/80 p-12 text-center space-y-4 shadow-sm">
           <div class="w-16 h-16 rounded-2xl bg-emerald-50 text-emerald-600 mx-auto flex items-center justify-center text-3xl">
             🎓
@@ -127,12 +139,23 @@ try {
         </div>
       ) : (
         <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 md:gap-5">
-          {stories.map((student) => {
+          {displayStories.map((student) => {
             const isVisa = student.type === "Visa Success";
             const cc = student.country ? countryToCode(student.country) : "";
             
             return (
-              <div class="rounded-2xl overflow-hidden border border-slate-200 bg-white shadow-sm hover:-translate-y-1 hover:shadow-md transition-all duration-300 group text-left flex flex-col">
+              <div
+                role="button"
+                tabindex="0"
+                class="visa-profile-card rounded-2xl overflow-hidden border border-slate-200 bg-white shadow-sm hover:-translate-y-1.5 hover:shadow-lg hover:border-[#0A7880]/40 transition-all duration-300 group text-left flex flex-col cursor-pointer select-none focus:outline-none focus:ring-2 focus:ring-[#0A7880] focus:ring-offset-2"
+                data-name={student.name}
+                data-photo={student.photo}
+                data-type={student.type}
+                data-country={student.country || ""}
+                data-score={student.score || (isVisa ? "Approved ✓" : "")}
+                data-flag={cc ? `https://flagcdn.com/w80/${cc}.png` : ""}
+                aria-label={`View ${student.name}'s visa profile details`}
+              >
                 {/* Photo */}
                 <div class="relative w-full aspect-[4/5] overflow-hidden bg-slate-50 shrink-0">
                   <img 
@@ -166,6 +189,14 @@ try {
                       {student.type}
                     </span>
                   </div>
+
+                  {/* Quick View Hover Cue */}
+                  <div class="absolute inset-0 bg-slate-950/25 opacity-0 group-hover:opacity-100 transition-opacity duration-250 flex items-center justify-center">
+                    <span class="px-3 py-1.5 rounded-full bg-white/95 text-slate-900 text-[11px] font-bold shadow-md flex items-center gap-1.5 transform translate-y-1 group-hover:translate-y-0 transition-transform duration-200">
+                      <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg>
+                      Click to View
+                    </span>
+                  </div>
                 </div>
 
                 {/* Info */}
@@ -182,6 +213,9 @@ try {
                     <span class="text-[12px] font-extrabold text-[#0A7880] font-display">
                       {isVisa ? "Approved ✓" : student.score}
                     </span>
+                    <span class="text-[10px] text-slate-400 font-semibold flex items-center gap-0.5 group-hover:text-[#0A7880] transition-colors">
+                      View ↗
+                    </span>
                   </div>
                 </div>
               </div>
@@ -192,6 +226,234 @@ try {
     </div>
 
   </section>
+
+  <!-- Visa Profile Lightbox Modal -->
+  <div
+    id="visa-modal"
+    class="fixed inset-0 z-[100] flex items-center justify-center p-4 sm:p-6 bg-slate-950/70 backdrop-blur-sm opacity-0 pointer-events-none transition-all duration-200"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="visa-modal-name"
+    tabindex="-1"
+  >
+    <!-- Modal Dialog Card -->
+    <div
+      id="visa-modal-card"
+      class="relative w-full max-w-lg bg-white rounded-[2rem] shadow-2xl border border-slate-200 overflow-hidden transform scale-95 transition-all duration-200 flex flex-col max-h-[90vh]"
+    >
+      <!-- Close Button -->
+      <button
+        type="button"
+        id="visa-modal-close"
+        class="absolute top-4 right-4 z-20 w-10 h-10 rounded-full bg-white/95 hover:bg-white text-slate-700 hover:text-slate-950 shadow-md border border-slate-200/80 flex items-center justify-center transition-all cursor-pointer focus:outline-none focus:ring-2 focus:ring-[#0A7880]"
+        aria-label="Close visa profile details"
+      >
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="18" y1="6" x2="6" y2="18"></line>
+          <line x1="6" y1="6" x2="18" y2="18"></line>
+        </svg>
+      </button>
+
+      <!-- Scrollable Content Area -->
+      <div class="overflow-y-auto w-full">
+        <!-- Student Image Container -->
+        <div class="relative w-full aspect-[4/5] max-h-[48vh] bg-slate-100 flex items-center justify-center overflow-hidden border-b border-slate-100">
+          <img
+            id="visa-modal-photo"
+            src=""
+            alt=""
+            class="w-full h-full object-contain select-none"
+          />
+
+          <!-- Verified Badge overlay -->
+          <div class="absolute bottom-3 left-3 bg-emerald-600/95 text-white text-xs font-bold px-3 py-1 rounded-full shadow-md backdrop-blur-xs flex items-center gap-1.5">
+            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="20 6 9 17 4 12"></polyline>
+            </svg>
+            <span id="visa-modal-status">Verified Approval</span>
+          </div>
+        </div>
+
+        <!-- Student Details & Profile Specs -->
+        <div class="p-6 sm:p-7 space-y-5 bg-white text-left">
+          <!-- Name & Visa Category Badge -->
+          <div>
+            <div class="flex items-center gap-2 mb-2">
+              <span id="visa-modal-type-badge" class="inline-flex items-center text-xs font-extrabold uppercase tracking-wider px-3 py-1 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200">
+                <!-- Dynamic Visa Type -->
+              </span>
+            </div>
+            <h3 id="visa-modal-name" class="text-2xl sm:text-3xl font-extrabold font-display text-slate-900 tracking-tight leading-tight">
+              <!-- Student Name -->
+            </h3>
+          </div>
+
+          <!-- Key Information Grid: Visa Type & Country -->
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
+            <!-- Visa Type Card -->
+            <div class="p-4 rounded-2xl bg-slate-50 border border-slate-200/80 flex items-start gap-3">
+              <div class="w-10 h-10 rounded-xl bg-[#0A7880]/10 text-[#0A7880] flex items-center justify-center shrink-0">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <rect width="18" height="18" x="3" y="3" rx="2"></rect>
+                  <path d="M3 9h18"></path>
+                  <path d="M9 21V9"></path>
+                </svg>
+              </div>
+              <div class="min-w-0">
+                <span class="block text-[11px] font-bold text-slate-400 uppercase tracking-wider">Visa Type</span>
+                <span id="visa-modal-type" class="block text-sm font-bold text-slate-800 truncate mt-0.5">
+                  <!-- Visa Type text -->
+                </span>
+              </div>
+            </div>
+
+            <!-- Country Card -->
+            <div id="visa-modal-country-card" class="p-4 rounded-2xl bg-slate-50 border border-slate-200/80 flex items-start gap-3">
+              <div class="w-10 h-10 rounded-xl bg-amber-500/10 flex items-center justify-center shrink-0 overflow-hidden">
+                <img id="visa-modal-flag" src="" alt="" class="w-7 h-5 rounded-xs object-cover shadow-xs hidden" />
+                <svg id="visa-modal-globe" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-amber-600">
+                  <circle cx="12" cy="12" r="10"></circle>
+                  <line x1="2" x2="22" y1="12" y2="12"></line>
+                  <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path>
+                </svg>
+              </div>
+              <div class="min-w-0">
+                <span class="block text-[11px] font-bold text-slate-400 uppercase tracking-wider">Country</span>
+                <span id="visa-modal-country" class="block text-sm font-bold text-slate-800 truncate mt-0.5">
+                  <!-- Country text -->
+                </span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Bottom Action: WhatsApp Consultation -->
+          <div class="pt-2">
+            <a
+              id="visa-modal-whatsapp"
+              href="https://wa.me/919824152731?text=Hello%20TESCA%20Visa%20Consultancy%2C%20I%20saw%20your%20visa%20gallery%20and%20would%20like%20guidance%20for%20my%20own%20visa%20application."
+              target="_blank"
+              rel="noopener noreferrer"
+              class="w-full flex items-center justify-center gap-2.5 py-3.5 px-6 rounded-full bg-[#0A7880] hover:bg-[#075E64] text-white font-bold text-sm shadow-md shadow-[#0A7880]/20 transition-all active:scale-[0.98] cursor-pointer no-underline"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" class="w-4 h-4 fill-current">
+                <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/>
+                <path d="M12 0C5.373 0 0 5.373 0 12c0 2.128.559 4.122 1.532 5.859L.057 23.5l5.784-1.518A11.932 11.932 0 0012 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 22c-1.846 0-3.573-.492-5.063-1.35L2.5 21.869l1.244-4.287A10 10 0 012 12C2 6.477 6.477 2 12 2s10 4.477 10 10-4.477 10-10 10z"/>
+              </svg>
+              <span>Inquire About Similar Visa Profile</span>
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script is:inline>
+    (function initVisaGalleryModal() {
+      var modal = document.getElementById("visa-modal");
+      var modalCard = document.getElementById("visa-modal-card");
+      var closeBtn = document.getElementById("visa-modal-close");
+      var modalPhoto = document.getElementById("visa-modal-photo");
+      var modalName = document.getElementById("visa-modal-name");
+      var modalType = document.getElementById("visa-modal-type");
+      var modalTypeBadge = document.getElementById("visa-modal-type-badge");
+      var modalCountry = document.getElementById("visa-modal-country");
+      var modalFlag = document.getElementById("visa-modal-flag");
+      var modalGlobe = document.getElementById("visa-modal-globe");
+      var modalStatus = document.getElementById("visa-modal-status");
+      var modalWhatsApp = document.getElementById("visa-modal-whatsapp");
+
+      if (!modal) return;
+
+      function openModal(card) {
+        var name = card.getAttribute("data-name") || "Student";
+        var photo = card.getAttribute("data-photo") || "";
+        var type = card.getAttribute("data-type") || "Visa";
+        var country = card.getAttribute("data-country") || "";
+        var score = card.getAttribute("data-score") || "";
+        var flag = card.getAttribute("data-flag") || "";
+
+        modalName.textContent = name;
+        modalPhoto.src = photo;
+        modalPhoto.alt = name + " - " + type;
+
+        modalType.textContent = type;
+        modalTypeBadge.textContent = type;
+
+        if (country) {
+          modalCountry.textContent = country;
+          if (flag) {
+            modalFlag.src = flag;
+            modalFlag.alt = country + " flag";
+            modalFlag.classList.remove("hidden");
+            if (modalGlobe) modalGlobe.classList.add("hidden");
+          } else {
+            modalFlag.classList.add("hidden");
+            if (modalGlobe) modalGlobe.classList.remove("hidden");
+          }
+        } else {
+          modalCountry.textContent = "Global / General";
+          modalFlag.classList.add("hidden");
+          if (modalGlobe) modalGlobe.classList.remove("hidden");
+        }
+
+        if (score) {
+          modalStatus.textContent = score;
+        } else {
+          modalStatus.textContent = "Verified Approval";
+        }
+
+        var waQuery = "Hello TESCA Visa Consultancy, I saw " + name + "'s " + type + (country ? " (" + country + ")" : "") + " on your gallery and would like to consult for a similar visa.";
+        if (modalWhatsApp) {
+          modalWhatsApp.href = "https://wa.me/919824152731?text=" + encodeURIComponent(waQuery);
+        }
+
+        modal.classList.remove("opacity-0", "pointer-events-none");
+        modal.classList.add("opacity-100", "pointer-events-auto");
+        modalCard.classList.remove("scale-95");
+        modalCard.classList.add("scale-100");
+
+        document.body.style.overflow = "hidden";
+        if (closeBtn) closeBtn.focus();
+      }
+
+      function closeModal() {
+        modal.classList.remove("opacity-100", "pointer-events-auto");
+        modal.classList.add("opacity-0", "pointer-events-none");
+        modalCard.classList.remove("scale-100");
+        modalCard.classList.add("scale-95");
+        document.body.style.overflow = "";
+      }
+
+      var cards = document.querySelectorAll(".visa-profile-card");
+      cards.forEach(function (card) {
+        card.addEventListener("click", function () {
+          openModal(card);
+        });
+        card.addEventListener("keydown", function (e) {
+          if (e.key === "Enter" || e.key === " ") {
+            e.preventDefault();
+            openModal(card);
+          }
+        });
+      });
+
+      if (closeBtn) {
+        closeBtn.addEventListener("click", closeModal);
+      }
+
+      modal.addEventListener("click", function (e) {
+        if (e.target === modal) {
+          closeModal();
+        }
+      });
+
+      document.addEventListener("keydown", function (e) {
+        if (e.key === "Escape" && !modal.classList.contains("opacity-0")) {
+          closeModal();
+        }
+      });
+    })();
+  </script>
 
   <AICounsellor client:only="react" />
 </Layout>

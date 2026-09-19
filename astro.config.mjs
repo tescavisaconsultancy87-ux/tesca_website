@@ -45,10 +45,31 @@ export default defineConfig({
         exclude: ['astro:compiler-runtime', 'astro:virtual-modules/transitions.js', 'astro:components']
       }
     },
+    esbuild: {
+      target: 'es2020',
+      supported: {
+        'logical-assignment': false,
+        'class-field': false
+      }
+    },
     build: {
+      target: 'es2020',
       rollupOptions: {
-        external: ['cloudflare:workers']
+        external: ['cloudflare:workers'],
+        output: {
+          banner: (chunk) => {
+            // Guard: Never inject un-transpiled ??= into client or server bundles.
+            // For client chunks (_astro/), do not inject any banner.
+            const fileName = chunk?.fileName || '';
+            if (fileName.startsWith('_astro/') || fileName.includes('client') || !fileName.includes('server') && !fileName.includes('_worker')) {
+              return '';
+            }
+            // For Cloudflare Workers SSR server bundle, provide safe ES5-compatible shim:
+            return "typeof globalThis.process==='undefined'&&(globalThis.process={env:{}});globalThis.process&&!globalThis.process.env&&(globalThis.process.env={});";
+          }
+        }
       }
     }
+
   }
 });

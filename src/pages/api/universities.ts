@@ -17,7 +17,7 @@ export const GET: APIRoute = async ({ request }) => {
 
   try {
     const supabase = getSupabaseAdmin();
-    let query = supabase.from('universities').select('*');
+    let query = supabase.from('universities').select('*').is('deleted_at', null);
     
     if (countryCode && countryCode !== "all") {
       query = query.eq('code', countryCode);

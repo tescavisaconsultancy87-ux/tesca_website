@@ -17,8 +17,8 @@ let visaUpdates = [];
 
 // 1. Initiate database fetches concurrently
 const [blogRes, updatesRes] = await Promise.all([
-  supabase.from('blog_posts').select('*').eq('is_published', true).order('id', { ascending: false }).then(res => res, err => ({ data: [], error: err })),
-  supabase.from('visa_updates').select('*').then(res => res, err => ({ data: [], error: err }))
+  supabase.from('blog_posts').select('*').eq('is_published', true).is('deleted_at', null).order('id', { ascending: false }).then(res => res, err => ({ data: [], error: err })),
+  supabase.from('visa_updates').select('*').is('deleted_at', null).then(res => res, err => ({ data: [], error: err }))
 ]);
 
 // 2. Perform transformations and error handling

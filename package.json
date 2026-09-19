@@ -7,7 +7,7 @@
   },
   "scripts": {
     "dev": "astro dev",
-    "build": "astro build && node scripts/remove-kv.js",
+    "build": "astro build && node scripts/remove-kv.js && node scripts/verify-client-syntax.mjs",
     "preview": "astro preview",
     "astro": "astro",
     "typecheck": "astro check",

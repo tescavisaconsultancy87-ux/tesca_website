@@ -14,7 +14,8 @@ export const GET: APIRoute = async ({ cookies }) => {
 const { count, error } = await supabase
       .from('leads')
       .select('*', { count: 'exact', head: true })
-      .neq('lead_type', 'partner');
+      .neq('lead_type', 'partner')
+      .is('deleted_at', null);
 
     if (error) {
       throw error;

@@ -89,10 +89,10 @@ if (Astro.request.method === "POST") {
           throw new Error("You cannot revoke your own administrator access while logged in.");
         }
 
-        // Remove from public.admins table
+        // Remove from public.admins table (soft delete)
         const { error: dbError } = await supabase
           .from('admins')
-          .delete()
+          .update({ deleted_at: new Date().toISOString() })
           .eq('email', emailToDelete);
 
         if (dbError) {
@@ -114,6 +114,7 @@ try {
   const { data, error } = await supabase
     .from('admins')
     .select('*')
+    .is('deleted_at', null)
     .order('created_at', { ascending: true });
 
   if (error) {

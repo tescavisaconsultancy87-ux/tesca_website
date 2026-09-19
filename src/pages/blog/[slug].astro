@@ -43,6 +43,7 @@ try {
     .select('*')
     .eq('slug', slug)
     .eq('is_published', true)
+    .is('deleted_at', null)
     .maybeSingle();
 
   if (!error && data) {
