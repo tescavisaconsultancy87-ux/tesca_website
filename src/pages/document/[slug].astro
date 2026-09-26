@@ -502,11 +502,14 @@ const whatsappPrefill = encodeURIComponent(`Hi TESCA, I was reading the ${doc.ti
               <button 
                 type="submit" 
                 id="doc-lead-submit"
-                class="w-full py-3 px-4 bg-[#0F4C81] hover:bg-[#155a96] active:bg-[#0a3a63] text-white font-bold text-xs rounded-xl shadow-md transition-all tracking-wide flex items-center justify-center gap-2 cursor-pointer"
+                class="w-full py-3 px-4 bg-[#0F4C81] hover:bg-[#155a96] active:bg-[#0a3a63] text-white font-bold text-xs rounded-xl shadow-md transition-all tracking-wide flex items-center justify-center gap-2 cursor-pointer disabled:opacity-75 disabled:cursor-not-allowed select-none"
               >
-                <span>Request Free Assessment</span>
-                <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
+                <span class="btn-text">Request Free Assessment</span>
+                <svg class="btn-icon" xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
+                <svg class="btn-spinner hidden animate-spin" xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
               </button>
+
+              <div id="doc-lead-feedback" class="hidden text-[11px] p-2.5 rounded-xl transition-all"></div>
             </form>
           </div>
 
@@ -675,18 +678,40 @@ const whatsappPrefill = encodeURIComponent(`Hi TESCA, I was reading the ${doc.ti
   <script is:inline src="/js/pdf.min.js"></script>
 
   <script is:inline define:vars={{ pdfUrl: doc.pdfUrl, docSlug: doc.slug, docTitle: doc.title }}>
+    let currentPdfLoadingTask = null;
+    let activeRenderTasks = [];
+
     async function initPdfViewer() {
       const spinner = document.getElementById("loading-spinner");
       const wrapper = document.getElementById("pdf-viewer-wrapper");
       const pagesContainer = document.getElementById("pdf-pages-container");
 
       if (!pagesContainer) return;
-      // Prevent duplicate rendering
+      
+      // Guard against duplicate execution for the same slug
+      if (pagesContainer.dataset.renderedSlug === docSlug) return;
+      if (pagesContainer.dataset.rendering === "true") return;
+
+      pagesContainer.dataset.rendering = "true";
+
+      // Safely cancel any in-progress renders from a previous navigation
+      if (activeRenderTasks.length > 0) {
+        activeRenderTasks.forEach((task) => {
+          try { task.cancel(); } catch (_) {}
+        });
+        activeRenderTasks = [];
+      }
+      if (currentPdfLoadingTask) {
+        try { currentPdfLoadingTask.destroy(); } catch (_) {}
+        currentPdfLoadingTask = null;
+      }
+
       pagesContainer.innerHTML = "";
 
       const pdfjsLib = window.pdfjsLib || window["pdfjs-dist/build/pdf"];
 
       if (!pdfjsLib) {
+        pagesContainer.dataset.rendering = "false";
         if (spinner) spinner.innerHTML = `<p class="text-xs text-rose-400 font-bold">Failed to load PDF viewer library.</p>`;
         return;
       }
@@ -694,8 +719,8 @@ const whatsappPrefill = encodeURIComponent(`Hi TESCA, I was reading the ${doc.ti
       pdfjsLib.GlobalWorkerOptions.workerSrc = "/js/pdf.worker.min.js";
 
       try {
-        const loadingTask = pdfjsLib.getDocument(pdfUrl);
-        const pdf = await loadingTask.promise;
+        currentPdfLoadingTask = pdfjsLib.getDocument(pdfUrl);
+        const pdf = await currentPdfLoadingTask.promise;
 
         if (spinner) spinner.classList.add("hidden");
         if (wrapper) wrapper.classList.remove("hidden");
@@ -727,7 +752,10 @@ const whatsappPrefill = encodeURIComponent(`Hi TESCA, I was reading the ${doc.ti
           context.imageSmoothingEnabled = true;
           context.imageSmoothingQuality = "high";
 
-          await page.render({ canvasContext: context, viewport: viewport }).promise;
+          const renderTask = page.render({ canvasContext: context, viewport: viewport });
+          activeRenderTasks.push(renderTask);
+          await renderTask.promise;
+
           pageWrapper.appendChild(canvas);
 
           // Page Number Indicator Footer
@@ -738,35 +766,86 @@ const whatsappPrefill = encodeURIComponent(`Hi TESCA, I was reading the ${doc.ti
 
           pagesContainer.appendChild(pageWrapper);
         }
+
+        pagesContainer.dataset.renderedSlug = docSlug;
       } catch (err) {
-        console.error("PDF Render Error:", err);
-        if (spinner) {
+        if (err && (err.name === "RenderingCancelledException" || String(err.message || "").includes("cancelled"))) {
+          // Expected when navigating quickly between pages or re-rendering
+          return;
+        }
+        console.warn("PDF Render Note:", err);
+        if (spinner && !pagesContainer.hasChildNodes()) {
           spinner.classList.remove("hidden");
           spinner.innerHTML = `<p class="text-xs text-rose-400 font-bold">Failed to load document preview. Please check URL.</p>`;
         }
+      } finally {
+        pagesContainer.dataset.rendering = "false";
       }
     }
 
-    // Lead Form Handler
+    // Lead Form Handler with Instant Tactile Feedback & Rage Click Prevention
     function initLeadForm() {
       const form = document.getElementById("doc-lead-form");
       const submitBtn = document.getElementById("doc-lead-submit");
+      const feedback = document.getElementById("doc-lead-feedback");
       const phoneInput = document.getElementById("doc-lead-phone");
+
       if (phoneInput && phoneInput.dataset.inputAttached !== "true") {
         phoneInput.dataset.inputAttached = "true";
         phoneInput.addEventListener("input", () => {
-          // Allow digits, spaces, and hyphens up to 15 characters
+          phoneInput.classList.remove("border-rose-500", "ring-1", "ring-rose-500");
           phoneInput.value = phoneInput.value.replace(/[^\d\s\-]/g, "").slice(0, 15);
         });
       }
 
       if (form && submitBtn) {
-        form._ajaxBound = true;
         if (form.dataset.listenerAttached === "true") return;
         form.dataset.listenerAttached = "true";
 
+        const btnText = submitBtn.querySelector(".btn-text");
+        const btnIcon = submitBtn.querySelector(".btn-icon");
+        const btnSpinner = submitBtn.querySelector(".btn-spinner");
+
+        const setSubmittingState = (isSubmitting) => {
+          submitBtn.disabled = isSubmitting;
+          if (isSubmitting) {
+            form.dataset.submitting = "true";
+            if (btnText) btnText.textContent = "Verifying & Sending...";
+            if (btnIcon) btnIcon.classList.add("hidden");
+            if (btnSpinner) btnSpinner.classList.remove("hidden");
+          } else {
+            form.dataset.submitting = "false";
+            if (btnText) btnText.textContent = "Request Free Assessment";
+            if (btnIcon) btnIcon.classList.remove("hidden");
+            if (btnSpinner) btnSpinner.classList.add("hidden");
+          }
+        };
+
+        const showFeedback = (msg, isSuccess = false) => {
+          if (!feedback) return;
+          feedback.classList.remove("hidden", "bg-rose-500/10", "text-rose-400", "border-rose-500/30", "bg-emerald-500/15", "text-emerald-400", "border-emerald-500/30");
+          if (isSuccess) {
+            feedback.className = "text-[11px] p-3 rounded-xl bg-emerald-500/15 text-emerald-400 border border-emerald-500/30 font-semibold space-y-1 block mt-2 text-center";
+            feedback.innerHTML = `<span>✓ ${msg}</span>`;
+          } else {
+            feedback.className = "text-[11px] p-2.5 rounded-xl bg-rose-500/10 text-rose-400 border border-rose-500/30 font-semibold block mt-2 text-center";
+            feedback.innerHTML = `<span>⚠️ ${msg}</span>`;
+          }
+        };
+
+        // Clear error ring on field input
+        form.querySelectorAll("input").forEach((inp) => {
+          inp.addEventListener("input", () => {
+            inp.classList.remove("border-rose-500", "ring-1", "ring-rose-500");
+            if (feedback && !feedback.textContent.includes("✓")) {
+              feedback.classList.add("hidden");
+            }
+          });
+        });
+
         form.addEventListener("submit", async (e) => {
           e.preventDefault();
+          // Debounce check: silently ignore rapid secondary clicks
           if (form.dataset.submitting === "true") return;
 
           const nameInput = form.querySelector('[name="name"]');
@@ -784,24 +863,37 @@ const whatsappPrefill = encodeURIComponent(`Hi TESCA, I was reading the ${doc.ti
           const city = cityInput ? cityInput.value.trim() : "";
           const source = sourceInput ? sourceInput.value.trim() : `Document: ${docTitle}`;
 
-          const resetSubmitButton = () => {
-            form.dataset.submitting = "false";
-            submitBtn.disabled = false;
-            submitBtn.innerHTML = `<span>Request Free Assessment</span>`;
-            if (typeof window.hideBtnLoader === "function") {
-              window.hideBtnLoader(submitBtn);
+          // Inline validation check with tactile focus
+          if (!name) {
+            if (nameInput) {
+              nameInput.classList.add("border-rose-500", "ring-1", "ring-rose-500");
+              nameInput.focus();
             }
-          };
-
-          if (!name || !phoneDigits || phoneDigits.length < 7 || phoneDigits.length > 15 || !email) {
-            if (window.showToast) window.showToast("Please provide your name, valid phone number (7-15 digits), and email.", "warning");
-            resetSubmitButton();
+            showFeedback("Please enter your full name.");
             return;
           }
 
-          form.dataset.submitting = "true";
-          submitBtn.disabled = true;
-          submitBtn.innerHTML = `<span>Submitting...</span>`;
+          if (!phoneDigits || phoneDigits.length < 7 || phoneDigits.length > 15) {
+            if (phoneField) {
+              phoneField.classList.add("border-rose-500", "ring-1", "ring-rose-500");
+              phoneField.focus();
+            }
+            showFeedback("Please enter a valid phone number (7-15 digits).");
+            return;
+          }
+
+          if (!email || !email.includes("@")) {
+            if (emailInput) {
+              emailInput.classList.add("border-rose-500", "ring-1", "ring-rose-500");
+              emailInput.focus();
+            }
+            showFeedback("Please enter a valid email address.");
+            return;
+          }
+
+          // Lock immediately to prevent rage clicking
+          setSubmittingState(true);
+          if (feedback) feedback.classList.add("hidden");
 
           const fullPhone = `${countryCode} ${phoneDigits}`;
 
@@ -830,24 +922,30 @@ const whatsappPrefill = encodeURIComponent(`Hi TESCA, I was reading the ${doc.ti
               if (window.showToast) {
                 window.showToast("Thank you! Your assessment request has been received. Our team will contact you shortly.", "success");
               }
+              showFeedback("Thank you! Your assessment request is registered. We'll message you on WhatsApp within 24 hours.", true);
+
               if (window.posthog) {
                 window.posthog.capture("document_lead_submitted", { 
                   source: `Document Guide: ${docTitle}`,
                   doc_title: docTitle,
                   doc_slug: docSlug,
                   city 
-                });
+                }, { transport: 'sendBeacon' });
               }
+
               form.reset();
-              form.dataset.submitting = "false";
-              submitBtn.disabled = false;
-              submitBtn.innerHTML = `<span>Assessment Requested ✓</span>`;
+              submitBtn.disabled = true;
+              if (btnText) btnText.textContent = "Assessment Requested ✓";
+              if (btnIcon) btnIcon.classList.add("hidden");
+              if (btnSpinner) btnSpinner.classList.add("hidden");
             } else {
-              resetSubmitButton();
+              setSubmittingState(false);
+              showFeedback(data.error || "Submission failed. Please WhatsApp us directly.");
               if (window.showToast) window.showToast(data.error || "Submission failed. Please WhatsApp us directly.", "error");
             }
           } catch (err) {
-            resetSubmitButton();
+            setSubmittingState(false);
+            showFeedback("Network error. Please chat with us directly on WhatsApp.");
             if (window.showToast) window.showToast("Network error. Please chat with us on WhatsApp.", "error");
           }
         });
@@ -862,8 +960,6 @@ const whatsappPrefill = encodeURIComponent(`Hi TESCA, I was reading the ${doc.ti
 
         link.addEventListener('click', () => {
           const ctaLoc = link.getAttribute('data-cta-loc') || 'document_page';
-
-          // Lead tracking is handled with verified details by WhatsAppLeadModal
 
           if (window.gtag) {
             window.gtag('event', 'whatsapp_click', {
@@ -883,40 +979,35 @@ const whatsappPrefill = encodeURIComponent(`Hi TESCA, I was reading the ${doc.ti
               doc_slug: docSlug,
               doc_title: docTitle,
               cta_location: ctaLoc
-            });
+            }, { transport: 'sendBeacon' });
             window.posthog.capture('contact_whatsapp_clicked', {
               source: 'document_guide',
               doc_slug: docSlug,
               doc_title: docTitle,
               cta_location: ctaLoc
-            });
+            }, { transport: 'sendBeacon' });
             window.posthog.capture('generate_lead', {
               lead_method: 'whatsapp',
               source: `Document Guide: ${docTitle}`,
               cta_location: ctaLoc
-            });
+            }, { transport: 'sendBeacon' });
           }
         });
       });
     }
 
-    // View Transitions compatibility
-    document.addEventListener("astro:page-load", () => {
+    // View Transitions & Initial Load: Idempotent Single Initialization
+    function setupDocumentPage() {
       initPdfViewer();
       initLeadForm();
       initWhatsAppTracking();
-    });
+    }
 
+    document.addEventListener("astro:page-load", setupDocumentPage);
     if (document.readyState === "loading") {
-      document.addEventListener("DOMContentLoaded", () => {
-        initPdfViewer();
-        initLeadForm();
-        initWhatsAppTracking();
-      });
+      document.addEventListener("DOMContentLoaded", setupDocumentPage, { once: true });
     } else {
-      initPdfViewer();
-      initLeadForm();
-      initWhatsAppTracking();
+      setupDocumentPage();
     }
 
     // 🔒 Security Protection 1: Block Right-Click Context Menu

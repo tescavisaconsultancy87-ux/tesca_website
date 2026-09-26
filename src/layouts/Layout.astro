@@ -162,8 +162,8 @@ if (isAdminPage) {
 					});
 				}
 				if (window.posthog) {
-					window.posthog.capture('generate_lead', { source });
-					window.posthog.capture('consultation_form_submit', { form_name: source });
+					window.posthog.capture('generate_lead', { source }, { transport: 'sendBeacon' });
+					window.posthog.capture('consultation_form_submit', { form_name: source }, { transport: 'sendBeacon' });
 				}
 			};
 
@@ -182,9 +182,9 @@ if (isAdminPage) {
 					}
 				}
 				if (window.posthog) {
-					window.posthog.capture(type === 'whatsapp' ? 'whatsapp_click' : 'phone_call_click', { destination });
+					window.posthog.capture(type === 'whatsapp' ? 'whatsapp_click' : 'phone_call_click', { destination }, { transport: 'sendBeacon' });
 					if (type === 'whatsapp') {
-						window.posthog.capture('generate_lead', { lead_method: 'whatsapp', destination });
+						window.posthog.capture('generate_lead', { lead_method: 'whatsapp', destination }, { transport: 'sendBeacon' });
 					}
 				}
 			};
@@ -431,7 +431,10 @@ if (isAdminPage) {
 								msg.includes('autofillcallbackhandler') ||
 								msg.includes('java object is gone') ||
 								msg.includes('senddatatonative') ||
-								msg.includes('load failed')
+								msg.includes('load failed') ||
+								msg.includes('renderingcancelledexception') ||
+								msg.includes('rendering cancelled') ||
+								msg.includes('aborterror')
 							) {
 								return null;
 							}
