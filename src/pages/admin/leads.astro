@@ -16,6 +16,23 @@ const SVG = {
   X: _s('<path d="M18 6 6 18"/><path d="m6 6 12 12"/>'),
 };
 
+function getCountryFlag(country?: string): string {
+  if (!country) return "🌐";
+  const c = country.toLowerCase().trim();
+  if (c.includes("canada")) return "🇨🇦";
+  if (c.includes("uk") || c.includes("united kingdom") || c.includes("britain") || c.includes("england")) return "🇬🇧";
+  if (c.includes("usa") || c.includes("united states") || c.includes("america")) return "🇺🇸";
+  if (c.includes("australia") || c.includes("aussie")) return "🇦🇺";
+  if (c.includes("germany") || c.includes("deutschland")) return "🇩🇪";
+  if (c.includes("new zealand") || c.includes("nz")) return "🇳🇿";
+  if (c.includes("europe") || c.includes("schengen") || c.includes("france") || c.includes("italy") || c.includes("poland") || c.includes("finland") || c.includes("malta")) return "🇪🇺";
+  if (c.includes("dubai") || c.includes("uae")) return "🇦🇪";
+  if (c.includes("ireland")) return "🇮🇪";
+  if (c.includes("singapore")) return "🇸🇬";
+  if (c.includes("india")) return "🇮🇳";
+  return "🌍";
+}
+
 // Check session
 const isAuthenticated = await checkAdminAuth(Astro.cookies);
 if (!isAuthenticated) {
@@ -577,15 +594,21 @@ try {
                     } catch (e) {}
                   }
 
-                  const docTitle = detailsObj.document_title || detailsObj.doc_title || detailsObj.source_title || (detailsObj.lead_source && detailsObj.lead_source.includes("Document") ? detailsObj.lead_source : null) || (detailsObj.source && (detailsObj.source.includes("Guide") || detailsObj.source.includes("Document")) ? detailsObj.source : null) || (detailsObj.subject && detailsObj.subject.includes("Assessment Request: ") ? detailsObj.subject.replace("Assessment Request: ", "").trim() : null);
-                  const isDocumentLead = lead.lead_type === "document" || Boolean(docTitle);
+                  // Extract structured country and visa type
+                  const targetCountry = detailsObj.target_country || detailsObj.country || detailsObj.preferred_country || (Array.isArray(detailsObj.preferred_countries) ? detailsObj.preferred_countries[0] : null) || detailsObj.destination || detailsObj.targetCountry || "";
+                  const visaType = detailsObj.visa_type || detailsObj.visaType || detailsObj.service || (Array.isArray(detailsObj.inquiry_types) ? detailsObj.inquiry_types[0] : null) || detailsObj.inquiry_type || detailsObj.visa_category || detailsObj.visaCategory || detailsObj.area_of_interest || detailsObj.interest || "";
+
+                  const rawDocTitle = detailsObj.document_title || detailsObj.doc_title || detailsObj.source_title || (detailsObj.lead_source && detailsObj.lead_source.includes("Document") ? detailsObj.lead_source : null) || (detailsObj.source && (detailsObj.source.includes("Guide") || detailsObj.source.includes("Document")) ? detailsObj.source : null) || (detailsObj.subject && detailsObj.subject.includes("Assessment Request: ") ? detailsObj.subject.replace("Assessment Request: ", "").trim() : null);
+                  // Guard against generic site SEO title accidentally saved as docTitle
+                  const docTitle = rawDocTitle && !/TESCA Visa Consultancy Surat|Best Visa Consultant|IELTS Coaching Classes/i.test(rawDocTitle) ? rawDocTitle : null;
+                  const isDocumentLead = (lead.lead_type === "document" || Boolean(docTitle)) && lead.lead_type !== "whatsapp";
 
                   let typeLabel = "Eligibility Finder";
                   let typeBg = "bg-teal-50 text-teal-700 border-teal-200";
                   if (lead.lead_type === "whatsapp") {
                     typeLabel = "WhatsApp Lead";
                     typeBg = "bg-emerald-50 text-emerald-700 border-emerald-200";
-                  } else if (isDocumentLead) {
+                  } else if (isDocumentLead && docTitle) {
                     typeLabel = "Document Guide";
                     typeBg = "bg-sky-50 text-sky-700 border-sky-200";
                   } else if (lead.lead_type === "inquiry") {
@@ -623,10 +646,23 @@ try {
                         </span>
                       </td>
                       <td class="px-6 py-4">
-                        <div class="space-y-1">
-                          <span class={`inline-block px-2.5 py-1 rounded-full border text-[10px] font-bold tracking-wide ${typeBg}`}>
-                            {typeLabel}
-                          </span>
+                        <div class="space-y-1.5">
+                          <div class="flex items-center gap-1.5 flex-wrap">
+                            <span class={`inline-block px-2.5 py-0.5 rounded-full border text-[10px] font-bold tracking-wide ${typeBg}`}>
+                              {typeLabel}
+                            </span>
+                            {targetCountry && (
+                              <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-blue-50 text-blue-800 text-[10px] font-bold border border-blue-200" title={`Target Country: ${targetCountry}`}>
+                                <span>{getCountryFlag(targetCountry)}</span>
+                                <span>{targetCountry.replace(/[\uD83C-\uDBFF\uDC00-\uDFFF]/g, '').trim()}</span>
+                              </span>
+                            )}
+                          </div>
+                          {visaType && (
+                            <div class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-purple-50 text-purple-700 text-[10px] font-bold border border-purple-200" title={`Visa / Service: ${visaType}`}>
+                              <span>🎯 {visaType}</span>
+                            </div>
+                          )}
                           {docTitle && (
                             <div class="text-[11px] font-semibold text-sky-900 max-w-[220px] truncate" title={docTitle}>
                               📄 {docTitle.replace(/^(Guide:\s*|Document:\s*|Document Guide:\s*)/i, '')}
@@ -704,6 +740,8 @@ try {
                                       class="wa-template-item w-full text-left p-2 rounded-xl hover:bg-emerald-50/70 border border-transparent hover:border-emerald-200 transition-all flex items-start gap-2.5 group cursor-pointer"
                                       data-phone={lead.phone}
                                       data-name={lead.name}
+                                      data-country={targetCountry}
+                                      data-visa={visaType}
                                       data-template="missed_call"
                                     >
                                       <span class="p-1.5 rounded-lg bg-rose-50 text-rose-600 border border-rose-100 text-xs shrink-0 group-hover:scale-105 transition-transform">📞</span>
@@ -722,6 +760,8 @@ try {
                                       class="wa-template-item w-full text-left p-2 rounded-xl hover:bg-emerald-50/70 border border-transparent hover:border-emerald-200 transition-all flex items-start gap-2.5 group cursor-pointer"
                                       data-phone={lead.phone}
                                       data-name={lead.name}
+                                      data-country={targetCountry}
+                                      data-visa={visaType}
                                       data-template="office_visit"
                                     >
                                       <span class="p-1.5 rounded-lg bg-amber-50 text-amber-600 border border-amber-100 text-xs shrink-0 group-hover:scale-105 transition-transform">📍</span>
@@ -740,6 +780,8 @@ try {
                                       class="wa-template-item w-full text-left p-2 rounded-xl hover:bg-emerald-50/70 border border-transparent hover:border-emerald-200 transition-all flex items-start gap-2.5 group cursor-pointer"
                                       data-phone={lead.phone}
                                       data-name={lead.name}
+                                      data-country={targetCountry}
+                                      data-visa={visaType}
                                       data-template="consultation_reminder"
                                     >
                                       <span class="p-1.5 rounded-lg bg-sky-50 text-sky-600 border border-sky-100 text-xs shrink-0 group-hover:scale-105 transition-transform">📅</span>
@@ -1068,14 +1110,36 @@ try {
       const name = btn.getAttribute("data-name") || "Student Details";
       const phone = btn.getAttribute("data-phone") || "";
       const email = btn.getAttribute("data-email") || "";
-      const type = btn.getAttribute("data-type") || "Lead";
+      let type = btn.getAttribute("data-type") || "Lead";
       const status = btn.getAttribute("data-status") || "pending";
       const detailsRaw = btn.getAttribute("data-details") || "{}";
+
+      // Normalize polluted legacy SEO titles
+      if (type && /TESCA Visa Consultancy Surat|Best Visa Consultant|IELTS Coaching Classes/i.test(type)) {
+        type = "WhatsApp Direct Inquiry";
+      }
 
       const escapeHTML = (str: string) => {
         const div = document.createElement("div");
         div.textContent = str;
         return div.innerHTML;
+      };
+
+      const getCountryFlagJS = (country: string) => {
+        if (!country) return "🌐";
+        const c = country.toLowerCase().trim();
+        if (c.includes("canada")) return "🇨🇦";
+        if (c.includes("uk") || c.includes("united kingdom") || c.includes("britain") || c.includes("england")) return "🇬🇧";
+        if (c.includes("usa") || c.includes("united states") || c.includes("america")) return "🇺🇸";
+        if (c.includes("australia") || c.includes("aussie")) return "🇦🇺";
+        if (c.includes("germany") || c.includes("deutschland")) return "🇩🇪";
+        if (c.includes("new zealand") || c.includes("nz")) return "🇳🇿";
+        if (c.includes("europe") || c.includes("schengen") || c.includes("france") || c.includes("italy") || c.includes("poland") || c.includes("finland") || c.includes("malta")) return "🇪🇺";
+        if (c.includes("dubai") || c.includes("uae")) return "🇦🇪";
+        if (c.includes("ireland")) return "🇮🇪";
+        if (c.includes("singapore")) return "🇸🇬";
+        if (c.includes("india")) return "🇮🇳";
+        return "🌍";
       };
 
       if (modalTitle) modalTitle.innerText = name;
@@ -1086,6 +1150,9 @@ try {
         try {
           const leadId = btn.getAttribute("data-id") || "";
           const details = JSON.parse(detailsRaw);
+
+          const targetCountry = details.target_country || details.country || details.preferred_country || (Array.isArray(details.preferred_countries) ? details.preferred_countries[0] : null) || details.destination || details.targetCountry || "";
+          const visaType = details.visa_type || details.visaType || details.service || (Array.isArray(details.inquiry_types) ? details.inquiry_types[0] : null) || details.inquiry_type || details.visa_category || details.visaCategory || details.area_of_interest || details.interest || "";
           
           // Map properties to a premium list key/value pair
           const listContainer = document.createElement("div");
@@ -1104,6 +1171,30 @@ try {
             }">${escapeHTML(status === 'not_available' ? 'Not Available' : status.charAt(0).toUpperCase() + status.slice(1))}</span>
           `;
           listContainer.appendChild(statusItem);
+
+          // Target Country Card
+          const countryItem = document.createElement("div");
+          countryItem.className = "bg-blue-50/80 border border-blue-200 p-3.5 rounded-2xl space-y-1";
+          countryItem.innerHTML = `
+            <span class="block text-[10px] font-extrabold text-blue-700 uppercase tracking-wider">Target Destination Country</span>
+            <div class="flex items-center gap-2 text-xs font-bold text-slate-800">
+              <span class="text-base">${getCountryFlagJS(targetCountry)}</span>
+              <span class="text-sm font-extrabold text-blue-900">${escapeHTML(targetCountry ? targetCountry.replace(/[\uD83C-\uDBFF\uDC00-\uDFFF]/g, '').trim() : "Not specified")}</span>
+            </div>
+          `;
+          listContainer.appendChild(countryItem);
+
+          // Visa Type / Service Card
+          const visaItem = document.createElement("div");
+          visaItem.className = "bg-purple-50/80 border border-purple-200 p-3.5 rounded-2xl space-y-1";
+          visaItem.innerHTML = `
+            <span class="block text-[10px] font-extrabold text-purple-700 uppercase tracking-wider">Visa Type / Service</span>
+            <div class="flex items-center gap-2 text-xs font-bold text-slate-800">
+              <span class="text-base">🎯</span>
+              <span class="text-sm font-extrabold text-purple-900">${escapeHTML(visaType || "General Visa Consultation")}</span>
+            </div>
+          `;
+          listContainer.appendChild(visaItem);
 
           // Mobile / WhatsApp Number Item
           const phoneVal = phone || details.phone || details.mobile || details.mobileNumber || "Not provided";
@@ -1145,8 +1236,29 @@ try {
               key === "phone" ||
               key === "mobile" ||
               key === "mobileNumber" ||
-              key === "email"
+              key === "email" ||
+              key === "target_country" ||
+              key === "targetCountry" ||
+              key === "country" ||
+              key === "preferred_country" ||
+              key === "preferred_countries" ||
+              key === "destination" ||
+              key === "visa_type" ||
+              key === "visaType" ||
+              key === "service" ||
+              key === "inquiry_type" ||
+              key === "inquiry_types" ||
+              key === "visa_category" ||
+              key === "visaCategory" ||
+              key === "area_of_interest" ||
+              key === "interest"
             ) return;
+
+            // Filter out generic website SEO titles
+            if (typeof val === "string" && /TESCA Visa Consultancy Surat|Best Visa Consultant|IELTS Coaching Classes/i.test(val)) {
+              if (key === "document_title" || key === "doc_title") return;
+              val = "Direct Website Inquiry";
+            }
             // Format keys beautifully
             const formattedKey = key
               .replace(/([A-Z])/g, " $1")
@@ -2138,19 +2250,27 @@ try {
     return first ? first.charAt(0).toUpperCase() + first.slice(1) : "";
   }
 
-  function getWhatsAppTemplateText(type: string, name: string): string {
+  function getWhatsAppTemplateText(type: string, name: string, country?: string, visa?: string): string {
     const firstName = getFirstName(name);
     const greeting = firstName ? `Hi *${firstName}*` : `Hello`;
+    const cleanCountry = country ? country.replace(/[\uD83C-\uDBFF\uDC00-\uDFFF]/g, '').trim() : '';
+    const subjectContext = cleanCountry && visa
+      ? `regarding your *${cleanCountry} ${visa}* inquiry`
+      : cleanCountry
+      ? `regarding your *${cleanCountry} Visa* inquiry`
+      : visa
+      ? `regarding your *${visa}* inquiry`
+      : `regarding your visa and study abroad inquiry`;
 
     switch (type) {
       case "missed_call":
-        return `${greeting}, this is TESCA Visa Consultancy.\n\nWe tried reaching you on your phone regarding your visa and study abroad inquiry, but were unable to connect.\n\nPlease let us know a convenient time to speak, or feel free to reply with your questions directly here on WhatsApp! 🎓`;
+        return `${greeting}, this is TESCA Visa Consultancy.\n\nWe tried reaching you on your phone ${subjectContext}, but were unable to connect.\n\nPlease let us know a convenient time to speak, or feel free to reply with your questions directly here on WhatsApp! 🎓`;
 
       case "office_visit":
-        return `${greeting}, greetings from TESCA Visa Consultancy! 🌟\n\nWe would love to invite you for a personalized 1-on-1 counseling session with our senior visa experts at our office in Surat.\n\n📍 *Our Office Branches:*\n1️⃣ 110-112, Royal Arcade, Simada Naka, Surat (395013)\n2️⃣ 106-107, Ambika Pinnacle, Lajamni Chowk, Mota Varachha, Surat (394101)\n\n⏰ *Office Hours:* Monday – Saturday (10:00 AM – 6:30 PM)\n\nPlease let us know which day & branch suits you best so we can reserve your slot!`;
+        return `${greeting}, greetings from TESCA Visa Consultancy! 🌟\n\nWe would love to invite you for a personalized 1-on-1 counseling session with our senior visa experts ${subjectContext} at our office in Surat.\n\n📍 *Our Office Branches:*\n1️⃣ 110-112, Royal Arcade, Simada Naka, Surat (395013)\n2️⃣ 106-107, Ambika Pinnacle, Lajamni Chowk, Mota Varachha, Surat (394101)\n\n⏰ *Office Hours:* Monday – Saturday (10:00 AM – 6:30 PM)\n\nPlease let us know which day & branch suits you best so we can reserve your slot!`;
 
       case "consultation_reminder":
-        return `${greeting}, this is TESCA Visa Consultancy.\n\nThis is a gentle reminder regarding your 1-on-1 counseling session (in-person at our office or online via Google Meet/Zoom). Our senior visa counselor is prepared to review your profile and visa roadmap.\n\nLooking forward to speaking with you! Please let us know if you need to adjust your timing.`;
+        return `${greeting}, this is TESCA Visa Consultancy.\n\nThis is a gentle reminder regarding your 1-on-1 counseling session ${subjectContext} (in-person at our office or online via Google Meet/Zoom). Our senior visa counselor is prepared to review your profile and visa roadmap.\n\nLooking forward to speaking with you! Please let us know if you need to adjust your timing.`;
 
       default:
         return "";
@@ -2210,6 +2330,8 @@ try {
           const rawPhone = btn.getAttribute("data-phone") || "";
           const name = btn.getAttribute("data-name") || "";
           const templateKey = btn.getAttribute("data-template") || "";
+          const country = btn.getAttribute("data-country") || "";
+          const visa = btn.getAttribute("data-visa") || "";
           const cleanPhone = sanitizeWhatsAppNumber(rawPhone);
 
           if (!cleanPhone) {
@@ -2217,7 +2339,7 @@ try {
             return;
           }
 
-          const msgText = getWhatsAppTemplateText(templateKey, name);
+          const msgText = getWhatsAppTemplateText(templateKey, name, country, visa);
           const waUrl = msgText 
             ? `https://wa.me/${cleanPhone}?text=${encodeURIComponent(msgText)}`
             : `https://wa.me/${cleanPhone}`;

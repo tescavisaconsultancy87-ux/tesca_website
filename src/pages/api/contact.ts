@@ -23,7 +23,26 @@ export const POST: APIRoute = async ({ request, locals }) => {
   try {
     const supabase = getSupabaseAdmin();
     body = await request.json();
-    const { name, email, phone, subject, category, message, city, lead_type, document_title, document_slug, page_url, source } = body;
+    const {
+      name,
+      email,
+      phone,
+      subject,
+      category,
+      message,
+      city,
+      lead_type,
+      document_title,
+      document_slug,
+      page_url,
+      source,
+      target_country,
+      country,
+      destination,
+      visa_type,
+      visaType,
+      service
+    } = body;
 
     const isWhatsAppLead = lead_type === 'whatsapp';
     const effectiveName = (name && name.trim()) || (isWhatsAppLead ? 'WhatsApp Visitor' : '');
@@ -52,8 +71,26 @@ export const POST: APIRoute = async ({ request, locals }) => {
     const cleanCategory = ['bug', 'error', 'general'].includes(category) ? category : 'general';
     const cleanMessage = sanitizeText(effectiveMessage, 2000);
     const cleanCity = city ? sanitizeText(city, 100) : null;
-    const cleanDocTitle = document_title ? sanitizeText(document_title, 200) : null;
-    const cleanDocSlug = document_slug ? sanitizeText(document_slug, 120) : null;
+
+    // Structured Country & Visa Type capture
+    const effectiveCountry = target_country || country || destination || null;
+    const effectiveVisaType = visa_type || visaType || service || null;
+    const cleanCountry = effectiveCountry ? sanitizeText(effectiveCountry, 80) : null;
+    const cleanVisaType = effectiveVisaType ? sanitizeText(effectiveVisaType, 80) : null;
+
+    let cleanDocTitle = document_title ? sanitizeText(document_title, 200) : null;
+    let cleanDocSlug = document_slug ? sanitizeText(document_slug, 120) : null;
+
+    // Guard: Prevent full website SEO titles from being mistaken as a Document Guide
+    if (cleanDocTitle && (
+      cleanDocTitle.includes('TESCA Visa Consultancy Surat | Best Visa') ||
+      cleanDocTitle.includes('TESCA Visa Consultancy') ||
+      cleanDocTitle.toLowerCase().includes('best visa consultant & ielts')
+    )) {
+      cleanDocTitle = null;
+      cleanDocSlug = null;
+    }
+
     const cleanPageUrl = page_url ? sanitizeText(page_url, 300) : null;
     const cleanSource = source ? sanitizeText(source, 200) : null;
 
@@ -65,7 +102,9 @@ export const POST: APIRoute = async ({ request, locals }) => {
       email: cleanEmail,
       phone: cleanPhone,
       city: cleanCity,
-      lead_source: cleanSource || (isDocLead ? `Document: ${cleanDocTitle}` : 'Contact Page'),
+      target_country: cleanCountry,
+      visa_type: cleanVisaType,
+      lead_source: cleanSource || (isDocLead ? `Document: ${cleanDocTitle}` : (isWhatsAppLead ? 'WhatsApp Direct' : 'Contact Page')),
       document_title: cleanDocTitle,
       document_slug: cleanDocSlug,
       page_url: cleanPageUrl,

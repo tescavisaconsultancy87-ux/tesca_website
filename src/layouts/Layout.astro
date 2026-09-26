@@ -15,6 +15,7 @@ interface Props {
 	showNavFooter?: boolean;
 	noindex?: boolean;
 	image?: string;
+	googleSiteVerification?: string;
 }
 
 const {
@@ -24,6 +25,7 @@ const {
 	showNavFooter = true,
 	noindex = false,
 	image = "/images/Tesca_logo.png",
+	googleSiteVerification = import.meta.env.PUBLIC_GOOGLE_SITE_VERIFICATION || "",
 } = Astro.props;
 
 // Canonical URL is always the apex host, regardless of how the request arrived.
@@ -124,6 +126,55 @@ if (isAdminPage) {
 <!doctype html>
 <html lang="en">
 	<head>
+		<meta charset="UTF-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1" />
+		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+		<link rel="icon" type="image/png" href="/favicon.png" />
+		<link rel="shortcut icon" href="/favicon.ico" />
+		<link rel="apple-touch-icon" href="/favicon.png" />
+		<meta name="generator" content={Astro.generator} />
+
+		<!-- SEO Meta Tags -->
+		<title>{title}</title>
+		<meta name="description" content={description} />
+		{keywords && <meta name="keywords" content={keywords} />}
+		<link rel="canonical" href={canonicalURL} />
+		{noindex && <meta name="robots" content="noindex, nofollow" />}
+		{googleSiteVerification && <meta name="google-site-verification" content={googleSiteVerification} />}
+
+		<!-- OpenGraph -->
+		<meta property="og:type" content="website" />
+		<meta property="og:site_name" content="TESCA Visa Consultancy" />
+		<meta property="og:title" content={title} />
+		<meta property="og:description" content={description} />
+		<meta property="og:url" content={canonicalURL} />
+		<meta property="og:image" content={ogImage} />
+		<meta property="og:locale" content="en_US" />
+
+		<!-- Twitter -->
+		<meta name="twitter:card" content="summary_large_image" />
+		<meta name="twitter:title" content={title} />
+		<meta name="twitter:description" content={description} />
+		<meta name="twitter:image" content={ogImage} />
+
+		<!-- Local Geo Meta Tags (Surat, Gujarat, India) -->
+		<meta name="geo.region" content="IN-GJ" />
+		<meta name="geo.placename" content="Surat" />
+		<meta name="geo.position" content="21.2144;72.8885" />
+		<meta name="ICBM" content="21.2144, 72.8885" />
+
+		<!-- Structured data (Organization / local business) -->
+		<script type="application/ld+json" is:inline set:html={JSON.stringify(structuredData)} />
+
+		<!-- Performance: warm up third-party origins -->
+		<link rel="preconnect" href="https://fonts.googleapis.com" />
+		<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+		<link rel="preconnect" href="https://zlsauoosumpnbyouhdfk.supabase.co" crossorigin />
+		<link rel="preconnect" href="https://api.fontshare.com" crossorigin />
+		<link rel="dns-prefetch" href="https://flagcdn.com" />
+
+		{!isAdminPage && <ClientRouter />}
+
 		<!-- Handle Vite dynamic import preload failures (stale chunk hashes during dev/deploy) -->
 		<script is:inline>
 			window.addEventListener('vite:preloadError', (event) => {
@@ -659,51 +710,6 @@ if (isAdminPage) {
 				};
 			}
 		</script>
-		<meta charset="UTF-8" />
-		<meta name="viewport" content="width=device-width, initial-scale=1" />
-		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-		<link rel="icon" type="image/png" href="/favicon.png" />
-		<link rel="shortcut icon" href="/favicon.ico" />
-		<link rel="apple-touch-icon" href="/favicon.png" />
-		<meta name="generator" content={Astro.generator} />
-
-		<!-- SEO Meta Tags -->
-		<title>{title}</title>
-		<meta name="description" content={description} />
-		{keywords && <meta name="keywords" content={keywords} />}
-		<link rel="canonical" href={canonicalURL} />
-		{noindex && <meta name="robots" content="noindex, nofollow" />}
-
-		<!-- Performance: warm up third-party origins -->
-		<link rel="preconnect" href="https://zlsauoosumpnbyouhdfk.supabase.co" crossorigin />
-		<link rel="preconnect" href="https://api.fontshare.com" crossorigin />
-		<link rel="dns-prefetch" href="https://flagcdn.com" />
-
-		<!-- OpenGraph -->
-		<meta property="og:type" content="website" />
-		<meta property="og:site_name" content="TESCA Visa Consultancy" />
-		<meta property="og:title" content={title} />
-		<meta property="og:description" content={description} />
-		<meta property="og:url" content={canonicalURL} />
-		<meta property="og:image" content={ogImage} />
-		<meta property="og:locale" content="en_US" />
-
-		<!-- Twitter -->
-		<meta name="twitter:card" content="summary_large_image" />
-		<meta name="twitter:title" content={title} />
-		<meta name="twitter:description" content={description} />
-		<meta name="twitter:image" content={ogImage} />
-
-		<!-- Local Geo Meta Tags (Surat, Gujarat, India) -->
-		<meta name="geo.region" content="IN-GJ" />
-		<meta name="geo.placename" content="Surat" />
-		<meta name="geo.position" content="21.2144;72.8885" />
-		<meta name="ICBM" content="21.2144, 72.8885" />
-
-		<!-- Structured data (Organization / local business) -->
-		<script type="application/ld+json" is:inline set:html={JSON.stringify(structuredData)} />
-
-		{!isAdminPage && <ClientRouter />}
 		{csrfToken && (
 			<meta name="csrf-token" content={csrfToken} />
 			<script is:inline>

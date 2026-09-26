@@ -137,23 +137,49 @@
         </div>
       </div>
 
-      <!-- Field: Interested In / Topic -->
-      <div>
-        <label for="wa-lead-interest" class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">
-          Area of Interest
-        </label>
-        <select
-          id="wa-lead-interest"
-          class="w-full text-xs sm:text-sm py-3 px-3.5 bg-slate-50 border border-slate-200 rounded-xl font-semibold text-slate-800 focus:bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all cursor-pointer"
-        >
-          <option value="Study Abroad / Student Visa" selected>🎓 Study Abroad / Student Visa</option>
-          <option value="UK Care Home / Work Experience">💼 UK Care Home / Work Visa</option>
-          <option value="Canada Study & Work Visa">🇨🇦 Canada Study & Work Permit</option>
-          <option value="USA / Australia / Europe Visa">🌏 USA, Australia & Europe Visa</option>
-          <option value="Tourist / Visitor Visa">✈️ Tourist / Visitor Visa</option>
-          <option value="IELTS / PTE / English Coaching">📚 IELTS / PTE Coaching</option>
-          <option value="General Profile Evaluation">🔍 Free Profile Evaluation</option>
-        </select>
+      <!-- Target Country & Visa Type Grid -->
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+        <div>
+          <label for="wa-target-country" class="block text-[11px] font-bold text-slate-700 uppercase tracking-wider mb-1">
+            Target Country <span class="text-rose-500">*</span>
+          </label>
+          <select
+            id="wa-target-country"
+            required
+            class="w-full text-xs py-2.5 px-3 bg-slate-50 border border-slate-200 rounded-xl font-bold text-slate-800 focus:bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all cursor-pointer"
+          >
+            <option value="Canada" selected>🇨🇦 Canada</option>
+            <option value="United Kingdom">🇬🇧 United Kingdom</option>
+            <option value="USA">🇺🇸 USA</option>
+            <option value="Australia">🇦🇺 Australia</option>
+            <option value="Germany">🇩🇪 Germany</option>
+            <option value="New Zealand">🇳🇿 New Zealand</option>
+            <option value="Europe">🇪🇺 Europe (Schengen)</option>
+            <option value="Dubai / UAE">🇦🇪 Dubai / UAE</option>
+            <option value="Ireland">🇮🇪 Ireland</option>
+            <option value="Singapore">🇸🇬 Singapore</option>
+            <option value="Other">🌍 Other / Not Decided</option>
+          </select>
+        </div>
+
+        <div>
+          <label for="wa-visa-type" class="block text-[11px] font-bold text-slate-700 uppercase tracking-wider mb-1">
+            Visa / Service <span class="text-rose-500">*</span>
+          </label>
+          <select
+            id="wa-visa-type"
+            required
+            class="w-full text-xs py-2.5 px-3 bg-slate-50 border border-slate-200 rounded-xl font-bold text-slate-800 focus:bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all cursor-pointer"
+          >
+            <option value="Student Visa" selected>🎓 Student Visa</option>
+            <option value="Tourist / Visitor Visa">✈️ Visitor / Tourist Visa</option>
+            <option value="Work Permit / PR">💼 Work Permit / PR</option>
+            <option value="Dependent Visa">👨‍👩‍👧 Dependent Visa</option>
+            <option value="IELTS / PTE Coaching">📚 IELTS / PTE Coaching</option>
+            <option value="Visa Refusal Help">🛡️ Visa Refusal Help</option>
+            <option value="General Profile Evaluation">🔍 Profile Evaluation</option>
+          </select>
+        </div>
       </div>
 
       <!-- Submit CTA Button -->
@@ -211,7 +237,8 @@
     const nameInput = document.getElementById('wa-lead-name') as HTMLInputElement | null;
     const phoneInput = document.getElementById('wa-lead-phone') as HTMLInputElement | null;
     const countryCodeSelect = document.getElementById('wa-country-code') as HTMLSelectElement | null;
-    const interestSelect = document.getElementById('wa-lead-interest') as HTMLSelectElement | null;
+    const targetCountrySelect = document.getElementById('wa-target-country') as HTMLSelectElement | null;
+    const visaTypeSelect = document.getElementById('wa-visa-type') as HTMLSelectElement | null;
     const errorBox = document.getElementById('wa-modal-error');
     const errorText = document.getElementById('wa-modal-error-text');
     const targetHrefInput = document.getElementById('wa-target-href') as HTMLInputElement | null;
@@ -251,21 +278,43 @@
         guideText.textContent = docTitle.replace(/^(Guide:\s*|Document:\s*)/i, '');
         guideBadge.classList.remove('hidden');
         guideBadge.classList.add('flex');
-        
-        // Auto select relevant interest if guide matches
-        if (interestSelect) {
-          const lower = docTitle.toLowerCase();
-          if (lower.includes('care home')) {
-            interestSelect.value = 'UK Care Home / Work Experience';
-          } else if (lower.includes('canada')) {
-            interestSelect.value = 'Canada Study & Work Visa';
-          } else if (lower.includes('australia') || lower.includes('usa') || lower.includes('germany') || lower.includes('europe')) {
-            interestSelect.value = 'USA / Australia / Europe Visa';
-          }
-        }
       } else if (guideBadge) {
         guideBadge.classList.add('hidden');
         guideBadge.classList.remove('flex');
+      }
+
+      // Auto-detect Country & Visa Type from page context, guide title, or slug
+      const path = window.location.pathname.toLowerCase();
+      const titleLower = (docTitle || '').toLowerCase();
+      const slugLower = (docSlug || '').toLowerCase();
+      const combined = `${path} ${titleLower} ${slugLower}`;
+
+      if (targetCountrySelect) {
+        if (combined.includes('canada') || combined.includes('nova-scotia')) targetCountrySelect.value = 'Canada';
+        else if (combined.includes('uk') || combined.includes('united-kingdom') || combined.includes('chevening') || combined.includes('london')) targetCountrySelect.value = 'United Kingdom';
+        else if (combined.includes('usa') || combined.includes('america') || combined.includes('united-states')) targetCountrySelect.value = 'USA';
+        else if (combined.includes('australia')) targetCountrySelect.value = 'Australia';
+        else if (combined.includes('germany')) targetCountrySelect.value = 'Germany';
+        else if (combined.includes('new-zealand')) targetCountrySelect.value = 'New Zealand';
+        else if (combined.includes('dubai') || combined.includes('mibd') || combined.includes('uae')) targetCountrySelect.value = 'Dubai / UAE';
+        else if (combined.includes('ireland')) targetCountrySelect.value = 'Ireland';
+        else if (combined.includes('schengen') || combined.includes('europe') || combined.includes('france') || combined.includes('switzerland')) targetCountrySelect.value = 'Europe';
+      }
+
+      if (visaTypeSelect) {
+        if (combined.includes('care-home') || combined.includes('pr') || combined.includes('express-entry') || combined.includes('work-permit') || combined.includes('opportunity-card')) {
+          visaTypeSelect.value = 'Work Permit / PR';
+        } else if (combined.includes('visitor') || combined.includes('tourist')) {
+          visaTypeSelect.value = 'Tourist / Visitor Visa';
+        } else if (combined.includes('ielts') || combined.includes('pte') || combined.includes('testprep')) {
+          visaTypeSelect.value = 'IELTS / PTE Coaching';
+        } else if (combined.includes('dependent')) {
+          visaTypeSelect.value = 'Dependent Visa';
+        } else if (combined.includes('refusal')) {
+          visaTypeSelect.value = 'Visa Refusal Help';
+        } else if (combined.includes('study-abroad') || combined.includes('student') || combined.includes('scholarship') || combined.includes('admission') || combined.includes('universit')) {
+          visaTypeSelect.value = 'Student Visa';
+        }
       }
 
       if (errorBox) errorBox.classList.add('hidden');
@@ -319,6 +368,8 @@
       name: string;
       phone: string;
       source: string;
+      target_country?: string | null;
+      visa_type?: string | null;
       document_title?: string | null;
       document_slug?: string | null;
       page_url: string;
@@ -329,6 +380,8 @@
         phone: data.phone,
         lead_type: 'whatsapp',
         source: data.source,
+        target_country: data.target_country || null,
+        visa_type: data.visa_type || null,
         document_title: data.document_title || null,
         document_slug: data.document_slug || null,
         page_url: data.page_url,
@@ -368,19 +421,31 @@
 
       // Check if user already provided their verified details before
       const savedUser = getSavedUser();
-      const docTitle = link.getAttribute('data-doc-title') || document.title || '';
+      const rawDocTitle = link.getAttribute('data-doc-title') || '';
       const docSlug = link.getAttribute('data-doc-slug') || '';
       const ctaLoc = link.getAttribute('data-cta-loc') || link.getAttribute('data-location') || 'website';
 
+      // Fix: Never fall back to the generic 70-char SEO website title on homepage or general pages
+      let docTitle = rawDocTitle;
+      if (!docTitle && window.location.pathname.startsWith('/document/')) {
+        const h1 = document.querySelector('h1');
+        docTitle = h1 ? h1.textContent?.trim() || '' : '';
+      }
+
+      const isHomepage = window.location.pathname === '/' || window.location.pathname === '';
+      const defaultSource = isHomepage ? 'Website Direct WhatsApp (Homepage)' : `Website WhatsApp (${window.location.pathname})`;
+      const sourceLabel = docTitle ? `WhatsApp Guide: ${docTitle} (${ctaLoc})` : defaultSource;
+
       if (savedUser) {
         // Returning verified user - log the visit and open directly
-        const sourceLabel = docTitle ? `WhatsApp Guide: ${docTitle}` : `WhatsApp Lead: ${window.location.pathname}`;
         sendLeadToDatabase({
           name: savedUser.name,
           phone: savedUser.phone || savedUser.fullPhone,
           source: sourceLabel,
-          document_title: docTitle,
-          document_slug: docSlug,
+          target_country: savedUser.targetCountry || null,
+          visa_type: savedUser.visaType || null,
+          document_title: docTitle || null,
+          document_slug: docSlug || null,
           page_url: window.location.href,
           message: `Returning verified user initiated WhatsApp inquiry for: ${docTitle || window.location.pathname}`
         });
@@ -402,7 +467,8 @@
       const name = (nameInput?.value || '').trim();
       const rawPhone = (phoneInput?.value || '').trim().replace(/[^0-9]/g, '');
       const code = countryCodeSelect?.value || '+91';
-      const interest = interestSelect?.value || 'Study Abroad';
+      const targetCountry = targetCountrySelect?.value || 'Canada';
+      const visaType = visaTypeSelect?.value || 'Student Visa';
       const targetHref = targetHrefInput?.value || 'https://wa.me/919824152731';
       const docTitle = docTitleInput?.value || '';
       const docSlug = docSlugInput?.value || '';
@@ -441,26 +507,32 @@
           phone: fullPhone,
           countryCode: code,
           rawPhone,
-          interest
+          targetCountry,
+          visaType
         }));
       } catch (err) {}
 
       // Log lead to database
-      const sourceLabel = docTitle ? `WhatsApp Guide: ${docTitle} (${ctaLoc})` : `WhatsApp Lead: ${window.location.pathname} (${ctaLoc})`;
+      const isHomepage = window.location.pathname === '/' || window.location.pathname === '';
+      const defaultSource = isHomepage ? 'Website Direct WhatsApp (Homepage)' : `Website WhatsApp (${window.location.pathname}) [${ctaLoc}]`;
+      const sourceLabel = docTitle ? `WhatsApp Guide: ${docTitle} (${ctaLoc})` : defaultSource;
+
       await sendLeadToDatabase({
         name,
         phone: fullPhone,
         source: sourceLabel,
-        document_title: docTitle,
-        document_slug: docSlug,
+        target_country: targetCountry,
+        visa_type: visaType,
+        document_title: docTitle || null,
+        document_slug: docSlug || null,
         page_url: window.location.href,
-        message: `Lead submitted via WhatsApp Modal for: ${interest}. Guide: ${docTitle || 'None'}. Phone: ${fullPhone}`
+        message: `WhatsApp Inquiry for ${targetCountry} - ${visaType}. ${docTitle ? `Guide: ${docTitle}. ` : ''}Phone: ${fullPhone}`
       });
 
       // Track analytics if available
       try {
         if ((window as any).trackLeadEvent) {
-          (window as any).trackLeadEvent(`whatsapp_lead_${interest.toLowerCase().replace(/\s+/g, '_')}`);
+          (window as any).trackLeadEvent(`whatsapp_lead_${targetCountry.toLowerCase()}_${visaType.toLowerCase().replace(/[^a-z0-9]+/g, '_')}`);
         }
       } catch (e) {}
 
@@ -472,16 +544,16 @@
 
         let personalizedMessage = '';
         if (existingText && existingText.trim().length > 0) {
-          personalizedMessage = `Hello TESCA, my name is ${name}. ${existingText}`;
+          personalizedMessage = `Hello TESCA, my name is ${name}. I am looking for guidance on ${targetCountry} (${visaType}). ${existingText}`;
         } else {
-          personalizedMessage = `Hello TESCA Visa Consultancy, my name is ${name}. I was visiting your website and would like guidance regarding ${interest}${docTitle ? ` (${docTitle})` : ''}. Please guide me.`;
+          personalizedMessage = `Hello TESCA Visa Consultancy, my name is ${name}. I am looking for guidance regarding ${targetCountry} (${visaType})${docTitle ? ` for "${docTitle}"` : ''}. Please guide me.`;
         }
 
         urlObj.searchParams.set('text', personalizedMessage);
         finalWaUrl = urlObj.toString();
       } catch (err) {
         // Fallback simple concatenation
-        finalWaUrl = `https://wa.me/919824152731?text=${encodeURIComponent(`Hello TESCA, my name is ${name}. I am interested in ${interest}.`)}`;
+        finalWaUrl = `https://wa.me/919824152731?text=${encodeURIComponent(`Hello TESCA, my name is ${name}. I am interested in ${targetCountry} (${visaType}).`)}`;
       }
 
       // Close modal and reset loading state
