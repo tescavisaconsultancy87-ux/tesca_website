@@ -291,9 +291,11 @@ const whatsappPrefill = encodeURIComponent(`Hi TESCA, I was reading the ${doc.ti
 
       <!-- Protected Viewer Container -->
       <div id="pdf-viewer-wrapper" class="relative w-full flex flex-col items-center gap-6 hidden">
-        <!-- Anti-Drag Overlay Layer -->
+        <!-- Anti-Drag Overlay Layer — pointer-events-none lets clicks reach PDF content
+             while the global contextmenu/keydown handlers (below) still block save/print/copy.
+             Previous pointer-events-auto caused $rageclick frustration (PostHog finding). -->
         <div 
-          class="absolute inset-0 z-20 pointer-events-auto bg-transparent select-none" 
+          class="absolute inset-0 z-20 pointer-events-none bg-transparent select-none" 
           oncontextmenu="return false;"
           aria-hidden="true"
         ></div>
@@ -308,7 +310,89 @@ const whatsappPrefill = encodeURIComponent(`Hi TESCA, I was reading the ${doc.ti
         <span class="w-12 h-px bg-slate-800"></span>
       </div>
 
+      <!-- Inline CTA Card — Injected after PDF preview (replaces gap between document and form) -->
+      <div class="w-full max-w-3xl mx-auto mt-2 mb-4 rounded-2xl bg-gradient-to-r from-[#0F4C81]/90 to-accent-indigo/90 p-5 sm:p-6 text-center shadow-xl border border-white/10 backdrop-blur-sm">
+        <p class="text-[10px] uppercase font-extrabold tracking-wider text-white/60 mb-1.5">📄 Finished reading?</p>
+        <h3 class="text-base sm:text-lg font-extrabold text-white font-display tracking-tight leading-snug mb-2">
+          Get Expert Guidance on This Topic — Free
+        </h3>
+        <p class="text-[11px] text-white/70 max-w-md mx-auto leading-relaxed mb-4">
+          Our counselors can review your profile against this guide's criteria and share a personalized action plan on WhatsApp within 2 hours.
+        </p>
+        <div class="flex flex-col sm:flex-row items-center justify-center gap-3">
+          <a 
+            href={`https://wa.me/919824152731?text=${whatsappPrefill}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            data-cta-loc="inline_mid_scroll"
+            data-doc-title={doc.title}
+            data-doc-slug={doc.slug}
+            class="inline-flex items-center gap-2 px-5 py-2.5 bg-emerald-500 hover:bg-emerald-400 text-white text-xs font-bold rounded-xl shadow-lg transition-all hover:scale-[1.03]"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+            <span>WhatsApp Expert Now</span>
+          </a>
+          <a 
+            href="#inquiry-section"
+            class="inline-flex items-center gap-1.5 px-4 py-2.5 bg-white/10 hover:bg-white/20 text-white text-xs font-semibold rounded-xl border border-white/20 transition-all"
+          >
+            <span>Fill Quick Assessment Form</span>
+            <span>↓</span>
+          </a>
+        </div>
+      </div>
+
     </main>
+
+    <!-- Gated PDF Download Card -->
+    <section class="max-w-4xl mx-auto px-4 mt-4 w-full">
+      <div class="rounded-2xl bg-slate-900/80 border border-slate-800 p-5 flex flex-col sm:flex-row items-center justify-between gap-4">
+        <div class="flex items-center gap-3 text-left">
+          <div class="w-10 h-10 rounded-xl bg-amber-500/15 flex items-center justify-center shrink-0">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-amber-400"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" x2="12" y1="15" y2="3"/></svg>
+          </div>
+          <div>
+            <p class="text-sm font-bold text-white">Download Full Guide (PDF)</p>
+            <p class="text-[10px] text-slate-400">{doc.fileSize || 'PDF'} • Share your details to unlock the download</p>
+          </div>
+        </div>
+        <button 
+          type="button"
+          id="pdf-gate-trigger"
+          class="px-5 py-2.5 bg-amber-500 hover:bg-amber-400 text-slate-900 font-bold text-xs rounded-xl shadow-md transition-all hover:scale-[1.02] shrink-0 cursor-pointer"
+        >
+          Download PDF →
+        </button>
+      </div>
+    </section>
+
+    <!-- PDF Gate Modal -->
+    <div id="pdf-gate-modal" class="fixed inset-0 z-[9999] hidden items-center justify-center p-4 bg-black/60 backdrop-blur-sm" role="dialog" aria-modal="true">
+      <div class="relative w-full max-w-sm bg-slate-900 rounded-2xl shadow-2xl border border-slate-700 p-6 space-y-4">
+        <button type="button" id="pdf-gate-close" class="absolute top-3 right-3 w-7 h-7 flex items-center justify-center rounded-full bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-white transition-colors cursor-pointer" aria-label="Close">
+          <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+        </button>
+        <h3 class="text-base font-bold text-white font-display">Download: {doc.title.length > 40 ? doc.title.substring(0,40) + '…' : doc.title}</h3>
+        <p class="text-[11px] text-slate-400">Enter your details to get the full PDF. We'll also send it to your WhatsApp.</p>
+        <form id="pdf-gate-form" class="space-y-3">
+          <input type="text" id="pdf-gate-name" name="name" required placeholder="Your Name *" class="w-full px-3.5 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-xs text-white placeholder-slate-500 focus:outline-none focus:border-amber-500 transition-colors" />
+          <div class="flex gap-2">
+            <select id="pdf-gate-code" name="country_code" aria-label="Country Code" class="w-[90px] px-2 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-xs text-white focus:outline-none focus:border-amber-500 shrink-0 cursor-pointer">
+              <option value="+91" selected>🇮🇳 +91</option>
+              <option value="+44">🇬🇧 +44</option>
+              <option value="+1">🇨🇦 +1</option>
+              <option value="+971">🇦🇪 +971</option>
+            </select>
+            <input type="tel" id="pdf-gate-phone" name="phone" required maxlength="15" placeholder="WhatsApp Number *" class="flex-1 min-w-0 px-3.5 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-xs text-white placeholder-slate-500 focus:outline-none focus:border-amber-500 transition-colors font-mono" />
+          </div>
+          <button type="submit" id="pdf-gate-submit" class="w-full py-3 bg-amber-500 hover:bg-amber-400 text-slate-900 font-bold text-xs rounded-xl shadow-md transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-70 disabled:cursor-not-allowed">
+            <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" x2="12" y1="15" y2="3"/></svg>
+            <span class="pdf-gate-btn-text">Unlock & Download PDF</span>
+          </button>
+          <div id="pdf-gate-feedback" class="hidden text-[11px] p-2.5 rounded-xl text-center font-semibold"></div>
+        </form>
+      </div>
+    </div>
 
     <!-- Contextual Direct WhatsApp Callout Card (Bridge between Preview & Assessment) -->
     <section class="max-w-4xl mx-auto px-4 mt-6 w-full">
@@ -1001,6 +1085,72 @@ const whatsappPrefill = encodeURIComponent(`Hi TESCA, I was reading the ${doc.ti
       initPdfViewer();
       initLeadForm();
       initWhatsAppTracking();
+
+      // PDF Gate Modal Logic
+      (function initPdfGate() {
+        const trigger = document.getElementById('pdf-gate-trigger');
+        const modal = document.getElementById('pdf-gate-modal');
+        const closeBtn = document.getElementById('pdf-gate-close');
+        const form = document.getElementById('pdf-gate-form');
+
+        if (!trigger || !modal || trigger.dataset.gateAttached === 'true') return;
+        trigger.dataset.gateAttached = 'true';
+
+        function openGate() { modal.classList.remove('hidden'); modal.classList.add('flex'); document.body.style.overflow = 'hidden'; }
+        function closeGate() { modal.classList.add('hidden'); modal.classList.remove('flex'); document.body.style.overflow = ''; }
+
+        trigger.addEventListener('click', openGate);
+        if (closeBtn) closeBtn.addEventListener('click', closeGate);
+        modal.addEventListener('click', function(e) { if (e.target === modal) closeGate(); });
+        document.addEventListener('keydown', function(e) { if (e.key === 'Escape' && !modal.classList.contains('hidden')) closeGate(); });
+
+        if (form && form.dataset.gateFormAttached !== 'true') {
+          form.dataset.gateFormAttached = 'true';
+          form.addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const btn = document.getElementById('pdf-gate-submit');
+            const feedback = document.getElementById('pdf-gate-feedback');
+            const nameVal = document.getElementById('pdf-gate-name').value.trim();
+            const phoneVal = document.getElementById('pdf-gate-phone').value.trim().replace(/\D/g, '');
+            const codeVal = document.getElementById('pdf-gate-code').value;
+
+            if (!nameVal || phoneVal.length < 7) {
+              if (feedback) { feedback.className = 'text-[11px] p-2.5 rounded-xl text-center font-semibold bg-rose-500/10 text-rose-400 border border-rose-500/30'; feedback.textContent = 'Please fill in your name and phone number.'; feedback.classList.remove('hidden'); }
+              return;
+            }
+            if (btn) { btn.disabled = true; btn.querySelector('.pdf-gate-btn-text').textContent = 'Processing...'; }
+            try {
+              const res = await fetch('/api/contact', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                  name: nameVal,
+                  phone: codeVal + ' ' + phoneVal,
+                  lead_type: 'pdf_download',
+                  source: 'PDF Gate: ' + docTitle,
+                  subject: 'PDF Download: ' + docTitle,
+                  category: 'general',
+                  message: 'PDF download lead for "' + docTitle + '". ' + nameVal + ' (' + codeVal + ' ' + phoneVal + ')'
+                })
+              });
+              const data = await res.json();
+              if (data.success) {
+                if (feedback) { feedback.className = 'text-[11px] p-2.5 rounded-xl text-center font-semibold bg-emerald-500/15 text-emerald-400 border border-emerald-500/30'; feedback.textContent = '✓ Download unlocked! Opening PDF...'; feedback.classList.remove('hidden'); }
+                if (window.posthog) { window.posthog.capture('pdf_download_lead', { doc_slug: docSlug, doc_title: docTitle }, { transport: 'sendBeacon' }); }
+                setTimeout(function() { window.open(pdfUrl, '_blank'); closeGate(); }, 800);
+                form.reset();
+                if (btn) { btn.querySelector('.pdf-gate-btn-text').textContent = 'Downloaded ✓'; }
+              } else {
+                if (btn) { btn.disabled = false; btn.querySelector('.pdf-gate-btn-text').textContent = 'Unlock & Download PDF'; }
+                if (feedback) { feedback.className = 'text-[11px] p-2.5 rounded-xl text-center font-semibold bg-rose-500/10 text-rose-400 border border-rose-500/30'; feedback.textContent = data.error || 'Failed. Try again or WhatsApp us.'; feedback.classList.remove('hidden'); }
+              }
+            } catch(err) {
+              if (btn) { btn.disabled = false; btn.querySelector('.pdf-gate-btn-text').textContent = 'Unlock & Download PDF'; }
+              if (feedback) { feedback.className = 'text-[11px] p-2.5 rounded-xl text-center font-semibold bg-rose-500/10 text-rose-400 border border-rose-500/30'; feedback.textContent = 'Network error. WhatsApp us at +91 98241 52731.'; feedback.classList.remove('hidden'); }
+            }
+          });
+        }
+      })();
     }
 
     document.addEventListener("astro:page-load", setupDocumentPage);

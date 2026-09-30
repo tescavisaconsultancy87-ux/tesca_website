@@ -44,4 +44,242 @@ import AICounsellor from "../components/AICounsellor";
   </section>
 
   <AICounsellor client:only="react" />
+
+  <!-- Exit-Intent Lead Capture Modal (shown once per session when user tries to leave) -->
+  <div 
+    id="exit-intent-modal" 
+    class="fixed inset-0 z-[9999] hidden items-center justify-center p-4 bg-black/60 backdrop-blur-sm"
+    role="dialog"
+    aria-modal="true"
+    aria-label="Get your personalized eligibility report"
+  >
+    <div class="relative w-full max-w-md bg-white rounded-3xl shadow-2xl border border-slate-200 overflow-hidden animate-[slideUp_0.35s_ease-out]">
+      <!-- Close Button -->
+      <button 
+        id="exit-intent-close"
+        type="button"
+        class="absolute top-3 right-3 z-10 w-8 h-8 flex items-center justify-center rounded-full bg-slate-100 hover:bg-slate-200 text-slate-500 hover:text-slate-700 transition-colors cursor-pointer"
+        aria-label="Close dialog"
+      >
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+      </button>
+
+      <!-- Header -->
+      <div class="bg-gradient-to-r from-[#0F4C81] to-accent-indigo px-6 pt-7 pb-5 text-center text-white">
+        <div class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/15 text-[10px] font-extrabold uppercase tracking-wider mb-3">
+          <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-ping"></span>
+          Don't Leave Yet!
+        </div>
+        <h2 class="text-xl sm:text-2xl font-extrabold font-display tracking-tight leading-tight">
+          Get Your Free Eligibility Report on WhatsApp
+        </h2>
+        <p class="text-xs text-white/80 mt-2 leading-relaxed">
+          Our counselors will review your profile and send a personalized university match report within 2 hours.
+        </p>
+      </div>
+
+      <!-- Form Body -->
+      <div class="px-6 py-5 space-y-3">
+        <form id="exit-intent-form" class="space-y-3">
+          <input type="hidden" name="source" value="Exit Intent — Eligibility Page" />
+          
+          <div>
+            <label for="exit-name" class="sr-only">Your Name</label>
+            <input 
+              type="text" 
+              id="exit-name" 
+              name="name" 
+              required 
+              placeholder="Your Name *" 
+              class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm text-slate-800 placeholder-slate-400 focus:outline-none focus:border-[#0F4C81] focus:ring-1 focus:ring-[#0F4C81]/30 transition-all"
+            />
+          </div>
+
+          <div class="flex gap-2">
+            <select 
+              id="exit-code" 
+              name="country_code" 
+              aria-label="Country Code"
+              class="w-[100px] px-2 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm text-slate-700 focus:outline-none focus:border-[#0F4C81] shrink-0 cursor-pointer"
+            >
+              <option value="+91" selected>🇮🇳 +91</option>
+              <option value="+44">🇬🇧 +44</option>
+              <option value="+1">🇨🇦 +1</option>
+              <option value="+971">🇦🇪 +971</option>
+              <option value="+61">🇦🇺 +61</option>
+            </select>
+            <input 
+              type="tel" 
+              id="exit-phone" 
+              name="phone" 
+              required 
+              maxlength="15"
+              placeholder="WhatsApp Number *" 
+              class="flex-1 min-w-0 px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm text-slate-800 placeholder-slate-400 focus:outline-none focus:border-[#0F4C81] focus:ring-1 focus:ring-[#0F4C81]/30 transition-all font-mono"
+            />
+          </div>
+
+          <button 
+            type="submit" 
+            id="exit-intent-submit"
+            class="w-full py-3.5 px-4 bg-emerald-600 hover:bg-emerald-500 active:bg-emerald-700 text-white font-bold text-sm rounded-xl shadow-lg shadow-emerald-600/20 transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-70 disabled:cursor-not-allowed"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+            <span class="exit-btn-text">Send My Report on WhatsApp</span>
+          </button>
+
+          <div id="exit-intent-feedback" class="hidden text-xs p-2.5 rounded-xl text-center font-semibold"></div>
+        </form>
+
+        <div class="flex items-center justify-center gap-4 text-[10px] text-slate-400 pt-1">
+          <span class="flex items-center gap-1"><span class="text-emerald-500">✓</span> 100% Free</span>
+          <span class="flex items-center gap-1"><span class="text-emerald-500">✓</span> No Spam</span>
+          <span class="flex items-center gap-1"><span class="text-emerald-500">✓</span> Reply in 2 Hrs</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Exit-Intent Logic -->
+  <script is:inline>
+  (function() {
+    const STORAGE_KEY = 'tesca_exit_shown';
+    let hasScrolledEnough = false;
+    let exitShown = false;
+
+    // Only show once per session
+    if (sessionStorage.getItem(STORAGE_KEY)) return;
+
+    // Track scroll depth — only trigger after 30% scroll (shows genuine interest)
+    function onScroll() {
+      const scrollPct = window.scrollY / (document.documentElement.scrollHeight - window.innerHeight);
+      if (scrollPct > 0.3) {
+        hasScrolledEnough = true;
+        window.removeEventListener('scroll', onScroll);
+      }
+    }
+    window.addEventListener('scroll', onScroll, { passive: true });
+
+    function showExitModal() {
+      if (exitShown || !hasScrolledEnough) return;
+      exitShown = true;
+      sessionStorage.setItem(STORAGE_KEY, '1');
+      const modal = document.getElementById('exit-intent-modal');
+      if (modal) {
+        modal.classList.remove('hidden');
+        modal.classList.add('flex');
+        document.body.style.overflow = 'hidden';
+        // Focus first input for a11y
+        const firstInput = modal.querySelector('input[type="text"]');
+        if (firstInput) setTimeout(() => firstInput.focus(), 100);
+      }
+    }
+
+    function closeModal() {
+      const modal = document.getElementById('exit-intent-modal');
+      if (modal) {
+        modal.classList.add('hidden');
+        modal.classList.remove('flex');
+        document.body.style.overflow = '';
+      }
+    }
+
+    // Desktop: mouse leaves viewport toward top (browser close/back)
+    document.addEventListener('mouseout', function(e) {
+      if (e.clientY <= 5 && e.relatedTarget === null) {
+        showExitModal();
+      }
+    });
+
+    // Mobile: back button / page visibility change
+    document.addEventListener('visibilitychange', function() {
+      if (document.visibilityState === 'hidden') {
+        showExitModal();
+      }
+    });
+
+    // Close handlers
+    document.addEventListener('click', function(e) {
+      if (e.target && e.target.id === 'exit-intent-close') closeModal();
+      if (e.target && e.target.id === 'exit-intent-modal') closeModal();
+    });
+    document.addEventListener('keydown', function(e) {
+      if (e.key === 'Escape') closeModal();
+    });
+
+    // Form submission
+    const form = document.getElementById('exit-intent-form');
+    if (form) {
+      form.addEventListener('submit', async function(e) {
+        e.preventDefault();
+        const btn = document.getElementById('exit-intent-submit');
+        const feedback = document.getElementById('exit-intent-feedback');
+        const nameVal = document.getElementById('exit-name').value.trim();
+        const phoneVal = document.getElementById('exit-phone').value.trim().replace(/\D/g, '');
+        const codeVal = document.getElementById('exit-code').value;
+
+        if (!nameVal || phoneVal.length < 7) {
+          if (feedback) {
+            feedback.className = 'text-xs p-2.5 rounded-xl text-center font-semibold bg-rose-50 text-rose-600 border border-rose-200';
+            feedback.textContent = 'Please enter your name and a valid phone number.';
+            feedback.classList.remove('hidden');
+          }
+          return;
+        }
+
+        if (btn) { btn.disabled = true; btn.querySelector('.exit-btn-text').textContent = 'Sending...'; }
+
+        try {
+          const res = await fetch('/api/contact', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              name: nameVal,
+              phone: codeVal + ' ' + phoneVal,
+              lead_type: 'exit_intent',
+              source: 'Exit Intent — Eligibility Page',
+              subject: 'Eligibility Report Request (Exit Intent)',
+              category: 'general',
+              message: 'Exit-intent lead from eligibility page. ' + nameVal + ' (' + codeVal + ' ' + phoneVal + ')'
+            })
+          });
+          const data = await res.json();
+          if (data.success) {
+            if (feedback) {
+              feedback.className = 'text-xs p-2.5 rounded-xl text-center font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200';
+              feedback.textContent = '✓ Report request received! We will WhatsApp you within 2 hours.';
+              feedback.classList.remove('hidden');
+            }
+            if (btn) btn.querySelector('.exit-btn-text').textContent = 'Sent ✓';
+            if (window.posthog) {
+              window.posthog.capture('exit_intent_lead', { page: '/eligibility', source: 'exit_intent' }, { transport: 'sendBeacon' });
+            }
+            form.reset();
+          } else {
+            if (btn) { btn.disabled = false; btn.querySelector('.exit-btn-text').textContent = 'Send My Report on WhatsApp'; }
+            if (feedback) {
+              feedback.className = 'text-xs p-2.5 rounded-xl text-center font-semibold bg-rose-50 text-rose-600 border border-rose-200';
+              feedback.textContent = data.error || 'Failed. Please try again or WhatsApp us directly.';
+              feedback.classList.remove('hidden');
+            }
+          }
+        } catch(err) {
+          if (btn) { btn.disabled = false; btn.querySelector('.exit-btn-text').textContent = 'Send My Report on WhatsApp'; }
+          if (feedback) {
+            feedback.className = 'text-xs p-2.5 rounded-xl text-center font-semibold bg-rose-50 text-rose-600 border border-rose-200';
+            feedback.textContent = 'Network error. Please WhatsApp us at +91 98241 52731.';
+            feedback.classList.remove('hidden');
+          }
+        }
+      });
+    }
+  })();
+  </script>
+
+  <style is:global>
+    @keyframes slideUp {
+      from { opacity: 0; transform: translateY(30px) scale(0.97); }
+      to { opacity: 1; transform: translateY(0) scale(1); }
+    }
+  </style>
 </Layout>

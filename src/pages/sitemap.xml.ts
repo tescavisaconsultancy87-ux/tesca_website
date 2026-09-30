@@ -12,72 +12,72 @@ const SITE = "https://tescavisa.com";
  * Ordered by priority (homepage first). Only public, crawlable pages —
  * /admin, /api, /review-generator are intentionally excluded.
  */
-const STATIC_PAGES: { url: string; changefreq: string; priority: string }[] = [
-  // Core pages
-  { url: "/", changefreq: "daily", priority: "1.0" },
-  { url: "/countries", changefreq: "weekly", priority: "0.9" },
-  { url: "/services", changefreq: "weekly", priority: "0.9" },
-  { url: "/universities", changefreq: "weekly", priority: "0.8" },
-  { url: "/eligibility", changefreq: "weekly", priority: "0.8" },
-  { url: "/gallery", changefreq: "weekly", priority: "0.7" },
-  { url: "/updates", changefreq: "weekly", priority: "0.7" },
-  { url: "/partner-with-us", changefreq: "monthly", priority: "0.7" },
-  { url: "/contact", changefreq: "monthly", priority: "0.8" },
-  { url: "/connect", changefreq: "monthly", priority: "0.7" },
-  { url: "/inquiry", changefreq: "monthly", priority: "0.5" },
+const STATIC_PAGES: { url: string; changefreq: string; priority: string; lastmod: string }[] = [
+  // Core pages — lastmod reflects actual content update date
+  { url: "/", changefreq: "daily", priority: "1.0", lastmod: "dynamic" },
+  { url: "/countries", changefreq: "weekly", priority: "0.9", lastmod: "2026-09-15" },
+  { url: "/services", changefreq: "weekly", priority: "0.9", lastmod: "2026-09-10" },
+  { url: "/universities", changefreq: "weekly", priority: "0.8", lastmod: "dynamic" },
+  { url: "/eligibility", changefreq: "weekly", priority: "0.8", lastmod: "2026-09-20" },
+  { url: "/gallery", changefreq: "weekly", priority: "0.7", lastmod: "dynamic" },
+  { url: "/updates", changefreq: "weekly", priority: "0.7", lastmod: "dynamic" },
+  { url: "/partner-with-us", changefreq: "monthly", priority: "0.7", lastmod: "2026-08-15" },
+  { url: "/contact", changefreq: "monthly", priority: "0.8", lastmod: "2026-09-01" },
+  { url: "/connect", changefreq: "monthly", priority: "0.7", lastmod: "2026-08-01" },
+  { url: "/inquiry", changefreq: "monthly", priority: "0.5", lastmod: "2026-08-01" },
 
   // Service sub-pages
-  { url: "/services/testprep", changefreq: "weekly", priority: "0.7" },
-  { url: "/services/counselling", changefreq: "monthly", priority: "0.6" },
-  { url: "/services/admission", changefreq: "monthly", priority: "0.6" },
-  { url: "/services/sop", changefreq: "monthly", priority: "0.6" },
-  { url: "/services/scholarships", changefreq: "monthly", priority: "0.6" },
-  { url: "/services/visa", changefreq: "monthly", priority: "0.6" },
-  { url: "/services/insurance", changefreq: "monthly", priority: "0.6" },
-  { url: "/services/financial", changefreq: "monthly", priority: "0.6" },
-  { url: "/services/accommodation", changefreq: "monthly", priority: "0.6" },
-  { url: "/services/departure", changefreq: "monthly", priority: "0.6" },
-  { url: "/services/passport", changefreq: "monthly", priority: "0.6" },
-  { url: "/services/tickets", changefreq: "monthly", priority: "0.6" },
+  { url: "/services/testprep", changefreq: "weekly", priority: "0.7", lastmod: "2026-09-15" },
+  { url: "/services/counselling", changefreq: "monthly", priority: "0.6", lastmod: "2026-08-20" },
+  { url: "/services/admission", changefreq: "monthly", priority: "0.6", lastmod: "2026-08-20" },
+  { url: "/services/sop", changefreq: "monthly", priority: "0.6", lastmod: "2026-08-20" },
+  { url: "/services/scholarships", changefreq: "monthly", priority: "0.6", lastmod: "2026-08-20" },
+  { url: "/services/visa", changefreq: "monthly", priority: "0.6", lastmod: "2026-08-20" },
+  { url: "/services/insurance", changefreq: "monthly", priority: "0.6", lastmod: "2026-08-20" },
+  { url: "/services/financial", changefreq: "monthly", priority: "0.6", lastmod: "2026-08-20" },
+  { url: "/services/accommodation", changefreq: "monthly", priority: "0.6", lastmod: "2026-08-20" },
+  { url: "/services/departure", changefreq: "monthly", priority: "0.6", lastmod: "2026-08-20" },
+  { url: "/services/passport", changefreq: "monthly", priority: "0.6", lastmod: "2026-09-10" },
+  { url: "/services/tickets", changefreq: "monthly", priority: "0.6", lastmod: "2026-09-10" },
 
   // Study-abroad country pages
-  { url: "/study-abroad/canada", changefreq: "monthly", priority: "0.7" },
-  { url: "/study-abroad/uk", changefreq: "monthly", priority: "0.7" },
-  { url: "/study-abroad/australia", changefreq: "monthly", priority: "0.7" },
-  { url: "/study-abroad/germany", changefreq: "monthly", priority: "0.7" },
-  { url: "/study-abroad/usa", changefreq: "monthly", priority: "0.7" },
-  { url: "/study-abroad/new-zealand", changefreq: "monthly", priority: "0.7" },
-  { url: "/study-abroad/ireland", changefreq: "monthly", priority: "0.7" },
-  { url: "/study-abroad/europe", changefreq: "monthly", priority: "0.7" },
-  { url: "/study-abroad/singapore", changefreq: "monthly", priority: "0.7" },
-  { url: "/study-abroad/dubai", changefreq: "monthly", priority: "0.7" },
-  { url: "/study-abroad/malaysia", changefreq: "monthly", priority: "0.7" },
-  { url: "/study-abroad/switzerland", changefreq: "monthly", priority: "0.7" },
+  { url: "/study-abroad/canada", changefreq: "monthly", priority: "0.7", lastmod: "2026-09-15" },
+  { url: "/study-abroad/uk", changefreq: "monthly", priority: "0.7", lastmod: "2026-09-15" },
+  { url: "/study-abroad/australia", changefreq: "monthly", priority: "0.7", lastmod: "2026-09-15" },
+  { url: "/study-abroad/germany", changefreq: "monthly", priority: "0.7", lastmod: "2026-09-15" },
+  { url: "/study-abroad/usa", changefreq: "monthly", priority: "0.7", lastmod: "2026-09-15" },
+  { url: "/study-abroad/new-zealand", changefreq: "monthly", priority: "0.7", lastmod: "2026-09-15" },
+  { url: "/study-abroad/ireland", changefreq: "monthly", priority: "0.7", lastmod: "2026-09-15" },
+  { url: "/study-abroad/europe", changefreq: "monthly", priority: "0.7", lastmod: "2026-09-15" },
+  { url: "/study-abroad/singapore", changefreq: "monthly", priority: "0.7", lastmod: "2026-09-15" },
+  { url: "/study-abroad/dubai", changefreq: "monthly", priority: "0.7", lastmod: "2026-09-15" },
+  { url: "/study-abroad/malaysia", changefreq: "monthly", priority: "0.7", lastmod: "2026-09-15" },
+  { url: "/study-abroad/switzerland", changefreq: "monthly", priority: "0.7", lastmod: "2026-09-15" },
 
   // Visa-specific landing pages
-  { url: "/visitor-visa", changefreq: "monthly", priority: "0.6" },
-  { url: "/dependent-visa", changefreq: "monthly", priority: "0.6" },
-  { url: "/work-permit", changefreq: "monthly", priority: "0.6" },
-  { url: "/tourist-visa-schengen", changefreq: "monthly", priority: "0.6" },
-  { url: "/uk-visitor-visa", changefreq: "monthly", priority: "0.6" },
-  { url: "/usa-visitor-visa", changefreq: "monthly", priority: "0.6" },
-  { url: "/uk-graduate-route", changefreq: "monthly", priority: "0.6" },
-  { url: "/visa-refusal-help", changefreq: "monthly", priority: "0.6" },
-  { url: "/canada-pr", changefreq: "monthly", priority: "0.6" },
-  { url: "/canada-express-entry", changefreq: "monthly", priority: "0.6" },
-  { url: "/australia-pr", changefreq: "monthly", priority: "0.6" },
-  { url: "/germany-opportunity-card", changefreq: "monthly", priority: "0.6" },
+  { url: "/visitor-visa", changefreq: "monthly", priority: "0.6", lastmod: "2026-09-01" },
+  { url: "/dependent-visa", changefreq: "monthly", priority: "0.6", lastmod: "2026-09-01" },
+  { url: "/work-permit", changefreq: "monthly", priority: "0.6", lastmod: "2026-09-01" },
+  { url: "/tourist-visa-schengen", changefreq: "monthly", priority: "0.6", lastmod: "2026-09-01" },
+  { url: "/uk-visitor-visa", changefreq: "monthly", priority: "0.6", lastmod: "2026-09-01" },
+  { url: "/usa-visitor-visa", changefreq: "monthly", priority: "0.6", lastmod: "2026-09-01" },
+  { url: "/uk-graduate-route", changefreq: "monthly", priority: "0.6", lastmod: "2026-09-01" },
+  { url: "/visa-refusal-help", changefreq: "monthly", priority: "0.6", lastmod: "2026-09-01" },
+  { url: "/canada-pr", changefreq: "monthly", priority: "0.6", lastmod: "2026-09-01" },
+  { url: "/canada-express-entry", changefreq: "monthly", priority: "0.6", lastmod: "2026-09-01" },
+  { url: "/australia-pr", changefreq: "monthly", priority: "0.6", lastmod: "2026-09-01" },
+  { url: "/germany-opportunity-card", changefreq: "monthly", priority: "0.6", lastmod: "2026-09-01" },
 
   // SEO local landing pages
-  { url: "/visa-consultant-in-surat", changefreq: "monthly", priority: "0.8" },
-  { url: "/visa-consultant-varachha-surat", changefreq: "monthly", priority: "0.8" },
-  { url: "/ielts-classes-in-surat", changefreq: "monthly", priority: "0.8" },
+  { url: "/visa-consultant-in-surat", changefreq: "monthly", priority: "0.8", lastmod: "2026-09-10" },
+  { url: "/visa-consultant-varachha-surat", changefreq: "monthly", priority: "0.8", lastmod: "2026-09-10" },
+  { url: "/ielts-classes-in-surat", changefreq: "monthly", priority: "0.8", lastmod: "2026-09-10" },
 
   // Trust & legal pages
-  { url: "/visa-success-sla", changefreq: "monthly", priority: "0.5" },
-  { url: "/security-audit", changefreq: "monthly", priority: "0.4" },
-  { url: "/privacy-policy", changefreq: "monthly", priority: "0.4" },
-  { url: "/terms-of-service", changefreq: "monthly", priority: "0.4" },
+  { url: "/visa-success-sla", changefreq: "monthly", priority: "0.5", lastmod: "2026-08-01" },
+  { url: "/security-audit", changefreq: "monthly", priority: "0.4", lastmod: "2026-08-01" },
+  { url: "/privacy-policy", changefreq: "monthly", priority: "0.4", lastmod: "2026-07-15" },
+  { url: "/terms-of-service", changefreq: "monthly", priority: "0.4", lastmod: "2026-07-15" },
 ];
 
 const STUDY_ABROAD_PATHWAY_COUNTRIES = [
@@ -147,7 +147,7 @@ export const GET: APIRoute = async () => {
   for (const page of STATIC_PAGES) {
     xml += `  <url>\n`;
     xml += `    <loc>${SITE}${escapeXml(page.url)}</loc>\n`;
-    xml += `    <lastmod>${today}</lastmod>\n`;
+    xml += `    <lastmod>${page.lastmod === "dynamic" ? today : page.lastmod}</lastmod>\n`;
     xml += `    <changefreq>${page.changefreq}</changefreq>\n`;
     xml += `    <priority>${page.priority}</priority>\n`;
     xml += `  </url>\n`;
@@ -177,7 +177,10 @@ export const GET: APIRoute = async () => {
   for (const doc of documents) {
     xml += `  <url>\n`;
     xml += `    <loc>${SITE}/document/${escapeXml(doc.slug)}</loc>\n`;
-    xml += `    <lastmod>${today}</lastmod>\n`;
+    const docLastmod = doc.updatedAt
+      ? (() => { const m = doc.updatedAt.match(/(\w+)\s+(\d{4})/); return m ? `${m[2]}-${String(['January','February','March','April','May','June','July','August','September','October','November','December'].indexOf(m[1]) + 1).padStart(2, '0')}-01` : today; })()
+      : today;
+    xml += `    <lastmod>${docLastmod}</lastmod>\n`;
     xml += `    <changefreq>monthly</changefreq>\n`;
     xml += `    <priority>0.7</priority>\n`;
     xml += `  </url>\n`;

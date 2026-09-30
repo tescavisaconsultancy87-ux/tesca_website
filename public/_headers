@@ -55,3 +55,14 @@
   Content-Type: text/plain; charset=utf-8
   Cache-Control: public, max-age=604800
 
+# JavaScript libraries (PDF.js, etc.) — stable assets, cache for 30 days.
+/js/*
+  Cache-Control: public, max-age=2592000
+
+# Video content — cache for 7 days.
+/VIDEO/*
+  Cache-Control: public, max-age=604800
+
+# Well-known files — cache for a day.
+/.well-known/*
+  Cache-Control: public, max-age=86400
