@@ -24,6 +24,14 @@ for (const filePath of filePaths) {
         delete data.previews.kv_namespaces;
         modified = true;
       }
+
+      // Configure Cloudflare Workers Static Assets to drop trailing slashes and serve 404 page
+      // This prevents infinite redirect loops between Cloudflare edge normalization and asset index serving
+      if (data.assets) {
+        data.assets.html_handling = "drop-trailing-slash";
+        data.assets.not_found_handling = "404-page";
+        modified = true;
+      }
       
       if (modified) {
         fs.writeFileSync(filePath, JSON.stringify(data, null, 2), 'utf8');

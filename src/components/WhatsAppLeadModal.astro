@@ -419,6 +419,16 @@
       const isWhatsApp = href.includes('wa.me') || href.includes('api.whatsapp.com') || href.includes('whatsapp://');
       if (!isWhatsApp) return;
 
+      // Allow links to bypass lead capture modal if marked for direct WhatsApp or already in a profile modal
+      if (
+        link.hasAttribute('data-direct-wa') ||
+        link.getAttribute('data-bypass-lead') === 'true' ||
+        link.closest('[data-direct-wa]') ||
+        link.id === 'visa-modal-whatsapp'
+      ) {
+        return;
+      }
+
       // Check if user already provided their verified details before
       const savedUser = getSavedUser();
       const rawDocTitle = link.getAttribute('data-doc-title') || '';
@@ -564,8 +574,11 @@
         if (btnSpinner) btnSpinner.classList.add('hidden');
       }, 300);
 
-      // Open WhatsApp in new tab
-      window.open(finalWaUrl, '_blank', 'noopener,noreferrer');
+      // Open WhatsApp in new tab (with direct location fallback if popup blocker intercepts)
+      var win = window.open(finalWaUrl, '_blank', 'noopener,noreferrer');
+      if (!win || win.closed || typeof win.closed === 'undefined') {
+        window.location.href = finalWaUrl;
+      }
     });
   })();
 </script>

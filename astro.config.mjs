@@ -7,6 +7,9 @@ export default defineConfig({
   // Canonical site URL — used for sitemap/canonical generation.
   site: 'https://tescavisa.com',
   trailingSlash: 'never',
+  build: {
+    format: 'file',
+  },
   // Enabled SSR for dynamic API endpoints and runtime database fetching on Cloudflare
   output: 'server',
   adapter: cloudflare({

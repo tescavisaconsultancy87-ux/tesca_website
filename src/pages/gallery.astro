@@ -333,6 +333,7 @@ const displayStories = stories && stories.length > 0 ? stories : fallbackStories
               href="https://wa.me/919824152731?text=Hello%20TESCA%20Visa%20Consultancy%2C%20I%20saw%20your%20visa%20gallery%20and%20would%20like%20guidance%20for%20my%20own%20visa%20application."
               target="_blank"
               rel="noopener noreferrer"
+              data-direct-wa="true"
               class="w-full flex items-center justify-center gap-2.5 py-3.5 px-6 rounded-full bg-[#0A7880] hover:bg-[#075E64] text-white font-bold text-sm shadow-md shadow-[#0A7880]/20 transition-all active:scale-[0.98] cursor-pointer no-underline"
             >
               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" class="w-4 h-4 fill-current">
@@ -439,6 +440,20 @@ const displayStories = stories && stories.length > 0 ? stories : fallbackStories
 
       if (closeBtn) {
         closeBtn.addEventListener("click", closeModal);
+      }
+
+      if (modalWhatsApp) {
+        modalWhatsApp.addEventListener("click", function (e) {
+          e.stopPropagation();
+          var href = modalWhatsApp.getAttribute("href");
+          if (href && href.startsWith("http")) {
+            var win = window.open(href, "_blank", "noopener,noreferrer");
+            if (!win || win.closed || typeof win.closed === "undefined") {
+              window.location.href = href;
+            }
+            e.preventDefault();
+          }
+        });
       }
 
       modal.addEventListener("click", function (e) {

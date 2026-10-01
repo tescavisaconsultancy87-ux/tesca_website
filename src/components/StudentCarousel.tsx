@@ -240,7 +240,7 @@ export default function StudentCarousel({ stories = [] }: { stories?: D1Story[] 
               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-4 h-4 shrink-0" aria-hidden="true">
                 <polygon points="5 3 19 12 5 21 5 3" />
               </svg>
-              <span>▶ Resume Story Scroll</span>
+              <span>Resume Story Scroll</span>
             </>
           ) : (
             <>
@@ -248,7 +248,7 @@ export default function StudentCarousel({ stories = [] }: { stories?: D1Story[] 
                 <rect x="6" y="4" width="4" height="16" rx="1" />
                 <rect x="14" y="4" width="4" height="16" rx="1" />
               </svg>
-              <span>⏸ Tap to Pause Stories</span>
+              <span>Tap to Pause Stories</span>
             </>
           )}
         </button>
