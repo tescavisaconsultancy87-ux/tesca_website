@@ -434,6 +434,7 @@ export default function EligibilityForm() {
   const [matchingUnis, setMatchingUnis] = useState<University[]>([]);
   const [reachUnis, setReachUnis] = useState<University[]>([]);
   const [selectedUniversity, setSelectedUniversity] = useState<University | null>(null);
+  const [hasSubmittedLead, setHasSubmittedLead] = useState<boolean>(false);
 
   // Country universities for MOI check
   const [countryUnis, setCountryUnis] = useState<University[]>([]);
@@ -574,38 +575,40 @@ export default function EligibilityForm() {
 
       const fullPhoneNumber = `${selectedPhoneCountry.dialCode} ${phone}`;
 
-      // 2. Submit lead details to backend eligibility route
-      const leadBody = {
-        name,
-        email,
-        phone: fullPhoneNumber,
-        score: academicScore,
-        ielts: englishType === 'MOI' ? "0" : englishScore,
-        budget: "30",
-        destination: selectedCountry,
-        level: selectedLevel
-      };
-      
-      const elRes = await fetch("/api/eligibility", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(leadBody)
-      });
-      let elData: any;
-      try {
-        const text = await elRes.text();
+      // 2. Submit lead details to backend eligibility route (only on initial submission per session)
+      if (!hasSubmittedLead) {
+        const leadBody = {
+          name,
+          email,
+          phone: fullPhoneNumber,
+          score: academicScore,
+          ielts: englishType === 'MOI' ? "0" : englishScore,
+          budget: "30",
+          destination: selectedCountry,
+          level: selectedLevel
+        };
+        
+        const elRes = await fetch("/api/eligibility", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(leadBody)
+        });
+        let elData: any;
         try {
-          elData = JSON.parse(text);
-        } catch (jsonErr) {
-          console.error("Failed to parse eligibility response as JSON. Raw response:", text);
-          throw new Error("Received an invalid response from eligibility service.");
+          const text = await elRes.text();
+          try {
+            elData = JSON.parse(text);
+          } catch (jsonErr) {
+            console.error("Failed to parse eligibility response as JSON. Raw response:", text);
+            throw new Error("Received an invalid response from eligibility service.");
+          }
+        } catch (err: any) {
+          throw new Error(err.message || "Failed to submit eligibility profile. Please check your connection.");
         }
-      } catch (err: any) {
-        throw new Error(err.message || "Failed to submit eligibility profile. Please check your connection.");
-      }
 
-      if (!elRes.ok || !elData.success) {
-        throw new Error(elData.error || elData.message || "Failed to submit eligibility profile");
+        if (!elRes.ok || !elData.success) {
+          throw new Error(elData.error || elData.message || "Failed to submit eligibility profile");
+        }
       }
 
       // 3. Client-side evaluation
@@ -674,9 +677,13 @@ export default function EligibilityForm() {
         }
       });
 
-      if (typeof window !== "undefined" && (window as any).trackLeadEvent) {
-        (window as any).trackLeadEvent("eligibility");
+      if (!hasSubmittedLead && typeof window !== "undefined" && (window as any).trackLeadEvent) {
+        (window as any).trackLeadEvent("eligibility", {
+          destination: selectedCountry,
+          level: selectedLevel
+        });
       }
+      setHasSubmittedLead(true);
 
       setMatchingUnis(directMatches);
       setReachUnis(reachMatches);

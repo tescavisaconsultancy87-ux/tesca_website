@@ -1051,11 +1051,6 @@ const whatsappPrefill = encodeURIComponent(`Hi TESCA, I was reading the ${doc.ti
               destination: link.href,
               location: ctaLoc
             });
-            window.gtag('event', 'generate_lead', {
-              event_category: 'conversion',
-              lead_method: 'whatsapp',
-              source: `Document Guide: ${docTitle}`
-            });
           }
           if (window.posthog) {
             window.posthog.capture('whatsapp_click', {
@@ -1068,11 +1063,6 @@ const whatsappPrefill = encodeURIComponent(`Hi TESCA, I was reading the ${doc.ti
               source: 'document_guide',
               doc_slug: docSlug,
               doc_title: docTitle,
-              cta_location: ctaLoc
-            }, { transport: 'sendBeacon' });
-            window.posthog.capture('generate_lead', {
-              lead_method: 'whatsapp',
-              source: `Document Guide: ${docTitle}`,
               cta_location: ctaLoc
             }, { transport: 'sendBeacon' });
           }
@@ -1137,6 +1127,7 @@ const whatsappPrefill = encodeURIComponent(`Hi TESCA, I was reading the ${doc.ti
               if (data.success) {
                 if (feedback) { feedback.className = 'text-[11px] p-2.5 rounded-xl text-center font-semibold bg-emerald-500/15 text-emerald-400 border border-emerald-500/30'; feedback.textContent = '✓ Download unlocked! Opening PDF...'; feedback.classList.remove('hidden'); }
                 if (window.posthog) { window.posthog.capture('pdf_download_lead', { doc_slug: docSlug, doc_title: docTitle }, { transport: 'sendBeacon' }); }
+                if ((window as any).trackLeadEvent) { (window as any).trackLeadEvent('document', { doc_slug: docSlug, doc_title: docTitle, format: 'pdf' }); }
                 setTimeout(function() { window.open(pdfUrl, '_blank'); closeGate(); }, 800);
                 form.reset();
                 if (btn) { btn.querySelector('.pdf-gate-btn-text').textContent = 'Downloaded ✓'; }

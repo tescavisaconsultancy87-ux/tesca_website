@@ -603,8 +603,8 @@ try {
                   const docTitle = rawDocTitle && !/TESCA Visa Consultancy Surat|Best Visa Consultant|IELTS Coaching Classes/i.test(rawDocTitle) ? rawDocTitle : null;
                   const isDocumentLead = (lead.lead_type === "document" || Boolean(docTitle)) && lead.lead_type !== "whatsapp";
 
-                  let typeLabel = "Eligibility Finder";
-                  let typeBg = "bg-teal-50 text-teal-700 border-teal-200";
+                  let typeLabel = "General Lead";
+                  let typeBg = "bg-slate-100 text-slate-700 border-slate-200";
                   if (lead.lead_type === "whatsapp") {
                     typeLabel = "WhatsApp Lead";
                     typeBg = "bg-emerald-50 text-emerald-700 border-emerald-200";

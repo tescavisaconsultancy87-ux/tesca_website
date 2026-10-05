@@ -97,6 +97,38 @@ export const POST: APIRoute = async ({ request, locals }) => {
     const isDocLead = lead_type === 'document' || Boolean(cleanDocTitle) || (cleanSource && cleanSource.toLowerCase().includes('guide'));
     const finalLeadType = isWhatsAppLead ? 'whatsapp' : (isDocLead ? 'document' : 'contact');
 
+    // Deduplication check: prevent duplicate rapid submits within 60 seconds
+    const phoneDigits = (cleanPhone || '').replace(/\D/g, '');
+    const last10Digits = phoneDigits.length >= 10 ? phoneDigits.slice(-10) : phoneDigits;
+
+    if (last10Digits || cleanEmail) {
+      const { data: recentLeads, error: checkError } = await supabase
+        .from('leads')
+        .select('id, created_at, phone, email')
+        .eq('lead_type', finalLeadType)
+        .order('created_at', { ascending: false })
+        .limit(5);
+
+      if (!checkError && recentLeads && recentLeads.length > 0) {
+        const duplicate = recentLeads.find(l => {
+          const lPhoneDigits = (l.phone || '').replace(/\D/g, '');
+          const matchPhone = last10Digits && lPhoneDigits.slice(-10) === last10Digits;
+          const matchEmail = cleanEmail && l.email && l.email.toLowerCase() === cleanEmail.toLowerCase();
+          const diffMs = Date.now() - new Date(l.created_at || Date.now()).getTime();
+          return (matchPhone || matchEmail) && diffMs < 60000;
+        });
+
+        if (duplicate) {
+          return jsonResponse({
+            success: true,
+            id: duplicate.id,
+            duplicate: true,
+            message: "Lead previously received within 60 seconds."
+          });
+        }
+      }
+    }
+
     const detailsStr = JSON.stringify({
       name: cleanName,
       email: cleanEmail,

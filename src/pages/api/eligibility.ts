@@ -86,43 +86,73 @@ body = await request.json();
     const cleanPhone = sanitizeText(phone, 20);
     const cleanDestination = destination ? sanitizeText(destination, 50) : "Any";
 
-    // Save lead to database
+    // Deduplication check: prevent duplicate rapid submits within 60 seconds
     let leadId: number | null = null;
+    let isDuplicate = false;
+
     try {
-    const supabase = getSupabaseAdmin();
-const detailsStr = JSON.stringify({
-        academic_score: academicScoreNum,
-        ielts_score: ieltsScoreNum,
-        budget: budgetLakhsNum,
-        destination: cleanDestination
-      });
-      const { data: insertedData, error: dbErr } = await supabase
-        .from('leads')
-        .insert({
-          lead_type: 'eligibility',
-          name: cleanName,
-          email: cleanEmail,
-          phone: cleanPhone,
-          details: detailsStr,
-          status: 'pending'
-        })
-        .select('id')
-        .single();
-      
-      if (dbErr) {
-        console.error("Failed to save lead in Supabase:", dbErr);
-      } else {
-        leadId = insertedData?.id || null;
+      const supabase = getSupabaseAdmin();
+      const phoneDigits = cleanPhone.replace(/\D/g, '');
+      const last10Digits = phoneDigits.length >= 10 ? phoneDigits.slice(-10) : phoneDigits;
+
+      if (last10Digits || cleanEmail) {
+        const { data: recentLeads } = await supabase
+          .from('leads')
+          .select('id, created_at, phone, email')
+          .eq('lead_type', 'eligibility')
+          .order('created_at', { ascending: false })
+          .limit(5);
+
+        if (recentLeads && recentLeads.length > 0) {
+          const duplicate = recentLeads.find(l => {
+            const lPhoneDigits = (l.phone || '').replace(/\D/g, '');
+            const matchPhone = last10Digits && lPhoneDigits.slice(-10) === last10Digits;
+            const matchEmail = cleanEmail && l.email && l.email.toLowerCase() === cleanEmail.toLowerCase();
+            const diffMs = Date.now() - new Date(l.created_at || Date.now()).getTime();
+            return (matchPhone || matchEmail) && diffMs < 60000;
+          });
+
+          if (duplicate) {
+            isDuplicate = true;
+            leadId = duplicate.id;
+          }
+        }
+      }
+
+      if (!isDuplicate) {
+        const detailsStr = JSON.stringify({
+          academic_score: academicScoreNum,
+          ielts_score: ieltsScoreNum,
+          budget: budgetLakhsNum,
+          destination: cleanDestination
+        });
+        const { data: insertedData, error: dbErr } = await supabase
+          .from('leads')
+          .insert({
+            lead_type: 'eligibility',
+            name: cleanName,
+            email: cleanEmail,
+            phone: cleanPhone,
+            details: detailsStr,
+            status: 'pending'
+          })
+          .select('id')
+          .single();
+        
+        if (dbErr) {
+          console.error("Failed to save lead in Supabase:", dbErr);
+        } else {
+          leadId = insertedData?.id || null;
+        }
       }
     } catch (dbErr) {
       console.error("Failed to save lead in Supabase:", dbErr);
     }
 
-    // Submit lead to Google Sheets
+    // Submit lead to Google Sheets (only if not a duplicate within 60s)
     const googleSheetUrl = getEnv('GOOGLE_SHEET_URL') || import.meta.env.GOOGLE_SHEET_URL;
 
-    // Submit to Google Sheets (GET request with query parameters)
-    if (googleSheetUrl) {
+    if (googleSheetUrl && !isDuplicate) {
       try {
         const params = new URLSearchParams({
           "Full Name": cleanName,

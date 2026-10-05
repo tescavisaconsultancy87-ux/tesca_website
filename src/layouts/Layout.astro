@@ -200,21 +200,83 @@ if (isAdminPage) {
 			document.head.appendChild(gaScript);
 
 			// Global tracking helpers
-			window.trackLeadEvent = function(source) {
-				if (window.gtag) {
-					window.gtag('event', 'generate_lead', {
-						event_category: 'engagement',
-						event_label: source
-					});
-					
-					window.gtag('event', 'consultation_form_submit', {
-						event_category: 'conversion',
-						form_name: source
-					});
+			window.trackLeadEvent = function(channelOrSource, details = {}) {
+				const rawSource = String(channelOrSource || 'general');
+				let channel = 'general';
+
+				if (rawSource.startsWith('whatsapp') || rawSource === 'whatsapp') {
+					channel = 'whatsapp';
+				} else if (rawSource === 'counsellor' || rawSource.includes('counsell')) {
+					channel = 'counsellor';
+				} else if (rawSource === 'eligibility') {
+					channel = 'eligibility';
+				} else if (rawSource === 'inquiry') {
+					channel = 'inquiry';
+				} else if (rawSource === 'document' || rawSource.startsWith('document') || rawSource === 'pdf_download') {
+					channel = 'document';
+				} else if (rawSource === 'partner') {
+					channel = 'partner';
+				} else {
+					channel = rawSource;
 				}
+
+				const payload = {
+					lead_channel: channel,
+					source: rawSource,
+					page_path: window.location.pathname,
+					...details
+				};
+
+				// 1. Google Analytics (GA4)
+				if (window.gtag) {
+					// Universal conversion event
+					window.gtag('event', 'generate_lead', {
+						event_category: 'conversion',
+						lead_channel: channel,
+						event_label: rawSource,
+						...details
+					});
+
+					// STRICTLY ISOLATED CONVERSION EVENTS (Prevents WhatsApp/Eligibility from polluting Counsellor tags)
+					if (channel === 'counsellor') {
+						window.gtag('event', 'consultation_form_submit', {
+							event_category: 'conversion',
+							form_name: rawSource,
+							...details
+						});
+					} else if (channel === 'whatsapp') {
+						window.gtag('event', 'whatsapp_lead_submit', {
+							event_category: 'conversion',
+							...details
+						});
+					} else if (channel === 'eligibility') {
+						window.gtag('event', 'eligibility_check_submit', {
+							event_category: 'conversion',
+							...details
+						});
+					} else if (channel === 'inquiry') {
+						window.gtag('event', 'crm_inquiry_submit', {
+							event_category: 'conversion',
+							...details
+						});
+					} else if (channel === 'document') {
+						window.gtag('event', 'document_lead_submit', {
+							event_category: 'conversion',
+							...details
+						});
+					}
+				}
+
+				// 2. PostHog Analytics
 				if (window.posthog) {
-					window.posthog.capture('generate_lead', { source }, { transport: 'sendBeacon' });
-					window.posthog.capture('consultation_form_submit', { form_name: source }, { transport: 'sendBeacon' });
+					window.posthog.capture('generate_lead', payload, { transport: 'sendBeacon' });
+
+					// Fire dedicated channel conversion event in PostHog (consultation_form_submit ONLY for counsellor)
+					if (channel === 'counsellor') {
+						window.posthog.capture('consultation_form_submit', payload, { transport: 'sendBeacon' });
+					} else {
+						window.posthog.capture(`${channel}_lead_submit`, payload, { transport: 'sendBeacon' });
+					}
 				}
 			};
 
@@ -224,19 +286,9 @@ if (isAdminPage) {
 						event_category: 'engagement',
 						destination: destination
 					});
-					if (type === 'whatsapp') {
-						window.gtag('event', 'generate_lead', {
-							event_category: 'conversion',
-							lead_method: 'whatsapp',
-							destination: destination
-						});
-					}
 				}
 				if (window.posthog) {
 					window.posthog.capture(type === 'whatsapp' ? 'whatsapp_click' : 'phone_call_click', { destination }, { transport: 'sendBeacon' });
-					if (type === 'whatsapp') {
-						window.posthog.capture('generate_lead', { lead_method: 'whatsapp', destination }, { transport: 'sendBeacon' });
-					}
 				}
 			};
 
@@ -330,7 +382,8 @@ if (isAdminPage) {
 				}
 			});
 
-			// Global client-side error reporting to tescavisaconsultancy87@gmail.com
+			// Global client-side error reporting to tescavisaconsultancy87@gmail.com with deduplication
+			const _recentReportedErrors = new Map();
 			window.reportClientError = function(type, error, context = {}) {
 				try {
 					const message = error instanceof Error ? error.message : String(error);
@@ -385,9 +438,18 @@ if (isAdminPage) {
 						return;
 					}
 
-					// Report exception to PostHog if initialized
+					// Deduplicate identical errors within 3 seconds to avoid duplicate event flooding
+					const now = Date.now();
+					const errorKey = `${type}:${message.slice(0, 100)}`;
+					const lastSeen = _recentReportedErrors.get(errorKey) || 0;
+					if (now - lastSeen < 3000) {
+						return;
+					}
+					_recentReportedErrors.set(errorKey, now);
+
+					// Report exception to PostHog only if not an unhandled window error (PostHog captures those natively)
 					const ph = window['posthog'];
-					if (ph && typeof ph.capture === 'function') {
+					if (ph && typeof ph.capture === 'function' && type !== 'Unhandled Runtime Error') {
 						try {
 							ph.capture('$exception', {
 								$exception_type: type,

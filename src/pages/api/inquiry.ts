@@ -72,22 +72,26 @@ export const POST: APIRoute = async ({ request, locals }) => {
     const { data: recentLeads, error: checkError } = await supabase
       .from('leads')
       .select('id, status, phone, email, created_at')
+      .eq('lead_type', 'inquiry')
       .neq('status', 'completed')
       .order('created_at', { ascending: false })
-      .limit(1);
+      .limit(5);
 
     if (checkError) {
       console.error("[inquiry] Error checking for existing active leads:", checkError);
     } else if (recentLeads && recentLeads.length > 0) {
-      const latest = recentLeads[0];
-      const matchPhone = latest.phone && cleanMobile && latest.phone.replace(/\D/g, '').slice(-10) === last10Digits;
-      const matchEmail = cleanEmail && latest.email && latest.email.toLowerCase() === cleanEmail.toLowerCase();
-      const isWithinWindow = (Date.now() - new Date(latest.created_at || Date.now()).getTime()) < 60000;
+      const duplicate = recentLeads.find(l => {
+        const lPhoneDigits = (l.phone || '').replace(/\D/g, '');
+        const matchPhone = last10Digits && lPhoneDigits.slice(-10) === last10Digits;
+        const matchEmail = cleanEmail && l.email && l.email.toLowerCase() === cleanEmail.toLowerCase();
+        const isWithinWindow = (Date.now() - new Date(l.created_at || Date.now()).getTime()) < 60000;
+        return (matchPhone || matchEmail) && isWithinWindow;
+      });
 
-      if ((matchPhone || matchEmail) && isWithinWindow) {
+      if (duplicate) {
         return new Response(JSON.stringify({ 
           success: true,
-          leadId: latest.id,
+          leadId: duplicate.id,
           message: "Your previous inquiry was received. We'll contact you shortly."
         }), {
           status: 200,

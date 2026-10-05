@@ -542,7 +542,13 @@
       // Track analytics if available
       try {
         if ((window as any).trackLeadEvent) {
-          (window as any).trackLeadEvent(`whatsapp_lead_${targetCountry.toLowerCase()}_${visaType.toLowerCase().replace(/[^a-z0-9]+/g, '_')}`);
+          (window as any).trackLeadEvent('whatsapp', {
+            source: `whatsapp_lead_${targetCountry.toLowerCase()}_${visaType.toLowerCase().replace(/[^a-z0-9]+/g, '_')}`,
+            target_country: targetCountry,
+            visa_type: visaType,
+            doc_title: docTitle || undefined,
+            doc_slug: docSlug || undefined
+          });
         }
       } catch (e) {}
 
