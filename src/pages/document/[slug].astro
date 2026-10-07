@@ -374,7 +374,7 @@ const whatsappPrefill = encodeURIComponent(`Hi TESCA, I was reading the ${doc.ti
         </button>
         <h3 class="text-base font-bold text-white font-display">Download: {doc.title.length > 40 ? doc.title.substring(0,40) + '…' : doc.title}</h3>
         <p class="text-[11px] text-slate-400">Enter your details to get the full PDF. We'll also send it to your WhatsApp.</p>
-        <form id="pdf-gate-form" class="space-y-3">
+        <form id="pdf-gate-form" class="space-y-3" data-no-loader="true">
           <input type="text" id="pdf-gate-name" name="name" required placeholder="Your Name *" class="w-full px-3.5 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-xs text-white placeholder-slate-500 focus:outline-none focus:border-amber-500 transition-colors" />
           <div class="flex gap-2">
             <select id="pdf-gate-code" name="country_code" aria-label="Country Code" class="w-[90px] px-2 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-xs text-white focus:outline-none focus:border-amber-500 shrink-0 cursor-pointer">
@@ -1096,19 +1096,41 @@ const whatsappPrefill = encodeURIComponent(`Hi TESCA, I was reading the ${doc.ti
 
         if (form && form.dataset.gateFormAttached !== 'true') {
           form.dataset.gateFormAttached = 'true';
+          form._ajaxBound = true;
           form.addEventListener('submit', async function(e) {
             e.preventDefault();
             const btn = document.getElementById('pdf-gate-submit');
             const feedback = document.getElementById('pdf-gate-feedback');
-            const nameVal = document.getElementById('pdf-gate-name').value.trim();
-            const phoneVal = document.getElementById('pdf-gate-phone').value.trim().replace(/\D/g, '');
-            const codeVal = document.getElementById('pdf-gate-code').value;
+            const nameInput = document.getElementById('pdf-gate-name');
+            const phoneInput = document.getElementById('pdf-gate-phone');
+            const codeInput = document.getElementById('pdf-gate-code');
+
+            const nameVal = nameInput ? nameInput.value.trim() : '';
+            const phoneVal = phoneInput ? phoneInput.value.trim().replace(/\D/g, '') : '';
+            const codeVal = codeInput ? codeInput.value : '+91';
+
+            const setBtnText = (text) => {
+              if (!btn) return;
+              const textSpan = btn.querySelector('.pdf-gate-btn-text');
+              if (textSpan) {
+                textSpan.textContent = text;
+              } else {
+                btn.textContent = text;
+              }
+            };
 
             if (!nameVal || phoneVal.length < 7) {
-              if (feedback) { feedback.className = 'text-[11px] p-2.5 rounded-xl text-center font-semibold bg-rose-500/10 text-rose-400 border border-rose-500/30'; feedback.textContent = 'Please fill in your name and phone number.'; feedback.classList.remove('hidden'); }
+              if (feedback) {
+                feedback.className = 'text-[11px] p-2.5 rounded-xl text-center font-semibold bg-rose-500/10 text-rose-400 border border-rose-500/30';
+                feedback.textContent = 'Please fill in your name and phone number.';
+                feedback.classList.remove('hidden');
+              }
               return;
             }
-            if (btn) { btn.disabled = true; btn.querySelector('.pdf-gate-btn-text').textContent = 'Processing...'; }
+            if (btn) {
+              btn.disabled = true;
+              setBtnText('Processing...');
+            }
             try {
               const res = await fetch('/api/contact', {
                 method: 'POST',
@@ -1125,19 +1147,46 @@ const whatsappPrefill = encodeURIComponent(`Hi TESCA, I was reading the ${doc.ti
               });
               const data = await res.json();
               if (data.success) {
-                if (feedback) { feedback.className = 'text-[11px] p-2.5 rounded-xl text-center font-semibold bg-emerald-500/15 text-emerald-400 border border-emerald-500/30'; feedback.textContent = '✓ Download unlocked! Opening PDF...'; feedback.classList.remove('hidden'); }
-                if (window.posthog) { window.posthog.capture('pdf_download_lead', { doc_slug: docSlug, doc_title: docTitle }, { transport: 'sendBeacon' }); }
-                if (window['trackLeadEvent']) { window['trackLeadEvent']('document', { doc_slug: docSlug, doc_title: docTitle, format: 'pdf' }); }
-                setTimeout(function() { window.open(pdfUrl, '_blank'); closeGate(); }, 800);
+                if (feedback) {
+                  feedback.className = 'text-[11px] p-2.5 rounded-xl text-center font-semibold bg-emerald-500/15 text-emerald-400 border border-emerald-500/30';
+                  feedback.textContent = '✓ Download unlocked! Opening PDF...';
+                  feedback.classList.remove('hidden');
+                }
+                if (window.posthog) {
+                  window.posthog.capture('pdf_download_lead', { doc_slug: docSlug, doc_title: docTitle }, { transport: 'sendBeacon' });
+                }
+                if (window['trackLeadEvent']) {
+                  window['trackLeadEvent']('document', { doc_slug: docSlug, doc_title: docTitle, format: 'pdf' });
+                }
+                setTimeout(function() {
+                  window.open(pdfUrl, '_blank');
+                  closeGate();
+                }, 800);
                 form.reset();
-                if (btn) { btn.querySelector('.pdf-gate-btn-text').textContent = 'Downloaded ✓'; }
+                if (btn) {
+                  setBtnText('Downloaded ✓');
+                }
               } else {
-                if (btn) { btn.disabled = false; btn.querySelector('.pdf-gate-btn-text').textContent = 'Unlock & Download PDF'; }
-                if (feedback) { feedback.className = 'text-[11px] p-2.5 rounded-xl text-center font-semibold bg-rose-500/10 text-rose-400 border border-rose-500/30'; feedback.textContent = data.error || 'Failed. Try again or WhatsApp us.'; feedback.classList.remove('hidden'); }
+                if (btn) {
+                  btn.disabled = false;
+                  setBtnText('Unlock & Download PDF');
+                }
+                if (feedback) {
+                  feedback.className = 'text-[11px] p-2.5 rounded-xl text-center font-semibold bg-rose-500/10 text-rose-400 border border-rose-500/30';
+                  feedback.textContent = data.error || 'Failed. Try again or WhatsApp us.';
+                  feedback.classList.remove('hidden');
+                }
               }
             } catch(err) {
-              if (btn) { btn.disabled = false; btn.querySelector('.pdf-gate-btn-text').textContent = 'Unlock & Download PDF'; }
-              if (feedback) { feedback.className = 'text-[11px] p-2.5 rounded-xl text-center font-semibold bg-rose-500/10 text-rose-400 border border-rose-500/30'; feedback.textContent = 'Network error. WhatsApp us at +91 98241 52731.'; feedback.classList.remove('hidden'); }
+              if (btn) {
+                btn.disabled = false;
+                setBtnText('Unlock & Download PDF');
+              }
+              if (feedback) {
+                feedback.className = 'text-[11px] p-2.5 rounded-xl text-center font-semibold bg-rose-500/10 text-rose-400 border border-rose-500/30';
+                feedback.textContent = 'Network error. WhatsApp us at +91 98241 52731.';
+                feedback.classList.remove('hidden');
+              }
             }
           });
         }

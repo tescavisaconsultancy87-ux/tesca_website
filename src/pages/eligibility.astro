@@ -80,7 +80,7 @@ import AICounsellor from "../components/AICounsellor";
 
       <!-- Form Body -->
       <div class="px-6 py-5 space-y-3">
-        <form id="exit-intent-form" class="space-y-3">
+        <form id="exit-intent-form" class="space-y-3" data-no-loader="true">
           <input type="hidden" name="source" value="Exit Intent — Eligibility Page" />
           
           <div>
@@ -210,13 +210,28 @@ import AICounsellor from "../components/AICounsellor";
     // Form submission
     const form = document.getElementById('exit-intent-form');
     if (form) {
+      form._ajaxBound = true;
       form.addEventListener('submit', async function(e) {
         e.preventDefault();
         const btn = document.getElementById('exit-intent-submit');
         const feedback = document.getElementById('exit-intent-feedback');
-        const nameVal = document.getElementById('exit-name').value.trim();
-        const phoneVal = document.getElementById('exit-phone').value.trim().replace(/\D/g, '');
-        const codeVal = document.getElementById('exit-code').value;
+        const nameInput = document.getElementById('exit-name');
+        const phoneInput = document.getElementById('exit-phone');
+        const codeInput = document.getElementById('exit-code');
+
+        const nameVal = nameInput ? nameInput.value.trim() : '';
+        const phoneVal = phoneInput ? phoneInput.value.trim().replace(/\D/g, '') : '';
+        const codeVal = codeInput ? codeInput.value : '+91';
+
+        const setBtnText = (text) => {
+          if (!btn) return;
+          const textSpan = btn.querySelector('.exit-btn-text');
+          if (textSpan) {
+            textSpan.textContent = text;
+          } else {
+            btn.textContent = text;
+          }
+        };
 
         if (!nameVal || phoneVal.length < 7) {
           if (feedback) {
@@ -227,7 +242,10 @@ import AICounsellor from "../components/AICounsellor";
           return;
         }
 
-        if (btn) { btn.disabled = true; btn.querySelector('.exit-btn-text').textContent = 'Sending...'; }
+        if (btn) {
+          btn.disabled = true;
+          setBtnText('Sending...');
+        }
 
         try {
           const res = await fetch('/api/contact', {
@@ -250,13 +268,16 @@ import AICounsellor from "../components/AICounsellor";
               feedback.textContent = '✓ Report request received! We will WhatsApp you within 2 hours.';
               feedback.classList.remove('hidden');
             }
-            if (btn) btn.querySelector('.exit-btn-text').textContent = 'Sent ✓';
+            if (btn) setBtnText('Sent ✓');
             if (window.posthog) {
               window.posthog.capture('exit_intent_lead', { page: '/eligibility', source: 'exit_intent' }, { transport: 'sendBeacon' });
             }
             form.reset();
           } else {
-            if (btn) { btn.disabled = false; btn.querySelector('.exit-btn-text').textContent = 'Send My Report on WhatsApp'; }
+            if (btn) {
+              btn.disabled = false;
+              setBtnText('Send My Report on WhatsApp');
+            }
             if (feedback) {
               feedback.className = 'text-xs p-2.5 rounded-xl text-center font-semibold bg-rose-50 text-rose-600 border border-rose-200';
               feedback.textContent = data.error || 'Failed. Please try again or WhatsApp us directly.';
@@ -264,7 +285,10 @@ import AICounsellor from "../components/AICounsellor";
             }
           }
         } catch(err) {
-          if (btn) { btn.disabled = false; btn.querySelector('.exit-btn-text').textContent = 'Send My Report on WhatsApp'; }
+          if (btn) {
+            btn.disabled = false;
+            setBtnText('Send My Report on WhatsApp');
+          }
           if (feedback) {
             feedback.className = 'text-xs p-2.5 rounded-xl text-center font-semibold bg-rose-50 text-rose-600 border border-rose-200';
             feedback.textContent = 'Network error. Please WhatsApp us at +91 98241 52731.';

@@ -322,7 +322,7 @@ if (isAuthenticated) {
     const resetEmail = document.getElementById('reset-email') as HTMLInputElement;
     const resetStatus = document.getElementById('reset-status') as HTMLElement;
 
-    if (!loginForm || !forgotWrapper || !toggleBtn || !resetBtn) return;
+    if (!loginForm || !forgotWrapper || !toggleBtn || !resetBtn || !resetBtnText || !resetEmail || !resetStatus) return;
 
     // Guard to prevent binding multiple click listeners causing duplicate emails
     if (toggleBtn.dataset.initialized) return;

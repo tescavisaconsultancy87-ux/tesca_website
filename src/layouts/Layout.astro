@@ -716,10 +716,10 @@ if (isAdminPage) {
 						const direction = options.from || 'bottom';
 						popup.classList.add(`from-${direction}`);
 
-						titleEl.textContent = options.title;
-						descEl.textContent = options.description;
-						cancelBtn.textContent = options.cancelText || "Cancel";
-						actionBtn.textContent = options.actionText || "Continue";
+						if (titleEl) titleEl.textContent = options.title;
+						if (descEl) descEl.textContent = options.description;
+						if (cancelBtn) cancelBtn.textContent = options.cancelText || "Cancel";
+						if (actionBtn) actionBtn.textContent = options.actionText || "Continue";
 
 						if (options.variant === 'destructive') {
 							actionBtn.className = "px-4.5 py-2.5 bg-rose-600 hover:bg-rose-700 text-white rounded-2xl transition-all cursor-pointer text-xs font-bold border-none shadow-sm shadow-rose-600/10";
@@ -2143,6 +2143,7 @@ if (isAdminPage) {
 
 				// Global form submission handler for non-AJAX forms
 				document.addEventListener("submit", (e) => {
+					if (e.defaultPrevented) return;
 					const form = e.target as HTMLFormElement;
 					const btn = form?.querySelector?.('button[type="submit"]') as HTMLElement;
 					const isNoLoader = form?.hasAttribute?.('data-no-loader') || btn?.closest?.('[data-no-loader]');

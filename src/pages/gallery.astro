@@ -373,34 +373,38 @@ const displayStories = stories && stories.length > 0 ? stories : fallbackStories
         var score = card.getAttribute("data-score") || "";
         var flag = card.getAttribute("data-flag") || "";
 
-        modalName.textContent = name;
-        modalPhoto.src = photo;
-        modalPhoto.alt = name + " - " + type;
+        if (modalName) modalName.textContent = name;
+        if (modalPhoto) {
+          modalPhoto.src = photo;
+          modalPhoto.alt = name + " - " + type;
+        }
 
-        modalType.textContent = type;
-        modalTypeBadge.textContent = type;
+        if (modalType) modalType.textContent = type;
+        if (modalTypeBadge) modalTypeBadge.textContent = type;
 
         if (country) {
-          modalCountry.textContent = country;
-          if (flag) {
+          if (modalCountry) modalCountry.textContent = country;
+          if (flag && modalFlag) {
             modalFlag.src = flag;
             modalFlag.alt = country + " flag";
             modalFlag.classList.remove("hidden");
             if (modalGlobe) modalGlobe.classList.add("hidden");
           } else {
-            modalFlag.classList.add("hidden");
+            if (modalFlag) modalFlag.classList.add("hidden");
             if (modalGlobe) modalGlobe.classList.remove("hidden");
           }
         } else {
-          modalCountry.textContent = "Global / General";
-          modalFlag.classList.add("hidden");
+          if (modalCountry) modalCountry.textContent = "Global / General";
+          if (modalFlag) modalFlag.classList.add("hidden");
           if (modalGlobe) modalGlobe.classList.remove("hidden");
         }
 
-        if (score) {
-          modalStatus.textContent = score;
-        } else {
-          modalStatus.textContent = "Verified Approval";
+        if (modalStatus) {
+          if (score) {
+            modalStatus.textContent = score;
+          } else {
+            modalStatus.textContent = "Verified Approval";
+          }
         }
 
         var waQuery = "Hello TESCA Visa Consultancy, I saw " + name + "'s " + type + (country ? " (" + country + ")" : "") + " on your gallery and would like to consult for a similar visa.";

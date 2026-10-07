@@ -59,7 +59,7 @@
     </div>
 
     <!-- Form Body -->
-    <form id="wa-lead-form" class="p-6 space-y-4">
+    <form id="wa-lead-form" class="p-6 space-y-4" data-no-loader="true">
       <input type="hidden" id="wa-target-href" value="" />
       <input type="hidden" id="wa-doc-title" value="" />
       <input type="hidden" id="wa-doc-slug" value="" />
@@ -252,6 +252,7 @@
     const btnSpinner = document.getElementById('wa-btn-spinner');
 
     if (!modal || !card || !form) return;
+    (form as any)._ajaxBound = true;
 
     // Helper: get saved user from localStorage
     function getSavedUser() {
