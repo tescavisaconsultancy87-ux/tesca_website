@@ -193,6 +193,9 @@ export const onRequest = defineMiddleware(async (context, next) => {
   if (lowerPath === "/calculators" || lowerPath === "/calculators/" || lowerPath === "/calculator" || lowerPath === "/calculator/") {
     return Response.redirect(`https://tescavisa.com/eligibility`, 301);
   }
+  if (lowerPath === "/bio" || lowerPath === "/bio/" || lowerPath === "/go" || lowerPath === "/go/") {
+    return Response.redirect(`https://tescavisa.com/connect${search}`, 301);
+  }
   if (
     lowerPath === "/china-business-visa" ||
     lowerPath === "/china-business-visa/" ||
@@ -288,32 +291,40 @@ export const onRequest = defineMiddleware(async (context, next) => {
     response.headers.set("X-Robots-Tag", "noindex, nofollow");
   }
 
-  // --- Edge caching for public HTML pages ---
-  // Cache safe, anonymous GET HTML on public routes. s-maxage=3600 lets Cloudflare
-  // serve from edge for 1h; stale-while-revalidate keeps it instant while refreshing.
+  // --- Edge caching for public HTML and XML pages ---
+  // Cache safe, anonymous GET HTML/XML on public routes. s-maxage lets Cloudflare
+  // serve from edge instantly; stale-while-revalidate keeps it instant while refreshing.
   const isGet = context.request.method === "GET";
   const contentType = response.headers.get("content-type") || "";
   const isHtml = contentType.includes("text/html");
+  const isXml = contentType.includes("application/xml") || contentType.includes("text/xml");
   const setsCookie = response.headers.has("set-cookie");
 
-  if (isGet && isHtml && !isAdmin && !isApi && !setsCookie && response.status === 200) {
-    const isDynamicPage =
-      pathname === "/" ||
-      pathname === "/blog" ||
-      pathname.startsWith("/blog/") ||
-      pathname === "/updates" ||
-      pathname === "/gallery";
-
-    if (isDynamicPage) {
+  if (isGet && (isHtml || isXml) && !isAdmin && !isApi && !setsCookie && response.status === 200) {
+    if (isXml) {
       response.headers.set(
         "Cache-Control",
-        "public, max-age=0, s-maxage=300, stale-while-revalidate=86400"
+        "public, max-age=3600, s-maxage=7200, stale-while-revalidate=86400"
       );
     } else {
-      response.headers.set(
-        "Cache-Control",
-        "public, max-age=300, s-maxage=3600, stale-while-revalidate=86400"
-      );
+      const isDynamicPage =
+        pathname === "/" ||
+        pathname === "/blog" ||
+        pathname.startsWith("/blog/") ||
+        pathname === "/updates" ||
+        pathname === "/gallery";
+
+      if (isDynamicPage) {
+        response.headers.set(
+          "Cache-Control",
+          "public, max-age=60, s-maxage=1800, stale-while-revalidate=86400"
+        );
+      } else {
+        response.headers.set(
+          "Cache-Control",
+          "public, max-age=300, s-maxage=7200, stale-while-revalidate=86400"
+        );
+      }
     }
   }
 

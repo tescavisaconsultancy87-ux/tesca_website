@@ -547,7 +547,11 @@ if (isAdminPage) {
 								msg.includes('load failed') ||
 								msg.includes('renderingcancelledexception') ||
 								msg.includes('rendering cancelled') ||
-								msg.includes('aborterror')
+								msg.includes('aborterror') ||
+								msg.includes('canvas') ||
+								msg.includes('context lost') ||
+								msg.includes('pagehide') ||
+								msg.includes('worker')
 							) {
 								return null;
 							}
@@ -1844,6 +1848,12 @@ if (isAdminPage) {
 				// Establish stable openCounsellorForm function with React-failure fallback
 				if (typeof window !== "undefined") {
 					let counsellorFormReady = false;
+					window.addEventListener("counsellor-form-ready", () => {
+						counsellorFormReady = true;
+					});
+					window.addEventListener("open-counsellor-form", () => {
+						counsellorFormReady = true;
+					});
 					(window as any).openCounsellorForm = function() {
 						if (counsellorFormReady) {
 							window.dispatchEvent(new CustomEvent("open-counsellor-form"));
@@ -1863,10 +1873,6 @@ if (isAdminPage) {
 						// Try dispatching anyway in case React is already loaded
 						window.dispatchEvent(new CustomEvent("open-counsellor-form"));
 					};
-					// Mark form as ready when React CounsellorForm mounts
-					window.addEventListener("open-counsellor-form", () => {
-						counsellorFormReady = true;
-					}, { once: true });
 				}
 
 				// Soft Modal logic: show after 45s without click on CTA

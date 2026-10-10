@@ -146,7 +146,7 @@ export default function LiveSocialProofTicker() {
 
   return (
     <div
-      className={`fixed bottom-[88px] md:bottom-6 left-3 sm:left-6 z-40 max-w-[calc(100vw-5.5rem)] sm:max-w-xs md:max-w-sm transition-all duration-500 transform font-sans ${
+      className={`hidden sm:block fixed bottom-6 left-3 sm:left-6 z-40 max-w-[calc(100vw-5.5rem)] sm:max-w-xs md:max-w-sm transition-all duration-500 transform font-sans ${
         visible ? 'translate-y-0 opacity-100' : 'translate-y-6 opacity-0 pointer-events-none'
       }`}
     >

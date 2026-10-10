@@ -16,6 +16,7 @@ const countriesDetail = [
     id: "us",
     name: "United States",
     flag: "us",
+    guideUrl: "/study-abroad/usa",
     tuition: "$25,000 - $55,000 /yr",
     living: "$12,000 - $24,000 /yr",
     visaType: "F-1 Student Visa",
@@ -30,6 +31,7 @@ const countriesDetail = [
     id: "uk",
     name: "United Kingdom",
     flag: "gb",
+    guideUrl: "/study-abroad/uk",
     tuition: "£15,000 - £35,000 /yr",
     living: "£10,000 - £18,000 /yr",
     visaType: "Student Visa (Tier 4)",
@@ -44,6 +46,7 @@ const countriesDetail = [
     id: "ca",
     name: "Canada",
     flag: "ca",
+    guideUrl: "/study-abroad/canada",
     tuition: "C$20,000 - C$45,000 /yr",
     living: "C$12,000 - C$18,000 /yr",
     visaType: "Study Permit (via SDS / Non-SDS)",
@@ -58,6 +61,7 @@ const countriesDetail = [
     id: "au",
     name: "Australia",
     flag: "au",
+    guideUrl: "/study-abroad/australia",
     tuition: "A$28,000 - A$48,000 /yr",
     living: "A$14,000 - A$20,000 /yr",
     visaType: "Student Visa (Subclass 500)",
@@ -72,6 +76,7 @@ const countriesDetail = [
     id: "de",
     name: "Germany",
     flag: "de",
+    guideUrl: "/study-abroad/germany",
     tuition: "€0 - €3,500 /yr (Public Universities)",
     living: "€11,904 /yr (Blocked Account Requirement)",
     visaType: "National Visa (Type D Student)",
@@ -164,6 +169,15 @@ const countriesDetail = [
                 </li>
               ))}
             </ul>
+            <div class="pt-2">
+              <a 
+                href={country.guideUrl} 
+                class="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-accent-blue/10 hover:bg-accent-blue/20 text-accent-blue text-xs font-bold font-sans transition-all group no-underline"
+              >
+                <span>Explore {country.name} Study Guide & Pathways</span>
+                <span class="group-hover:translate-x-0.5 transition-transform">→</span>
+              </a>
+            </div>
           </div>
         </div>
 

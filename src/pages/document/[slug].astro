@@ -838,7 +838,14 @@ const whatsappPrefill = encodeURIComponent(`Hi TESCA, I was reading the ${doc.ti
 
           const renderTask = page.render({ canvasContext: context, viewport: viewport });
           activeRenderTasks.push(renderTask);
-          await renderTask.promise;
+          try {
+            await renderTask.promise;
+          } catch (taskErr) {
+            if (taskErr && (taskErr.name === "RenderingCancelledException" || String(taskErr.message || "").toLowerCase().includes("cancelled") || String(taskErr.message || "").toLowerCase().includes("abort"))) {
+              return;
+            }
+            throw taskErr;
+          }
 
           pageWrapper.appendChild(canvas);
 
@@ -853,7 +860,7 @@ const whatsappPrefill = encodeURIComponent(`Hi TESCA, I was reading the ${doc.ti
 
         pagesContainer.dataset.renderedSlug = docSlug;
       } catch (err) {
-        if (err && (err.name === "RenderingCancelledException" || String(err.message || "").includes("cancelled"))) {
+        if (err && (err.name === "RenderingCancelledException" || String(err.message || "").toLowerCase().includes("cancelled") || String(err.message || "").toLowerCase().includes("abort"))) {
           // Expected when navigating quickly between pages or re-rendering
           return;
         }
@@ -866,6 +873,23 @@ const whatsappPrefill = encodeURIComponent(`Hi TESCA, I was reading the ${doc.ti
         pagesContainer.dataset.rendering = "false";
       }
     }
+
+    function cleanupPdfTasks() {
+      if (activeRenderTasks && activeRenderTasks.length > 0) {
+        activeRenderTasks.forEach((task) => {
+          try { task.cancel(); } catch (_) {}
+        });
+        activeRenderTasks = [];
+      }
+      if (currentPdfLoadingTask) {
+        try { currentPdfLoadingTask.destroy(); } catch (_) {}
+        currentPdfLoadingTask = null;
+      }
+    }
+
+    window.addEventListener("pagehide", cleanupPdfTasks);
+    window.addEventListener("beforeunload", cleanupPdfTasks);
+    document.addEventListener("astro:before-swap", cleanupPdfTasks);
 
     // Lead Form Handler with Instant Tactile Feedback & Rage Click Prevention
     function initLeadForm() {

@@ -587,9 +587,11 @@ const delaySeconds = Math.max(initialPopup?.delay_seconds || 20, 20);
         console.warn("Could not fetch live popup settings, using initial render:", err);
       });
 
-    // Trigger main screen popup after delaySec seconds (minimum 20 seconds so users have time to read!)
+    // Trigger popup after delaySec seconds (minimum 40s on mobile, 20s on desktop to prevent intrusion & rageclicks)
+    const isMobileDevice = window.innerWidth < 768;
+    const minDelay = isMobileDevice ? 40 : 20;
     const configuredDelay = Number(mainOverlay.getAttribute("data-delay")) || 20;
-    const delaySec = isTestMode ? 1 : Math.max(configuredDelay, 20);
+    const delaySec = isTestMode ? 1 : Math.max(configuredDelay, minDelay);
     popupTimer = setTimeout(() => {
       if (isAdminOrExcludedPath()) return;
 
