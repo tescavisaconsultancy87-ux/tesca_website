@@ -465,7 +465,37 @@
         return;
       }
 
-      // First-time user - intercept and show lead capture modal
+      // On mobile devices or social campaign traffic, allow frictionless 1-tap WhatsApp connection
+      const isMobileDevice = window.innerWidth < 768 || /Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent);
+      const isSocialTraffic = document.referrer.includes('instagram.com') || 
+                              document.referrer.includes('facebook.com') || 
+                              window.location.search.includes('fbclid') || 
+                              window.location.search.includes('utm_source=ig') ||
+                              window.location.search.includes('utm_source=sp_auto_dm');
+
+      if (isMobileDevice || isSocialTraffic) {
+        // Immediately record click in background via sendBeacon so no lead data is lost
+        sendLeadToDatabase({
+          name: 'Direct WhatsApp Visitor',
+          phone: 'Initiated WhatsApp Chat',
+          source: `${sourceLabel} [Mobile 1-Tap]`,
+          target_country: null,
+          visa_type: null,
+          document_title: docTitle || null,
+          document_slug: docSlug || null,
+          page_url: window.location.href,
+          message: `User clicked WhatsApp directly from: ${window.location.pathname}`
+        });
+
+        if ((window as any).trackClickEvent) {
+          (window as any).trackClickEvent('whatsapp', href);
+        }
+
+        // Direct navigation to WhatsApp app
+        return;
+      }
+
+      // First-time desktop user - intercept and show lead capture modal
       e.preventDefault();
       e.stopPropagation();
       openModal(href, docTitle, docSlug, ctaLoc);

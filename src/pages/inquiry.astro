@@ -30,6 +30,31 @@ import InquiryFormCRM from "../components/InquiryFormCRM";
         "url": "https://tescavisa.com/inquiry"
       }
     </script>
+    <script is:inline>
+      window.PUBLIC_GA4_ID = "G-2HW0JXMF2Y";
+      window.dataLayer = window.dataLayer || [];
+      function gtag() { window.dataLayer.push(arguments); }
+      gtag('js', new Date());
+      gtag('config', 'G-2HW0JXMF2Y');
+    </script>
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-2HW0JXMF2Y"></script>
+
+    <!-- PostHog Analytics -->
+    <script>
+      import posthog from 'posthog-js';
+      const posthogKey = import.meta.env.PUBLIC_POSTHOG_KEY || 'phc_sgHhTrBHqVHjkwUsJTgziS7v4W6x4gpBXmRL8eHaQtuJ';
+      const posthogHost = import.meta.env.PUBLIC_POSTHOG_HOST || 'https://us.i.posthog.com';
+      if (posthogKey) {
+        posthog.init(posthogKey, {
+          api_host: posthogHost,
+          person_profiles: 'always',
+          autocapture: true,
+          capture_pageview: true,
+          capture_pageleave: true
+        });
+        (window as any).posthog = posthog;
+      }
+    </script>
   </head>
   <body class="bg-gradient-to-br from-slate-50 via-slate-50 to-[#0F4C81]/5 min-h-screen flex flex-col items-center justify-start p-3 sm:p-6 font-sans">
     
@@ -45,18 +70,41 @@ import InquiryFormCRM from "../components/InquiryFormCRM";
 
       <div class="flex items-center gap-2">
         <a 
-          href="https://wa.me/919824152731" 
+          href="https://wa.me/919824152731?text=Hi%20TESCA,%20I%20am%20on%20the%20enquiry%20page%20and%20would%20like%20a%20free%20counselling%20consultation." 
           target="_blank" 
           rel="noopener noreferrer"
-          class="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold shadow-sm transition-all"
+          data-direct-wa="true"
+          class="inline-flex items-center gap-1.5 px-4 py-2 rounded-full bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold shadow-sm transition-all"
         >
-          <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
-          <span>WhatsApp Us</span>
+          <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+          <span>Chat on WhatsApp</span>
         </a>
       </div>
     </header>
 
-    <main class="w-full max-w-5xl mx-auto">
+    <main class="w-full max-w-5xl mx-auto space-y-4">
+      <!-- High-Converting Fast-Track WhatsApp Option for Mobile Visitors -->
+      <div class="p-4 sm:p-5 rounded-2xl bg-gradient-to-r from-emerald-500/10 via-teal-500/5 to-blue-500/5 border border-emerald-500/25 flex flex-col sm:flex-row items-center justify-between gap-3 text-left">
+        <div class="space-y-0.5">
+          <div class="inline-flex items-center gap-1 text-[11px] font-bold text-emerald-800 uppercase tracking-wider">
+            <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span> Instant 10-Min Reply
+          </div>
+          <p class="text-xs sm:text-sm font-bold text-slate-800">
+            Prefer not filling a long form? Chat with our senior visa counsellor directly on WhatsApp:
+          </p>
+        </div>
+        <a 
+          href="https://wa.me/919824152731?text=Hi%20TESCA,%20I%20would%20like%20to%20get%20a%20free%20profile%20evaluation%20for%20study%20visa%202026." 
+          target="_blank" 
+          rel="noopener noreferrer"
+          data-direct-wa="true"
+          class="shrink-0 px-5 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-extrabold shadow-md shadow-emerald-600/20 hover:scale-[1.02] transition-all flex items-center gap-2 no-underline"
+        >
+          <span>💬 Open WhatsApp Chat</span>
+          <span>&rarr;</span>
+        </a>
+      </div>
+
       <!-- Full CRM Assessment Form -->
       <InquiryFormCRM client:load />
     </main>

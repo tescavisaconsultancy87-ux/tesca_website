@@ -792,7 +792,16 @@ const whatsappPrefill = encodeURIComponent(`Hi TESCA, I was reading the ${doc.ti
 
       pagesContainer.innerHTML = "";
 
-      const pdfjsLib = window.pdfjsLib || window["pdfjs-dist/build/pdf"];
+      let pdfjsLib = window.pdfjsLib || window["pdfjs-dist/build/pdf"];
+
+      // Wait up to 1.5 seconds if script is still parsing
+      if (!pdfjsLib) {
+        for (let attempt = 0; attempt < 15; attempt++) {
+          await new Promise((resolve) => setTimeout(resolve, 100));
+          pdfjsLib = window.pdfjsLib || window["pdfjs-dist/build/pdf"];
+          if (pdfjsLib) break;
+        }
+      }
 
       if (!pdfjsLib) {
         pagesContainer.dataset.rendering = "false";
@@ -800,7 +809,9 @@ const whatsappPrefill = encodeURIComponent(`Hi TESCA, I was reading the ${doc.ti
         return;
       }
 
-      pdfjsLib.GlobalWorkerOptions.workerSrc = "/js/pdf.worker.min.js";
+      try {
+        pdfjsLib.GlobalWorkerOptions.workerSrc = "/js/pdf.worker.min.js";
+      } catch (_) {}
 
       try {
         currentPdfLoadingTask = pdfjsLib.getDocument(pdfUrl);
@@ -1217,11 +1228,20 @@ const whatsappPrefill = encodeURIComponent(`Hi TESCA, I was reading the ${doc.ti
       })();
     }
 
-    document.addEventListener("astro:page-load", setupDocumentPage);
-    if (document.readyState === "loading") {
-      document.addEventListener("DOMContentLoaded", setupDocumentPage, { once: true });
-    } else {
-      setupDocumentPage();
+    let _docSetupRunning = false;
+    function safeSetupDocumentPage() {
+      if (_docSetupRunning) return;
+      _docSetupRunning = true;
+      try {
+        setupDocumentPage();
+      } finally {
+        setTimeout(() => { _docSetupRunning = false; }, 400);
+      }
+    }
+
+    document.addEventListener("astro:page-load", safeSetupDocumentPage);
+    if (document.readyState === "complete" && !window.__astro_page_loaded) {
+      safeSetupDocumentPage();
     }
 
     // 🔒 Security Protection 1: Block Right-Click Context Menu
