@@ -2,6 +2,56 @@
 export const prerender = true;
 import Layout from "../layouts/Layout.astro";
 import AICounsellor from "../components/AICounsellor";
+import FAQ from "../components/FAQ.astro";
+
+const canadaPrFaqs = [
+  {
+    question: "What is the minimum CRS score required for Canada PR in 2026?",
+    answer: "In 2026, category-based Express Entry draws range from 430–480 for targeted occupations (Healthcare, STEM, Trades, French speakers), while general all-program draws typically exceed 510–530. However, obtaining a Provincial Nomination (PNP) awards an automatic 600 points, guaranteeing an Invitation to Apply (ITA) regardless of baseline CRS."
+  },
+  {
+    question: "How does TESCA in Surat help increase Express Entry CRS points?",
+    answer: "TESCA's immigration specialists conduct deep CRS score audits across age, education, language, and work experience. We optimize your score by: (1) targeting CLB 9/10 with focused IELTS coaching, (2) securing a second degree or spouse evaluation via WES credential assessments, and (3) matching your NOC code with Provincial Nominee Programs (OINP, SINP, AAIP, BC PNP) for a +600 points boost."
+  },
+  {
+    question: "Can I apply for Canada PR from Surat without a job offer?",
+    answer: "Yes, you can apply for and receive Canada PR without a job offer. The Federal Skilled Worker (FSW) program through Express Entry and many PNP streams (such as Saskatchewan SINP Occupations In-Demand and Ontario OINP Human Capital Priorities) do not require a Canadian job offer, provided you meet education, language, and work experience criteria."
+  },
+  {
+    question: "What is the total processing time for Canada PR from India?",
+    answer: "The complete Canada PR journey from India typically spans 6 to 12 months. This includes 1–2 months for Educational Credential Assessment (ECA) and IELTS/PTE preparation, followed by Express Entry profile creation, ITA issuance, and IRCC application processing which typically completes within 6 months of ITA submission."
+  },
+  {
+    question: "Where are TESCA's Canada PR consultancy offices in Surat?",
+    answer: "TESCA operates two full-service immigration offices in Surat: (1) Head Office at 110–112 Royal Arcade, Simada Naka, Surat 395013, and (2) Mota Varachha Branch at Ambika Pinnacle, 106–107 Lajamni Chowk, Surat 394101. Both branches provide in-person point assessments, document verification, and one-on-one PR counseling."
+  }
+];
+
+const canadaPrServiceSchema = {
+  "@context": "https://schema.org",
+  "@type": "Service",
+  "name": "Canada PR & Express Entry Consultancy in Surat",
+  "serviceType": "Immigration & Permanent Residency Consulting",
+  "provider": {
+    "@type": "LocalBusiness",
+    "name": "TESCA Visa Consultancy",
+    "telephone": "+91-9824152731",
+    "address": {
+      "@type": "PostalAddress",
+      "streetAddress": "110-112 Royal Arcade, Simada Naka",
+      "addressLocality": "Surat",
+      "addressRegion": "Gujarat",
+      "postalCode": "395013",
+      "addressCountry": "IN"
+    }
+  },
+  "areaServed": [
+    { "@type": "City", "name": "Surat" },
+    { "@type": "State", "name": "Gujarat" },
+    { "@type": "Country", "name": "India" }
+  ],
+  "description": "Professional Canada PR and Express Entry points audit, ECA WES verification, PNP nomination guidance, and visa filing in Surat, Gujarat."
+};
 
 const SVG = {
   ArrowLeft: `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="inline-block"><path d="m12 19-7-7 7-7"/><path d="M19 12H5"/></svg>`,
@@ -13,6 +63,7 @@ const SVG = {
   title="Canada PR Consultant in Surat | Express Entry & PR from India 2026"
   description="TESCA is your trusted Canada PR consultant in Surat. Fulfill your Express Entry criteria, coordinate Provincial Nominee Programs (PNP), and migrate to Canada from India in 2026."
 >
+  <script is:inline type="application/ld+json" set:html={JSON.stringify(canadaPrServiceSchema)} />
   <section class="max-w-7xl mx-auto px-6 md:px-8 pt-8 pb-16 text-left">
     
     <a href="/" class="inline-flex items-center gap-1.5 text-sm font-semibold text-accent-blue hover:underline mb-8 font-sans">
@@ -182,13 +233,25 @@ const SVG = {
                   Eligible (67+)
                 </span>
               </div>
+            </div>
+
             <button 
               type="button" 
               onclick="window.dispatchEvent(new CustomEvent('open-counsellor-form'))"
-              class="w-full py-2.5 bg-accent-blue hover:bg-accent-indigo text-white font-bold text-xs rounded-xl shadow-md transition-all duration-200 text-center cursor-pointer tracking-wide block mt-2"
+              class="w-full py-3 bg-accent-blue hover:bg-accent-indigo text-white font-bold text-xs rounded-xl shadow-md transition-all duration-200 text-center cursor-pointer tracking-wide block mt-2"
             >
               Book Free Canada PR Consultation
             </button>
+
+            <a
+              href="https://wa.me/919824152731?text=Hi%20TESCA,%20I%20used%20your%20Canada%20PR%20Calculator%20and%20want%20to%20evaluate%20my%20Express%20Entry%20and%20PNP%20eligibility."
+              target="_blank"
+              rel="noopener noreferrer"
+              data-direct-wa="true"
+              class="w-full py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs rounded-xl shadow-sm transition-all duration-200 text-center cursor-pointer tracking-wide flex items-center justify-center gap-2 no-underline"
+            >
+              <span>💬 Get Score Evaluation on WhatsApp</span>
+            </a>
           </form>
         </div>
 
@@ -283,6 +346,12 @@ const SVG = {
     </div>
 
   </section>
+
+  <FAQ 
+    items={canadaPrFaqs} 
+    heading="Canada PR Frequently Asked Questions" 
+    subheading="Clear, expert guidance on Express Entry CRS cutoffs, Provincial Nominee programs, and immigration from Surat, Gujarat." 
+  />
 
   <AICounsellor client:only="react" />
 </Layout>

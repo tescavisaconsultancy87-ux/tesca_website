@@ -444,16 +444,23 @@ const delaySeconds = Math.max(initialPopup?.delay_seconds || 20, 20);
     if (prevBtn) prevBtn.onclick = () => goToSlide(currentSlideIndex - 1);
     if (nextBtn) nextBtn.onclick = () => goToSlide(currentSlideIndex + 1);
 
+    const safeGetSession = (key: string) => {
+      try { return sessionStorage.getItem(key); } catch (e) { return null; }
+    };
+    const safeSetSession = (key: string, val: string) => {
+      try { sessionStorage.setItem(key, val); } catch (e) {}
+    };
+
     const showDrawer = () => {
       if (!drawerCard) return;
-      const lastDrawerClosed = sessionStorage.getItem("promo_drawer_closed_at");
+      const lastDrawerClosed = safeGetSession("promo_drawer_closed_at");
       if (lastDrawerClosed && !isTestMode) return;
       drawerCard.classList.remove("translate-y-12", "opacity-0", "pointer-events-none");
       drawerCard.classList.add("translate-y-0", "opacity-100");
     };
 
     const closeDrawer = () => {
-      sessionStorage.setItem("promo_drawer_closed_at", Date.now().toString());
+      safeSetSession("promo_drawer_closed_at", Date.now().toString());
       if (drawerCard) {
         drawerCard.classList.remove("translate-y-0", "opacity-100");
         drawerCard.classList.add("translate-y-12", "opacity-0", "pointer-events-none");
@@ -489,7 +496,7 @@ const delaySeconds = Math.max(initialPopup?.delay_seconds || 20, 20);
     };
 
     const closeMainPopup = () => {
-      sessionStorage.setItem("main_popup_closed_at", Date.now().toString());
+      safeSetSession("main_popup_closed_at", Date.now().toString());
       mainCard.classList.remove("scale-100", "opacity-100");
       mainCard.classList.add("scale-95", "opacity-0");
       document.body.style.overflow = "";
@@ -595,7 +602,7 @@ const delaySeconds = Math.max(initialPopup?.delay_seconds || 20, 20);
     popupTimer = setTimeout(() => {
       if (isAdminOrExcludedPath()) return;
 
-      const currentClosed = sessionStorage.getItem("main_popup_closed_at");
+      const currentClosed = safeGetSession("main_popup_closed_at");
       if (currentClosed && !isTestMode) {
         const elapsed = Date.now() - parseInt(currentClosed, 10);
         if (elapsed < 3 * 60 * 1000) {

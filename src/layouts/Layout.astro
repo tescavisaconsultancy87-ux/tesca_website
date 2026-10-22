@@ -1241,7 +1241,7 @@ if (isAdminPage) {
 												{ name: "Pre & Post Departure Services", iconSvg: NavIcons.Plane, id: "departure", color: "bg-cyan-100 text-cyan-600" },
 											].map((srv) => (
 												<a
-													href={srv.id === 'testprep' ? 'https://tesca.co' : `/services#${srv.id}`}
+													href={srv.id === 'testprep' ? 'https://tesca.co' : `/services/${srv.id}`}
 													target={srv.id === 'testprep' ? '_blank' : undefined}
 													rel={srv.id === 'testprep' ? 'noopener noreferrer' : undefined}
 													class="flex items-center gap-3 p-2 rounded-xl border border-slate-50 bg-slate-50/50 hover:bg-accent-blue/5 hover:border-accent-blue/20 hover:text-accent-indigo transition-all duration-200"
@@ -1452,11 +1452,11 @@ if (isAdminPage) {
 
 			<div class="max-w-7xl mx-auto px-6 md:px-8 relative z-10">
 				<div
-					class="grid grid-cols-1 md:grid-cols-5 gap-12 md:gap-8 pb-16 border-b border-white/10"
+					class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-12 md:gap-8 pb-16 border-b border-white/10"
 				>
 					<!-- Brand and Newsletter -->
 					<!-- Brand, Socials and Contact info -->
-					<div class="md:col-span-2 space-y-6 text-left">
+					<div class="md:col-span-2 lg:col-span-2 space-y-6 text-left">
 						<a
 							href="/"
 							class="inline-block bg-white p-3 rounded-2xl border border-slate-100 hover:scale-[1.02] transition-transform max-w-[200px]"
@@ -1624,6 +1624,60 @@ if (isAdminPage) {
 						<h2
 							class="text-sm font-semibold text-white tracking-wider uppercase font-sans"
 						>
+							Surat Branches & Visas
+						</h2>
+						<ul
+							class="space-y-2.5 text-sm text-primary-blue font-sans font-medium"
+						>
+							<li>
+								<a
+									href="/visa-consultant-in-surat"
+									class="hover:text-accent-cyan transition-colors"
+									>Surat Head Office</a
+								>
+							</li>
+							<li>
+								<a
+									href="/visa-consultant-varachha-surat"
+									class="hover:text-accent-cyan transition-colors"
+									>Mota Varachha Branch</a
+								>
+							</li>
+							<li>
+								<a
+									href="/canada-pr"
+									class="hover:text-accent-cyan transition-colors"
+									>Canada PR & Express Entry</a
+								>
+							</li>
+							<li>
+								<a
+									href="/ielts-classes-in-surat"
+									class="hover:text-accent-cyan transition-colors"
+									>IELTS & PTE Coaching</a
+								>
+							</li>
+							<li>
+								<a
+									href="/visa-refusal-help"
+									class="hover:text-accent-cyan transition-colors"
+									>Visa Refusal Help</a
+								>
+							</li>
+							<li>
+								<a
+									href="/eligibility"
+									class="hover:text-accent-cyan transition-colors"
+									>Eligibility Matcher</a
+								>
+							</li>
+						</ul>
+					</div>
+
+					<div class="space-y-4 text-left">
+						<h2
+							class="text-sm font-semibold text-white tracking-wider uppercase font-sans"
+						>
 							Trust & Legal
 						</h2>
 						<ul
@@ -1691,6 +1745,28 @@ if (isAdminPage) {
 			import Lenis from "lenis";
 
 			function initPage() {
+				const safeStorage = {
+					getItem(key: string, isSession = false): string | null {
+						try {
+							return isSession ? sessionStorage.getItem(key) : localStorage.getItem(key);
+						} catch (e) {
+							return null;
+						}
+					},
+					setItem(key: string, val: string, isSession = false): void {
+						try {
+							if (isSession) sessionStorage.setItem(key, val);
+							else localStorage.setItem(key, val);
+						} catch (e) {}
+					},
+					removeItem(key: string, isSession = false): void {
+						try {
+							if (isSession) sessionStorage.removeItem(key);
+							else localStorage.removeItem(key);
+						} catch (e) {}
+					}
+				};
+
 				const isAdminRoute = window.location.pathname.startsWith("/admin");
 				// Mobile Menu Drawer Handlers
 				const mobileMenuBtn = document.getElementById("mobile-menu-btn");
@@ -1881,7 +1957,7 @@ if (isAdminPage) {
 				
 				const urlParams = new URLSearchParams(window.location.search);
 				const isTestMode = urlParams.get("test-modal") === "true";
-				const isModalShown = !isTestMode && localStorage.getItem("softModalShown") === "true";
+				const isModalShown = !isTestMode && safeStorage.getItem("softModalShown") === "true";
 
 				// Detect social campaign traffic (IG/FB referral or utm parameters)
 				const isSocialAdTraffic = urlParams.has("fbclid") ||
@@ -1898,7 +1974,7 @@ if (isAdminPage) {
 					// Don't show soft modal if main promo popup is currently visible or recently closed
 					const mainPromo = document.getElementById("promo-popup-overlay");
 					if (mainPromo && !mainPromo.classList.contains("hidden")) return;
-					const lastPromoClosed = sessionStorage.getItem("main_popup_closed_at");
+					const lastPromoClosed = safeStorage.getItem("main_popup_closed_at", true);
 					if (lastPromoClosed && (Date.now() - parseInt(lastPromoClosed, 10)) < 60000) return;
 
 					const modal = document.getElementById("soft-cta-modal");
@@ -1921,7 +1997,7 @@ if (isAdminPage) {
 						card.classList.remove("scale-100", "opacity-100");
 						card.classList.add("scale-95", "opacity-0");
 						(window as any).lenis?.start();
-						localStorage.setItem("softModalShown", "true");
+						safeStorage.setItem("softModalShown", "true");
 					}
 				};
 
@@ -1932,7 +2008,7 @@ if (isAdminPage) {
 					}
 					hasClickedCTA = true;
 					if (!isTestMode) {
-						localStorage.setItem("softModalShown", "true");
+						safeStorage.setItem("softModalShown", "true");
 					}
 				};
 
@@ -2062,9 +2138,9 @@ if (isAdminPage) {
 					});
 
 					// Handle alerts stored in sessionStorage across page reloads
-					const savedAlert = sessionStorage.getItem("admin_alert");
+					const savedAlert = safeStorage.getItem("admin_alert", true);
 					if (savedAlert) {
-						sessionStorage.removeItem("admin_alert");
+						safeStorage.removeItem("admin_alert", true);
 						try {
 							const { type, message } = JSON.parse(savedAlert);
 							if (mainEl) {
@@ -2111,7 +2187,7 @@ if (isAdminPage) {
 					if (softModalTimer) clearTimeout(softModalTimer);
 				}, { once: true });
 			}
-45
+
 			// Bind page initialization to Astro page load event
 			document.addEventListener("astro:page-load", initPage);
 

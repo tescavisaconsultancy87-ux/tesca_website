@@ -203,9 +203,21 @@ export default function InquiryFormCRM() {
   const [pendingDraft, setPendingDraft] = useState<FormData | null>(null);
   const [showClearConfirmModal, setShowClearConfirmModal] = useState(false);
 
+const safeStorage = {
+  getItem: (key: string): string | null => {
+    try { return typeof window !== 'undefined' ? localStorage.getItem(key) : null; } catch (e) { return null; }
+  },
+  setItem: (key: string, val: string): void => {
+    try { if (typeof window !== 'undefined') localStorage.setItem(key, val); } catch (e) {}
+  },
+  removeItem: (key: string): void => {
+    try { if (typeof window !== 'undefined') localStorage.removeItem(key); } catch (e) {}
+  }
+};
+
   // Load from local storage with confirmation modal
   useEffect(() => {
-    const saved = localStorage.getItem("tesca_crm_inquiry");
+    const saved = safeStorage.getItem("tesca_crm_inquiry");
     if (saved) {
       try {
         const parsed = JSON.parse(saved);
@@ -246,7 +258,7 @@ export default function InquiryFormCRM() {
   };
 
   const clearDraftAndStartFresh = () => {
-    localStorage.removeItem("tesca_crm_inquiry");
+    safeStorage.removeItem("tesca_crm_inquiry");
     const newLeadId = generateLeadId();
     setFormData({ ...INITIAL_STATE, leadId: newLeadId });
     setCurrentStep(1);
@@ -277,7 +289,7 @@ export default function InquiryFormCRM() {
 
     setFormData(prev => {
       const updated = { ...prev, ...fields };
-      localStorage.setItem("tesca_crm_inquiry", JSON.stringify(updated));
+      safeStorage.setItem("tesca_crm_inquiry", JSON.stringify(updated));
       return updated;
     });
     // Clear validation error when editing field
@@ -514,7 +526,7 @@ Comments/Additional Info: ${formData.comments || "None"}`;
         }
       }
       setIsSuccess(true);
-      localStorage.removeItem("tesca_crm_inquiry");
+      safeStorage.removeItem("tesca_crm_inquiry");
     } catch (err: any) {
       console.error("Submission failed:", err);
       if (typeof window !== "undefined" && (window as any).reportClientError) {

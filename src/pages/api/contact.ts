@@ -60,7 +60,15 @@ export const POST: APIRoute = async ({ request, locals }) => {
       return jsonResponse({ error: "Invalid email address format." }, 400);
     }
 
-    if (phone && phone !== 'WhatsApp Chat' && !validatePhone(phone)) {
+    // Check phone validation: allow valid phone numbers, or WhatsApp tracking placeholders
+    const isWhatsAppPlaceholder = phone && (
+      phone.toLowerCase().includes('whatsapp') ||
+      phone === 'Initiated WhatsApp Chat' ||
+      phone === 'WhatsApp Chat' ||
+      phone === 'WhatsApp Direct Click'
+    );
+
+    if (phone && !isWhatsAppPlaceholder && !validatePhone(phone)) {
       return jsonResponse({ error: "Invalid phone number format." }, 400);
     }
 
