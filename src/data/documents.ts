@@ -90,6 +90,45 @@ export const documents: DocumentItem[] = [
     tags: ['APAAR ID', 'One Nation One Student ID', 'Academic Bank of Credits', 'DigiLocker', 'Overseas Education', 'Student Visa Checklist'],
     featured: true,
     author: 'TESCA Advisory Desk'
+  },
+  {
+    id: 'doc-uk-psw-01',
+    slug: 'uk-psw-graduate-visa-guide',
+    title: 'UK PSW (Graduate Visa) 2026–2027 Rules & Complete Guide',
+    description: 'Comprehensive overview of UK Graduate Route (PSW) changes taking effect from 1 January 2027. Explains the 2-year vs 18-month duration rules, university completion reporting deadline (31 December 2026), pre-application checklist, fee breakdown, and step-by-step submission.',
+    category: 'Visa & Immigration',
+    pdfUrl: '/material/UK_PSW_Information.pdf',
+    fileSize: '29 KB',
+    updatedAt: 'October 2026',
+    tags: ['UK PSW', 'Graduate Visa', 'Post Study Work', 'UKVI', 'UK Student Visa', 'Immigration', 'UK Work Permit'],
+    featured: true,
+    author: 'TESCA Immigration Team'
+  },
+  {
+    id: 'doc-uk-yps-01',
+    slug: 'uk-yps-interview-questions-guide',
+    title: 'UK Lottery Visa (India YPS) – Interview Questions & Preparation Guide',
+    description: 'Essential interview preparation handbook for candidates selected in the UK India Young Professionals Scheme (YPS / Lottery Visa) ballot. Detailed guide on answering questions regarding degrees, £2,530 funds rule, stay plans, document checklist, and interview tips.',
+    category: 'Visa & Immigration',
+    pdfUrl: '/material/UK_YPS_Interview_Questions.pdf',
+    fileSize: '42 KB',
+    updatedAt: 'October 2026',
+    tags: ['UK YPS', 'India Young Professionals Scheme', 'UK Lottery Visa', 'Visa Interview Questions', 'Youth Mobility Scheme', 'UK Visa', 'Immigration'],
+    featured: true,
+    author: 'TESCA Visa Desk'
+  },
+  {
+    id: 'doc-uk-nhs-01',
+    slug: 'nhs-hiring-sectors-list-guide',
+    title: 'NHS UK Hiring Sectors List – Jobs Beyond Doctors & Nurses',
+    description: 'Curated blueprint of 10 key departments hiring international candidates across the UK National Health Service (NHS), including IT & Digital, Data & Analytics, Finance, Healthcare Support (HCA), Admin, and Logistics with visa sponsorship insights.',
+    category: 'Visa & Immigration',
+    pdfUrl: '/material/NHS_Hiring_Sectors_List.pdf',
+    fileSize: '32 KB',
+    updatedAt: 'October 2026',
+    tags: ['NHS Jobs', 'UK Healthcare Jobs', 'Non Clinical NHS Roles', 'UK Visa Sponsorship', 'Work in UK', 'NHS Hiring Sectors', 'Skilled Worker Visa'],
+    featured: true,
+    author: 'TESCA Career Advisory'
   }
 ];
 
@@ -121,6 +160,15 @@ export function getDocumentBySlug(slug: string): DocumentItem | undefined {
       return true;
     }
     if (doc.slug.includes('uk-pr-stay') && norm.includes('uk-pr-stay')) {
+      return true;
+    }
+    if (doc.slug.includes('uk-psw') && (norm.includes('psw') || norm.includes('uk-psw'))) {
+      return true;
+    }
+    if (doc.slug.includes('uk-yps') && (norm.includes('yps') || norm.includes('lottery-visa'))) {
+      return true;
+    }
+    if (doc.slug.includes('nhs-hiring') && (norm.includes('nhs') || norm.includes('hiring-sectors'))) {
       return true;
     }
     return false;

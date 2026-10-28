@@ -39,6 +39,28 @@ export function getStaticPaths() {
       paths.push({ params: { slug: 'apaar-id' }, props: { doc } });
       paths.push({ params: { slug: 'apaar-id-master-guide' }, props: { doc } });
     }
+    if (doc.slug.includes('uk-psw')) {
+      paths.push({ params: { slug: 'uk-psw-graduate-visa-guide' }, props: { doc } });
+      paths.push({ params: { slug: 'uk-psw-graduate-visa' }, props: { doc } });
+      paths.push({ params: { slug: 'uk-psw-information' }, props: { doc } });
+      paths.push({ params: { slug: 'uk-psw-guide' }, props: { doc } });
+      paths.push({ params: { slug: 'uk-psw' }, props: { doc } });
+    }
+    if (doc.slug.includes('uk-yps')) {
+      paths.push({ params: { slug: 'uk-yps-interview-questions-guide' }, props: { doc } });
+      paths.push({ params: { slug: 'uk-yps-interview-questions' }, props: { doc } });
+      paths.push({ params: { slug: 'uk-yps-guide' }, props: { doc } });
+      paths.push({ params: { slug: 'uk-yps' }, props: { doc } });
+      paths.push({ params: { slug: 'uk-lottery-visa' }, props: { doc } });
+      paths.push({ params: { slug: 'uk-india-young-professionals-scheme' }, props: { doc } });
+    }
+    if (doc.slug.includes('nhs-hiring')) {
+      paths.push({ params: { slug: 'nhs-hiring-sectors-list-guide' }, props: { doc } });
+      paths.push({ params: { slug: 'nhs-hiring-sectors-list' }, props: { doc } });
+      paths.push({ params: { slug: 'nhs-hiring-sectors' }, props: { doc } });
+      paths.push({ params: { slug: 'nhs-jobs-guide' }, props: { doc } });
+      paths.push({ params: { slug: 'nhs-jobs' }, props: { doc } });
+    }
   }
   const uniqueMap = new Map();
   for (const p of paths) {
@@ -177,6 +199,87 @@ const docHighlightsMap: Record<string, { summary: string; bullets: string[]; faq
       {
         q: "How do I create an APAAR ID?",
         a: "Students can generate their APAAR ID through the DigiLocker portal or the ABC.gov.in website using their Aadhaar number and educational institute enrollment details."
+      }
+    ]
+  },
+  'uk-psw-graduate-visa-guide': {
+    summary: "Detailed breakdown of the UK Graduate (PSW) Visa rules and the critical policy shift taking effect from 1 January 2027, explaining eligibility timelines, course completion reporting conditions, and pre-application checklists.",
+    bullets: [
+      "Submit before 31 December 2026 to secure the full 2-year post-study work visa (3 years for PhD).",
+      "Applications submitted on or after 1 January 2027 will be granted for 18 months instead of 2 years.",
+      "Visa length is determined strictly by the application submission date, NOT when your university course finishes.",
+      "University must officially report your course completion to the Home Office (UKVI) before you can submit on Gov.uk."
+    ],
+    faqs: [
+      {
+        q: "When does the UK Graduate (PSW) visa change from 2 years to 18 months?",
+        a: "The duration change applies to applications submitted on or after 1 January 2027. If your application is submitted and fees are paid by 31 December 2026, you will receive the full 2-year permission."
+      },
+      {
+        q: "What are the essential conditions to receive 2 years on the UK Graduate visa?",
+        a: "1) Application submitted and fees paid before 31 December 2026. 2) University has reported course completion to UKVI and sent confirmation email. 3) Valid Student Visa at time of application. 4) Applying from inside the UK."
+      },
+      {
+        q: "What should I do if my course finishes in January or February 2027?",
+        a: "Biometrics appointments can be scheduled in January or February, but the online application must be submitted before your current visa expires. Since universities usually report completion after exams/marking, consult your International Student Office early."
+      },
+      {
+        q: "What documents must be ready before applying?",
+        a: "Valid Passport, current Student Visa / BRP or eVisa (UKVI account), University Completion Confirmation Email, Course details (Dates and Institution), and payment card for the Visa application fee and Immigration Health Surcharge (IHS)."
+      }
+    ]
+  },
+  'uk-yps-interview-questions-guide': {
+    summary: "Real embassy interview questions, document preparation checklist, and tips for Indian graduates selected in the UK India Young Professionals Scheme (YPS / Lottery Visa) ballot.",
+    bullets: [
+      "Authentic interview questions asked by UK embassy officials covering degree verification, £2,530 funds, and UK stay plans.",
+      "Strict £2,530 savings rule: funds must be held continuously for at least 28 consecutive days before applying.",
+      "Complete checklist of documents: degree certificates, all marksheets, convocation ceremony photos, and approved TB test certificate.",
+      "Practical tips for answering naturally without memorizing and properly justifying any large bank deposits."
+    ],
+    faqs: [
+      {
+        q: "Do all applicants selected in the UK YPS ballot get an embassy interview?",
+        a: "No, not everyone is called. However, UK Visas and Immigration (UKVI) conducts random phone interviews to verify applicant authenticity, degree genuineness, and origin of financial savings."
+      },
+      {
+        q: "What is the financial savings requirement for India YPS?",
+        a: "Applicants must hold at least £2,530 in their personal bank account continuously for 28 consecutive days, with the 28th day falling within 31 days prior to submitting the visa application."
+      },
+      {
+        q: "What documents are required for the YPS application and interview?",
+        a: "Valid Passport, Bachelor's degree certificate and all semester marksheets, convocation ceremony photos, 28-day continuous bank statement, TB test certificate from an approved UKVI clinic, ballot selection confirmation email, and passport photos."
+      },
+      {
+        q: "What is the deadline to apply after winning the YPS ballot?",
+        a: "Selected candidates have exactly 90 days from the date of the invitation email to submit the online visa application and pay the visa fee (£340) and Immigration Health Surcharge (£1,552 for 2 years)."
+      }
+    ]
+  },
+  'nhs-hiring-sectors-list-guide': {
+    summary: "Comprehensive directory of 10 key hiring sectors in the UK National Health Service (NHS) recruiting international talent beyond traditional doctor and nurse roles, including non-clinical and support pathways.",
+    bullets: [
+      "Over 350+ distinct careers across NHS hospitals and healthcare trusts beyond clinical medical staff.",
+      "In-demand professional sectors: IT & Cyber Security, Data & Business Intelligence, Healthcare Administration, and Finance.",
+      "Essential support roles: Healthcare Assistants (HCA), Support Workers, Pharmacy Assistants, Procurement, and Logistics.",
+      "Guidance on locating NHS job listings on jobs.nhs.uk that provide UK Skilled Worker visa sponsorship."
+    ],
+    faqs: [
+      {
+        q: "Can non-medical professionals get jobs and visa sponsorship in the UK NHS?",
+        a: "Yes. Many NHS Foundation Trusts sponsor international candidates for qualifying roles in IT, software engineering, data analysis, finance, medical secretarial work, and pharmacy support."
+      },
+      {
+        q: "What are the top 10 hiring sectors in the NHS?",
+        a: "1) IT & Digital, 2) Data & Analytics, 3) Management & Administration, 4) Finance, 5) HR & Recruitment, 6) Estates & Facilities, 7) Procurement & Logistics, 8) Communications & Marketing, 9) Healthcare Support, and 10) Clinical Roles."
+      },
+      {
+        q: "Does every NHS job include UK visa sponsorship?",
+        a: "No. Each individual job posting on jobs.nhs.uk states whether the trust can sponsor a Certificate of Sponsorship (CoS) for that specific vacancy. Always verify the salary threshold and sponsorship eligibility before applying."
+      },
+      {
+        q: "Where do I search and apply for verified NHS jobs?",
+        a: "All legitimate UK NHS jobs are posted directly on the official portal: jobs.nhs.uk and individual trust websites. Never pay any fee for NHS recruitment."
       }
     ]
   }
