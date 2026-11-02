@@ -124,10 +124,10 @@ import Layout from "../layouts/Layout.astro";
             <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
               <div>
                 <div class="flex items-center justify-between mb-1.5">
-                  <label for="cf-phone" class="text-xs font-bold uppercase tracking-wider text-slate-600 font-sans block">Phone (optional)</label>
+                  <label for="cf-phone" class="text-xs font-bold uppercase tracking-wider text-slate-600 font-sans block">Mobile Number *</label>
                   <span id="cf-phone-counter" class="text-[10px] font-bold text-amber-600 font-mono">0/10 digits</span>
                 </div>
-                <input id="cf-phone" name="phone" type="tel" maxlength={10}
+                <input id="cf-phone" name="phone" type="tel" maxlength={10} required
                   placeholder="e.g. 9824152731"
                   class="w-full px-4 py-3 bg-white border border-slate-200 focus:border-[#0F4C81] focus:ring-2 focus:ring-[#0F4C81]/15 rounded-xl text-sm placeholder-slate-400 focus:outline-none transition-all font-mono"
                 />
@@ -250,11 +250,12 @@ import Layout from "../layouts/Layout.astro";
           }
         };
 
-        if (phoneRaw && phone.length !== 10) {
+        if (!phone || phone.length !== 10) {
           if (typeof window !== "undefined" && (window as any).showToast) {
-            (window as any).showToast("Please enter a valid 10-digit phone number.", "warning");
+            (window as any).showToast("Please enter a valid 10-digit mobile number.", "warning");
           }
           resetBtn();
+          phoneEl?.focus();
           return;
         }
 

@@ -45,39 +45,32 @@ export const POST: APIRoute = async ({ request, locals }) => {
     } = body;
 
     const isWhatsAppLead = lead_type === 'whatsapp';
-    const effectiveName = (name && name.trim()) || (isWhatsAppLead ? 'WhatsApp Visitor' : '');
-    const effectiveMessage = (message && message.trim()) || (isWhatsAppLead ? `Direct WhatsApp chat initiated from ${page_url || source || 'Website'}` : '');
+    const rawName = (name && name.trim()) || '';
+    const rawMessage = (message && message.trim()) || (isWhatsAppLead ? `WhatsApp consultation request for ${target_country || country || destination || 'Study / Visa'}` : '');
 
-    if (!effectiveName || !effectiveMessage) {
-      return jsonResponse({ error: "Missing required fields (name, message)." }, 400);
+    if (!rawName) {
+      return jsonResponse({ error: "Full Name is mandatory." }, 400);
     }
 
-    if (!validateName(effectiveName, 200)) {
+    if (!validateName(rawName, 200)) {
       return jsonResponse({ error: "Invalid name format or length (max 200 characters)." }, 400);
+    }
+
+    // Phone number is strictly mandatory for all leads (no dummy placeholders allowed)
+    if (!phone || !validatePhone(phone) || phone.toLowerCase().includes('click') || phone.toLowerCase().includes('whatsapp') || phone.toLowerCase().includes('visitor')) {
+      return jsonResponse({ error: "A valid mobile phone number is mandatory." }, 400);
     }
 
     if (email && !validateEmail(email)) {
       return jsonResponse({ error: "Invalid email address format." }, 400);
     }
 
-    // Check phone validation: allow valid phone numbers, or WhatsApp tracking placeholders
-    const isWhatsAppPlaceholder = phone && (
-      phone.toLowerCase().includes('whatsapp') ||
-      phone === 'Initiated WhatsApp Chat' ||
-      phone === 'WhatsApp Chat' ||
-      phone === 'WhatsApp Direct Click'
-    );
-
-    if (phone && !isWhatsAppPlaceholder && !validatePhone(phone)) {
-      return jsonResponse({ error: "Invalid phone number format." }, 400);
-    }
-
-    const cleanName = sanitizeText(effectiveName, 200);
+    const cleanName = sanitizeText(rawName, 200);
     const cleanEmail = email ? sanitizeText(email, 254).toLowerCase() : null;
-    const cleanPhone = phone ? sanitizeText(phone, 30) : (isWhatsAppLead ? 'WhatsApp Chat' : null);
-    const cleanSubject = subject ? sanitizeText(subject, 200) : (isWhatsAppLead ? 'WhatsApp Direct Inquiry' : '');
+    const cleanPhone = sanitizeText(phone.trim(), 30);
+    const cleanSubject = subject ? sanitizeText(subject, 200) : (isWhatsAppLead ? 'WhatsApp Inquiry' : '');
     const cleanCategory = ['bug', 'error', 'general'].includes(category) ? category : 'general';
-    const cleanMessage = sanitizeText(effectiveMessage, 2000);
+    const cleanMessage = sanitizeText(rawMessage, 2000);
     const cleanCity = city ? sanitizeText(city, 100) : null;
 
     // Structured Country & Visa Type capture

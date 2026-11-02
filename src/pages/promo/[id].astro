@@ -18,7 +18,7 @@ if (error || !popup) {
 
 const reqFields = Array.isArray(popup.required_fields) ? popup.required_fields : ["name", "phone"];
 const isNameReq = reqFields.includes("name");
-const isPhoneReq = reqFields.includes("phone");
+const isPhoneReq = true; // Mobile number is mandatory
 const isEmailReq = reqFields.includes("email");
 
 const whatsappMsg = encodeURIComponent(`Hello TESCA Visa Consultancy, I saw your update "${popup.title}" and would like more details.`);

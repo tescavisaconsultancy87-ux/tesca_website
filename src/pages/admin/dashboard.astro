@@ -467,8 +467,8 @@ const cards = [
                         )}
                       </td>
                       <td class="py-3.5 px-4 text-slate-600 whitespace-nowrap">
-                        {lead.phone === 'WhatsApp Chat' ? (
-                          <div class="text-[11px] text-slate-400 italic">Anonymous Click</div>
+                        {(!lead.phone || lead.phone === 'WhatsApp Chat' || lead.phone === 'WhatsApp Direct Click' || lead.phone.toLowerCase().includes('click') || lead.phone.toLowerCase().includes('whatsapp') || lead.phone.replace(/\D/g, '').length < 6) ? (
+                          <div class="text-[11px] text-amber-700 bg-amber-50 px-2 py-0.5 rounded border border-amber-200 font-semibold w-fit">⚠️ Click Only (No Number)</div>
                         ) : (
                           <div class="font-semibold text-slate-800 font-mono">{lead.phone}</div>
                         )}

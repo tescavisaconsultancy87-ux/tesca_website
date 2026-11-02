@@ -38,16 +38,16 @@ export const POST: APIRoute = async ({ request, locals }) => {
       }
     }
 
-    // 1. Basic dynamic validation
-    if (requiredFields.includes("name") && !name) {
+    // 1. Mandatory phone & name validation
+    if (!name || !validateName(name)) {
       return new Response(JSON.stringify({ error: "Full Name is required." }), {
         status: 400,
         headers: { "Content-Type": "application/json" }
       });
     }
 
-    if (requiredFields.includes("phone") && !phone) {
-      return new Response(JSON.stringify({ error: "Mobile Number is required." }), {
+    if (!phone || !validatePhone(phone)) {
+      return new Response(JSON.stringify({ error: "A valid mobile phone number is mandatory." }), {
         status: 400,
         headers: { "Content-Type": "application/json" }
       });

@@ -205,13 +205,6 @@
             </svg>
           </span>
         </button>
-        <button
-          type="button"
-          id="wa-direct-skip-btn"
-          class="w-full py-1.5 text-center text-xs text-slate-500 hover:text-emerald-700 font-semibold transition-colors cursor-pointer bg-transparent border-none block"
-        >
-          Or chat directly on WhatsApp without saving details &rarr;
-        </button>
       </div>
 
       <!-- Trust Badges -->
@@ -354,28 +347,7 @@
       }
     });
 
-    const directSkipBtn = document.getElementById('wa-direct-skip-btn');
-    directSkipBtn?.addEventListener('click', () => {
-      const targetHref = targetHrefInput?.value || 'https://wa.me/919824152731?text=Hello%20TESCA%2C%20I%20am%20visiting%20your%20website%20and%20would%20like%20to%20consult%20about%20your%20visa%20and%20study%20abroad%20services.';
-      sendLeadToDatabase({
-        name: 'Direct WhatsApp Visitor',
-        phone: 'WhatsApp Direct Click',
-        source: `Website WhatsApp (${window.location.pathname}) [Skip Button]`,
-        target_country: targetCountrySelect?.value || null,
-        visa_type: visaTypeSelect?.value || null,
-        document_title: docTitleInput?.value || null,
-        document_slug: docSlugInput?.value || null,
-        page_url: window.location.href,
-        message: `User chose to open WhatsApp directly without saving details from: ${window.location.pathname}`
-      });
-      if ((window as any).trackClickEvent) {
-        (window as any).trackClickEvent('whatsapp', targetHref);
-      }
-      closeModal();
-      window.open(targetHref, '_blank', 'noopener,noreferrer');
-    });
-
-    // Send lead to /api/contact
+    // Send lead to /api/contact (Only with valid verified contact data)
     async function sendLeadToDatabase(data: {
       name: string;
       phone: string;
@@ -387,6 +359,10 @@
       page_url: string;
       message: string;
     }) {
+      if (!data.phone || data.phone.toLowerCase().includes('click') || data.phone.toLowerCase().includes('visitor')) {
+        return; // Guard: Never send headless or placeholder leads without a real mobile number
+      }
+
       const payload = {
         name: data.name,
         phone: data.phone,
@@ -417,7 +393,7 @@
       }
     }
 
-    // Global interceptor for all WhatsApp links
+    // Global interceptor for all WhatsApp links to enforce mobile number collection
     document.addEventListener('click', (e) => {
       const rawTarget = e.target;
       if (!rawTarget) return;
@@ -446,35 +422,16 @@
       const defaultSource = isHomepage ? 'Website Direct WhatsApp (Homepage)' : `Website WhatsApp (${window.location.pathname})`;
       const sourceLabel = docTitle ? `WhatsApp Guide: ${docTitle} (${ctaLoc})` : defaultSource;
 
-      // Allow links to bypass lead capture modal if marked for direct WhatsApp or already in a profile modal
-      if (
-        link.hasAttribute('data-direct-wa') ||
-        link.getAttribute('data-bypass-lead') === 'true' ||
-        link.closest('[data-direct-wa]') ||
-        link.id === 'visa-modal-whatsapp'
-      ) {
-        sendLeadToDatabase({
-          name: 'Direct WhatsApp Visitor',
-          phone: 'WhatsApp Direct Click',
-          source: `${sourceLabel} [Direct 1-Tap]`,
-          target_country: null,
-          visa_type: null,
-          document_title: docTitle || null,
-          document_slug: docSlug || null,
-          page_url: window.location.href,
-          message: `User clicked direct WhatsApp button from: ${window.location.pathname}`
-        });
-        if ((window as any).trackClickEvent) {
-          (window as any).trackClickEvent('whatsapp', href);
-        }
-        return;
+      // Track the click event for analytics only (never create a database lead without phone)
+      if ((window as any).trackClickEvent) {
+        (window as any).trackClickEvent('whatsapp', href);
       }
 
-      // Check if user already provided their verified details before
+      // Check if user already provided their verified details before on this device
       const savedUser = getSavedUser();
 
       if (savedUser) {
-        // Returning verified user - log the visit and open directly
+        // Returning verified user - log the visit with their real verified number and open WhatsApp directly
         sendLeadToDatabase({
           name: savedUser.name,
           phone: savedUser.phone || savedUser.fullPhone,
@@ -491,7 +448,7 @@
         return;
       }
 
-      // Intercept and show lead capture modal with direct 1-tap skip option
+      // New visitor: intercept and open modal to capture verified name & mobile number first
       e.preventDefault();
       e.stopPropagation();
       openModal(href, docTitle, docSlug, ctaLoc);
