@@ -7,6 +7,8 @@ export interface BlogPost {
   tagBg: string;
   link: string;
   content: string;
+  views?: number;
+  source?: string;
   faq?: { q: string; a: string }[];
 }
 

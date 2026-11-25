@@ -11,6 +11,10 @@ CREATE TABLE IF NOT EXISTS public.blog_posts (
     tag_bg TEXT NOT NULL,
     content TEXT NOT NULL,
     faq JSONB DEFAULT '[]'::jsonb,
+    views INTEGER NOT NULL DEFAULT 0,
+    source TEXT NOT NULL DEFAULT 'manual',
+    topic_key TEXT,
+    source_url TEXT,
     is_published BOOLEAN DEFAULT true,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
 );

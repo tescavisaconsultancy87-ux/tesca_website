@@ -1,0 +1,46 @@
+name: Daily Auto-Blog Publisher
+
+on:
+  schedule:
+    # Runs every day at 03:30 UTC (09:00 AM IST)
+    - cron: '30 3 * * *'
+  workflow_dispatch:
+    inputs:
+      force:
+        description: 'Publish even if an auto post already ran today'
+        required: false
+        default: false
+        type: boolean
+
+concurrency:
+  group: daily-auto-blog
+  cancel-in-progress: false
+
+jobs:
+  publish-daily-blog:
+    name: Generate & Publish Unique Daily Blog (No AI Key)
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Publish Daily Study-Abroad Blog Post
+        env:
+          PUBLIC_SUPABASE_URL: "https://zlsauoosumpnbyouhdfk.supabase.co"
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+        run: |
+          if [ "${{ inputs.force }}" = "true" ]; then
+            node scripts/auto-publish-blog.mjs --force
+          else
+            node scripts/auto-publish-blog.mjs
+          fi

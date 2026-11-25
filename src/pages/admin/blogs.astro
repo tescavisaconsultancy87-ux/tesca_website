@@ -397,18 +397,24 @@ try {
                 <table class="w-full min-w-[700px] text-left border-collapse text-xs">
                   <thead>
                     <tr class="bg-slate-50 text-slate-500 border-b border-slate-200 font-bold uppercase tracking-wider">
-                      <th class="px-5 py-4 w-[250px]">Title</th>
+                      <th class="px-5 py-4 w-[240px]">Title</th>
                       <th class="px-4 py-4 w-[100px]">Tag</th>
-                      <th class="px-4 py-4 w-[100px]">Date</th>
+                      <th class="px-4 py-4 w-[95px]">Date</th>
+                      <th class="px-4 py-4 w-[70px]">Views</th>
                       <th class="px-4 py-4 w-[80px]">Status</th>
-                      <th class="px-4 py-4 text-right w-[130px]">Actions</th>
+                      <th class="px-4 py-4 text-right w-[120px]">Actions</th>
                     </tr>
                   </thead>
                   <tbody class="divide-y divide-slate-100 font-sans text-xs">
                     {blogPosts.map((post) => (
                       <tr class="hover:bg-slate-50 transition-colors">
                         <td class="px-5 py-4 font-semibold text-slate-700">
-                          <div class="truncate max-w-[230px]" title={post.title}>{post.title}</div>
+                          <div class="flex items-center gap-1.5">
+                            <span class="truncate max-w-[190px]" title={post.title}>{post.title}</span>
+                            {post.source === 'auto' && (
+                              <span class="text-[9px] font-bold uppercase px-1.5 py-0.5 rounded bg-amber-50 text-amber-700 border border-amber-200 shrink-0">Auto</span>
+                            )}
+                          </div>
                           <div class="text-[10px] text-slate-400 font-mono mt-0.5 truncate max-w-[230px]">/{post.slug}</div>
                         </td>
                         <td class="px-4 py-4 whitespace-nowrap">
@@ -417,6 +423,7 @@ try {
                           </span>
                         </td>
                         <td class="px-4 py-4 text-slate-600 whitespace-nowrap">{post.date}</td>
+                        <td class="px-4 py-4 text-slate-700 font-bold tabular-nums whitespace-nowrap">{post.views ?? 0}</td>
                         <td class="px-4 py-4 whitespace-nowrap">
                           <form method="POST" class="inline toggle-publish-form">
                             <input type="hidden" name="action" value="toggle-publish" />
