@@ -427,44 +427,18 @@ export default function AICounsellor() {
     }, 600);
   }, []);
 
-  const whatsappNumber = "919824152731";
-  const whatsappMsg = encodeURIComponent(
-    "Hello TESCA Visa Consultancy,\n\nI hope this message finds you well. I would like to consult about studying abroad and your expert guidance on visa requirements, university admissions, and the application process.\n\nThank you."
-  );
-  const whatsappUrl = `https://wa.me/${whatsappNumber}?text=${whatsappMsg}`;
-
   return (
-    <div className="fixed bottom-[88px] md:bottom-6 right-3 sm:right-6 z-50 font-sans pointer-events-auto text-left">
+    <div className="fixed bottom-[84px] right-4 sm:right-6 z-50 font-sans pointer-events-auto text-left">
       
-      {/* Floating Buttons Stack */}
+      {/* Floating Chat Toggle Button (positioned above global WhatsApp CTA) */}
       {!isOpen && (
-        <div className="flex flex-col items-end gap-3">
-          {/* WhatsApp Button */}
-          <a
-            href={whatsappUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-            aria-label="Chat on WhatsApp"
-            className="relative group p-3.5 rounded-full bg-[#25D366] text-white shadow-lg hover:scale-105 transition-all duration-300 hidden md:flex items-center justify-center"
-            title="Chat on WhatsApp"
-          >
-            <span className="absolute inset-0 rounded-full bg-[#25D366]/30 animate-ping opacity-60 group-hover:opacity-100" style={{ animationDuration: '3.5s' }}></span>
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              viewBox="0 0 24 24"
-              className="w-5 h-5 relative z-10 fill-white"
-              aria-hidden="true"
-            >
-              <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/>
-              <path d="M12 0C5.373 0 0 5.373 0 12c0 2.128.559 4.122 1.532 5.859L.057 23.5l5.784-1.518A11.932 11.932 0 0012 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 22c-1.846 0-3.573-.492-5.063-1.35L2.5 21.869l1.244-4.287A10 10 0 012 12C2 6.477 6.477 2 12 2s10 4.477 10 10-4.477 10-10 10z"/>
-            </svg>
-          </a>
-
-          {/* Chat Toggle Button */}
+        <div className="flex flex-col items-end">
           <button
+            type="button"
             onClick={() => setIsOpen(true)}
             aria-label="Open Assistant"
-            className="relative group p-3.5 rounded-full bg-accent-blue text-white shadow-lg hover:scale-105 transition-all duration-300 border border-slate-200"
+            title="TESCA AI Assistant"
+            className="relative group p-3.5 rounded-full bg-accent-blue text-white shadow-lg hover:scale-105 active:scale-95 transition-all duration-300 border border-slate-200 cursor-pointer"
           >
             <span className="absolute inset-0 rounded-full bg-accent-blue/20 animate-ping opacity-75 group-hover:opacity-100" style={{ animationDuration: '3s' }}></span>
             <MessageSquare className="w-5 h-5 relative z-10" />
@@ -477,7 +451,7 @@ export default function AICounsellor() {
         <div 
           id="ai-chat-window-panel"
           data-lenis-prevent
-          className="w-[calc(100vw-2rem)] xs:w-[300px] sm:w-[340px] max-h-[calc(100vh-110px)] h-[440px] rounded-2xl border border-slate-200 bg-white/95 backdrop-blur-xl shadow-2xl flex flex-col justify-between overflow-hidden overscroll-contain animate-[chatOpen_0.3s_cubic-bezier(0.16,1,0.3,1)]"
+          className="w-[calc(100vw-2rem)] xs:w-[300px] sm:w-[340px] max-h-[calc(100vh-120px)] h-[440px] rounded-2xl border border-slate-200 bg-white/95 backdrop-blur-xl shadow-2xl flex flex-col justify-between overflow-hidden overscroll-contain animate-[chatOpen_0.3s_cubic-bezier(0.16,1,0.3,1)]"
         >
           
           {/* Header */}

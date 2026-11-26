@@ -4,6 +4,8 @@ on:
   schedule:
     # Runs every day at 03:30 UTC (09:00 AM IST)
     - cron: '30 3 * * *'
+    # Test run at 16:00 UTC (09:30 PM IST)
+    - cron: '0 16 * * *'
   workflow_dispatch:
     inputs:
       force:
@@ -39,6 +41,10 @@ jobs:
           PUBLIC_SUPABASE_URL: "https://zlsauoosumpnbyouhdfk.supabase.co"
           SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
         run: |
+          if [ -z "$SUPABASE_SERVICE_ROLE_KEY" ]; then
+            echo "::error::Missing GitHub secret SUPABASE_SERVICE_ROLE_KEY. Add it under Repo Settings -> Secrets and variables -> Actions -> Repository secrets."
+            exit 1
+          fi
           if [ "${{ inputs.force }}" = "true" ]; then
             node scripts/auto-publish-blog.mjs --force
           else
