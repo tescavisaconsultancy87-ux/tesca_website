@@ -2,10 +2,8 @@ name: Daily Auto-Blog Publisher
 
 on:
   schedule:
-    # Runs every day at 03:30 UTC (09:00 AM IST)
-    - cron: '30 3 * * *'
-    # Test run at 16:00 UTC (09:30 PM IST)
-    - cron: '0 16 * * *'
+    # Runs every day at 18:30 UTC (12:00 AM IST)
+    - cron: '30 18 * * *'
   workflow_dispatch:
     inputs:
       force:
